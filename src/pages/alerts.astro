@@ -16,9 +16,17 @@ const description =
   'plus CHP dispatch and emergency resource links.';
 
 const resources = [
-  { label: 'NWS Sacramento', desc: 'Forecasts, watches & warnings', href: externalLinks.nwsSacramento },
+  {
+    label: 'NWS Sacramento',
+    desc: 'Forecasts, watches & warnings',
+    href: externalLinks.nwsSacramento,
+  },
   { label: 'CAL FIRE', desc: 'Wildfire activity & readiness', href: externalLinks.calFire },
-  { label: 'USGS Earthquakes', desc: 'Recent seismic activity', href: externalLinks.usgsEarthquakes },
+  {
+    label: 'USGS Earthquakes',
+    desc: 'Recent seismic activity',
+    href: externalLinks.usgsEarthquakes,
+  },
 ];
 ---
 
@@ -57,7 +65,9 @@ const resources = [
                 <a class="resource" href={r.href} target="_blank" rel="noopener external">
                   <span class="resource__label">
                     {r.label}
-                    <span class="resource__arrow" aria-hidden="true">&#8599;</span>
+                    <span class="resource__arrow" aria-hidden="true">
+                      &#8599;
+                    </span>
                   </span>
                   <span class="resource__desc">{r.desc}</span>
                 </a>

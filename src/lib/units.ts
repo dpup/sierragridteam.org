@@ -11,10 +11,24 @@ export const kmhToMph = (kmh: number): number => Math.round(kmh * 0.621371);
 /** 16-point compass label from a wind bearing in degrees. */
 export function degreesToCompass(deg: number): string {
   const points = [
-    'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW',
+    'N',
+    'NNE',
+    'NE',
+    'ENE',
+    'E',
+    'ESE',
+    'SE',
+    'SSE',
+    'S',
+    'SSW',
+    'SW',
+    'WSW',
+    'W',
+    'WNW',
+    'NW',
+    'NNW',
   ];
-  const idx = Math.round(((deg % 360) / 22.5)) % 16;
+  const idx = Math.round((deg % 360) / 22.5) % 16;
   return points[idx];
 }
 

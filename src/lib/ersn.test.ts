@@ -36,7 +36,9 @@ test('fallback snapshot is well-formed real data', () => {
 });
 
 test('calm conditions → fire weather normal + placeholder', () => {
-  const { state, placeholder } = deriveFireWeather(snapshotWithAlerts({ alerts: [], lastUpdated: '' }));
+  const { state, placeholder } = deriveFireWeather(
+    snapshotWithAlerts({ alerts: [], lastUpdated: '' })
+  );
   expect(state).toBe('normal');
   expect(placeholder).toBe(true);
 });
@@ -61,7 +63,13 @@ test('deriveOperationalStatus surfaces owned config + live flag', () => {
 });
 
 test('derivations never throw on a null/empty snapshot', () => {
-  const empty: ErsnSnapshot = { fetchedAt: '', live: false, roads: null, weather: null, alerts: null };
+  const empty: ErsnSnapshot = {
+    fetchedAt: '',
+    live: false,
+    roads: null,
+    weather: null,
+    alerts: null,
+  };
   expect(() => countActiveAlerts(empty)).not.toThrow();
   expect(() => deriveOperationalStatus(empty, owned)).not.toThrow();
   expect(countActiveAlerts(empty)).toBe(0);

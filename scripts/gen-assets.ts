@@ -67,7 +67,10 @@ async function main() {
 }
 
 async function composeSquare(mark: Buffer, size: number, pad: number) {
-  const inner = await sharp(mark).resize({ width: size - pad * 2, fit: 'inside' }).png().toBuffer();
+  const inner = await sharp(mark)
+    .resize({ width: size - pad * 2, fit: 'inside' })
+    .png()
+    .toBuffer();
   return sharp({
     create: { width: size, height: size, channels: 4, background: PARCHMENT },
   })

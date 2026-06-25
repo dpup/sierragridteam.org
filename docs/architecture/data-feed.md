@@ -10,6 +10,7 @@
 ## Endpoints & real response shapes (captured 2026-06-25)
 
 ### `GET /roads` → `{ roads: Road[], lastUpdated: string }`
+
 3 roads on the Hwy 4 corridor — **directly inside S.I.E.R.R.A's service area**:
 `hwy4-angels-murphys`, `hwy4-murphys-arnold`, `hwy4-arnold-bearvalley`.
 
@@ -29,7 +30,9 @@ RoadAlert = {
 ```
 
 ### `GET /weather` → `{ weatherData: Weather[], lastUpdated: string }`
+
 3 locations: **Murphys, Arnold, Bear Valley** (units: °C, km, km/h).
+
 ```jsonc
 Weather = {
   locationId, locationName, weatherMain, weatherDescription, weatherIcon,
@@ -39,6 +42,7 @@ Weather = {
 ```
 
 ### `GET /weather/alerts` → `{ alerts: Alert[], lastUpdated: string }`
+
 Currently `alerts: []`. Shape used for the Active-Alerts tile and `/alerts` cards.
 
 ## Architecture: hybrid SSG snapshot + client refresh
@@ -71,14 +75,14 @@ is US public-safety/residents.
 
 ## Data gaps → feature requests (FR) + UI placeholders
 
-| FR | Gap | Where it shows | UI placeholder behavior |
-|---|---|---|---|
-| **FR-1** | No CORS `Access-Control-Allow-Origin` → client refresh blocked | Home stats, /alerts auto-refresh | SSR snapshot shown; "—" sync state; refresh upgrades silently when fixed |
-| **FR-2** | No NWS zone alerts for **CAZ064/065/258/259** (design's specified source) | /alerts, Active-Alerts tile | Use `/weather/alerts` + road incidents; label scope "Calaveras & Tuolumne"; placeholder card noting NWS-zone integration pending |
-| **FR-3** | No **fire-weather Red Flag** classification (Normal/Elevated/Red Flag) | Home "Fire Weather" tile | Tile shows "Normal*" with a footnote; cannot escalate to orange until provided |
-| **FR-4** | **Hwy 49 / Tuolumne** towns absent (Sonora, Columbia, Twain Harte, Dorrington) — feed is Hwy 4 only (Angels Camp, Murphys, Arnold, Bear Valley) | Home map, /mesh zones, weather | Those towns rendered as coverage markers w/o live data; "data coming soon" where a value would be |
-| **FR-5** | No **per-relay-site status** (the org's own mesh nodes) | Home "Relay Sites" tile, /mesh | "Relay Sites" uses owned static config; no live up/down until a status feed exists |
-| **FR-6** | No structured **mesh node** feed (count/health) | /mesh sidebar | Static deployment-zone list; live counts pending |
+| FR       | Gap                                                                                                                                             | Where it shows                   | UI placeholder behavior                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **FR-1** | No CORS `Access-Control-Allow-Origin` → client refresh blocked                                                                                  | Home stats, /alerts auto-refresh | SSR snapshot shown; "—" sync state; refresh upgrades silently when fixed                                                         |
+| **FR-2** | No NWS zone alerts for **CAZ064/065/258/259** (design's specified source)                                                                       | /alerts, Active-Alerts tile      | Use `/weather/alerts` + road incidents; label scope "Calaveras & Tuolumne"; placeholder card noting NWS-zone integration pending |
+| **FR-3** | No **fire-weather Red Flag** classification (Normal/Elevated/Red Flag)                                                                          | Home "Fire Weather" tile         | Tile shows "Normal\*" with a footnote; cannot escalate to orange until provided                                                  |
+| **FR-4** | **Hwy 49 / Tuolumne** towns absent (Sonora, Columbia, Twain Harte, Dorrington) — feed is Hwy 4 only (Angels Camp, Murphys, Arnold, Bear Valley) | Home map, /mesh zones, weather   | Those towns rendered as coverage markers w/o live data; "data coming soon" where a value would be                                |
+| **FR-5** | No **per-relay-site status** (the org's own mesh nodes)                                                                                         | Home "Relay Sites" tile, /mesh   | "Relay Sites" uses owned static config; no live up/down until a status feed exists                                               |
+| **FR-6** | No structured **mesh node** feed (count/health)                                                                                                 | /mesh sidebar                    | Static deployment-zone list; live counts pending                                                                                 |
 
 Each FR is filed as an issue on `dpup/info.ersn.net` (see Phase 9 / `FEATURE_REQUESTS.md`).
 Placeholders must be visually honest: a muted note, never an invented number.

@@ -41,21 +41,32 @@ const ariaLabel =
 ---
 
 <div class="coverage" role="img" aria-label={ariaLabel}>
-  <svg class="coverage__svg" viewBox={viewBox} preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <svg
+    class="coverage__svg"
+    viewBox={viewBox}
+    preserveAspectRatio="xMidYMid meet"
+    aria-hidden="true"
+  >
     <defs>
       <pattern id="cov-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-        <path d="M 20 0 L 0 0 0 20" fill="none" class="coverage__grid-line" />
+        <path d="M 20 0 L 0 0 0 20" fill="none" class="coverage__grid-line"></path>
       </pattern>
     </defs>
 
     {/* Layer 2 — faint surveyed grid */}
-    <rect x={minX} y={minY} width={w} height={h} fill="url(#cov-grid)" />
+    <rect x={minX} y={minY} width={w} height={h} fill="url(#cov-grid)"></rect>
 
     {/* Layer 3 — soft topographic contours (decorative) */}
     <g class="coverage__contours">
-      <path d={`M ${minX} ${minY + h * 0.30} C ${minX + w * 0.3} ${minY + h * 0.18}, ${minX + w * 0.62} ${minY + h * 0.42}, ${minX + w} ${minY + h * 0.26}`} />
-      <path d={`M ${minX} ${minY + h * 0.52} C ${minX + w * 0.34} ${minY + h * 0.40}, ${minX + w * 0.66} ${minY + h * 0.66}, ${minX + w} ${minY + h * 0.50}`} class="is-brass" />
-      <path d={`M ${minX} ${minY + h * 0.74} C ${minX + w * 0.30} ${minY + h * 0.64}, ${minX + w * 0.70} ${minY + h * 0.86}, ${minX + w} ${minY + h * 0.72}`} />
+      <path
+        d={`M ${minX} ${minY + h * 0.3} C ${minX + w * 0.3} ${minY + h * 0.18}, ${minX + w * 0.62} ${minY + h * 0.42}, ${minX + w} ${minY + h * 0.26}`}
+      ></path>
+      <path
+        d={`M ${minX} ${minY + h * 0.52} C ${minX + w * 0.34} ${minY + h * 0.4}, ${minX + w * 0.66} ${minY + h * 0.66}, ${minX + w} ${minY + h * 0.5}`}
+        class="is-brass"></path>
+      <path
+        d={`M ${minX} ${minY + h * 0.74} C ${minX + w * 0.3} ${minY + h * 0.64}, ${minX + w * 0.7} ${minY + h * 0.86}, ${minX + w} ${minY + h * 0.72}`}
+      ></path>
     </g>
 
     {/* Layer 4 — coverage links along road corridors */}
@@ -74,22 +85,27 @@ const ariaLabel =
     <g class="coverage__markers">
       {
         towns.map((t, i) => (
-          <g class={`coverage__marker coverage__marker--${t.role}`} transform={`translate(${t.x} ${t.y})`}>
-            <circle class="coverage__ping" r="5" style={`animation-delay:${(i * 0.4).toFixed(2)}s`} />
+          <g
+            class={`coverage__marker coverage__marker--${t.role}`}
+            transform={`translate(${t.x} ${t.y})`}
+          >
+            <circle
+              class="coverage__ping"
+              r="5"
+              style={`animation-delay:${(i * 0.4).toFixed(2)}s`}
+            />
             <circle class="coverage__dot" r="4.5" />
-            {
-              t.label && (
-                <text
-                  class="coverage__label"
-                  x={labelSide(t.x) === 'left' ? -9 : 9}
-                  y="1.5"
-                  text-anchor={labelSide(t.x) === 'left' ? 'end' : 'start'}
-                >
-                  {t.name}
-                  {t.role === 'hq' ? ' · HQ' : ''}
-                </text>
-              )
-            }
+            {t.label && (
+              <text
+                class="coverage__label"
+                x={labelSide(t.x) === 'left' ? -9 : 9}
+                y="1.5"
+                text-anchor={labelSide(t.x) === 'left' ? 'end' : 'start'}
+              >
+                {t.name}
+                {t.role === 'hq' ? ' · HQ' : ''}
+              </text>
+            )}
           </g>
         ))
       }

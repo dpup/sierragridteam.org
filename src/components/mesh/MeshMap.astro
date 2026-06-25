@@ -22,11 +22,16 @@ import { mesh } from '@config/content';
     title={mesh.mapEmbedTitle}
     loading="lazy"
     referrerpolicy="no-referrer"
-    sandbox="allow-scripts allow-same-origin allow-popups"
-  ></iframe>
+    sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
 
   <div class="meshmap__open">
-    <Button variant="secondary" href={externalLinks.liveMeshMap} arrow target="_blank" rel="noopener external">
+    <Button
+      variant="secondary"
+      href={externalLinks.liveMeshMap}
+      arrow
+      target="_blank"
+      rel="noopener external"
+    >
       {mesh.openMapLabel}
     </Button>
   </div>

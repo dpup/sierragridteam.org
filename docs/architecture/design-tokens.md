@@ -20,42 +20,47 @@ orange signals heightened risk **only** — if everything is calm, orange must b
 absent from the page.
 
 ### Surfaces (warm neutrals — "parchment")
-| Token | Hex | Use |
-|---|---|---|
-| `--surface-page` | `#F3EFE4` | Page base / parchment |
-| `--surface-hero` | `#EDEFE7` | Hero band surface |
-| `--surface-card` | `#F6F2E7` | Cards / tiles |
-| `--surface-banner` | `#EFE9DA` | Banners / call-outs |
+
+| Token              | Hex       | Use                   |
+| ------------------ | --------- | --------------------- |
+| `--surface-page`   | `#F3EFE4` | Page base / parchment |
+| `--surface-hero`   | `#EDEFE7` | Hero band surface     |
+| `--surface-card`   | `#F6F2E7` | Cards / tiles         |
+| `--surface-banner` | `#EFE9DA` | Banners / call-outs   |
 
 ### Ink (text)
-| Token | Hex | Use |
-|---|---|---|
-| `--ink-strong` | `#16271E` | Headings (near-black) |
-| `--ink-body` | `#3C453C` | Body text |
-| `--ink-secondary` | `#5A5E4F` | Secondary text |
-| `--ink-muted` | `#9A906F` | Muted / hero headline line 1 |
+
+| Token             | Hex       | Use                          |
+| ----------------- | --------- | ---------------------------- |
+| `--ink-strong`    | `#16271E` | Headings (near-black)        |
+| `--ink-body`      | `#3C453C` | Body text                    |
+| `--ink-secondary` | `#5A5E4F` | Secondary text               |
+| `--ink-muted`     | `#9A906F` | Muted / hero headline line 1 |
 
 ### Brand & signal
-| Token | Hex | Use |
-|---|---|---|
-| `--brand-green` | `#1D5B3F` | Primary green / brand / links / primary buttons |
-| `--brand-green-hover` | `#16472F` | Green hover (one step darker) |
-| `--brand-brass` | `#B08A3E` | Brass accent — kickers, thin dividers, secondary-button outline |
-| `--brand-brass-text` | `#8A6A26` | Brass text (kicker labels) |
-| `--signal-orange` | `#C2410C` | **Risk/alert ONLY** — Red Flag fire weather, regional alert hub |
+
+| Token                 | Hex       | Use                                                             |
+| --------------------- | --------- | --------------------------------------------------------------- |
+| `--brand-green`       | `#1D5B3F` | Primary green / brand / links / primary buttons                 |
+| `--brand-green-hover` | `#16472F` | Green hover (one step darker)                                   |
+| `--brand-brass`       | `#B08A3E` | Brass accent — kickers, thin dividers, secondary-button outline |
+| `--brand-brass-text`  | `#8A6A26` | Brass text (kicker labels)                                      |
+| `--signal-orange`     | `#C2410C` | **Risk/alert ONLY** — Red Flag fire weather, regional alert hub |
 
 ### Lines / borders
-| Token | Hex | Use |
-|---|---|---|
-| `--line` | `#D8D0BD` | Default 1px border (warm tan) — **borders are never gray** |
-| `--line-soft` | `#E5DDCA` | Lighter internal rule (table rows, list separators) |
+
+| Token         | Hex       | Use                                                        |
+| ------------- | --------- | ---------------------------------------------------------- |
+| `--line`      | `#D8D0BD` | Default 1px border (warm tan) — **borders are never gray** |
+| `--line-soft` | `#E5DDCA` | Lighter internal rule (table rows, list separators)        |
 
 ### Status-dot colors (functional)
-| Token | Hex | Meaning |
-|---|---|---|
-| `--state-ok` | `#1D5B3F` | Operational / normal (also `#2F8A5B` for the lighter "static-owned" feasibility dot) |
-| `--state-elevated` | `#B08A3E` | Elevated (brass) |
-| `--state-alarm` | `#C2410C` | Red Flag / active alert (orange) |
+
+| Token              | Hex       | Meaning                                                                              |
+| ------------------ | --------- | ------------------------------------------------------------------------------------ |
+| `--state-ok`       | `#1D5B3F` | Operational / normal (also `#2F8A5B` for the lighter "static-owned" feasibility dot) |
+| `--state-elevated` | `#B08A3E` | Elevated (brass)                                                                     |
+| `--state-alarm`    | `#C2410C` | Red Flag / active alert (orange)                                                     |
 
 **Usage rules.** Forest green for all primary buttons, links, and the brand.
 Brass/gold only for kicker labels, thin dividers, and secondary-button outlines —
@@ -69,26 +74,27 @@ radial green glow behind the hero map. Borders are always warm tan, never gray.
 
 Three families, each with a strict job:
 
-| Token | Stack | Role |
-|---|---|---|
-| `--font-display` | `'Newsreader', Georgia, serif` | Display & body — headlines, mission statement, long-form, stat values. Weights 400–500, **never bolder than 600.** Literary serif w/ optical sizing. |
-| `--font-ui` | `'IBM Plex Sans', system-ui, sans-serif` | Interface & labels — nav, buttons, stat labels/sublabels, kickers, legends, footer. Weights 400/500/600. |
-| `--font-mono` | `'IBM Plex Mono', ui-monospace, monospace` | Data values, codes, section numbers, coordinates. |
+| Token            | Stack                                      | Role                                                                                                                                                 |
+| ---------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--font-display` | `'Newsreader', Georgia, serif`             | Display & body — headlines, mission statement, long-form, stat values. Weights 400–500, **never bolder than 600.** Literary serif w/ optical sizing. |
+| `--font-ui`      | `'IBM Plex Sans', system-ui, sans-serif`   | Interface & labels — nav, buttons, stat labels/sublabels, kickers, legends, footer. Weights 400/500/600.                                             |
+| `--font-mono`    | `'IBM Plex Mono', ui-monospace, monospace` | Data values, codes, section numbers, coordinates.                                                                                                    |
 
 **Small UI text** (labels, kickers, nav, legend) is UPPERCASE with wide tracking
 (`0.1em`–`0.24em`) to read precise and technical.
 
 ### Type scale (desktop)
-| Token | Size | Role | Font |
-|---|---|---|---|
-| `--fs-hero` | 52–54px | Hero headline | Newsreader 500 |
-| `--fs-h2` | 36px | Section title | Newsreader 500 |
-| `--fs-h3` | 30–32px | Sub-section heading | Newsreader 500 |
-| `--fs-mission` | 21px | Mission-statement body | Newsreader 400 |
-| `--fs-lead` | 18px | Lead paragraph / subhead | Newsreader 400 |
-| `--fs-stat` | 28px | Stat value | Newsreader 500 |
-| `--fs-label` | 10–12px | Labels · kickers · nav · legend | IBM Plex Sans 600, UPPERCASE |
-| `--fs-body` | 16px | Default body (never below 16px) | Newsreader 400 |
+
+| Token          | Size    | Role                            | Font                         |
+| -------------- | ------- | ------------------------------- | ---------------------------- |
+| `--fs-hero`    | 52–54px | Hero headline                   | Newsreader 500               |
+| `--fs-h2`      | 36px    | Section title                   | Newsreader 500               |
+| `--fs-h3`      | 30–32px | Sub-section heading             | Newsreader 500               |
+| `--fs-mission` | 21px    | Mission-statement body          | Newsreader 400               |
+| `--fs-lead`    | 18px    | Lead paragraph / subhead        | Newsreader 400               |
+| `--fs-stat`    | 28px    | Stat value                      | Newsreader 500               |
+| `--fs-label`   | 10–12px | Labels · kickers · nav · legend | IBM Plex Sans 600, UPPERCASE |
+| `--fs-body`    | 16px    | Default body (never below 16px) | Newsreader 400               |
 
 **Responsive:** scale down ~one step on tablet, ~two on mobile; **body never below 16px.**
 Headlines use tight tracking (`-0.015em`); uppercase labels use loose tracking
@@ -105,13 +111,13 @@ Headlines use tight tracking (`-0.015em`); uppercase labels use loose tracking
 - **Container:** content max-width ~1280px (nav/hero anchored to ~1320px); gutters ~56px.
 - **Spacing scale** (multiples of 4): `4 / 8 / 12 / 14 / 18 / 26 / 48 / 64 / 72`.
 
-| Token | Value |
-|---|---|
-| `--container-max` | `1280px` |
-| `--container-wide` | `1320px` |
-| `--gutter` | `56px` |
-| `--radius` | `0` |
-| `--border` | `1px solid var(--line)` |
+| Token                    | Value                           |
+| ------------------------ | ------------------------------- |
+| `--container-max`        | `1280px`                        |
+| `--container-wide`       | `1320px`                        |
+| `--gutter`               | `56px`                          |
+| `--radius`               | `0`                             |
+| `--border`               | `1px solid var(--line)`         |
 | `--space-1`..`--space-9` | `4 8 12 14 18 26 48 64 72` (px) |
 
 ---
@@ -125,11 +131,11 @@ Headlines use tight tracking (`-0.015em`); uppercase labels use loose tracking
 - Hover: buttons darken/lighten **one step**; links may underline.
 - **No transforms, scale-ups, or bounces.**
 
-| Token | Value |
-|---|---|
-| `--blink-duration` | `2s` |
-| `--ping-duration` | `2.4s` |
-| `--transition` | `120ms ease` (color/background only) |
+| Token              | Value                                |
+| ------------------ | ------------------------------------ |
+| `--blink-duration` | `2s`                                 |
+| `--ping-duration`  | `2.4s`                               |
+| `--transition`     | `120ms ease` (color/background only) |
 
 ---
 

@@ -35,7 +35,7 @@ fmt-check: ## Verify formatting
 	npm run fmt:check
 
 test: ## Unit tests (data layer) via bun
-	bun test
+	bun test src/
 
 test-browser: ## A11y + smoke tests (Playwright)
 	npm run test:visual

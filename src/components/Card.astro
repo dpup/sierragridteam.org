@@ -15,10 +15,7 @@ interface Props {
 const { surface = 'card', as: Tag = 'div', padded = true, class: className, id } = Astro.props;
 ---
 
-<Tag
-  class:list={['card', `card--${surface}`, { 'card--padded': padded }, className]}
-  id={id}
->
+<Tag class:list={['card', `card--${surface}`, { 'card--padded': padded }, className]} id={id}>
   <slot />
 </Tag>
 

@@ -45,8 +45,8 @@ const list = alerts?.alerts ?? [];
 
   <Callout accent="brass" heading="Coverage note" class="feed__note">
     Zone-specific National Weather Service alerts (CAZ064 / CAZ065 / CAZ258 / CAZ259) are not yet
-    available from the data feed; this list reflects the regional weather feed. NWS-zone
-    integration is tracked as a feature request.
+    available from the data feed; this list reflects the regional weather feed. NWS-zone integration
+    is tracked as a feature request.
   </Callout>
 </section>
 
@@ -106,7 +106,9 @@ const list = alerts?.alerts ?? [];
 
     const refresh = async () => {
       try {
-        const res = await fetch(`${base}/weather/alerts`, { headers: { accept: 'application/json' } });
+        const res = await fetch(`${base}/weather/alerts`, {
+          headers: { accept: 'application/json' },
+        });
         if (!res.ok) return;
         const data = (await res.json()) as { alerts?: Alert[]; lastUpdated?: string };
         render(data.alerts ?? []);

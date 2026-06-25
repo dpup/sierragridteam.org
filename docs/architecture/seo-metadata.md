@@ -4,6 +4,7 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
 `title`, `description`, `path`; everything else derives automatically.
 
 ## Per-page `<head>` checklist
+
 - `<title>` — `"{Page} — S.I.E.R.R.A"`; home = `"S.I.E.R.R.A — Signal Integrity & Emergency Radio Response Alliance"`.
 - `<meta name="description">` — unique, ≤155 chars, written per page (see table).
 - `<link rel="canonical">` — absolute, from `site` + `path` (no trailing slash except root).
@@ -15,6 +16,7 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
 - `<html lang="en">`.
 
 ## Structured data (JSON-LD)
+
 - **Sitewide (`Organization` / `NGO`)** in footer or layout: `name` (full legal name),
   `alternateName` "S.I.E.R.R.A", `url`, `logo`, `email`, `foundingDate` "2026",
   `areaServed` (Calaveras County, Tuolumne County), `address` (PostOfficeBox 2071, Murphys CA 95427),
@@ -23,14 +25,16 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
 - **Contact** adds `ContactPage`.
 
 ## Per-page meta descriptions
-| Path | Description (draft) |
-|---|---|
-| `/` | Off-grid emergency communications for the Calaveras & Tuolumne foothills. S.I.E.R.R.A builds, operates, and trains the volunteers behind a resilient LoRa mesh network. |
-| `/mesh` | Live coverage map of the S.I.E.R.R.A LoRa/Meshtastic mesh network across the Highway 4 and Highway 49 corridors. |
-| `/alerts` | Current weather, fire-weather, and road alerts for the Calaveras & Tuolumne foothills, plus CHP dispatch and emergency resource links. |
-| `/contact` | Volunteer with S.I.E.R.R.A — ham operators, LoRa techs, and emergency-management roles. Reach us by mail or email. |
+
+| Path       | Description (draft)                                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`        | Off-grid emergency communications for the Calaveras & Tuolumne foothills. S.I.E.R.R.A builds, operates, and trains the volunteers behind a resilient LoRa mesh network. |
+| `/mesh`    | Live coverage map of the S.I.E.R.R.A LoRa/Meshtastic mesh network across the Highway 4 and Highway 49 corridors.                                                        |
+| `/alerts`  | Current weather, fire-weather, and road alerts for the Calaveras & Tuolumne foothills, plus CHP dispatch and emergency resource links.                                  |
+| `/contact` | Volunteer with S.I.E.R.R.A — ham operators, LoRa techs, and emergency-management roles. Reach us by mail or email.                                                      |
 
 ## Generated/static SEO assets
+
 - `astro.config` `site: 'https://sierragridteam.org'`.
 - `@astrojs/sitemap` → `sitemap-index.xml` + `sitemap-0.xml`.
 - `public/robots.txt` — allow all, point to sitemap.
@@ -39,6 +43,7 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
   generated from the logo via `scripts/gen-assets`.
 
 ## Performance (Core Web Vitals = ranking + UX)
+
 - Self-hosted fonts (`@fontsource`), `font-display: swap`, preload the two most-used faces.
 - No render-blocking third-party JS. The mesh/CHP `<iframe>`s are `loading="lazy"`.
 - Astro ships zero JS by default; only the small refresh/clock islands hydrate.

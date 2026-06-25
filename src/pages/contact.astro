@@ -19,7 +19,12 @@ const contactSchema = {
 };
 ---
 
-<BaseLayout title="Contact & Volunteer" description={description} path="/contact" schema={contactSchema}>
+<BaseLayout
+  title="Contact & Volunteer"
+  description={description}
+  path="/contact"
+  schema={contactSchema}
+>
   <Section surface="page" labelledby="contact-title">
     <header class="contact-head">
       <Kicker>{contact.kicker}</Kicker>
@@ -53,11 +58,12 @@ const contactSchema = {
           <address class="address__body">
             {site.name}<br />
             {site.address.poBox}<br />
-            {site.address.city}, {site.address.state} {site.address.zip}
+            {site.address.city}, {site.address.state}
+            {site.address.zip}
           </address>
           <p class="address__note">
-            We are an all-volunteer organization with no public office — mail reaches us at the
-            P.O. Box above.
+            We are an all-volunteer organization with no public office — mail reaches us at the P.O.
+            Box above.
           </p>
         </section>
       </div>

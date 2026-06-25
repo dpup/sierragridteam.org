@@ -20,7 +20,10 @@ function tone(status: string, chain: string): 'ok' | 'alarm' | 'elevated' {
   return 'ok';
 }
 const titleCase = (s: string) =>
-  s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/_/g, ' ');
+  s
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/_/g, ' ');
 ---
 
 <div class="roads">

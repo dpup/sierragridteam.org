@@ -32,10 +32,18 @@
     "declaration-block-no-redundant-longhand-properties": null,
     "media-feature-range-notation": null,
     "alpha-value-notation": null,
+    "at-rule-no-unknown": [true, { "ignoreAtRules": ["mixin", "include", "extend"] }],
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["global"] }],
+
+    "rule-empty-line-before": null,
+    "declaration-empty-line-before": null,
+    "custom-property-empty-line-before": null,
+    "at-rule-empty-line-before": null,
     "comment-empty-line-before": null,
-    "at-rule-no-unknown": [
-      true,
-      { "ignoreAtRules": ["mixin", "include", "extend"] }
-    ]
+    "value-keyword-case": null,
+    "import-notation": null,
+    "property-no-vendor-prefix": null,
+    "property-no-deprecated": null,
+    "number-max-precision": null
   }
 }

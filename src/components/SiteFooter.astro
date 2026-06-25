@@ -26,7 +26,13 @@ const year = site.foundingYear;
         <p class="footer__navhead">Site</p>
         <ul>
           <li><a href="/">Home</a></li>
-          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+          {
+            nav.map((item) => (
+              <li>
+                <a href={item.href}>{item.label}</a>
+              </li>
+            ))
+          }
         </ul>
       </nav>
 
@@ -35,7 +41,9 @@ const year = site.foundingYear;
         <ul>
           <li><a href={externalLinks.nwsSacramento} rel="noopener external">NWS Sacramento</a></li>
           <li><a href={externalLinks.calFire} rel="noopener external">CAL FIRE</a></li>
-          <li><a href={externalLinks.usgsEarthquakes} rel="noopener external">USGS Earthquakes</a></li>
+          <li>
+            <a href={externalLinks.usgsEarthquakes} rel="noopener external">USGS Earthquakes</a>
+          </li>
         </ul>
       </nav>
     </div>

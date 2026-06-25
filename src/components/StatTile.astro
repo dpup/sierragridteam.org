@@ -22,11 +22,7 @@ interface Props {
 const { label, value, sublabel, state = 'ok', key, footnote, class: className } = Astro.props;
 ---
 
-<div
-  class:list={['stat', className]}
-  data-state={state}
-  data-stat-key={key}
->
+<div class:list={['stat', className]} data-state={state} data-stat-key={key}>
   <div class="stat__top">
     <span class="stat__dot" aria-hidden="true" data-stat-dot></span>
     <span class="stat__label">{label}</span>

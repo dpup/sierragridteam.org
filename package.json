@@ -19,26 +19,27 @@
     "lint": "stylelint \"src/**/*.{css,astro}\"",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",
-    "test": "bun test",
+    "test": "bun test src/",
     "test:visual": "playwright test"
   },
   "dependencies": {
-    "astro": "7.0.3",
     "@astrojs/sitemap": "^3.7.3",
-    "@fontsource-variable/newsreader": "^5.2.10",
     "@fontsource-variable/ibm-plex-sans": "^5.2.8",
-    "@fontsource/ibm-plex-mono": "^5.2.7"
+    "@fontsource-variable/newsreader": "^5.2.10",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "astro": "7.0.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "typescript": "^5.9.0",
-    "@types/node": "^22.0.0",
-    "@playwright/test": "^1.61.1",
     "@axe-core/playwright": "^4.12.1",
-    "stylelint": "^16.26.1",
-    "stylelint-config-standard": "^39.0.1",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^22.0.0",
+    "postcss-html": "^1.8.1",
     "prettier": "^3.8.4",
     "prettier-plugin-astro": "^0.14.1",
-    "sharp": "^0.35.2"
+    "sharp": "^0.35.2",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^39.0.1",
+    "typescript": "^5.9.0"
   }
 }

@@ -31,10 +31,11 @@ const { src, title, urlLabel } = Astro.props;
       title={title}
       loading="lazy"
       referrerpolicy="no-referrer"
-      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-    ></iframe>
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
     <p class="dashboard__fallback">
-      If the dashboard does not load here, <a href={src} target="_blank" rel="noopener external">open it directly</a>.
+      If the dashboard does not load here, <a href={src} target="_blank" rel="noopener external"
+        >open it directly</a
+      >.
     </p>
   </div>
   <figcaption class="sr-only">{title}</figcaption>

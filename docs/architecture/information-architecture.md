@@ -33,17 +33,19 @@ clock** (America/Los_Angeles, 24h, "PT" suffix).
 ## Page-by-page
 
 ### Home (`/`)
+
 Order, top to bottom:
+
 1. **Hero** — coverage-map band, min-height ~680px (NOT forced full-viewport), anchored to the
    ~1320px container. Left = message column (emblem, two-tone headline, subhead, two buttons).
    Right = stylized topographic coverage map of the service area.
-   - Headline is two-tone/two-part: *"When the grid goes dark,"* in muted warm-gray
-     (`--ink-muted`), then *"the signal stays up."* in near-black ink. Contrast carries the
+   - Headline is two-tone/two-part: _"When the grid goes dark,"_ in muted warm-gray
+     (`--ink-muted`), then _"the signal stays up."_ in near-black ink. Contrast carries the
      meaning — no color pop, no italics. Balance line 1 so no word is orphaned.
    - Subhead (one sentence): builds + operates + trains.
    - Buttons: primary **"Open Live Map"** (green fill → `/mesh`),
      secondary **"View Emergency Alerts"** (brass outline → `/alerts`).
-   - **Map honesty rule:** the hero map is an *identity/coverage* visual, NOT live network
+   - **Map honesty rule:** the hero map is an _identity/coverage_ visual, NOT live network
      topology. It must never claim real-time node positions. Six town markers in true relative
      geography: Dorrington, Arnold, Murphys (HQ), Angels Camp, Columbia, Sonora; links follow
      Hwy 4 (NE chain) & Hwy 49 (south leg) + one dashed cross-link. Only major towns labeled
@@ -65,6 +67,7 @@ Order, top to bottom:
 6. **Footer.**
 
 ### Mesh / LoRa (`/mesh`)
+
 - Full-page embedded **live map** (`https://livemap.wcmesh.com/bayarea/`) with a loading state
   while it initializes. **This is the authoritative live map** — the homepage hero is not.
 - Collapsible info **sidebar**: tech specs (LoRa/Meshtastic), S.I.E.R.R.A deployment zones
@@ -72,6 +75,7 @@ Order, top to bottom:
 - External **"Open Full Map"** link.
 
 ### Alerts (`/alerts`)
+
 - Live alert cards, color-coded by severity (Extreme=red `--signal-orange`, Severe=orange,
   Moderate=brass, Minor=green/neutral), expandable detail, auto-refresh every 5 min.
   - Data: info.ersn.net `/weather/alerts` (+ road incident alerts from `/roads`).
@@ -81,6 +85,7 @@ Order, top to bottom:
 - Resource links: NWS Sacramento, CAL FIRE, USGS Earthquakes.
 
 ### Contact (`/contact`)
+
 - Address: **P.O. Box 2071, Murphys, CA 95427** (no street address).
 - Volunteer-role listing: Ham operators, LoRa techs, emergency management, etc.
 - Contact form with optional **Ham call-sign** field; submits via **mailto:** (no backend) to

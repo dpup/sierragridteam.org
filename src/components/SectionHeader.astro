@@ -33,7 +33,13 @@ const hasAside = Astro.slots.has('aside');
 
 <div class:list={['section-header', { 'section-header--split': hasAside }, className]}>
   <div class="section-header__lead">
-    {kicker && <Kicker number={number} mono={monoKicker}>{kicker}</Kicker>}
+    {
+      kicker && (
+        <Kicker number={number} mono={monoKicker}>
+          {kicker}
+        </Kicker>
+      )
+    }
     <Heading id={headingId} class="section-header__title">{title}</Heading>
   </div>
   {

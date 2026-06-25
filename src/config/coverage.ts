@@ -30,12 +30,66 @@ export interface CoverageTown {
 
 /** Six towns in true relative geography. Murphys is HQ. */
 export const towns: readonly CoverageTown[] = [
-  { id: 'angels-camp', name: 'Angels Camp', label: true, role: 'town', x: 6, y: 174, county: 'Calaveras', hasLiveData: true },
-  { id: 'murphys', name: 'Murphys', label: true, role: 'hq', x: 50, y: 133, county: 'Calaveras', hasLiveData: true },
-  { id: 'arnold', name: 'Arnold', label: true, role: 'town', x: 109, y: 51, county: 'Calaveras', hasLiveData: true },
-  { id: 'dorrington', name: 'Dorrington', label: false, role: 'town', x: 153, y: 15, county: 'Calaveras', hasLiveData: false },
-  { id: 'columbia', name: 'Columbia', label: false, role: 'town', x: 82, y: 203, county: 'Tuolumne', hasLiveData: false },
-  { id: 'sonora', name: 'Sonora', label: true, role: 'hub', x: 91, y: 239, county: 'Tuolumne', hasLiveData: false },
+  {
+    id: 'angels-camp',
+    name: 'Angels Camp',
+    label: true,
+    role: 'town',
+    x: 6,
+    y: 174,
+    county: 'Calaveras',
+    hasLiveData: true,
+  },
+  {
+    id: 'murphys',
+    name: 'Murphys',
+    label: true,
+    role: 'hq',
+    x: 50,
+    y: 133,
+    county: 'Calaveras',
+    hasLiveData: true,
+  },
+  {
+    id: 'arnold',
+    name: 'Arnold',
+    label: true,
+    role: 'town',
+    x: 109,
+    y: 51,
+    county: 'Calaveras',
+    hasLiveData: true,
+  },
+  {
+    id: 'dorrington',
+    name: 'Dorrington',
+    label: false,
+    role: 'town',
+    x: 153,
+    y: 15,
+    county: 'Calaveras',
+    hasLiveData: false,
+  },
+  {
+    id: 'columbia',
+    name: 'Columbia',
+    label: false,
+    role: 'town',
+    x: 82,
+    y: 203,
+    county: 'Tuolumne',
+    hasLiveData: false,
+  },
+  {
+    id: 'sonora',
+    name: 'Sonora',
+    label: true,
+    role: 'hub',
+    x: 91,
+    y: 239,
+    county: 'Tuolumne',
+    hasLiveData: false,
+  },
 ] as const;
 
 export interface Corridor {
@@ -48,7 +102,12 @@ export interface Corridor {
 
 /** Coverage links follow real road corridors (Hwy 4 NE chain, Hwy 49 south leg, one cross-link). */
 export const corridors: readonly Corridor[] = [
-  { id: 'hwy4', name: 'Highway 4', kind: 'solid', path: ['angels-camp', 'murphys', 'arnold', 'dorrington'] },
+  {
+    id: 'hwy4',
+    name: 'Highway 4',
+    kind: 'solid',
+    path: ['angels-camp', 'murphys', 'arnold', 'dorrington'],
+  },
   { id: 'hwy49', name: 'Highway 49', kind: 'solid', path: ['angels-camp', 'columbia', 'sonora'] },
   { id: 'crosslink', name: 'Cross-corridor relay', kind: 'dashed', path: ['murphys', 'columbia'] },
 ] as const;

@@ -181,10 +181,7 @@ export function countActiveAlerts(snapshot: ErsnSnapshot): number {
   const roadAlerts =
     snapshot.roads?.roads.reduce(
       (n, r) =>
-        n +
-        r.alerts.filter(
-          (a) => a.classification === 'ON_ROUTE' || a.type === 'CLOSURE'
-        ).length,
+        n + r.alerts.filter((a) => a.classification === 'ON_ROUTE' || a.type === 'CLOSURE').length,
       0
     ) ?? 0;
   return weatherAlerts + roadAlerts;
@@ -201,9 +198,7 @@ export function deriveFireWeather(snapshot: ErsnSnapshot): {
   placeholder: boolean;
 } {
   const alerts = snapshot.alerts?.alerts ?? [];
-  const text = alerts
-    .map((a) => `${a.event ?? ''} ${a.headline ?? ''}`.toLowerCase())
-    .join(' ');
+  const text = alerts.map((a) => `${a.event ?? ''} ${a.headline ?? ''}`.toLowerCase()).join(' ');
   if (text.includes('red flag')) return { state: 'red-flag', placeholder: false };
   if (text.includes('fire')) return { state: 'elevated', placeholder: false };
   return { state: 'normal', placeholder: true };

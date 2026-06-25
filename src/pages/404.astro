@@ -17,12 +17,18 @@ import { nav } from '@config/site';
       <Kicker number="404" mono>Signal lost</Kicker>
       <h1 class="notfound__title">This page is off the grid.</h1>
       <p class="notfound__body">
-        The page you were looking for could not be found. It may have moved, or the link may be
-        out of date. Try one of these instead:
+        The page you were looking for could not be found. It may have moved, or the link may be out
+        of date. Try one of these instead:
       </p>
       <div class="notfound__links">
         <Button variant="primary" href="/" arrow>Back to home</Button>
-        {nav.map((item) => <Button variant="secondary" href={item.href}>{item.label}</Button>)}
+        {
+          nav.map((item) => (
+            <Button variant="secondary" href={item.href}>
+              {item.label}
+            </Button>
+          ))
+        }
       </div>
     </div>
   </Section>

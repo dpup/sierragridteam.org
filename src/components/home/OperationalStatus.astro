@@ -51,11 +51,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
 
 <section class="ops" aria-labelledby="ops-title" data-ops data-api-base={ERSN_API_BASE}>
   <Container wide>
-    <SectionHeader
-      kicker={home.status.kicker}
-      title={home.status.title}
-      headingId="ops-title"
-    >
+    <SectionHeader kicker={home.status.kicker} title={home.status.title} headingId="ops-title">
       <StatusPill slot="aside" tone="muted" blink={false} data-synced>
         {syncedLabel}
       </StatusPill>
@@ -95,9 +91,9 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
     {
       status.fireWeatherPlaceholder && (
         <p class="ops__note">
-          Fire-weather classification (Normal / Elevated / Red Flag) is pending an upstream
-          data source; the tile shows a conservative default and never reports a Red Flag it
-          cannot confirm.
+          Fire-weather classification (Normal / Elevated / Red Flag) is pending an upstream data
+          source; the tile shows a conservative default and never reports a Red Flag it cannot
+          confirm.
         </p>
       )
     }

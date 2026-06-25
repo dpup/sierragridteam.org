@@ -37,7 +37,13 @@ const tagProps = href ? { href } : { type };
   {...rest}
 >
   <span class="btn__label"><slot /></span>
-  {arrow && <span class="btn__arrow" aria-hidden="true">&rarr;</span>}
+  {
+    arrow && (
+      <span class="btn__arrow" aria-hidden="true">
+        &rarr;
+      </span>
+    )
+  }
 </Tag>
 
 <style>

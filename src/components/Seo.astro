@@ -91,8 +91,4 @@ const schemas = [orgSchema, ...(Array.isArray(schema) ? schema : schema ? [schem
 <link rel="manifest" href="/site.webmanifest" />
 
 {/* Structured data */}
-{
-  schemas.map((s) => (
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />
-  ))
-}
+{schemas.map((s) => <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />)}

@@ -17,10 +17,7 @@ interface Props {
 const { tone = 'ok', label, blink = true, class: className } = Astro.props;
 ---
 
-<span
-  class:list={['pill', `pill--${tone}`, { 'pill--blink': blink }, className]}
-  role="status"
->
+<span class:list={['pill', `pill--${tone}`, { 'pill--blink': blink }, className]} role="status">
   <span class="pill__dot" aria-hidden="true"></span>
   <span class="pill__label">{label ?? <slot />}</span>
 </span>

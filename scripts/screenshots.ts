@@ -50,7 +50,9 @@ function mockErsn(route: Route) {
       body: JSON.stringify(body),
     });
   if (url.includes('/weather/alerts')) {
-    return json(SCENARIO === 'redflag' ? redflag : { alerts: [], lastUpdated: FIXED.toISOString() });
+    return json(
+      SCENARIO === 'redflag' ? redflag : { alerts: [], lastUpdated: FIXED.toISOString() }
+    );
   }
   if (url.includes('/weather')) return json(snapshot.weather);
   if (url.includes('/roads')) return json(snapshot.roads);
