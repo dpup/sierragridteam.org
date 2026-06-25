@@ -27,6 +27,7 @@ test('units convert metric → imperial correctly', () => {
   expect(kmhToMph(14)).toBe(9);
   expect(degreesToCompass(0)).toBe('N');
   expect(degreesToCompass(231)).toBe('SW');
+  expect(degreesToCompass(-45)).toBe('NW'); // negative bearing normalizes
 });
 
 test('fallback snapshot is well-formed real data', () => {

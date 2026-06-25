@@ -65,7 +65,7 @@ const {
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <TopBar hideBrand={hideBrandInNav} path={path} />
-    <main id="main" class={mainClass}>
+    <main id="main" class={mainClass} tabindex="-1">
       <slot />
     </main>
     <SiteFooter />

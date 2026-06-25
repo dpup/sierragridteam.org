@@ -29,7 +29,8 @@ version of the rules below.
 1. **Tokens only.** Never write a raw color, font family, or font-size px value in a
    component or page. Use a CSS variable: `var(--brand-green)`, `var(--fs-hero)`,
    `var(--space-5)`. The only file allowed raw hex/fonts is
-   `src/styles/tokens.css`. **stylelint enforces this and will fail CI.**
+   `src/styles/tokens.css`. **stylelint enforces the no-raw-color rule and fails CI**;
+   raw px font-sizes are a review convention.
 2. **The palette is deliberate.** Don't introduce new colors. Forest green carries the
    brand and all primary actions; brass/gold is for small accents/labels only (never
    large fills); **burnt orange = risk/alert ONLY** (Red Flag, active alerts). If a

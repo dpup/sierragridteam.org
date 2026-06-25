@@ -6,7 +6,8 @@
  *
  * ⚠️  This is the ONLY file allowed to contain raw hex colors and raw px font
  *     sizes. Everywhere else, reference these variables: var(--brand-green),
- *     var(--fs-hero), etc. stylelint enforces this (.stylelintrc.json).
+ *     var(--fs-hero), etc. stylelint enforces the no-raw-color rule (.stylelintrc.json);
+ *     raw px font-sizes are a review/convention rule, not lint-enforced.
  *     Do not add new colors without a design reason — the palette is deliberate.
  * ============================================================================
  */
@@ -35,6 +36,7 @@
   /* ---- Lines / borders (always warm tan, never gray) ---- */
   --line: #d8d0bd; /* default 1px border */
   --line-soft: #e5ddca; /* lighter internal rule */
+  --line-control: #928869; /* form-control border — ≥3:1 for WCAG 1.4.11 non-text contrast */
 
   /* ---- Status-dot states (functional) ---- */
   --state-ok: #1d5b3f; /* operational / normal */

@@ -150,4 +150,14 @@ const isActive = (href: string) => path === href || path === `${href}/`;
       gap: var(--space-5);
     }
   }
+
+  /* Very narrow: drop the wordmark (keep the mark) so the links never clip. */
+  @media (max-width: 480px) {
+    .topbar__brand :global(.logo__wordmark) {
+      display: none;
+    }
+    .topbar__links {
+      gap: var(--space-4);
+    }
+  }
 </style>

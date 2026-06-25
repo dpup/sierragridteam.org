@@ -12,12 +12,18 @@ interface Props {
   /** Whether the dot blinks. */
   blink?: boolean;
   class?: string;
+  /** Pass-through attributes (e.g. data-* hooks) forwarded to the root span. */
+  [key: string]: unknown;
 }
 
-const { tone = 'ok', label, blink = true, class: className } = Astro.props;
+const { tone = 'ok', label, blink = true, class: className, ...rest } = Astro.props;
 ---
 
-<span class:list={['pill', `pill--${tone}`, { 'pill--blink': blink }, className]} role="status">
+<span
+  class:list={['pill', `pill--${tone}`, { 'pill--blink': blink }, className]}
+  role="status"
+  {...rest}
+>
   <span class="pill__dot" aria-hidden="true"></span>
   <span class="pill__label">{label ?? <slot />}</span>
 </span>

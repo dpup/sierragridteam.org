@@ -69,6 +69,14 @@ const roleOptions = contact.roles.map((r) => r.name);
       Prefer to write directly? Email
       <a href={`mailto:${site.email}`}>{site.email}</a>.
     </p>
+    {
+      site.emailIsPlaceholder && (
+        <p class="cform__help">
+          Our email inbox is being established — the P.O. Box is the most reliable way to reach us
+          right now.
+        </p>
+      )
+    }
   </div>
 </form>
 
@@ -133,7 +141,7 @@ const roleOptions = contact.roles.map((r) => r.name);
   }
 
   .cform__req {
-    color: var(--signal-orange-text);
+    color: var(--ink-secondary);
   }
   .cform__optional {
     color: var(--ink-muted);
@@ -148,7 +156,7 @@ const roleOptions = contact.roles.map((r) => r.name);
     width: 100%;
     padding: var(--space-3) var(--space-4);
     background: var(--surface-page);
-    border: var(--border);
+    border: var(--border-w) solid var(--line-control);
     border-radius: var(--radius);
     font-family: var(--font-ui);
     font-size: var(--fs-body);

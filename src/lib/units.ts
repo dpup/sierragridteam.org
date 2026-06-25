@@ -28,7 +28,7 @@ export function degreesToCompass(deg: number): string {
     'NW',
     'NNW',
   ];
-  const idx = Math.round((deg % 360) / 22.5) % 16;
+  const idx = ((Math.round((deg % 360) / 22.5) % 16) + 16) % 16;
   return points[idx];
 }
 

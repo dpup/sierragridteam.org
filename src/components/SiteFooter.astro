@@ -49,7 +49,7 @@ const year = site.foundingYear;
     </div>
 
     <p class="footer__disclaimer" role="note">
-      S.I.E.R.R.A is a volunteer organization, not an emergency dispatch service.
+      S.I.E.R.R.A is a volunteer organization, not an emergency dispatch service.{' '}
       <strong>In a life-threatening emergency, call 911.</strong>
     </p>
 
@@ -113,6 +113,8 @@ const year = site.foundingYear;
   }
 
   .footer__nav a {
+    display: inline-block;
+    padding-block: var(--space-2);
     font-family: var(--font-ui);
     font-size: var(--fs-small);
     color: var(--ink-body);

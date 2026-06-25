@@ -24,7 +24,7 @@ interface Props {
 const { title, description, path, ogImage, fullTitle, noindex = false, schema } = Astro.props;
 
 // trailingSlash: 'never' — root keeps its slash, all others have none.
-const canonical = path === '/' ? `${site.url}/` : `${site.url}${path}`;
+const canonical = `${site.url}${path === '/' ? '' : path}`;
 const docTitle = fullTitle ?? `${title} — ${site.name}`;
 const image = new URL(ogImage ?? site.ogImage, site.url).href;
 
@@ -35,7 +35,7 @@ const orgSchema = {
   alternateName: site.name,
   url: site.url,
   logo: new URL('/brand/sierra-logo-full.png', site.url).href,
-  email: site.email,
+  ...(site.emailIsPlaceholder ? {} : { email: site.email }),
   foundingDate: String(site.foundingYear),
   description: site.tagline,
   areaServed: site.counties.map((c) => ({
@@ -75,6 +75,9 @@ const schemas = [orgSchema, ...(Array.isArray(schema) ? schema : schema ? [schem
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={image} />
 <meta property="og:image:alt" content={`${site.name} — ${site.legalName}`} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta property="og:locale" content="en_US" />
 
 {/* Twitter */}
@@ -87,6 +90,7 @@ const schemas = [orgSchema, ...(Array.isArray(schema) ? schema : schema ? [schem
 <meta name="theme-color" content="#1d5b3f" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="manifest" href="/site.webmanifest" />
 

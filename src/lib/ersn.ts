@@ -175,16 +175,14 @@ function nowIso(): string {
 
 // ---- Derivations ----
 
-/** Count active alerts: weather alerts + road alerts that are on-route/active. */
+/**
+ * Active weather/emergency alert count for the home "Active Alerts" tile.
+ * Weather alerts ONLY — matches the design's NWS-alert tile and the client refresh
+ * (which fetches /weather/alerts). Road incidents are surfaced separately on /alerts
+ * (RoadConditions), not counted here, so SSR and client stay in lockstep.
+ */
 export function countActiveAlerts(snapshot: ErsnSnapshot): number {
-  const weatherAlerts = snapshot.alerts?.alerts.length ?? 0;
-  const roadAlerts =
-    snapshot.roads?.roads.reduce(
-      (n, r) =>
-        n + r.alerts.filter((a) => a.classification === 'ON_ROUTE' || a.type === 'CLOSURE').length,
-      0
-    ) ?? 0;
-  return weatherAlerts + roadAlerts;
+  return snapshot.alerts?.alerts.length ?? 0;
 }
 
 /**
