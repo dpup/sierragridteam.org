@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="S.I.E.R.R.A">
+  <rect width="64" height="64" rx="10" fill="#1d5b3f"/>
+  <g transform="translate(33 38) scale(0.099)">
+    <path d="M-220 120 L-70 -120 L40 60 L90 -20 L150 60 L220 120 Z" fill="#f3efe4"/>
+    <path d="M-70 -120 L-30 -56 L-70 -20 L-110 -56 Z" fill="#1d5b3f"/>
+    <path d="M-260 -150 A300 300 0 0 1 240 -40" stroke="#b08a3e" stroke-width="20" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M-260 -110 A250 250 0 0 1 200 -30" stroke="#f3efe4" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+</svg>

@@ -1,0 +1,123 @@
+---
+/**
+ * MeshMap — the embedded live mesh map pane (the authoritative live view).
+ * Shows a calm "initializing" panel until the iframe loads (or a fallback
+ * timeout), plus an "Open Full Map" external link. No spinner (motion rules).
+ */
+import Button from '../Button.astro';
+import { externalLinks } from '@config/site';
+import { mesh } from '@config/content';
+---
+
+<div class="meshmap">
+  <div class="meshmap__loading" data-mesh-loading>
+    <span class="meshmap__dot" aria-hidden="true"></span>
+    <p class="meshmap__loadtext">Initializing live map…</p>
+  </div>
+
+  <iframe
+    class="meshmap__frame"
+    data-mesh-frame
+    src={externalLinks.liveMeshMap}
+    title={mesh.mapEmbedTitle}
+    loading="lazy"
+    referrerpolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin allow-popups"
+  ></iframe>
+
+  <div class="meshmap__open">
+    <Button variant="secondary" href={externalLinks.liveMeshMap} arrow target="_blank" rel="noopener external">
+      {mesh.openMapLabel}
+    </Button>
+  </div>
+</div>
+
+<script>
+  const frame = document.querySelector<HTMLIFrameElement>('[data-mesh-frame]');
+  const loading = document.querySelector<HTMLElement>('[data-mesh-loading]');
+  const hide = () => loading?.setAttribute('data-hidden', 'true');
+  if (frame) {
+    frame.addEventListener('load', hide);
+    // Fallback: never leave the panel up indefinitely (e.g. blocked embeds).
+    setTimeout(hide, 6000);
+  } else {
+    hide();
+  }
+</script>
+
+<style>
+  .meshmap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 420px;
+    background: var(--surface-hero);
+  }
+
+  .meshmap__frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .meshmap__loading {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-overlay);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: var(--surface-hero);
+    transition: opacity var(--transition);
+  }
+  .meshmap__loading[data-hidden='true'] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .meshmap__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--brand-green);
+    animation: meshmap-blink var(--blink-duration) ease-in-out infinite;
+  }
+
+  @keyframes meshmap-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .meshmap__dot {
+      animation: none;
+    }
+  }
+
+  .meshmap__loadtext {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
+  .meshmap__open {
+    position: absolute;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: var(--z-overlay);
+  }
+  /* Sit the button on a parchment chip so it stays legible over the map. */
+  .meshmap__open :global(.btn) {
+    background: var(--surface-page);
+    box-shadow: var(--shadow-overlay);
+  }
+</style>

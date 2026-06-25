@@ -1,0 +1,204 @@
+---
+/**
+ * OperationalStatus — the four "feasible data only" tiles (design-system §7).
+ * SSR renders the build-time snapshot (always present, SEO-visible, the design's
+ * required "last-known value"). A client island refreshes every 5 minutes from
+ * info.ersn.net; on ANY failure (including the current CORS block, FR-1) it keeps
+ * the SSR values and shows a muted sync state — never a spinner or error.
+ */
+import Container from '../Container.astro';
+import SectionHeader from '../SectionHeader.astro';
+import StatTile from '../StatTile.astro';
+import StatusPill from '../StatusPill.astro';
+import { ERSN_API_BASE, type OperationalStatus } from '@lib/ersn';
+import { home } from '@config/content';
+import { TIMEZONE, site } from '@config/site';
+
+interface Props {
+  status: OperationalStatus;
+}
+const { status } = Astro.props;
+
+const fireLabel: Record<string, string> = {
+  normal: 'Normal',
+  elevated: 'Elevated',
+  'red-flag': 'Red Flag',
+};
+const fireState =
+  status.fireWeather === 'red-flag'
+    ? 'alarm'
+    : status.fireWeather === 'elevated'
+      ? 'elevated'
+      : 'ok';
+const alertState = status.activeAlertCount > 0 ? 'alarm' : 'ok';
+
+function formatPT(iso: string | null): string {
+  if (!iso) return '—';
+  try {
+    const t = new Intl.DateTimeFormat('en-GB', {
+      timeZone: TIMEZONE,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(new Date(iso));
+    return `${t} PT`;
+  } catch {
+    return '—';
+  }
+}
+const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last known';
+---
+
+<section class="ops" aria-labelledby="ops-title" data-ops data-api-base={ERSN_API_BASE}>
+  <Container wide>
+    <SectionHeader
+      kicker={home.status.kicker}
+      title={home.status.title}
+      headingId="ops-title"
+    >
+      <StatusPill slot="aside" tone="muted" blink={false} data-synced>
+        {syncedLabel}
+      </StatusPill>
+    </SectionHeader>
+
+    <div class="ops__grid">
+      <StatTile
+        label="Relay Sites"
+        value={`${status.relaySites} Active`}
+        sublabel="Deployed relay sites"
+        state="ok-static"
+        key="relay"
+      />
+      <StatTile
+        label="Coverage"
+        value={`${status.coverageCounties} Counties`}
+        sublabel={site.counties.join(' & ').replace(/ County/g, '')}
+        state="ok-static"
+        key="coverage"
+      />
+      <StatTile
+        label="Active Alerts"
+        value={`${status.activeAlertCount} Active`}
+        sublabel="Region · live feed"
+        state={alertState}
+        key="alerts"
+      />
+      <StatTile
+        label="Fire Weather"
+        value={fireLabel[status.fireWeather]}
+        sublabel="Calaveras & Tuolumne"
+        state={fireState}
+        key="fire"
+      />
+    </div>
+
+    {
+      status.fireWeatherPlaceholder && (
+        <p class="ops__note">
+          Fire-weather classification (Normal / Elevated / Red Flag) is pending an upstream
+          data source; the tile shows a conservative default and never reports a Red Flag it
+          cannot confirm.
+        </p>
+      )
+    }
+  </Container>
+</section>
+
+<script>
+  // Live refresh — upgrades the SSR snapshot when CORS allows; silently keeps it otherwise.
+  const REFRESH_MS = 5 * 60 * 1000;
+  const section = document.querySelector<HTMLElement>('[data-ops]');
+  if (section) {
+    const base = section.dataset.apiBase ?? 'https://info.ersn.net/api/v1';
+
+    const setTile = (key: string, value: string, state: string) => {
+      const el = section.querySelector<HTMLElement>(`[data-stat-key="${key}"]`);
+      if (!el) return;
+      el.dataset.state = state;
+      const v = el.querySelector<HTMLElement>('[data-stat-value]');
+      if (v) v.textContent = value;
+    };
+
+    const fmtPT = (iso: string) => {
+      try {
+        const t = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'America/Los_Angeles',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).format(new Date(iso));
+        return `Synced ${t} PT`;
+      } catch {
+        return 'Synced';
+      }
+    };
+
+    const refresh = async () => {
+      try {
+        const res = await fetch(`${base}/weather/alerts`, {
+          headers: { accept: 'application/json' },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          alerts?: { event?: string; headline?: string }[];
+          lastUpdated?: string;
+        };
+        const list = data.alerts ?? [];
+        const count = list.length;
+        setTile('alerts', `${count} Active`, count > 0 ? 'alarm' : 'ok');
+
+        const text = list
+          .map((a) => `${a.event ?? ''} ${a.headline ?? ''}`.toLowerCase())
+          .join(' ');
+        const fire = text.includes('red flag')
+          ? { label: 'Red Flag', state: 'alarm' }
+          : text.includes('fire')
+            ? { label: 'Elevated', state: 'elevated' }
+            : { label: 'Normal', state: 'ok' };
+        setTile('fire', fire.label, fire.state);
+
+        const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
+        if (synced && data.lastUpdated) synced.textContent = fmtPT(data.lastUpdated);
+      } catch {
+        /* keep the SSR snapshot — never show an error in the hero region */
+      }
+    };
+
+    refresh();
+    setInterval(refresh, REFRESH_MS);
+  }
+</script>
+
+<style>
+  .ops {
+    padding-block: var(--section-y);
+    background: var(--surface-page);
+  }
+
+  .ops__grid {
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+
+  .ops__note {
+    margin-top: var(--space-4);
+    max-width: 70ch;
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  @media (max-width: 900px) {
+    .ops__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .ops__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

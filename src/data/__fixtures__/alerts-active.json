@@ -1,0 +1,14 @@
+{
+  "alerts": [
+    {
+      "event": "Wind Advisory",
+      "severity": "Moderate",
+      "headline": "Wind Advisory in effect until 9 PM PDT",
+      "description": "Southwest winds 20 to 30 mph with gusts up to 45 mph expected.",
+      "sender": "NWS Sacramento CA",
+      "start": "2026-06-25T16:00:00Z",
+      "end": "2026-06-26T04:00:00Z"
+    }
+  ],
+  "lastUpdated": "2026-06-25T16:05:00Z"
+}

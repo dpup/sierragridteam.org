@@ -1,0 +1,144 @@
+---
+/**
+ * MeshSidebar — the /mesh info panel: technical specs, deployment zones, and a
+ * security/privacy note. Pure content; the collapse behavior + layout live in
+ * the page (src/pages/mesh.astro).
+ */
+import Kicker from '../Kicker.astro';
+import Callout from '../Callout.astro';
+import { mesh } from '@config/content';
+import { operations } from '@config/coverage';
+---
+
+<div class="mesh-sidebar">
+  <header class="mesh-sidebar__head">
+    <Kicker>{mesh.kicker}</Kicker>
+    <h1 class="mesh-sidebar__title">{mesh.title}</h1>
+    <p class="mesh-sidebar__intro">{mesh.intro}</p>
+  </header>
+
+  <section class="mesh-sidebar__block" aria-labelledby="mesh-specs">
+    <h2 class="mesh-sidebar__h" id="mesh-specs">{mesh.specsHeading}</h2>
+    <dl class="specs">
+      {
+        mesh.specs.map((s) => (
+          <div class="specs__row">
+            <dt>{s.label}</dt>
+            <dd>{s.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="mesh-sidebar__block" aria-labelledby="mesh-zones">
+    <h2 class="mesh-sidebar__h" id="mesh-zones">{mesh.zonesHeading}</h2>
+    <ul class="zones">
+      {
+        operations.deploymentZones.map((z) => (
+          <li class="zones__item">
+            <span class="zones__name">{z.name}</span>
+            <span class:list={['zones__tag', z.live ? 'is-live' : 'is-soon']}>
+              {z.live ? 'Live' : 'Planned'}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <Callout accent="brass" heading={mesh.securityHeading}>
+    {mesh.security}
+  </Callout>
+</div>
+
+<style>
+  .mesh-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    padding: var(--space-7) var(--space-6);
+  }
+
+  .mesh-sidebar__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h3);
+  }
+
+  .mesh-sidebar__intro {
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .mesh-sidebar__h {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+    padding-bottom: var(--space-3);
+    border-bottom: var(--border-soft);
+    margin-bottom: var(--space-4);
+  }
+
+  .specs {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .specs__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+  }
+  .specs__row dt {
+    color: var(--ink-secondary);
+  }
+  .specs__row dd {
+    margin: 0;
+    color: var(--ink-strong);
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    text-align: right;
+  }
+
+  .zones {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .zones__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: var(--border-soft);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+  }
+  .zones__name {
+    color: var(--ink-body);
+  }
+  .zones__tag {
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+  .zones__tag.is-live {
+    color: var(--brand-green);
+  }
+  .zones__tag.is-soon {
+    color: var(--ink-muted);
+  }
+</style>

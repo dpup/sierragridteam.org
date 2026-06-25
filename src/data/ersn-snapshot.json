@@ -1,0 +1,179 @@
+{
+  "fetchedAt": "2026-06-25T21:51:15.256Z",
+  "live": true,
+  "roads": {
+    "roads": [
+      {
+        "id": "hwy4-angels-murphys",
+        "name": "Hwy 4",
+        "section": "Angels Camp to Murphys",
+        "status": "OPEN",
+        "statusExplanation": "",
+        "durationMinutes": 12,
+        "distanceKm": 13,
+        "congestionLevel": "CLEAR",
+        "delayMinutes": 0,
+        "chainControl": "NONE",
+        "alerts": [
+          {
+            "type": "CLOSURE",
+            "severity": "WARNING",
+            "classification": "NEARBY",
+            "title": " ",
+            "description": "There is a lane closure affecting both northbound and southbound traffic due to roadway excavation. The left shoulder and right turn lane are closed from South Bret Harte to Copello Drive. The closure is expected to end at 4:59 PM on June 25, 2026.",
+            "condensedSummary": "Lane closure in both directions due to roadway excavation, expected to end at 4:59 PM.",
+            "startTime": "2026-06-26T04:40:00Z",
+            "endTime": null,
+            "lastUpdated": "2026-06-25T21:38:00Z",
+            "location": {
+              "latitude": 38.071727,
+              "longitude": -120.541914
+            },
+            "locationDescription": "near South Bret Harte and Copello Drive",
+            "impact": "moderate",
+            "duration": "",
+            "timeReported": "2026-06-26T04:40:00Z",
+            "metadata": {
+              "closure_id": "C49CA",
+              "incident_type": "lane closure",
+              "log_number": "9",
+              "roadway_status": "excavation work"
+            },
+            "distanceToRouteMeters": 345.7844336897215
+          },
+          {
+            "type": "CLOSURE",
+            "severity": "WARNING",
+            "classification": "NEARBY",
+            "title": " ",
+            "description": "There is a lane closure in both directions due to roadway excavation. The left shoulder and right turn lane are closed from South Bret Harte to Copello Drive. This work is expected to be completed by 4:59 PM on June 25, 2026.",
+            "condensedSummary": "Lane closure in both directions due to roadway excavation, expected to end by 4:59 PM.",
+            "startTime": "2026-06-26T04:40:00Z",
+            "endTime": null,
+            "lastUpdated": "2026-06-25T21:38:00Z",
+            "location": {
+              "latitude": 38.08856,
+              "longitude": -120.572887
+            },
+            "locationDescription": "between South Bret Harte and Copello Drive",
+            "impact": "moderate",
+            "duration": "",
+            "timeReported": "2026-06-26T04:40:00Z",
+            "metadata": {
+              "closure_id": "C49CA",
+              "incident_type": "lane closure",
+              "log_number": "9",
+              "work_type": "roadway excavation"
+            },
+            "distanceToRouteMeters": 3540.754176717133
+          },
+          {
+            "type": "CLOSURE",
+            "severity": "WARNING",
+            "classification": "NEARBY",
+            "title": "C49CA Log 9 path",
+            "description": "One-way traffic control is in effect, expect delays.",
+            "condensedSummary": "One-way traffic control in effect, expect delays.",
+            "startTime": "2026-06-25T15:55:30Z",
+            "endTime": null,
+            "lastUpdated": null,
+            "location": {
+              "latitude": 38.071656463947,
+              "longitude": -120.54188040114
+            },
+            "locationDescription": "C49CA Log 9 path",
+            "impact": "light",
+            "duration": "",
+            "timeReported": "2026-06-25T15:55:30Z",
+            "metadata": {
+              "incident_type": "traffic control",
+              "roadway_status": "one-way traffic"
+            },
+            "distanceToRouteMeters": 342.98768404926255
+          }
+        ],
+        "chainControlInfo": null
+      },
+      {
+        "id": "hwy4-murphys-arnold",
+        "name": "Hwy 4",
+        "section": "Murphys to Arnold",
+        "status": "OPEN",
+        "statusExplanation": "",
+        "durationMinutes": 17,
+        "distanceKm": 20,
+        "congestionLevel": "CLEAR",
+        "delayMinutes": 0,
+        "chainControl": "NONE",
+        "alerts": [],
+        "chainControlInfo": null
+      },
+      {
+        "id": "hwy4-arnold-bearvalley",
+        "name": "Hwy 4",
+        "section": "Arnold to Bear Valley",
+        "status": "OPEN",
+        "statusExplanation": "",
+        "durationMinutes": 28,
+        "distanceKm": 38,
+        "congestionLevel": "CLEAR",
+        "delayMinutes": 1,
+        "chainControl": "NONE",
+        "alerts": [],
+        "chainControlInfo": null
+      }
+    ],
+    "lastUpdated": "2026-06-25T21:40:22.068061979Z"
+  },
+  "weather": {
+    "weatherData": [
+      {
+        "locationId": "murphys",
+        "locationName": "Murphys, CA",
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 31,
+        "feelsLikeCelsius": 29,
+        "humidityPercent": 28,
+        "windSpeedKmh": 15,
+        "windDirectionDegrees": 237,
+        "visibilityKm": 10,
+        "alerts": []
+      },
+      {
+        "locationId": "arnold",
+        "locationName": "Arnold, CA",
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 26,
+        "feelsLikeCelsius": 26,
+        "humidityPercent": 34,
+        "windSpeedKmh": 1,
+        "windDirectionDegrees": 159,
+        "visibilityKm": 10,
+        "alerts": []
+      },
+      {
+        "locationId": "bearvalley",
+        "locationName": "Bear Valley, CA",
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 22,
+        "feelsLikeCelsius": 21,
+        "humidityPercent": 39,
+        "windSpeedKmh": 1,
+        "windDirectionDegrees": 195,
+        "visibilityKm": 10,
+        "alerts": []
+      }
+    ],
+    "lastUpdated": "2026-06-25T21:47:03.223743463Z"
+  },
+  "alerts": {
+    "alerts": [],
+    "lastUpdated": "2026-06-25T21:51:15.219804816Z"
+  }
+}

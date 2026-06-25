@@ -1,10 +1,30 @@
 ---
-// Temporary smoke-test page — replaced by the real homepage in Phase 4.
 import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/home/Hero.astro';
+import OperationalStatus from '@components/home/OperationalStatus.astro';
 import Section from '@components/Section.astro';
 import SectionHeader from '@components/SectionHeader.astro';
-import Button from '@components/Button.astro';
+import DoctrineCard from '@components/DoctrineCard.astro';
+import ServiceBanner from '@components/ServiceBanner.astro';
+import { buildSnapshot, deriveOperationalStatus } from '@lib/ersn';
+import { operations } from '@config/coverage';
+import { home } from '@config/content';
 import { site } from '@config/site';
+
+// Build-time data fetch (server-side, no CORS limit) with snapshot fallback.
+const snapshot = await buildSnapshot();
+const status = deriveOperationalStatus(snapshot, {
+  relaySites: operations.relaySitesActive,
+  coverageCounties: operations.coverageCounties,
+});
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: site.legalName,
+  alternateName: site.name,
+  url: site.url,
+};
 ---
 
 <BaseLayout
@@ -13,16 +33,65 @@ import { site } from '@config/site';
   path="/"
   hideBrandInNav
   fullTitle={`${site.name} — ${site.legalName}`}
+  schema={websiteSchema}
 >
-  <Section surface="hero">
-    <SectionHeader kicker="Smoke test" title="Foundation is wired" headingId="smoke" />
-    <p style="margin-top: var(--space-4); max-width: 60ch;">
-      Tokens, layout, nav, footer, fonts, and SEO are connected. Replacing this with
-      the real hero next.
-    </p>
-    <p style="margin-top: var(--space-5);">
-      <Button variant="primary" href="/mesh" arrow>Open Live Map</Button>
-      <Button variant="secondary" href="/alerts">View Emergency Alerts</Button>
-    </p>
+  <Hero />
+
+  <OperationalStatus status={status} />
+
+  <Section surface="page" labelledby="mission-title">
+    <div class="mission">
+      <SectionHeader
+        kicker={home.mission.kicker}
+        title={home.mission.title}
+        headingId="mission-title"
+      />
+      <p class="mission__body">{home.mission.body}</p>
+    </div>
   </Section>
+
+  <Section surface="page" labelledby="doctrine-title">
+    <SectionHeader
+      kicker={home.doctrine.kicker}
+      title={home.doctrine.title}
+      headingId="doctrine-title"
+    />
+    <div class="doctrine-grid">
+      {
+        home.doctrine.cards.map((c) => (
+          <DoctrineCard number={c.number} kicker={c.kicker} title={c.title}>
+            {c.body}
+          </DoctrineCard>
+        ))
+      }
+    </div>
+  </Section>
+
+  <ServiceBanner />
 </BaseLayout>
+
+<style>
+  .mission {
+    max-width: 72ch;
+  }
+  .mission__body {
+    margin-top: var(--space-5);
+    font-size: var(--fs-mission);
+    line-height: 1.55;
+    color: var(--ink-body);
+  }
+
+  .doctrine-grid {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-7);
+  }
+
+  @media (max-width: 860px) {
+    .doctrine-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+  }
+</style>

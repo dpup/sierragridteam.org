@@ -1,0 +1,52 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import Button from '@components/Button.astro';
+import { nav } from '@config/site';
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The page you were looking for could not be found."
+  path="/404"
+  noindex
+>
+  <Section surface="page">
+    <div class="notfound">
+      <Kicker number="404" mono>Signal lost</Kicker>
+      <h1 class="notfound__title">This page is off the grid.</h1>
+      <p class="notfound__body">
+        The page you were looking for could not be found. It may have moved, or the link may be
+        out of date. Try one of these instead:
+      </p>
+      <div class="notfound__links">
+        <Button variant="primary" href="/" arrow>Back to home</Button>
+        {nav.map((item) => <Button variant="secondary" href={item.href}>{item.label}</Button>)}
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    max-width: 56ch;
+    padding-block: var(--space-8);
+  }
+  .notfound__title {
+    margin-top: var(--space-4);
+    font-size: var(--fs-h2);
+  }
+  .notfound__body {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .notfound__links {
+    margin-top: var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>

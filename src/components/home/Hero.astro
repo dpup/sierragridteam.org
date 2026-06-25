@@ -1,0 +1,228 @@
+---
+/**
+ * Hero — the homepage coverage-map band (design-system §6).
+ * Left: emblem, two-tone headline, subhead, two buttons. Right: CoverageMap.
+ * A thin legend strip is pinned to the bottom explaining the marker roles.
+ * Min-height ~680px, NOT forced to full viewport; anchored to the wide container.
+ */
+import Container from '../Container.astro';
+import Logo from '../Logo.astro';
+import Button from '../Button.astro';
+import CoverageMap from './CoverageMap.astro';
+import { home } from '@config/content';
+import { legend } from '@config/coverage';
+
+const { hero } = home;
+const roleClass: Record<string, string> = {
+  hq: 'legend__dot--hq',
+  town: 'legend__dot--town',
+  hub: 'legend__dot--hub',
+};
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__glow" aria-hidden="true"></div>
+
+  <Container wide class="hero__container">
+    <div class="hero__grid">
+      <div class="hero__message">
+        <Logo variant="mark" height={54} class="hero__emblem" />
+        <h1 id="hero-title" class="hero__headline">
+          <span class="hero__headline-muted">{hero.headlineMuted}</span>
+          <span class="hero__headline-strong">{hero.headlineStrong}</span>
+        </h1>
+        <p class="hero__subhead">{hero.subhead}</p>
+        <div class="hero__ctas">
+          <Button variant="primary" href={hero.primaryCta.href} arrow>
+            {hero.primaryCta.label}
+          </Button>
+          <Button variant="secondary" href={hero.secondaryCta.href}>
+            {hero.secondaryCta.label}
+          </Button>
+        </div>
+      </div>
+
+      <div class="hero__map">
+        <CoverageMap />
+      </div>
+    </div>
+  </Container>
+
+  <div class="hero__legend">
+    <Container wide>
+      <div class="legend">
+        <ul class="legend__roles">
+          {
+            legend.map((l) => (
+              <li class="legend__item">
+                <span class:list={['legend__dot', roleClass[l.role]]} aria-hidden="true" />
+                {l.label}
+              </li>
+            ))
+          }
+        </ul>
+        <span class="legend__region">Calaveras &amp; Tuolumne foothills</span>
+      </div>
+    </Container>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--surface-hero);
+    border-bottom: var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: var(--hero-min-h);
+    overflow: hidden;
+  }
+
+  /* The single permitted decorative gradient — a barely-visible green glow
+     toward the upper-right where the map sits. */
+  .hero__glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      120% 80% at 78% 22%,
+      color-mix(in srgb, var(--brand-green) 12%, transparent),
+      transparent 60%
+    );
+    pointer-events: none;
+  }
+
+  .hero__container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding-block: var(--space-8);
+  }
+
+  .hero__grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-8);
+    align-items: center;
+  }
+
+  .hero__message {
+    max-width: 560px;
+  }
+
+  .hero__emblem {
+    margin-bottom: var(--space-6);
+  }
+
+  .hero__headline {
+    font-size: var(--fs-hero);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+  }
+
+  .hero__headline-muted,
+  .hero__headline-strong {
+    display: block;
+  }
+  .hero__headline-muted {
+    color: var(--ink-muted);
+    max-width: 14ch;
+  }
+  .hero__headline-strong {
+    color: var(--ink-strong);
+  }
+
+  .hero__subhead {
+    margin-top: var(--space-5);
+    max-width: 46ch;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .hero__ctas {
+    margin-top: var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .hero__map {
+    position: relative;
+    align-self: stretch;
+    min-height: 380px;
+    display: flex;
+  }
+
+  /* Legend strip pinned to the bottom of the band */
+  .hero__legend {
+    position: relative;
+    border-top: var(--border);
+    background: color-mix(in srgb, var(--surface-hero) 60%, var(--surface-page));
+    padding-block: var(--space-4);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
+  .legend__roles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+  }
+
+  .legend__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .legend__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .legend__dot--hq {
+    background: var(--brand-green);
+  }
+  .legend__dot--town {
+    background: var(--brand-brass);
+  }
+  .legend__dot--hub {
+    background: var(--signal-orange);
+  }
+
+  .legend__region {
+    color: var(--brand-brass-text);
+  }
+
+  @media (max-width: 900px) {
+    .hero__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    .hero__map {
+      min-height: 300px;
+      order: 2;
+    }
+    .hero {
+      min-height: 0;
+    }
+  }
+</style>

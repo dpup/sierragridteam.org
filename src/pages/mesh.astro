@@ -1,0 +1,141 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import MeshMap from '@components/mesh/MeshMap.astro';
+import MeshSidebar from '@components/mesh/MeshSidebar.astro';
+
+const description =
+  'Live coverage map of the S.I.E.R.R.A LoRa / Meshtastic mesh network across the ' +
+  'Highway 4 and Highway 49 corridors of the Calaveras & Tuolumne foothills.';
+---
+
+<BaseLayout title="Mesh Network" description={description} path="/mesh" mainClass="mesh-main">
+  <div class="mesh-layout" data-panel="open">
+    <div class="mesh-layout__map">
+      <MeshMap />
+    </div>
+
+    <button
+      type="button"
+      class="mesh-layout__toggle"
+      data-mesh-toggle
+      aria-expanded="true"
+      aria-controls="mesh-panel"
+    >
+      <span class="mesh-layout__toggle-icon" aria-hidden="true"></span>
+      <span data-mesh-toggle-label>Hide panel</span>
+    </button>
+
+    <aside class="mesh-layout__panel" id="mesh-panel" aria-label="Mesh network information">
+      <MeshSidebar />
+    </aside>
+  </div>
+</BaseLayout>
+
+<script>
+  const layout = document.querySelector<HTMLElement>('.mesh-layout');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-mesh-toggle]');
+  const label = document.querySelector<HTMLElement>('[data-mesh-toggle-label]');
+  toggle?.addEventListener('click', () => {
+    const open = layout?.getAttribute('data-panel') !== 'closed';
+    layout?.setAttribute('data-panel', open ? 'closed' : 'open');
+    toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+    if (label) label.textContent = open ? 'Show panel' : 'Hide panel';
+  });
+</script>
+
+<style>
+  /* Full-bleed page: the map fills the viewport below the sticky nav. */
+  :global(main.mesh-main) {
+    display: block;
+  }
+
+  .mesh-layout {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    height: calc(100dvh - var(--topbar-h));
+    min-height: 520px;
+    border-bottom: var(--border);
+    transition: grid-template-columns var(--transition);
+  }
+  .mesh-layout[data-panel='closed'] {
+    grid-template-columns: 1fr 0;
+  }
+
+  .mesh-layout__map {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mesh-layout__panel {
+    border-left: var(--border);
+    background: var(--surface-card);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .mesh-layout[data-panel='closed'] .mesh-layout__panel {
+    border-left: 0;
+  }
+
+  .mesh-layout__toggle {
+    position: absolute;
+    top: var(--space-4);
+    right: calc(380px + var(--space-4));
+    z-index: var(--z-overlay);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--surface-page);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-overlay);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+    cursor: pointer;
+    transition:
+      right var(--transition),
+      color var(--transition);
+  }
+  .mesh-layout__toggle:hover {
+    color: var(--brand-green);
+  }
+  .mesh-layout[data-panel='closed'] .mesh-layout__toggle {
+    right: var(--space-4);
+  }
+
+  .mesh-layout__toggle-icon {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentcolor;
+    border-bottom: 2px solid currentcolor;
+    transform: rotate(-45deg);
+    transition: transform var(--transition);
+  }
+  .mesh-layout[data-panel='closed'] .mesh-layout__toggle-icon {
+    transform: rotate(135deg);
+  }
+
+  @media (max-width: 860px) {
+    .mesh-layout,
+    .mesh-layout[data-panel='closed'] {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+    .mesh-layout__map {
+      height: 60vh;
+      min-height: 360px;
+    }
+    .mesh-layout__panel {
+      border-left: 0;
+      border-top: var(--border);
+    }
+    .mesh-layout__toggle {
+      display: none;
+    }
+  }
+</style>

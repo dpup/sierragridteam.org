@@ -1,0 +1,168 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import Callout from '@components/Callout.astro';
+import ContactForm from '@components/contact/ContactForm.astro';
+import { site } from '@config/site';
+import { contact } from '@config/content';
+
+const description =
+  'Volunteer with S.I.E.R.R.A — ham operators, LoRa techs, and emergency-management roles. ' +
+  'Reach us by mail or email.';
+
+const contactSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: `Contact — ${site.name}`,
+  url: `${site.url}/contact`,
+};
+---
+
+<BaseLayout title="Contact & Volunteer" description={description} path="/contact" schema={contactSchema}>
+  <Section surface="page" labelledby="contact-title">
+    <header class="contact-head">
+      <Kicker>{contact.kicker}</Kicker>
+      <h1 id="contact-title" class="contact-head__title">{contact.title}</h1>
+      <p class="contact-head__intro">{contact.intro}</p>
+    </header>
+
+    <Callout accent="orange" heading="Not for emergencies" role="note" class="contact-911">
+      This form is not monitored around the clock and is not an emergency service.
+      <strong>In a life-threatening emergency, call 911.</strong>
+    </Callout>
+
+    <div class="contact-grid">
+      <div class="contact-aside">
+        <section aria-labelledby="roles-title">
+          <h2 id="roles-title" class="contact-h2">{contact.rolesHeading}</h2>
+          <ul class="roles">
+            {
+              contact.roles.map((r) => (
+                <li class="role">
+                  <span class="role__name">{r.name}</span>
+                  <span class="role__desc">{r.desc}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section class="address" aria-labelledby="address-title">
+          <h2 id="address-title" class="contact-h2">By mail</h2>
+          <address class="address__body">
+            {site.name}<br />
+            {site.address.poBox}<br />
+            {site.address.city}, {site.address.state} {site.address.zip}
+          </address>
+          <p class="address__note">
+            We are an all-volunteer organization with no public office — mail reaches us at the
+            P.O. Box above.
+          </p>
+        </section>
+      </div>
+
+      <div class="contact-form-wrap">
+        <h2 class="contact-h2" id="form-title">{contact.formHeading}</h2>
+        <ContactForm />
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .contact-head {
+    max-width: 64ch;
+    margin-bottom: var(--space-6);
+  }
+  .contact-head__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .contact-head__intro {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .contact-911 {
+    margin-bottom: var(--space-8);
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  .contact-aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .contact-h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-5);
+  }
+
+  .roles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .role {
+    padding-bottom: var(--space-4);
+    border-bottom: var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  .role:last-child {
+    border-bottom: 0;
+  }
+  .role__name {
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    color: var(--brand-green);
+  }
+  .role__desc {
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .address__body {
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    line-height: 1.8;
+    color: var(--ink-strong);
+  }
+  .address__note {
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+    max-width: 40ch;
+  }
+
+  .contact-form-wrap {
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-7);
+  }
+
+  @media (max-width: 860px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+  }
+</style>

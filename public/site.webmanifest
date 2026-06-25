@@ -1,0 +1,14 @@
+{
+  "name": "S.I.E.R.R.A — Signal Integrity & Emergency Radio Response Alliance",
+  "short_name": "S.I.E.R.R.A",
+  "description": "Off-grid emergency communications for the Calaveras & Tuolumne foothills.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3efe4",
+  "theme_color": "#1d5b3f",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/favicon-32.png", "type": "image/png", "sizes": "32x32" },
+    { "src": "/apple-touch-icon.png", "type": "image/png", "sizes": "180x180" }
+  ]
+}
