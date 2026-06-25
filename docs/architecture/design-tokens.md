@@ -155,5 +155,3 @@ mountain's height. **Don't recolor, stretch, or add effects.** Minimum mark heig
 - Mailing: **P.O. Box 2071, Murphys, CA 95427.** No street address (volunteer org, no office).
 - **Established 2026.** Service area: Calaveras & Tuolumne Counties — Murphys, Angels Camp,
   Sonora, Arnold, Twain Harte, Columbia, Dorrington.
-</content>
-</invoke>

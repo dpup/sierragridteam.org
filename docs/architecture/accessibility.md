@@ -49,4 +49,3 @@ residents — accessibility is a requirement, not a nicety.
 - `astro check` (types) + `eslint-plugin-jsx-a11y`-equivalent review of components.
 - Playwright + `@axe-core/playwright` runs axe on every page in CI (Phase 6); zero critical
   violations is a merge gate.
-</content>

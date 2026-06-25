@@ -44,4 +44,3 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
 - Astro ships zero JS by default; only the small refresh/clock islands hydrate.
 - Images: explicit width/height to avoid CLS; logo as SVG where possible.
 - Target Lighthouse ≥95 across the board (verified in Phase 8).
-</content>

@@ -82,4 +82,3 @@ is US public-safety/residents.
 
 Each FR is filed as an issue on `dpup/info.ersn.net` (see Phase 9 / `FEATURE_REQUESTS.md`).
 Placeholders must be visually honest: a muted note, never an invented number.
-</content>

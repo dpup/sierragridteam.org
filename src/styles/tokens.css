@@ -22,14 +22,15 @@
   --ink-strong: #16271e; /* headings (near-black) */
   --ink-body: #3c453c; /* body text */
   --ink-secondary: #5a5e4f; /* secondary text */
-  --ink-muted: #9a906f; /* muted / hero headline line 1 */
+  --ink-muted: #6f6750; /* muted / hero headline line 1 — darkened from design's #9a906f to meet WCAG AA (4.5:1) at small sizes; still the lightest ink tier */
 
   /* ---- Brand & signal ---- */
   --brand-green: #1d5b3f; /* primary green / links / primary buttons */
   --brand-green-hover: #16472f; /* green hover (one step darker) */
   --brand-brass: #b08a3e; /* brass accent (kickers, dividers, outlines) */
-  --brand-brass-text: #8a6a26; /* brass text */
-  --signal-orange: #c2410c; /* RISK / ALERT ONLY — never decorative */
+  --brand-brass-text: #785d20; /* brass text (kickers) — darkened from design's #8a6a26 for WCAG AA margin at small sizes */
+  --signal-orange: #c2410c; /* RISK / ALERT ONLY — never decorative (dots, fills, large text) */
+  --signal-orange-text: #b03808; /* small orange TEXT — AA-compliant (≥4.5:1) variant of the risk orange */
 
   /* ---- Lines / borders (always warm tan, never gray) ---- */
   --line: #d8d0bd; /* default 1px border */

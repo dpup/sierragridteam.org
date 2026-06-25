@@ -93,4 +93,3 @@ All site copy, town lists, volunteer roles, relay-site config, external URLs, an
 email live in **typed config/content files** (`src/config/`, `src/content/`), **not** inline in
 page markup — so non-technical edits change data, not layout. See `docs/architecture/data-feed.md`
 and each directory's `CLAUDE.md`.
-</content>

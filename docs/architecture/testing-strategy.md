@@ -57,4 +57,3 @@ overflow, contrast, alignment, and design-system conformance (Phase 8). Optional
 ## Make targets (developer + CI entrypoints)
 `dev`, `build`, `preview`, `check`, `lint`, `fmt`, `test`, `screenshots`, `test-visual`,
 `snapshot` (refresh data snapshot), `gen-assets` (favicons/og), `ci` (everything).
-</content>

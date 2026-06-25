@@ -57,4 +57,3 @@
 5. **Respect `prefers-reduced-motion`** for every animation.
 6. **Accessible:** semantic elements, `aria-label`s on icon-only controls, visible focus,
    ≥4.5:1 text contrast. See `docs/architecture/accessibility.md`.
-</content>
