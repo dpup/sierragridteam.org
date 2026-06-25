@@ -1,0 +1,73 @@
+---
+/**
+ * BaseLayout — the HTML shell every page uses. Wires fonts, global styles,
+ * <head> metadata (via Seo), the skip link, the TopBar nav, the page <main>,
+ * and the SiteFooter. Pages pass SEO props through.
+ *
+ * Self-hosted fonts (no third-party requests): Newsreader (display/body),
+ * IBM Plex Sans (UI), IBM Plex Mono (data). standard.css carries the full
+ * variable weight range.
+ */
+import '@fontsource-variable/newsreader/standard.css';
+import '@fontsource-variable/newsreader/standard-italic.css';
+import '@fontsource-variable/ibm-plex-sans/standard.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '../styles/global.css';
+
+import Seo from '@components/Seo.astro';
+import TopBar from '@components/TopBar.astro';
+import SiteFooter from '@components/SiteFooter.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  ogImage?: string;
+  fullTitle?: string;
+  noindex?: boolean;
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+  /** Hide the nav brand lockup (homepage only). */
+  hideBrandInNav?: boolean;
+  /** Extra class on <main>. */
+  mainClass?: string;
+}
+
+const {
+  title,
+  description,
+  path,
+  ogImage,
+  fullTitle,
+  noindex = false,
+  schema,
+  hideBrandInNav = false,
+  mainClass,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <Seo
+      title={title}
+      description={description}
+      path={path}
+      ogImage={ogImage}
+      fullTitle={fullTitle}
+      noindex={noindex}
+      schema={schema}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <TopBar hideBrand={hideBrandInNav} path={path} />
+    <main id="main" class={mainClass}>
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

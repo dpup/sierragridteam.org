@@ -1,0 +1,74 @@
+---
+/**
+ * Callout — a banner-surface note with a left accent rule. For disclaimers,
+ * usage notes, and the 911 notice. `accent="orange"` is reserved for genuine
+ * risk/emergency content only (never decorative).
+ */
+interface Props {
+  accent?: 'green' | 'brass' | 'orange';
+  /** Optional heading shown above the body (uppercase brass label style). */
+  heading?: string;
+  /** Use role="note"; set 'alert' only for live emergency content. */
+  role?: 'note' | 'alert' | 'none';
+  as?: 'div' | 'aside' | 'section';
+  class?: string;
+}
+
+const {
+  accent = 'green',
+  heading,
+  role = 'note',
+  as: Tag = 'aside',
+  class: className,
+} = Astro.props;
+---
+
+<Tag
+  class:list={['callout', `callout--${accent}`, className]}
+  role={role === 'none' ? undefined : role}
+>
+  {heading && <p class="callout__heading">{heading}</p>}
+  <div class="callout__body"><slot /></div>
+</Tag>
+
+<style>
+  .callout {
+    background: var(--surface-banner);
+    border-left: 3px solid var(--accent, var(--brand-green));
+    padding: var(--space-5) var(--space-6);
+  }
+
+  .callout--green {
+    --accent: var(--brand-green);
+  }
+  .callout--brass {
+    --accent: var(--brand-brass);
+  }
+  .callout--orange {
+    --accent: var(--signal-orange);
+  }
+
+  .callout__heading {
+    margin-bottom: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--accent-text, var(--brand-brass-text));
+  }
+
+  .callout--orange .callout__heading {
+    --accent-text: var(--signal-orange);
+  }
+
+  .callout__body {
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .callout__body :global(p + p) {
+    margin-top: var(--space-3);
+  }
+</style>

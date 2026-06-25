@@ -1,0 +1,41 @@
+{
+  "extends": "stylelint-config-standard",
+  "overrides": [
+    {
+      "files": ["**/*.astro"],
+      "customSyntax": "postcss-html"
+    },
+    {
+      "files": ["src/styles/tokens.css"],
+      "rules": {
+        "color-no-hex": null,
+        "color-named": null
+      }
+    }
+  ],
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "message": "Design guardrail: use a color token (var(--brand-green), var(--ink-body), …) instead of a raw hex value. Tokens are defined in src/styles/tokens.css. See docs/architecture/design-tokens.md."
+      }
+    ],
+    "color-named": [
+      "never",
+      {
+        "message": "Design guardrail: use a color token instead of a named color. See src/styles/tokens.css."
+      }
+    ],
+    "custom-property-pattern": null,
+    "selector-class-pattern": null,
+    "no-descending-specificity": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "media-feature-range-notation": null,
+    "alpha-value-notation": null,
+    "comment-empty-line-before": null,
+    "at-rule-no-unknown": [
+      true,
+      { "ignoreAtRules": ["mixin", "include", "extend"] }
+    ]
+  }
+}

@@ -1,0 +1,99 @@
+---
+/**
+ * ServiceBanner — full-width band naming the service area (design-system §5).
+ * Top + bottom tan rules, centered uppercase town list with green (HQ) and
+ * brass (separator) accents. Town list is sourced from src/config/coverage.ts.
+ */
+import { operations } from '@config/coverage';
+import { site } from '@config/site';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+
+// Build the town list from owned config so edits stay in data, not markup.
+const towns = operations.deploymentZones.map((z) => ({
+  name: z.name.replace(/\s*\(HQ\)\s*/i, ''),
+  hq: /\(HQ\)/i.test(z.name),
+}));
+const counties = site.counties.join(' & ').replace(/ County/g, '') + ' Counties';
+---
+
+<aside class:list={['service-banner', className]} aria-label="Service area">
+  <p class="service-banner__kicker">Service Area</p>
+  <p class="service-banner__counties">{counties}</p>
+  <ul class="service-banner__towns">
+    {
+      towns.map((t, i) => (
+        <li class:list={['service-banner__town', { 'is-hq': t.hq }]}>
+          {i > 0 && (
+            <span class="service-banner__sep" aria-hidden="true">
+              &middot;
+            </span>
+          )}
+          <span>{t.name}</span>
+        </li>
+      ))
+    }
+  </ul>
+</aside>
+
+<style>
+  .service-banner {
+    background: var(--surface-banner);
+    border-top: var(--border);
+    border-bottom: var(--border);
+    padding-block: var(--space-7);
+    text-align: center;
+  }
+
+  .service-banner__kicker {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-kicker);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+    margin-bottom: var(--space-3);
+  }
+
+  .service-banner__counties {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+    margin-bottom: var(--space-5);
+  }
+
+  .service-banner__towns {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
+  .service-banner__town {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .service-banner__town.is-hq {
+    color: var(--brand-green);
+  }
+
+  .service-banner__sep {
+    color: var(--brand-brass);
+  }
+</style>

@@ -1,0 +1,146 @@
+---
+/**
+ * SiteFooter — the global footer. Carries the legal requirement to show the
+ * full organization name at least once per page, the P.O. Box, quick links,
+ * and the standing 911 disclaimer.
+ */
+import Logo from './Logo.astro';
+import Container from './Container.astro';
+import { site, nav, externalLinks } from '@config/site';
+
+const year = site.foundingYear;
+---
+
+<footer class="footer">
+  <Container wide>
+    <div class="footer__top">
+      <div class="footer__brand">
+        <Logo variant="full" height={72} />
+        <p class="footer__legal">{site.legalName}</p>
+        <address class="footer__address">
+          {site.address.line}
+        </address>
+      </div>
+
+      <nav class="footer__nav" aria-label="Footer">
+        <p class="footer__navhead">Site</p>
+        <ul>
+          <li><a href="/">Home</a></li>
+          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+
+      <nav class="footer__nav" aria-label="Resources">
+        <p class="footer__navhead">Resources</p>
+        <ul>
+          <li><a href={externalLinks.nwsSacramento} rel="noopener external">NWS Sacramento</a></li>
+          <li><a href={externalLinks.calFire} rel="noopener external">CAL FIRE</a></li>
+          <li><a href={externalLinks.usgsEarthquakes} rel="noopener external">USGS Earthquakes</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <p class="footer__disclaimer" role="note">
+      S.I.E.R.R.A is a volunteer organization, not an emergency dispatch service.
+      <strong>In a life-threatening emergency, call 911.</strong>
+    </p>
+
+    <div class="footer__bottom">
+      <p>&copy; {year} {site.name}. Established {year}.</p>
+      <p>{site.legalName}</p>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  .footer {
+    background: var(--surface-banner);
+    border-top: var(--border);
+    padding-block: var(--space-9) var(--space-7);
+    margin-top: var(--space-10);
+  }
+
+  .footer__top {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: var(--space-8);
+  }
+
+  .footer__brand :global(.logo--full) {
+    margin-bottom: var(--space-5);
+  }
+
+  .footer__legal {
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    color: var(--ink-strong);
+    max-width: 34ch;
+  }
+
+  .footer__address {
+    margin-top: var(--space-3);
+    font-style: normal;
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  .footer__navhead {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+    margin-bottom: var(--space-4);
+  }
+
+  .footer__nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .footer__nav a {
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-body);
+  }
+  .footer__nav a:hover {
+    color: var(--brand-green);
+  }
+
+  .footer__disclaimer {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: var(--border-soft);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+  .footer__disclaimer strong {
+    color: var(--ink-strong);
+  }
+
+  .footer__bottom {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+  }
+
+  @media (max-width: 720px) {
+    .footer__top {
+      grid-template-columns: 1fr;
+      gap: var(--space-7);
+    }
+  }
+</style>

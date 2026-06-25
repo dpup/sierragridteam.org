@@ -1,0 +1,68 @@
+---
+/**
+ * SectionHeader — a Kicker eyebrow + serif title, with an optional right-aligned
+ * `aside` slot (e.g. the "Synced [time]" indicator on the Operational Status
+ * section). Sets an id on the heading so the parent <section> can be labelled.
+ */
+import Kicker from './Kicker.astro';
+
+interface Props {
+  kicker?: string;
+  number?: string;
+  monoKicker?: boolean;
+  title: string;
+  /** Heading level — keep document outline correct (usually h2). */
+  level?: 'h2' | 'h3';
+  /** id for aria-labelledby on the surrounding landmark. */
+  headingId?: string;
+  class?: string;
+}
+
+const {
+  kicker,
+  number,
+  monoKicker = false,
+  title,
+  level: Heading = 'h2',
+  headingId,
+  class: className,
+} = Astro.props;
+
+const hasAside = Astro.slots.has('aside');
+---
+
+<div class:list={['section-header', { 'section-header--split': hasAside }, className]}>
+  <div class="section-header__lead">
+    {kicker && <Kicker number={number} mono={monoKicker}>{kicker}</Kicker>}
+    <Heading id={headingId} class="section-header__title">{title}</Heading>
+  </div>
+  {
+    hasAside && (
+      <div class="section-header__aside">
+        <slot name="aside" />
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .section-header__lead > :global(.kicker) {
+    margin-bottom: var(--space-3);
+  }
+
+  .section-header--split {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .section-header__title {
+    max-width: 24ch;
+  }
+
+  .section-header__aside {
+    flex-shrink: 0;
+  }
+</style>

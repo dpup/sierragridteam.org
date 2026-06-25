@@ -1,0 +1,31 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+tests/screenshots/**/*-actual.png
+tests/screenshots/**/*-diff.png
+
+# generated (kept out of source; produced by `make gen-assets` / build)
+# NOTE: committed favicons/og live in public/ and are NOT ignored.
+
+# env & local
+.env
+.env.*
+!.env.example
+*.local
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json

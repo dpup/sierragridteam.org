@@ -1,0 +1,68 @@
+---
+/**
+ * Section — a major page section with the standard vertical rhythm (64–72px)
+ * and an optional surface background. Composes a Container inside unless
+ * `bleed` is set (for full-width bands like the service banner).
+ */
+import Container from './Container.astro';
+
+interface Props {
+  surface?: 'page' | 'hero' | 'card' | 'banner' | 'none';
+  /** Full-bleed: skip the inner Container (caller manages width). */
+  bleed?: boolean;
+  wide?: boolean;
+  as?: 'section' | 'div' | 'header' | 'footer';
+  id?: string;
+  class?: string;
+  /** aria-labelledby target id, for landmark labelling. */
+  labelledby?: string;
+}
+
+const {
+  surface = 'none',
+  bleed = false,
+  wide = false,
+  as: Tag = 'section',
+  id,
+  class: className,
+  labelledby,
+} = Astro.props;
+---
+
+<Tag
+  class:list={['section', `section--${surface}`, className]}
+  id={id}
+  aria-labelledby={labelledby}
+>
+  {
+    bleed ? (
+      <slot />
+    ) : (
+      <Container wide={wide}>
+        <slot />
+      </Container>
+    )
+  }
+</Tag>
+
+<style>
+  .section {
+    padding-block: var(--section-y);
+  }
+
+  .section--page {
+    background: var(--surface-page);
+  }
+  .section--hero {
+    background: var(--surface-hero);
+  }
+  .section--card {
+    background: var(--surface-card);
+  }
+  .section--banner {
+    background: var(--surface-banner);
+  }
+  .section--none {
+    background: transparent;
+  }
+</style>

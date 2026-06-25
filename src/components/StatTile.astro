@@ -1,0 +1,120 @@
+---
+/**
+ * StatTile — one operational-status metric (design-system §7).
+ * Anatomy: status dot + uppercase label (top), large serif value (middle),
+ * uppercase sublabel (bottom). Bordered, lighter fill, square, no shadow.
+ *
+ * `key` exposes the tile to the OperationalStatus client island so live tiles
+ * (Active Alerts, Fire Weather) can update value + state after a refresh.
+ */
+interface Props {
+  label: string;
+  value: string;
+  sublabel: string;
+  state?: 'ok' | 'ok-static' | 'elevated' | 'alarm' | 'muted';
+  /** data-stat-key for client-side live updates (optional). */
+  key?: string;
+  /** Footnote marker (e.g. "*") appended to the value for placeholder data. */
+  footnote?: string;
+  class?: string;
+}
+
+const { label, value, sublabel, state = 'ok', key, footnote, class: className } = Astro.props;
+---
+
+<div
+  class:list={['stat', className]}
+  data-state={state}
+  data-stat-key={key}
+>
+  <div class="stat__top">
+    <span class="stat__dot" aria-hidden="true" data-stat-dot></span>
+    <span class="stat__label">{label}</span>
+  </div>
+  <div class="stat__value" data-stat-value>
+    {value}{footnote && <span class="stat__footnote">{footnote}</span>}
+  </div>
+  <div class="stat__sub">{sublabel}</div>
+</div>
+
+<style>
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5) var(--space-6);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+  }
+
+  .stat__top {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .stat__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--state-ok);
+  }
+
+  .stat__label {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
+  .stat__value {
+    font-family: var(--font-display);
+    font-size: var(--fs-stat);
+    font-weight: var(--fw-medium);
+    line-height: 1.1;
+    color: var(--ink-strong);
+  }
+
+  .stat__footnote {
+    color: var(--ink-muted);
+    font-size: 0.6em;
+    vertical-align: super;
+    margin-left: 2px;
+  }
+
+  .stat__sub {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-medium);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  /* State → dot color. Value escalates to orange only for a real alarm. */
+  .stat[data-state='ok'] .stat__dot {
+    background: var(--state-ok);
+  }
+  .stat[data-state='ok-static'] .stat__dot {
+    background: var(--state-ok-static);
+  }
+  .stat[data-state='elevated'] .stat__dot {
+    background: var(--state-elevated);
+  }
+  .stat[data-state='muted'] .stat__dot {
+    background: var(--state-muted);
+  }
+  .stat[data-state='alarm'] {
+    border-color: var(--signal-orange);
+  }
+  .stat[data-state='alarm'] .stat__dot {
+    background: var(--state-alarm);
+  }
+  .stat[data-state='alarm'] .stat__value {
+    color: var(--signal-orange);
+  }
+</style>

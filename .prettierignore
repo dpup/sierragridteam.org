@@ -1,0 +1,9 @@
+dist
+.astro
+node_modules
+bun.lockb
+bun.lock
+src/data/ersn-snapshot.json
+tests/screenshots
+docs/design/design-system.html
+CHANGELOG.md

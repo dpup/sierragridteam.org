@@ -1,0 +1,7 @@
+/**
+ * Global stylesheet entrypoint. Imported once by BaseLayout.astro.
+ * Order matters: tokens first (define the variables), then base (use them).
+ * Fonts are imported in BaseLayout's frontmatter via @fontsource packages.
+ */
+@import './tokens.css';
+@import './base.css';

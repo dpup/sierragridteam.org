@@ -1,0 +1,99 @@
+---
+/**
+ * Logo — the three brand lockups (design-system §4).
+ *  - 'mark'    : mountain + signal arcs only (hero emblem).
+ *  - 'compact' : mark + "S.I.E.R.R.A" serif wordmark (nav brand on non-home pages).
+ *  - 'full'    : mark + wordmark + tagline image (footer / external).
+ *
+ * The art is the real brand asset and must NOT be recolored, stretched, or
+ * effected (design rule). Mark images are generated from the master PNG by
+ * `make gen-assets` (scripts/gen-assets.ts). Minimum mark height 28px.
+ */
+import { site } from '@config/site';
+
+interface Props {
+  variant?: 'mark' | 'compact' | 'full';
+  /** Mark height in px (compact wordmark scales with it). Min 28. */
+  height?: number;
+  class?: string;
+}
+
+const { variant = 'compact', height, class: className } = Astro.props;
+const markH = Math.max(28, height ?? (variant === 'mark' ? 64 : 30));
+const fullH = height ?? 90;
+const alt = `${site.name} — ${site.legalName}`;
+---
+
+{
+  variant === 'full' && (
+    <img
+      class:list={['logo', 'logo--full', className]}
+      src="/brand/sierra-logo-full.png"
+      alt={alt}
+      height={fullH}
+      width={Math.round((fullH * 294) / 248)}
+      loading="lazy"
+      decoding="async"
+    />
+  )
+}
+
+{
+  variant === 'mark' && (
+    <img
+      class:list={['logo', 'logo--mark', className]}
+      src="/brand/sierra-mark.png"
+      alt={alt}
+      height={markH}
+      width={Math.round((markH * 294) / 150)}
+      decoding="async"
+    />
+  )
+}
+
+{
+  variant === 'compact' && (
+    <span class:list={['logo', 'logo--compact', className]}>
+      <img
+        class="logo__mark"
+        src="/brand/sierra-mark.png"
+        alt=""
+        height={markH}
+        width={Math.round((markH * 294) / 150)}
+        decoding="async"
+        aria-hidden="true"
+      />
+      <span class="logo__wordmark">{site.name}</span>
+      <span class="sr-only">{site.legalName}</span>
+    </span>
+  )
+}
+
+<style>
+  .logo {
+    display: inline-flex;
+  }
+
+  .logo--full {
+    width: auto;
+  }
+
+  .logo--compact {
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .logo__mark {
+    width: auto;
+  }
+
+  .logo__wordmark {
+    font-family: var(--font-display);
+    font-weight: var(--fw-semibold);
+    font-size: 1.0625rem; /* 17px, per design compact lockup */
+    letter-spacing: 0.06em;
+    color: var(--ink-strong);
+    line-height: 1;
+    white-space: nowrap;
+  }
+</style>

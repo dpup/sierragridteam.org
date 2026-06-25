@@ -1,0 +1,85 @@
+---
+/**
+ * StatusPill — a status dot + label. Used in the nav ("Operational", blinking
+ * green dot) and as the stats "Synced [time]" indicator. The dot blinks slowly
+ * (~2s); the blink is gated by prefers-reduced-motion via the duration token.
+ */
+interface Props {
+  /** Dot color/state. */
+  tone?: 'ok' | 'elevated' | 'alarm' | 'muted';
+  /** Label text (or use the default slot). */
+  label?: string;
+  /** Whether the dot blinks. */
+  blink?: boolean;
+  class?: string;
+}
+
+const { tone = 'ok', label, blink = true, class: className } = Astro.props;
+---
+
+<span
+  class:list={['pill', `pill--${tone}`, { 'pill--blink': blink }, className]}
+  role="status"
+>
+  <span class="pill__dot" aria-hidden="true"></span>
+  <span class="pill__label">{label ?? <slot />}</span>
+</span>
+
+<style>
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pill__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%; /* the one intentional circle — a status indicator, not a card */
+    background: var(--dot, var(--state-ok));
+    flex-shrink: 0;
+  }
+
+  .pill--ok {
+    --dot: var(--state-ok);
+    color: var(--brand-green);
+  }
+  .pill--elevated {
+    --dot: var(--state-elevated);
+    color: var(--brand-brass-text);
+  }
+  .pill--alarm {
+    --dot: var(--state-alarm);
+    color: var(--signal-orange);
+  }
+  .pill--muted {
+    --dot: var(--state-muted);
+    color: var(--ink-secondary);
+  }
+
+  .pill--blink .pill__dot {
+    animation: pill-blink var(--blink-duration) ease-in-out infinite;
+  }
+
+  @keyframes pill-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pill--blink .pill__dot {
+      animation: none;
+    }
+  }
+</style>

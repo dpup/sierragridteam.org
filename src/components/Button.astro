@@ -1,0 +1,114 @@
+---
+/**
+ * Button — primary (green fill) or secondary (brass outline) action.
+ * Renders an <a> when `href` is given, otherwise a <button>. Square corners,
+ * IBM Plex Sans uppercase with wide tracking, optional trailing arrow.
+ * Hover moves exactly one step (no transforms). (design-system §5)
+ */
+interface Props {
+  variant?: 'primary' | 'secondary';
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  /** Show a trailing arrow glyph. */
+  arrow?: boolean;
+  /** Stretch to fill the container width. */
+  block?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  variant = 'primary',
+  href,
+  type = 'button',
+  arrow = false,
+  block = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+const tagProps = href ? { href } : { type };
+---
+
+<Tag
+  class:list={['btn', `btn--${variant}`, { 'btn--block': block }, className]}
+  {...tagProps}
+  {...rest}
+>
+  <span class="btn__label"><slot /></span>
+  {arrow && <span class="btn__arrow" aria-hidden="true">&rarr;</span>}
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-6);
+    border: var(--border-w) solid transparent;
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: 0.78125rem; /* ~12.5px */
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color var(--transition),
+      border-color var(--transition),
+      color var(--transition);
+  }
+
+  .btn:hover {
+    text-decoration: none;
+  }
+
+  .btn--block {
+    display: flex;
+    width: 100%;
+  }
+
+  /* Primary: green fill, parchment text. Hover darkens one step. */
+  .btn--primary {
+    background: var(--brand-green);
+    color: var(--surface-page);
+    border-color: var(--brand-green);
+  }
+  .btn--primary:hover {
+    background: var(--brand-green-hover);
+    border-color: var(--brand-green-hover);
+    color: var(--surface-page);
+  }
+
+  /* Secondary: brass outline, brass text, faint tint. Hover deepens the tint. */
+  .btn--secondary {
+    background: color-mix(in srgb, var(--brand-brass) 8%, transparent);
+    color: var(--brand-brass-text);
+    border-color: var(--brand-brass);
+  }
+  .btn--secondary:hover {
+    background: color-mix(in srgb, var(--brand-brass) 16%, transparent);
+    color: var(--brand-brass-text);
+  }
+
+  .btn__arrow {
+    font-size: 1em;
+    line-height: 1;
+    transition: transform var(--transition);
+  }
+
+  /* A whisper of movement on the arrow only — not the button (no scale/bounce). */
+  .btn:hover .btn__arrow {
+    transform: translateX(2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn:hover .btn__arrow {
+      transform: none;
+    }
+  }
+</style>

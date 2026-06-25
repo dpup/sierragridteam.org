@@ -1,0 +1,153 @@
+---
+/**
+ * TopBar — the operations nav (design-system §6 "Top bar").
+ * Brand lockup (left, hidden on the homepage where the hero emblem stands in),
+ * primary links (Mesh · Alerts · Contact), an "Operational" status pill, and a
+ * live local clock. Sticky, parchment, thin tan bottom rule ("fixed-feel").
+ */
+import Logo from './Logo.astro';
+import StatusPill from './StatusPill.astro';
+import LocalClock from './LocalClock.astro';
+import Container from './Container.astro';
+import { nav, site } from '@config/site';
+
+interface Props {
+  /** Hide the visible brand lockup (homepage). A screen-reader home link stays. */
+  hideBrand?: boolean;
+  /** Current path, to mark the active link. */
+  path?: string;
+}
+
+const { hideBrand = false, path = '' } = Astro.props;
+const isActive = (href: string) => path === href || path === `${href}/`;
+---
+
+<header class="topbar">
+  <Container wide>
+    <div class="topbar__inner">
+      <div class="topbar__brand">
+        {
+          hideBrand ? (
+            <a class="sr-only" href="/">
+              {site.name} home
+            </a>
+          ) : (
+            <a class="topbar__brandlink" href="/" aria-label={`${site.name} home`}>
+              <Logo variant="compact" height={28} />
+            </a>
+          )
+        }
+      </div>
+
+      <nav class="topbar__nav" aria-label="Primary">
+        <ul class="topbar__links">
+          {
+            nav.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class:list={['topbar__link', { 'is-active': isActive(item.href) }]}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="topbar__status">
+        <StatusPill tone="ok" label="Operational" />
+        <span class="topbar__divider" aria-hidden="true"></span>
+        <LocalClock />
+      </div>
+    </div>
+  </Container>
+</header>
+
+<style>
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-topbar);
+    background: color-mix(in srgb, var(--surface-page) 92%, transparent);
+    backdrop-filter: saturate(1.1) blur(6px);
+    border-bottom: var(--border);
+  }
+
+  .topbar__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    min-height: var(--topbar-h);
+  }
+
+  .topbar__brand {
+    flex: 0 0 auto;
+    margin-right: auto;
+  }
+
+  .topbar__brandlink {
+    display: inline-flex;
+    align-items: center;
+  }
+  .topbar__brandlink:hover {
+    text-decoration: none;
+  }
+
+  .topbar__nav {
+    flex: 0 1 auto;
+  }
+
+  .topbar__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: var(--space-6);
+  }
+
+  .topbar__link {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+    padding-block: var(--space-2);
+  }
+
+  .topbar__link:hover,
+  .topbar__link.is-active {
+    color: var(--brand-green);
+    text-decoration: none;
+  }
+
+  .topbar__link.is-active {
+    box-shadow: inset 0 -2px 0 var(--brand-green);
+  }
+
+  .topbar__status {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .topbar__divider {
+    width: 1px;
+    height: 16px;
+    background: var(--line);
+  }
+
+  /* On narrow screens, drop the secondary status cluster; keep brand + links. */
+  @media (max-width: 720px) {
+    .topbar__status {
+      display: none;
+    }
+    .topbar__links {
+      gap: var(--space-5);
+    }
+  }
+</style>

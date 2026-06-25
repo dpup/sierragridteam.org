@@ -1,0 +1,28 @@
+---
+// Temporary smoke-test page — replaced by the real homepage in Phase 4.
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import SectionHeader from '@components/SectionHeader.astro';
+import Button from '@components/Button.astro';
+import { site } from '@config/site';
+---
+
+<BaseLayout
+  title="Home"
+  description={site.tagline}
+  path="/"
+  hideBrandInNav
+  fullTitle={`${site.name} — ${site.legalName}`}
+>
+  <Section surface="hero">
+    <SectionHeader kicker="Smoke test" title="Foundation is wired" headingId="smoke" />
+    <p style="margin-top: var(--space-4); max-width: 60ch;">
+      Tokens, layout, nav, footer, fonts, and SEO are connected. Replacing this with
+      the real hero next.
+    </p>
+    <p style="margin-top: var(--space-5);">
+      <Button variant="primary" href="/mesh" arrow>Open Live Map</Button>
+      <Button variant="secondary" href="/alerts">View Emergency Alerts</Button>
+    </p>
+  </Section>
+</BaseLayout>

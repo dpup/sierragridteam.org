@@ -1,0 +1,43 @@
+---
+/**
+ * Card — the generic bordered surface. 1px tan border + lighter fill + square
+ * corners + NO drop shadow (cards are defined by border, not elevation).
+ */
+interface Props {
+  surface?: 'card' | 'banner' | 'page';
+  as?: 'div' | 'article' | 'li' | 'section';
+  /** Apply internal padding (default true). */
+  padded?: boolean;
+  class?: string;
+  id?: string;
+}
+
+const { surface = 'card', as: Tag = 'div', padded = true, class: className, id } = Astro.props;
+---
+
+<Tag
+  class:list={['card', `card--${surface}`, { 'card--padded': padded }, className]}
+  id={id}
+>
+  <slot />
+</Tag>
+
+<style>
+  .card {
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+
+  .card--banner {
+    background: var(--surface-banner);
+  }
+  .card--page {
+    background: var(--surface-page);
+  }
+
+  .card--padded {
+    padding: var(--space-6);
+  }
+</style>

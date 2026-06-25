@@ -1,0 +1,98 @@
+---
+/**
+ * Seo — everything that belongs in <head>: title, description, canonical,
+ * robots, Open Graph, Twitter, theme-color, favicons, manifest, and the
+ * sitewide Organization (NGO) JSON-LD. Rendered once by BaseLayout.
+ * See docs/architecture/seo-metadata.md.
+ */
+import { site } from '@config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Route path beginning with "/", used to build the canonical URL. */
+  path: string;
+  /** Absolute or root-relative OG image. Defaults to the site OG image. */
+  ogImage?: string;
+  /** Full <title> override; otherwise "{title} — S.I.E.R.R.A". */
+  fullTitle?: string;
+  noindex?: boolean;
+  /** Extra JSON-LD object(s) to append (e.g. ContactPage, WebSite). */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const { title, description, path, ogImage, fullTitle, noindex = false, schema } = Astro.props;
+
+// trailingSlash: 'never' — root keeps its slash, all others have none.
+const canonical = path === '/' ? `${site.url}/` : `${site.url}${path}`;
+const docTitle = fullTitle ?? `${title} — ${site.name}`;
+const image = new URL(ogImage ?? site.ogImage, site.url).href;
+
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'NGO',
+  name: site.legalName,
+  alternateName: site.name,
+  url: site.url,
+  logo: new URL('/brand/sierra-logo-full.png', site.url).href,
+  email: site.email,
+  foundingDate: String(site.foundingYear),
+  description: site.tagline,
+  areaServed: site.counties.map((c) => ({
+    '@type': 'AdministrativeArea',
+    name: `${c}, California`,
+  })),
+  address: {
+    '@type': 'PostalAddress',
+    postOfficeBoxNumber: site.address.poBox.replace(/[^0-9]/g, ''),
+    addressLocality: site.address.city,
+    addressRegion: site.address.state,
+    postalCode: site.address.zip,
+    addressCountry: 'US',
+  },
+  knowsAbout: [
+    'Emergency communications',
+    'LoRa mesh networking',
+    'Meshtastic',
+    'Amateur radio',
+    'Wildfire preparedness',
+  ],
+};
+
+const schemas = [orgSchema, ...(Array.isArray(schema) ? schema : schema ? [schema] : [])];
+---
+
+<title>{docTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow'} />
+
+{/* Open Graph */}
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:title" content={docTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={image} />
+<meta property="og:image:alt" content={`${site.name} — ${site.legalName}`} />
+<meta property="og:locale" content="en_US" />
+
+{/* Twitter */}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={docTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+
+{/* Icons, theme, manifest */}
+<meta name="theme-color" content="#1d5b3f" />
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+{/* Structured data */}
+{
+  schemas.map((s) => (
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(s)} />
+  ))
+}

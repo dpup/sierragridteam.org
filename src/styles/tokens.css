@@ -1,0 +1,125 @@
+/**
+ * ============================================================================
+ * S.I.E.R.R.A DESIGN TOKENS — the single source of visual truth.
+ * Transcribed from docs/design/design-system.html (v1.0). See docs/architecture/
+ * design-tokens.md for the rationale behind every value.
+ *
+ * ⚠️  This is the ONLY file allowed to contain raw hex colors and raw px font
+ *     sizes. Everywhere else, reference these variables: var(--brand-green),
+ *     var(--fs-hero), etc. stylelint enforces this (.stylelintrc.json).
+ *     Do not add new colors without a design reason — the palette is deliberate.
+ * ============================================================================
+ */
+
+:root {
+  /* ---- Surfaces (warm "parchment" neutrals) ---- */
+  --surface-page: #f3efe4; /* page base */
+  --surface-hero: #edefe7; /* hero band */
+  --surface-card: #f6f2e7; /* cards / tiles */
+  --surface-banner: #efe9da; /* banners / call-outs */
+
+  /* ---- Ink (text) ---- */
+  --ink-strong: #16271e; /* headings (near-black) */
+  --ink-body: #3c453c; /* body text */
+  --ink-secondary: #5a5e4f; /* secondary text */
+  --ink-muted: #9a906f; /* muted / hero headline line 1 */
+
+  /* ---- Brand & signal ---- */
+  --brand-green: #1d5b3f; /* primary green / links / primary buttons */
+  --brand-green-hover: #16472f; /* green hover (one step darker) */
+  --brand-brass: #b08a3e; /* brass accent (kickers, dividers, outlines) */
+  --brand-brass-text: #8a6a26; /* brass text */
+  --signal-orange: #c2410c; /* RISK / ALERT ONLY — never decorative */
+
+  /* ---- Lines / borders (always warm tan, never gray) ---- */
+  --line: #d8d0bd; /* default 1px border */
+  --line-soft: #e5ddca; /* lighter internal rule */
+
+  /* ---- Status-dot states (functional) ---- */
+  --state-ok: #1d5b3f; /* operational / normal */
+  --state-ok-static: #2f8a5b; /* lighter "static-owned" feasibility dot */
+  --state-elevated: #b08a3e; /* elevated (brass) */
+  --state-alarm: #c2410c; /* red flag / active alert (orange) */
+  --state-muted: #9a906f; /* unknown / last-known (muted) */
+
+  /* ---- Typography ---- */
+  --font-display: 'Newsreader Variable', 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-ui: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+
+  /* Type scale — desktop targets, responsive via clamp. Body never < 16px. */
+  --fs-hero: clamp(2.5rem, 1.9rem + 3vw, 3.375rem); /* 40 → 54px */
+  --fs-h2: clamp(1.75rem, 1.45rem + 1.5vw, 2.25rem); /* 28 → 36px */
+  --fs-h3: clamp(1.5rem, 1.3rem + 1vw, 2rem); /* 24 → 32px */
+  --fs-mission: clamp(1.125rem, 1.02rem + 0.5vw, 1.3125rem); /* 18 → 21px */
+  --fs-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.125rem); /* 17 → 18px */
+  --fs-stat: clamp(1.5rem, 1.3rem + 1vw, 1.75rem); /* 24 → 28px */
+  --fs-body: 1rem; /* 16px — floor */
+  --fs-small: 0.875rem; /* 14px */
+  --fs-label: 0.6875rem; /* 11px uppercase labels */
+  --fs-label-lg: 0.75rem; /* 12px */
+  --fs-micro: 0.625rem; /* 10px */
+
+  /* Weights — serif never bolder than 600. */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  /* Line heights & tracking */
+  --lh-tight: 1.05; /* hero headline */
+  --lh-heading: 1.12;
+  --lh-body: 1.6;
+  --tracking-tight: -0.015em; /* headlines */
+  --tracking-label: 0.16em; /* uppercase UI labels (0.1–0.24em range) */
+  --tracking-kicker: 0.24em; /* kicker eyebrows */
+
+  /* ---- Geometry & spacing ---- */
+  --radius: 0px; /* square corners — institutional */
+  --border-w: 1px;
+  --border: var(--border-w) solid var(--line);
+  --border-soft: var(--border-w) solid var(--line-soft);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 14px;
+  --space-5: 18px;
+  --space-6: 26px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 72px;
+  --space-10: 96px;
+
+  --container-max: 1280px;
+  --container-wide: 1320px;
+  --gutter: clamp(20px, 5vw, 56px);
+
+  /* Section vertical rhythm (64–72px), responsive down on small screens. */
+  --section-y: clamp(40px, 6vw, 72px);
+
+  /* ---- Motion (restrained; gated by prefers-reduced-motion in base.css) ---- */
+  --blink-duration: 2s;
+  --ping-duration: 2.4s;
+  --transition: 120ms ease;
+
+  /* ---- Layout misc ---- */
+  --topbar-h: 64px;
+  --hero-min-h: 680px;
+  --z-skiplink: 100;
+  --z-topbar: 50;
+  --z-overlay: 40;
+
+  /* Cards never use drop shadows. This token exists only for the rare elevated
+     overlay (e.g. a loading panel over an iframe) and stays subtle. */
+  --shadow-none: none;
+  --shadow-overlay: 0 1px 0 var(--line);
+}
+
+/* Honor reduced-motion at the token layer so every animation can gate on it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --blink-duration: 0s;
+    --ping-duration: 0s;
+    --transition: 0s;
+  }
+}

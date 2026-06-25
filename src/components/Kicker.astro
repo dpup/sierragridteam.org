@@ -1,0 +1,44 @@
+---
+/**
+ * Kicker — the uppercase brass eyebrow above headings (design-system pattern).
+ * Optionally numbered ("01 —"). Use `mono` for the section-number style.
+ */
+interface Props {
+  /** Optional leading number/marker, e.g. "01" or "01 /". Rendered in brass. */
+  number?: string;
+  /** Monospace style (section-number eyebrows) vs sans (default UI kicker). */
+  mono?: boolean;
+  as?: 'span' | 'div' | 'p';
+  class?: string;
+  id?: string;
+}
+
+const { number, mono = false, as: Tag = 'span', class: className, id } = Astro.props;
+---
+
+<Tag class:list={['kicker', { 'kicker--mono': mono }, className]} id={id}>
+  {number && <span class="kicker__num">{number}</span>}
+  <slot />
+</Tag>
+
+<style>
+  .kicker {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-kicker);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+  }
+
+  .kicker--mono {
+    font-family: var(--font-mono);
+    font-weight: var(--fw-regular);
+    letter-spacing: 0.2em;
+  }
+
+  .kicker__num {
+    color: var(--brand-brass);
+  }
+</style>

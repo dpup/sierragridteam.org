@@ -1,0 +1,70 @@
+---
+/**
+ * DoctrineCard — a numbered operational-doctrine card (design-system §5).
+ * "01 /" + kicker (EDUCATE / BUILD / OPERATE) on a thin rule, then a serif
+ * title and body paragraph. Three across in the page grid.
+ */
+interface Props {
+  number: string;
+  kicker: string;
+  title: string;
+  class?: string;
+}
+
+const { number, kicker, title, class: className } = Astro.props;
+---
+
+<article class:list={['doctrine', className]}>
+  <div class="doctrine__rule">
+    <span class="doctrine__num">{number}</span>
+    <span class="doctrine__kicker">{kicker}</span>
+  </div>
+  <h3 class="doctrine__title">{title}</h3>
+  <p class="doctrine__body"><slot /></p>
+</article>
+
+<style>
+  .doctrine {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .doctrine__rule {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-bottom: var(--space-3);
+    border-top: 2px solid var(--brand-brass);
+    padding-top: var(--space-3);
+  }
+
+  .doctrine__num {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label-lg);
+    color: var(--brand-brass);
+    letter-spacing: 0.1em;
+  }
+
+  .doctrine__kicker {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-kicker);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+  }
+
+  .doctrine__title {
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+
+  .doctrine__body {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+    max-width: 42ch;
+  }
+</style>
