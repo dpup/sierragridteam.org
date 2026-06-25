@@ -1,4 +1,5 @@
 name: sierragridteam
+runtime: docker
 
 ports:
   www: 4321
