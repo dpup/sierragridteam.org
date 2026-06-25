@@ -1,0 +1,16 @@
+name: sierragridteam
+
+ports:
+  www: 4321
+
+dependencies:
+  - node
+  - bun
+  - git
+  - make
+  - gh
+
+grants:
+  - claude
+  - github
+  - ssh:github.com
