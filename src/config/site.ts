@@ -21,9 +21,14 @@ export const site = {
   tagline: 'Off-grid emergency communications for the Calaveras & Tuolumne foothills.',
   foundingYear: 2026,
 
-  /** Contact. The email is a PLACEHOLDER — confirm before launch (see FEATURE_REQUESTS / launch checklist). */
-  email: 'info@sierragridteam.org',
-  emailIsPlaceholder: true,
+  /**
+   * Contact email — the single source of truth. Override at deploy time with the
+   * PUBLIC_CONTACT_EMAIL env var, or just edit the default below. Set
+   * emailIsPlaceholder back to true if the inbox is ever taken offline (it adds an
+   * honest "inbox being established" caveat on /contact and drops it from JSON-LD).
+   */
+  email: import.meta.env?.PUBLIC_CONTACT_EMAIL ?? 'info@sierragridteam.org',
+  emailIsPlaceholder: false,
   address: {
     poBox: 'P.O. Box 2071',
     city: 'Murphys',
