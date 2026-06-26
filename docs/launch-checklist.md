@@ -18,6 +18,12 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       aborts if the account id doesn't match.
 - [ ] **Push to a remote** (currently local-only) so CI/CD runs. When ready:
       `gh repo create dpup/sierragridteam --private --source . --remote origin --push`
+- [ ] **Wire up the Donate destination.** The header/About **Donate** CTA and the
+      `/donate` page are **placeholders** (`donate.isPlaceholder: true` in
+      `src/config/site.ts`). Pick a provider (Donorbox / Stripe / Zeffy / etc.), point
+      `donate.href` at it, replace the "Give online — coming soon" card copy in
+      `src/config/content.ts`, and confirm the **tax-status language** once the
+      501(c)(3) determination / EIN is final. See FR for the donation flow.
 
 ## Should-do
 
@@ -33,6 +39,11 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       (mark, serif title, brass kicker, network motif); tags complete. Validate the live
       unfurl with a sharing debugger once the domain is up.
 
+- [ ] **Fill in the About page placeholders.** `src/config/content.ts` `about.*` has
+      bracketed placeholders for the founding story (`about.story.body`) and the four
+      `about.team.members` (`[Name]` / role / `[Short bio coming soon.]`). Replace with
+      real leadership names/bios and the actual origin story before launch.
+
 ## Nice-to-have
 
 - [x] **www → apex redirect** — handled in your Terraform/infra (apex is canonical
@@ -46,8 +57,9 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 
 ## Verified already ✓
 
-- All 5 routes build statically; `make ci` green (types, stylelint, prettier, unit
-  tests, build, Playwright a11y + smoke).
+- All 7 routes build statically (home, mesh, alerts, about, donate, contact, 404);
+  `make ci` green (types, stylelint, prettier, unit tests, build, Playwright a11y +
+  smoke).
 - WCAG 2.2 AA: zero critical/serious axe violations on every page.
 - Deterministic screenshots at 3 viewports (`tests/screenshots/`), incl. a verified
   Red-Flag alarm state.

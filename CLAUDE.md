@@ -34,7 +34,10 @@ version of the rules below.
 2. **The palette is deliberate.** Don't introduce new colors. Forest green carries the
    brand and all primary actions; brass/gold is for small accents/labels only (never
    large fills); **burnt orange = risk/alert ONLY** (Red Flag, active alerts). If a
-   page is calm, orange must be absent.
+   page is calm, orange must be absent. **The one sanctioned exception** is the
+   **Donate** call-to-action (header, About CTA, `Button variant="donate"`), which uses
+   the orange accent by org decision to make giving unmistakable. Don't extend this to
+   any other element — Donate is the only non-risk use of orange.
 3. **Geometry:** square corners (radius 0), 1px warm-tan borders, **no drop shadows
    on cards** (border + lighter fill defines them).
 4. **Type:** serif (`--font-display`) for headings/body, never heavier than 600;
@@ -59,6 +62,14 @@ write bespoke layout/markup in a page when a component exists. If you genuinely 
 a new pattern, build a small component that uses tokens, matches the others, and add
 it — don't inline one-off styles. Most `src/` folders have their own `CLAUDE.md` with
 specifics (components, config, lib, styles).
+
+> ⚠️ **Astro scoped-style gotcha.** A page/component's scoped `<style>` only matches
+> elements **in its own template**. Astro does **not** forward the scope-id onto a
+> child component's root element, so passing a `class` to a component and then styling
+> that class in the parent's scoped `<style>` **silently does nothing** — the rule
+> never matches (`<Callout class="foo">` … `.foo { … }` won't apply). Two fixes:
+> wrap the component in a plain `<div class="foo">` and style that, or use
+> `.parent :global(.foo)`. This has bitten spacing/margins more than once.
 
 Page rules:
 
@@ -95,7 +106,8 @@ stable.
 ## What NOT to do
 
 - ❌ Add a raw hex color or a new font anywhere outside `tokens.css`.
-- ❌ Use orange for anything that isn't a genuine risk/alert state.
+- ❌ Use orange for anything that isn't a genuine risk/alert state (the Donate CTA is
+  the sole sanctioned exception — see rule 2).
 - ❌ Add drop shadows, rounded corners, gradients (except the one hero glow), or
   trendy effects.
 - ❌ Reintroduce the content brief's neon/glass-morphism direction.

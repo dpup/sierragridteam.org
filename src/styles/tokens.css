@@ -31,6 +31,7 @@
   --brand-brass: #b08a3e; /* brass accent (kickers, dividers, outlines) */
   --brand-brass-text: #785d20; /* brass text (kickers) — darkened from design's #8a6a26 for WCAG AA margin at small sizes */
   --signal-orange: #c2410c; /* RISK / ALERT ONLY — never decorative (dots, fills, large text) */
+  --signal-orange-hover: #9a330a; /* orange hover (one step darker) — used by the sanctioned Donate CTA */
   --signal-orange-text: #b03808; /* small orange TEXT — AA-compliant (≥4.5:1) variant of the risk orange */
 
   /* ---- Lines / borders (always warm tan, never gray) ---- */

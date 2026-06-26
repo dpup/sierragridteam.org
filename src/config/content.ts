@@ -139,3 +139,70 @@ export const contact = {
   formIntro:
     'Tell us how you would like to help and we will follow up. Fields marked optional can be left blank.',
 } as const;
+
+export const about = {
+  kicker: 'About the Alliance',
+  title: 'Resilient communications, built by neighbors.',
+  intro:
+    'S.I.E.R.R.A — the Signal Integrity & Emergency Radio Response Alliance — is an ' +
+    'all-volunteer non-profit that builds, operates, and trains the people behind an off-grid ' +
+    'emergency communications network for the Calaveras & Tuolumne foothills.',
+  story: {
+    kicker: 'Our story',
+    title: 'Founded for the next emergency.',
+    // PLACEHOLDER: replace with the real founding story (who, when, why).
+    body:
+      'Established in 2026 by a group of amateur-radio operators, emergency-management ' +
+      'professionals, and foothill residents who had lived through one too many wildfire ' +
+      'evacuations and multi-day power shut-offs. [Placeholder — expand with the real story of ' +
+      'how the alliance came together and the events that prompted it.]',
+  },
+  // "What we do" reuses the homepage doctrine (Educate / Build / Operate).
+  team: {
+    kicker: 'Leadership',
+    title: 'The volunteers behind the network.',
+    note: 'Board members and lead operators are introduced here. [Placeholder bios — replace with real names, roles, and short bios.]',
+    members: [
+      { name: '[Name]', role: 'Founder & Director', bio: '[Short bio coming soon.]' },
+      { name: '[Name]', role: 'Network Operations Lead', bio: '[Short bio coming soon.]' },
+      { name: '[Name]', role: 'Emergency Management Liaison', bio: '[Short bio coming soon.]' },
+      { name: '[Name]', role: 'Training & Outreach', bio: '[Short bio coming soon.]' },
+    ],
+  },
+  cta: {
+    title: 'Help keep the signal up.',
+    body: 'It takes volunteers and funding to keep solar relays on the air and operators trained.',
+  },
+} as const;
+
+export const donate = {
+  kicker: 'Support the mission',
+  title: 'Help keep the foothills connected.',
+  intro:
+    'S.I.E.R.R.A is an all-volunteer non-profit. Your support funds the solar-powered relays, ' +
+    'radios, and training that keep neighbors and first responders connected when the grid and ' +
+    'cell service are down.',
+  waysHeading: 'Ways to give',
+  ways: [
+    {
+      name: 'Give online',
+      // PLACEHOLDER: wire up a donation provider (Donorbox / Stripe / PayPal Giving / Givebutter).
+      desc: 'Online giving is being set up. [Placeholder — connect your donation platform here.]',
+      status: 'pending',
+    },
+    {
+      name: 'By mail',
+      desc: 'Mail a check payable to the Signal Integrity & Emergency Radio Response Alliance, P.O. Box 2071, Murphys, CA 95247.',
+      status: 'live',
+    },
+    {
+      name: 'Equipment & in-kind',
+      desc: 'Radios, solar gear, antennas, and ridge-top tower space help as much as cash. Reach out via the contact page.',
+      status: 'live',
+    },
+  ],
+  // PLACEHOLDER: confirm before launch.
+  taxNote:
+    'S.I.E.R.R.A’s tax-exempt status and the deductibility of gifts are being finalized. ' +
+    '[Placeholder — confirm 501(c)(3) status and add the EIN / official language before launch.]',
+} as const;

@@ -6,7 +6,7 @@
  */
 import Logo from './Logo.astro';
 import Container from './Container.astro';
-import { site, nav, externalLinks } from '@config/site';
+import { site, nav, externalLinks, donate } from '@config/site';
 
 const year = site.foundingYear;
 ---
@@ -33,6 +33,9 @@ const year = site.foundingYear;
               </li>
             ))
           }
+          <li>
+            <a href={donate.href}>{donate.label}</a>
+          </li>
         </ul>
       </nav>
 

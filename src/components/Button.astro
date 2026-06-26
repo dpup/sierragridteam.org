@@ -6,7 +6,7 @@
  * Hover moves exactly one step (no transforms). (design-system §5)
  */
 interface Props {
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'donate';
   href?: string;
   type?: 'button' | 'submit' | 'reset';
   /** Show a trailing arrow glyph. */
@@ -99,6 +99,19 @@ const tagProps = href ? { href } : { type };
   .btn--secondary:hover {
     background: color-mix(in srgb, var(--brand-brass) 16%, transparent);
     color: var(--brand-brass-text);
+  }
+
+  /* Donate: the orange accent CTA. A SANCTIONED exception to "orange = risk only"
+     (org decision — see CLAUDE.md). Parchment text on orange keeps ≥4.5:1 contrast. */
+  .btn--donate {
+    background: var(--signal-orange);
+    color: var(--surface-page);
+    border-color: var(--signal-orange);
+  }
+  .btn--donate:hover {
+    background: var(--signal-orange-hover);
+    border-color: var(--signal-orange-hover);
+    color: var(--surface-page);
   }
 
   .btn__arrow {

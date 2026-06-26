@@ -10,6 +10,8 @@ const pages = [
   { name: 'mesh', path: '/mesh' },
   { name: 'alerts', path: '/alerts' },
   { name: 'contact', path: '/contact' },
+  { name: 'about', path: '/about' },
+  { name: 'donate', path: '/donate' },
 ];
 
 for (const pg of pages) {

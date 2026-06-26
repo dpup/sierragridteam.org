@@ -48,8 +48,21 @@ export const site = {
 export const nav: ReadonlyArray<{ label: string; href: string }> = [
   { label: 'Mesh', href: '/mesh' },
   { label: 'Alerts', href: '/alerts' },
+  { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
+
+/**
+ * Donate call-to-action. The destination is a PLACEHOLDER (the /donate page) until a
+ * real donation provider is wired up — see src/pages/donate.astro and the launch
+ * checklist. The header CTA is intentionally the orange accent (a sanctioned exception
+ * to the "orange = risk only" rule, by org decision — see CLAUDE.md).
+ */
+export const donate = {
+  label: 'Donate',
+  href: '/donate',
+  isPlaceholder: true,
+} as const;
 
 /** External destinations referenced across the site. */
 export const externalLinks = {

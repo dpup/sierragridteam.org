@@ -1,0 +1,250 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import SectionHeader from '@components/SectionHeader.astro';
+import DoctrineCard from '@components/DoctrineCard.astro';
+import StatTile from '@components/StatTile.astro';
+import Card from '@components/Card.astro';
+import Button from '@components/Button.astro';
+import { about, home } from '@config/content';
+import { operations } from '@config/coverage';
+import { site, donate } from '@config/site';
+
+const description =
+  'About S.I.E.R.R.A — the all-volunteer Signal Integrity & Emergency Radio Response ' +
+  'Alliance building off-grid emergency communications for the Calaveras & Tuolumne foothills.';
+
+const aboutSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: `About — ${site.name}`,
+  url: `${site.url}/about`,
+};
+
+const stats = [
+  {
+    label: 'Relay Sites',
+    value: `${operations.relaySitesActive} Active`,
+    sublabel: 'Deployed sites',
+  },
+  {
+    label: 'Coverage',
+    value: `${operations.coverageCounties} Counties`,
+    sublabel: 'Calaveras & Tuolumne',
+  },
+  {
+    label: 'Deployment Zones',
+    value: `${operations.deploymentZones.length} Zones`,
+    sublabel: 'Along the corridors',
+  },
+  { label: 'Established', value: String(site.foundingYear), sublabel: 'Volunteer non-profit' },
+];
+---
+
+<BaseLayout title="About" description={description} path="/about" schema={aboutSchema}>
+  <Section surface="page" labelledby="about-title">
+    <header class="about-head">
+      <Kicker>{about.kicker}</Kicker>
+      <h1 id="about-title" class="about-head__title">{about.title}</h1>
+      <p class="about-head__intro">{about.intro}</p>
+    </header>
+  </Section>
+
+  <Section surface="page" labelledby="story-title">
+    <div class="about-story">
+      <div class="about-story__lead">
+        <Kicker>{about.story.kicker}</Kicker>
+        <h2 id="story-title" class="about-story__title">{about.story.title}</h2>
+      </div>
+      <p class="about-story__body">{about.story.body}</p>
+    </div>
+  </Section>
+
+  <Section surface="page" labelledby="do-title">
+    <SectionHeader kicker={home.doctrine.kicker} title={home.doctrine.title} headingId="do-title" />
+    <div class="about-doctrine">
+      {
+        home.doctrine.cards.map((c) => (
+          <DoctrineCard number={c.number} kicker={c.kicker} title={c.title}>
+            {c.body}
+          </DoctrineCard>
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section surface="page" labelledby="numbers-title">
+    <SectionHeader
+      kicker="By the numbers"
+      title="The network at a glance."
+      headingId="numbers-title"
+    />
+    <div class="about-stats">
+      {
+        stats.map((s) => (
+          <StatTile label={s.label} value={s.value} sublabel={s.sublabel} state="ok-static" />
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section surface="page" labelledby="team-title">
+    <SectionHeader kicker={about.team.kicker} title={about.team.title} headingId="team-title" />
+    <p class="about-team__note">{about.team.note}</p>
+    <div class="about-team">
+      {
+        about.team.members.map((m) => (
+          <Card>
+            <p class="about-member__name">{m.name}</p>
+            <p class="about-member__role">{m.role}</p>
+            <p class="about-member__bio">{m.bio}</p>
+          </Card>
+        ))
+      }
+    </div>
+  </Section>
+
+  <aside class="about-cta" aria-label="Get involved">
+    <div class="about-cta__inner">
+      <h2 class="about-cta__title">{about.cta.title}</h2>
+      <p class="about-cta__body">{about.cta.body}</p>
+      <div class="about-cta__actions">
+        <Button variant="primary" href="/contact" arrow>Volunteer</Button>
+        <Button variant="donate" href={donate.href}>{donate.label}</Button>
+      </div>
+    </div>
+  </aside>
+</BaseLayout>
+
+<style>
+  .about-head {
+    max-width: 64ch;
+  }
+  .about-head__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .about-head__intro {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .about-story {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: var(--space-8);
+    align-items: center;
+  }
+  .about-story__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+    max-width: 18ch;
+  }
+  .about-story__body {
+    font-size: var(--fs-mission);
+    line-height: 1.55;
+    color: var(--ink-body);
+    max-width: 60ch;
+  }
+
+  .about-doctrine {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-7);
+  }
+
+  .about-stats {
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+
+  .about-team__note {
+    margin-top: var(--space-4);
+    max-width: 70ch;
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+  .about-team {
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+  .about-member__name {
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+  .about-member__role {
+    margin-top: var(--space-1);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+  }
+  .about-member__bio {
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+
+  .about-cta {
+    background: var(--surface-banner);
+    border-top: var(--border);
+    border-bottom: var(--border);
+    padding-block: var(--space-9);
+    margin-top: var(--section-y);
+    text-align: center;
+  }
+  .about-cta__inner {
+    max-width: 52ch;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .about-cta__title {
+    font-size: var(--fs-h3);
+  }
+  .about-cta__body {
+    margin-top: var(--space-3);
+    font-size: var(--fs-lead);
+    color: var(--ink-body);
+  }
+  .about-cta__actions {
+    margin-top: var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+
+  @media (max-width: 860px) {
+    .about-doctrine,
+    .about-stats,
+    .about-team {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 760px) {
+    .about-story {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
+  }
+  @media (max-width: 520px) {
+    .about-doctrine,
+    .about-stats,
+    .about-team {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

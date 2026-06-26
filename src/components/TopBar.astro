@@ -2,14 +2,14 @@
 /**
  * TopBar — the operations nav (design-system §6 "Top bar").
  * Brand lockup (left, hidden on the homepage where the hero emblem stands in),
- * primary links (Mesh · Alerts · Contact), an "Operational" status pill, and a
- * live local clock. Sticky, parchment, thin tan bottom rule ("fixed-feel").
+ * primary links, a Donate CTA (orange accent), and a live local clock.
+ * Sticky, parchment, thin tan bottom rule ("fixed-feel").
  */
 import Logo from './Logo.astro';
-import StatusPill from './StatusPill.astro';
+import Button from './Button.astro';
 import LocalClock from './LocalClock.astro';
 import Container from './Container.astro';
-import { nav, site } from '@config/site';
+import { nav, site, donate } from '@config/site';
 
 interface Props {
   /** Hide the visible brand lockup (homepage). A screen-reader home link stays. */
@@ -57,10 +57,11 @@ const isActive = (href: string) => path === href || path === `${href}/`;
         </ul>
       </nav>
 
-      <div class="topbar__status">
-        <StatusPill tone="ok" label="Operational" />
-        <span class="topbar__divider" aria-hidden="true"></span>
-        <LocalClock />
+      <div class="topbar__actions">
+        <span class="topbar__clock"><LocalClock /></span>
+        <span class="topbar__donate">
+          <Button variant="donate" href={donate.href}>{donate.label}</Button>
+        </span>
       </div>
     </div>
   </Container>
@@ -128,22 +129,21 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     box-shadow: inset 0 -2px 0 var(--brand-green);
   }
 
-  .topbar__status {
+  .topbar__actions {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: var(--space-4);
   }
 
-  .topbar__divider {
-    width: 1px;
-    height: 16px;
-    background: var(--line);
+  .topbar__donate :global(.btn) {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--fs-label);
   }
 
-  /* On narrow screens, drop the secondary status cluster; keep brand + links. */
+  /* On narrow screens, drop the clock; keep brand + links + the Donate CTA. */
   @media (max-width: 860px) {
-    .topbar__status {
+    .topbar__clock {
       display: none;
     }
     .topbar__links {
