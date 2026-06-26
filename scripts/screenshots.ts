@@ -56,7 +56,7 @@ const redflagAlert = {
   headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
   source: 'NWS',
   severity: 'CRITICAL',
-  zones: ['CAZ064'],
+  zones: ['CAZ069'],
   startTime: '2026-06-25T18:00:00Z',
   endTime: '2026-06-26T03:00:00Z',
 };

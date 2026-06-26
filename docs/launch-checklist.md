@@ -32,10 +32,10 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       towns), FR-7 (region-wide CHP/Caltrans incidents) all ship and are consumed live;
       placeholders removed. FR-5/FR-6 (the org's own mesh/relay status) remain. See
       `FEATURE_REQUESTS.md`.
-- [ ] **Verify the NWS forecast zones.** Zone CAZ065 currently returns a San-Diego-area
-      Wind Advisory, so `NWS_ZONES` (CAZ064/065/258/259, in `src/lib/ersn.ts`) may not be
-      the right Calaveras/Tuolumne zones. Confirm against NWS Sacramento and fix the
-      one-line list if needed — otherwise the site can surface irrelevant alerts.
+- [x] **NWS forecast zones corrected.** The design's original list pulled a San-Diego-area
+      alert (CAZ065); `NWS_ZONES` (in `src/lib/ersn.ts`) is now CAZ019 / CAZ067 / CAZ069 /
+      CAZ072 (Tuolumne + foothills, lower Calaveras, Hwy 4 high country), verified to return
+      only in-region alerts.
 - [x] **Embeds decided.** Mesh map stays embedded (confirmed no X-Frame-Options). The
       CHP CAD iframe was removed in favor of native incident data via info.ersn.net (#7);
       CHP is now a resource link. Verify the mesh map renders once live.

@@ -99,7 +99,7 @@ export const alerts = {
   conditionsHeading: 'Current conditions',
   feedHeading: 'Active weather alerts',
   feedNote:
-    'Alerts for the foothill NWS forecast zones (CAZ064 / CAZ065 / CAZ258 / CAZ259), ' +
+    'Alerts for the service-area NWS forecast zones (CAZ019 / CAZ067 / CAZ069 / CAZ072), ' +
     'from the National Weather Service and OpenWeatherMap.',
   roadsHeading: 'Road conditions',
   incidentsHeading: 'CHP & Caltrans incidents',

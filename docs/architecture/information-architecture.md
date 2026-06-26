@@ -81,7 +81,7 @@ Order, top to bottom:
   (info.ersn.net `/weather`, FR-4), °C→°F / km/h→mph converted.
 - **Active weather alerts** — cards color-coded by severity (Critical=`--signal-orange`,
   Warning=brass, Info=green/neutral), expandable detail, auto-refresh every 5 min. Data:
-  zone-filtered `/weather/alerts?zones=CAZ064,CAZ065,CAZ258,CAZ259` (FR-2, NWS/OpenWeatherMap).
+  zone-filtered `/weather/alerts?zones=CAZ019,CAZ067,CAZ069,CAZ072` (FR-2, NWS/OpenWeatherMap).
 - **Road conditions** — live status/travel/delay/chains for the Hwy 4 + Hwy 49 segments (`/roads`).
 - **CHP & Caltrans incidents** — region-wide dispatch feed (`/incidents/mother-lode`, FR-7),
   split service-area-first with a collapsible "wider Mother Lode region" group (`splitIncidents`).

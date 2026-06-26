@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-26T19:48:10.330Z",
+  "fetchedAt": "2026-06-26T20:47:03.409Z",
   "live": true,
   "roads": {
     "roads": [
@@ -19,107 +19,8 @@
             "type": "CLOSURE",
             "severity": "WARNING",
             "classification": "NEARBY",
-            "title": "Northbound / Southbound 49 Lane Closure",
-            "description": "There is a lane closure on both northbound and southbound lanes due to roadway excavation. The left shoulder and right turn lane are closed. The closure is expected to end at 4:59 PM.",
-            "condensedSummary": "Lane closure on both directions due to roadway excavation, expected to end in the afternoon.",
-            "startTime": "2026-06-27T02:42:00Z",
-            "endTime": null,
-            "lastUpdated": "2026-06-26T19:40:00Z",
-            "location": {
-              "latitude": 38.071727,
-              "longitude": -120.541914
-            },
-            "locationDescription": "near Copello Drive",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-27T02:42:00Z",
-            "metadata": {
-              "closure_expected_end": "2026-06-26T16:59:00-07:00",
-              "incident_type": "lane closure",
-              "roadway_status": "restricted due to excavation"
-            },
-            "distanceToRouteMeters": 345.7844336897215,
-            "id": "C49CA"
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "Northbound / Southbound 49 Lane Closure",
-            "description": "There is a lane closure in both directions on Highway 49 due to roadway excavation. The left shoulder and right turn lane are closed. The closure is expected to end at 4:59 PM.",
-            "condensedSummary": "Lane closure in both directions due to roadway excavation, expected to end at 4:59 PM.",
-            "startTime": "2026-06-27T02:43:00Z",
-            "endTime": null,
-            "lastUpdated": "2026-06-26T19:40:00Z",
-            "location": {
-              "latitude": 38.08856,
-              "longitude": -120.572887
-            },
-            "locationDescription": "northbound and southbound lane closure",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-27T02:43:00Z",
-            "metadata": {
-              "closure_reason": "roadway excavation",
-              "incident_type": "lane closure",
-              "roadway_status": "restricted"
-            },
-            "distanceToRouteMeters": 3540.754176717133,
-            "id": "C49CA"
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "C49CA Log 10 path",
-            "description": "One-way traffic control in effect, expect delays due to traffic management.",
-            "condensedSummary": "One-way traffic control in effect, expect delays.",
-            "startTime": "2026-06-26T19:28:05Z",
-            "endTime": null,
-            "lastUpdated": null,
-            "location": {
-              "latitude": 38.071656463947,
-              "longitude": -120.54188040114
-            },
-            "locationDescription": "C49CA Log 10 path",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-26T19:28:05Z",
-            "metadata": {
-              "incident_type": "traffic control",
-              "roadway_status": "one-way traffic"
-            },
-            "distanceToRouteMeters": 342.98768404926255,
-            "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
             "title": "SR 4 Road Condition",
             "description": "1-way controlled traffic at the Contra Costa/San Joaquin Co Line /at Old River Bridge/ 24 hrs a day 7 days a week thru 1900 hrs on 7/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 4 Road Condition",
-            "description": "1-way controlled traffic at various locations from the Jct of SR 4 (san Joaquin Co) to the San Joaquin/Stanislaus Co Line from 1900 hrs each night to 0700 hrs each morning Wednesday thru Friday thru 6/26/26 - Due to construction",
             "condensedSummary": "",
             "startTime": null,
             "endTime": null,
@@ -143,8 +44,8 @@
         "id": "hwy4-murphys-arnold",
         "name": "Hwy 4",
         "section": "Murphys to Arnold",
-        "status": "RESTRICTED",
-        "statusExplanation": "Traffic may be affected due to the hazard, expect delays.",
+        "status": "OPEN",
+        "statusExplanation": "",
         "durationMinutes": 17,
         "distanceKm": 20,
         "congestionLevel": "CLEAR",
@@ -152,58 +53,11 @@
         "chainControl": "NONE",
         "alerts": [
           {
-            "type": "INCIDENT",
-            "severity": "WARNING",
-            "classification": "ON_ROUTE",
-            "title": "CHP Incident 260626ST0225",
-            "description": "There is a traffic hazard reported. Emergency services are on the way to address the situation.",
-            "condensedSummary": "Traffic hazard reported, emergency services en route to address the situation.",
-            "startTime": "2026-06-26T19:26:00Z",
-            "endTime": null,
-            "lastUpdated": "2026-06-26T19:41:00Z",
-            "location": {
-              "latitude": 38.144668,
-              "longitude": -120.450072
-            },
-            "locationDescription": "near Utica Powerhouse Road",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-26T19:26:00Z",
-            "metadata": {
-              "emergency_services": "on the way",
-              "incident_type": "traffic hazard"
-            },
-            "distanceToRouteMeters": 4.424996370275328,
-            "id": "260626ST0225"
-          },
-          {
             "type": "CLOSURE",
             "severity": "WARNING",
             "classification": "NEARBY",
             "title": "SR 4 Road Condition",
             "description": "1-way controlled traffic at the Contra Costa/San Joaquin Co Line /at Old River Bridge/ 24 hrs a day 7 days a week thru 1900 hrs on 7/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 4 Road Condition",
-            "description": "1-way controlled traffic at various locations from the Jct of SR 4 (san Joaquin Co) to the San Joaquin/Stanislaus Co Line from 1900 hrs each night to 0700 hrs each morning Wednesday thru Friday thru 6/26/26 - Due to construction",
             "condensedSummary": "",
             "startTime": null,
             "endTime": null,
@@ -256,28 +110,6 @@
             },
             "distanceToRouteMeters": 0,
             "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 4 Road Condition",
-            "description": "1-way controlled traffic at various locations from the Jct of SR 4 (san Joaquin Co) to the San Joaquin/Stanislaus Co Line from 1900 hrs each night to 0700 hrs each morning Wednesday thru Friday thru 6/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
           }
         ],
         "chainControlInfo": null
@@ -288,89 +120,12 @@
         "section": "Angels Camp to Sonora",
         "status": "OPEN",
         "statusExplanation": "",
-        "durationMinutes": 25,
+        "durationMinutes": 26,
         "distanceKm": 25,
-        "congestionLevel": "CLEAR",
-        "delayMinutes": 1,
+        "congestionLevel": "LIGHT",
+        "delayMinutes": 2,
         "chainControl": "NONE",
         "alerts": [
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "Northbound / Southbound 49 Lane Closure",
-            "description": "There is a lane closure on both northbound and southbound lanes due to roadway excavation. The left shoulder and right turn lane are closed. The closure is expected to end at 4:59 PM.",
-            "condensedSummary": "Lane closure on both directions due to roadway excavation, expected to end in the afternoon.",
-            "startTime": "2026-06-27T02:42:00Z",
-            "endTime": null,
-            "lastUpdated": "2026-06-26T19:40:00Z",
-            "location": {
-              "latitude": 38.071727,
-              "longitude": -120.541914
-            },
-            "locationDescription": "near Copello Drive",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-27T02:42:00Z",
-            "metadata": {
-              "closure_expected_end": "2026-06-26T16:59:00-07:00",
-              "incident_type": "lane closure",
-              "roadway_status": "restricted due to excavation"
-            },
-            "distanceToRouteMeters": 444.9053340265241,
-            "id": "C49CA"
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "Northbound / Southbound 49 Lane Closure",
-            "description": "There is a lane closure in both directions on Highway 49 due to roadway excavation. The left shoulder and right turn lane are closed. The closure is expected to end at 4:59 PM.",
-            "condensedSummary": "Lane closure in both directions due to roadway excavation, expected to end at 4:59 PM.",
-            "startTime": "2026-06-27T02:43:00Z",
-            "endTime": null,
-            "lastUpdated": "2026-06-26T19:40:00Z",
-            "location": {
-              "latitude": 38.08856,
-              "longitude": -120.572887
-            },
-            "locationDescription": "northbound and southbound lane closure",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-27T02:43:00Z",
-            "metadata": {
-              "closure_reason": "roadway excavation",
-              "incident_type": "lane closure",
-              "roadway_status": "restricted"
-            },
-            "distanceToRouteMeters": 3674.716936447491,
-            "id": "C49CA"
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "C49CA Log 10 path",
-            "description": "One-way traffic control in effect, expect delays due to traffic management.",
-            "condensedSummary": "One-way traffic control in effect, expect delays.",
-            "startTime": "2026-06-26T19:28:05Z",
-            "endTime": null,
-            "lastUpdated": null,
-            "location": {
-              "latitude": 38.071656463947,
-              "longitude": -120.54188040114
-            },
-            "locationDescription": "C49CA Log 10 path",
-            "impact": "IMPACT_LIGHT",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": "2026-06-26T19:28:05Z",
-            "metadata": {
-              "incident_type": "traffic control",
-              "roadway_status": "one-way traffic"
-            },
-            "distanceToRouteMeters": 436.5356424955662,
-            "id": ""
-          },
           {
             "type": "CLOSURE",
             "severity": "WARNING",
@@ -420,28 +175,6 @@
             "severity": "WARNING",
             "classification": "NEARBY",
             "title": "SR 49 Road Condition",
-            "description": "1-way controlled traffic at various locations from 0.8 mi north to 2.9 mi north of the Jct of SR 153 /at Bacchi Rd/ (El Dorado Co) from 1900 hrs each night to 0700 hrs each morning Monday thru Friday thru 6/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 49 Road Condition",
             "description": "1-way controlled traffic at various locations from 19.6 mi north to 20 mi north of the Yuba/Sierra Co Line 24 hrs a day 7 days a week thru 1900 hrs on Friday 6/26/26 -Due to construction",
             "condensedSummary": "",
             "startTime": null,
@@ -463,7 +196,7 @@
         "chainControlInfo": null
       }
     ],
-    "lastUpdated": "2026-06-26T19:43:08.401840434Z"
+    "lastUpdated": "2026-06-26T20:43:15.695933272Z"
   },
   "weather": {
     "weatherData": [
@@ -473,11 +206,11 @@
         "weatherMain": "Clouds",
         "weatherDescription": "overcast clouds",
         "weatherIcon": "04d",
-        "temperatureCelsius": 22,
-        "feelsLikeCelsius": 21,
-        "humidityPercent": 43,
-        "windSpeedKmh": 5,
-        "windDirectionDegrees": 213,
+        "temperatureCelsius": 23,
+        "feelsLikeCelsius": 22,
+        "humidityPercent": 44,
+        "windSpeedKmh": 3,
+        "windDirectionDegrees": 214,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -489,9 +222,9 @@
         "weatherIcon": "04d",
         "temperatureCelsius": 18,
         "feelsLikeCelsius": 17,
-        "humidityPercent": 53,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 141,
+        "humidityPercent": 56,
+        "windSpeedKmh": 1,
+        "windDirectionDegrees": 161,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -503,9 +236,9 @@
         "weatherIcon": "04d",
         "temperatureCelsius": 14,
         "feelsLikeCelsius": 12,
-        "humidityPercent": 45,
-        "windSpeedKmh": 1,
-        "windDirectionDegrees": 150,
+        "humidityPercent": 41,
+        "windSpeedKmh": 12,
+        "windDirectionDegrees": 205,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -515,11 +248,11 @@
         "weatherMain": "Clouds",
         "weatherDescription": "overcast clouds",
         "weatherIcon": "04d",
-        "temperatureCelsius": 22,
-        "feelsLikeCelsius": 21,
-        "humidityPercent": 40,
+        "temperatureCelsius": 25,
+        "feelsLikeCelsius": 24,
+        "humidityPercent": 37,
         "windSpeedKmh": 3,
-        "windDirectionDegrees": 154,
+        "windDirectionDegrees": 330,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -529,25 +262,25 @@
         "weatherMain": "Clouds",
         "weatherDescription": "overcast clouds",
         "weatherIcon": "04d",
-        "temperatureCelsius": 22,
-        "feelsLikeCelsius": 21,
-        "humidityPercent": 40,
-        "windSpeedKmh": 5,
-        "windDirectionDegrees": 252,
+        "temperatureCelsius": 24,
+        "feelsLikeCelsius": 23,
+        "humidityPercent": 38,
+        "windSpeedKmh": 3,
+        "windDirectionDegrees": 330,
         "visibilityKm": 10,
         "alerts": []
       },
       {
         "locationId": "twainharte",
         "locationName": "Twain Harte, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
-        "weatherIcon": "04d",
-        "temperatureCelsius": 18,
-        "feelsLikeCelsius": 17,
-        "humidityPercent": 41,
-        "windSpeedKmh": 8,
-        "windDirectionDegrees": 258,
+        "weatherMain": "Rain",
+        "weatherDescription": "light rain",
+        "weatherIcon": "10d",
+        "temperatureCelsius": 21,
+        "feelsLikeCelsius": 20,
+        "humidityPercent": 38,
+        "windSpeedKmh": 4,
+        "windDirectionDegrees": 236,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -557,16 +290,16 @@
         "weatherMain": "Clouds",
         "weatherDescription": "overcast clouds",
         "weatherIcon": "04d",
-        "temperatureCelsius": 15,
+        "temperatureCelsius": 16,
         "feelsLikeCelsius": 15,
-        "humidityPercent": 54,
-        "windSpeedKmh": 8,
-        "windDirectionDegrees": 207,
+        "humidityPercent": 57,
+        "windSpeedKmh": 3,
+        "windDirectionDegrees": 199,
         "visibilityKm": 10,
         "alerts": []
       }
     ],
-    "lastUpdated": "2026-06-26T19:45:18.548206292Z",
+    "lastUpdated": "2026-06-26T20:47:03.411468314Z",
     "fireWeather": {
       "state": "NORMAL",
       "sourceEvent": "",
@@ -578,43 +311,25 @@
     }
   },
   "alerts": {
-    "alerts": [
-      {
-        "id": "urn:oid:2.49.0.1.840.0.64150bd4391629a9e4d114b61d16f3d1d55042a2.002.1",
-        "senderName": "NWS San Diego CA",
-        "event": "Wind Advisory",
-        "description": "* WHAT...West winds 30 to 45 mph with gusts to 65 mph expected,\ngusts to 75 mph possible at times. Strongest winds on Saturday\nafternoon and evening.\n\n* WHERE...San Gorgonio Pass near Banning.\n\n* WHEN...Until 5 PM PDT Sunday.\n\n* IMPACTS...Gusty winds will blow around unsecured objects. Tree\nlimbs could be blown down and a few power outages may result.",
-        "tags": [],
-        "headline": "Wind Advisory issued June 26 at 11:30AM PDT until June 28 at 5:00PM PDT by NWS San Diego CA",
-        "summary": "",
-        "details": "",
-        "source": "NWS",
-        "severity": "WARNING",
-        "zones": [
-          "CAZ065"
-        ],
-        "startTime": "2026-06-26T18:30:00Z",
-        "endTime": "2026-06-27T05:15:00Z"
-      }
-    ],
-    "lastUpdated": "2026-06-26T19:48:08.953044076Z"
+    "alerts": [],
+    "lastUpdated": "2026-06-26T20:44:11.379134667Z"
   },
   "incidents": {
     "incidents": [
       {
-        "id": "260626ST0225",
+        "id": "260626ST0233",
         "type": "INCIDENT",
         "severity": "WARNING",
         "location": {
-          "latitude": 38.144668,
-          "longitude": -120.450072
+          "latitude": 37.794189,
+          "longitude": -120.978273
         },
-        "locationDescription": "Sr4 / Utica Powerhouse Rd",
-        "description": "Traffic Hazard",
+        "locationDescription": "Sr120 / Campbell Ave",
+        "description": "Traffic Collision-No Injury",
         "status": "ACTIVE",
-        "logNumber": "260626ST0225",
-        "started": "2026-06-26T19:26:00Z",
-        "lastUpdated": "2026-06-26T19:47:00Z",
+        "logNumber": "260626ST0233",
+        "started": "2026-06-26T19:44:00Z",
+        "lastUpdated": "2026-06-26T20:44:00Z",
         "area": "mother-lode"
       },
       {
@@ -630,23 +345,7 @@
         "status": "ACTIVE",
         "logNumber": "260626TK0009",
         "started": "2026-06-26T11:08:00Z",
-        "lastUpdated": "2026-06-26T19:47:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "260626MR0209",
-        "type": "INCIDENT",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 37.62971,
-          "longitude": -120.463528
-        },
-        "locationDescription": "J59 / La Grange Rd",
-        "description": "Traffic Collision-No Injury",
-        "status": "ACTIVE",
-        "logNumber": "260626MR0209",
-        "started": "2026-06-26T18:22:00Z",
-        "lastUpdated": "2026-06-26T19:47:00Z",
+        "lastUpdated": "2026-06-26T20:44:00Z",
         "area": "mother-lode"
       },
       {
@@ -662,7 +361,7 @@
         "status": "ACTIVE",
         "logNumber": "C49NA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -678,7 +377,7 @@
         "status": "ACTIVE",
         "logNumber": "C89LA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -694,7 +393,7 @@
         "status": "ACTIVE",
         "logNumber": "P193HA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -710,7 +409,7 @@
         "status": "ACTIVE",
         "logNumber": "C89HA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -726,7 +425,7 @@
         "status": "ACTIVE",
         "logNumber": "C50GA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -742,7 +441,7 @@
         "status": "ACTIVE",
         "logNumber": "C49CB",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -758,7 +457,7 @@
         "status": "ACTIVE",
         "logNumber": "P49LA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -774,7 +473,7 @@
         "status": "ACTIVE",
         "logNumber": "P132HA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -790,7 +489,7 @@
         "status": "ACTIVE",
         "logNumber": "C132AA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -806,39 +505,7 @@
         "status": "ACTIVE",
         "logNumber": "C49AB",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "T120AA",
-        "type": "CLOSURE",
-        "severity": "CRITICAL",
-        "location": {
-          "latitude": 37.817139,
-          "longitude": -120.12972
-        },
-        "locationDescription": "From Hells Hollow Road/Ferretti Road to Fire Road Drive (Right)",
-        "description": "Route 120 One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "T120AA",
-        "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C49CA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 38.071727,
-          "longitude": -120.541914
-        },
-        "locationDescription": "From South Bret Harte (Right)/Sam's Way (Left) to Copello Drive (Left)",
-        "description": "Northbound / Southbound 49 Lane Closure",
-        "status": "ACTIVE",
-        "logNumber": "C49CA",
-        "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       },
       {
@@ -854,11 +521,11 @@
         "status": "ACTIVE",
         "logNumber": "P99DA",
         "started": null,
-        "lastUpdated": "2026-06-26T19:46:00Z",
+        "lastUpdated": "2026-06-26T20:43:00Z",
         "area": "mother-lode"
       }
     ],
-    "lastUpdated": "2026-06-26T19:48:10.219586312Z",
+    "lastUpdated": "2026-06-26T20:44:48.996771519Z",
     "area": "mother-lode"
   }
 }

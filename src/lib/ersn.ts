@@ -15,10 +15,14 @@ export const ERSN_API_BASE =
   import.meta.env?.PUBLIC_ERSN_API_BASE ?? 'https://info.ersn.net/api/v1';
 
 /**
- * NWS forecast zones for the foothills (design's specified scope). The feed filters
- * `/weather/alerts?zones=…` to these (FR-2). Edit here to change alert coverage.
+ * NWS Sacramento forecast zones covering the service area (the feed filters
+ * `/weather/alerts?zones=…` to these, FR-2):
+ *   CAZ067 / CAZ069 — Tuolumne + the Mother Lode foothills up to the Sierra crest
+ *   CAZ019          — lower Calaveras / Stanislaus (the western/low edge, Angels Camp)
+ *   CAZ072          — Alpine / high Sierra (the Hwy 4 high country: Bear Valley, Ebbetts)
+ * Edit here to change alert coverage — single source of truth for the whole site.
  */
-export const NWS_ZONES = ['CAZ064', 'CAZ065', 'CAZ258', 'CAZ259'] as const;
+export const NWS_ZONES = ['CAZ019', 'CAZ067', 'CAZ069', 'CAZ072'] as const;
 
 // ---- Types (mirror the real API responses captured 2026-06-26) ----
 

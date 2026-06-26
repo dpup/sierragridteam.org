@@ -21,7 +21,7 @@ async function get(path: string): Promise<unknown> {
   return res.json();
 }
 
-const NWS_ZONES = ['CAZ064', 'CAZ065', 'CAZ258', 'CAZ259'];
+const NWS_ZONES = ['CAZ019', 'CAZ067', 'CAZ069', 'CAZ072'];
 const INCIDENT_AREA = 'mother-lode';
 
 async function main() {

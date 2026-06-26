@@ -52,10 +52,11 @@ fireWeather = {
 }
 ```
 
-### `GET /weather/alerts?zones=CAZ064,CAZ065,CAZ258,CAZ259` (FR-2)
+### `GET /weather/alerts?zones=CAZ019,CAZ067,CAZ069,CAZ072` (FR-2)
 
-`{ alerts: Alert[], lastUpdated }`. NWS / OpenWeatherMap zone alerts for the foothill
-forecast zones. Powers AlertsFeed + the home "Active Alerts" tile.
+`{ alerts: Alert[], lastUpdated }`. NWS / OpenWeatherMap zone alerts for the service-area
+forecast zones (Tuolumne + Mother Lode foothills 067/069, lower Calaveras 019, Alpine/
+high-Sierra 072 — see `NWS_ZONES`). Powers AlertsFeed + the home "Active Alerts" tile.
 
 ```jsonc
 Alert = {
