@@ -43,11 +43,13 @@ const list = alerts?.alerts ?? [];
     }
   </div>
 
-  <Callout accent="brass" heading="Coverage note" class="feed__note">
-    Zone-specific National Weather Service alerts (CAZ064 / CAZ065 / CAZ258 / CAZ259) are not yet
-    available from the data feed; this list reflects the regional weather feed. NWS-zone integration
-    is tracked as a feature request.
-  </Callout>
+  <div class="feed__note">
+    <Callout accent="brass" heading="Coverage note">
+      Zone-specific National Weather Service alerts (CAZ064 / CAZ065 / CAZ258 / CAZ259) are not yet
+      available from the data feed; this list reflects the regional weather feed. NWS-zone
+      integration is tracked as a feature request.
+    </Callout>
+  </div>
 </section>
 
 <script>

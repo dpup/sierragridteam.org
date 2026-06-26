@@ -32,10 +32,12 @@ const contactSchema = {
       <p class="contact-head__intro">{contact.intro}</p>
     </header>
 
-    <Callout accent="orange" heading="Not for emergencies" role="note" class="contact-911">
-      This form is not monitored around the clock and is not an emergency service.{' '}
-      <strong>In a life-threatening emergency, call 911.</strong>
-    </Callout>
+    <div class="contact-911">
+      <Callout accent="orange" heading="Not for emergencies" role="note">
+        This form is not monitored around the clock and is not an emergency service.{' '}
+        <strong>In a life-threatening emergency, call 911.</strong>
+      </Callout>
+    </div>
 
     <div class="contact-grid">
       <div class="contact-aside">
