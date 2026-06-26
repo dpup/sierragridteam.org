@@ -74,8 +74,8 @@ const ariaLabel =
             {t.label && (
               <text
                 class="coverage__label"
-                x={labelSide(t.x) === 'left' ? -7 : 7}
-                y="1.4"
+                x={labelSide(t.x) === 'left' ? -5 : 5}
+                y="1.2"
                 text-anchor={labelSide(t.x) === 'left' ? 'end' : 'start'}
                 vector-effect="non-scaling-stroke"
               >
@@ -163,14 +163,14 @@ const ariaLabel =
 
   .coverage__label {
     font-family: var(--font-ui);
-    font-size: 6px;
+    font-size: 4px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     fill: var(--ink-strong);
     paint-order: stroke;
     stroke: var(--surface-hero);
-    stroke-width: 3px;
+    stroke-width: 2px;
     stroke-linejoin: round;
   }
   .coverage__marker--hq .coverage__label {

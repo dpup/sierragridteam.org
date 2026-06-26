@@ -146,10 +146,19 @@ const year = site.foundingYear;
     color: var(--ink-muted);
   }
 
-  @media (max-width: 720px) {
+  @media (max-width: 900px) {
+    .footer__top {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7) var(--space-8);
+    }
+    .footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 560px) {
     .footer__top {
       grid-template-columns: 1fr;
-      gap: var(--space-7);
     }
   }
 </style>

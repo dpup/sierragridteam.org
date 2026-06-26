@@ -98,7 +98,7 @@
   --gutter: clamp(20px, 5vw, 56px);
 
   /* Section vertical rhythm (64–72px), responsive down on small screens. */
-  --section-y: clamp(40px, 6vw, 72px);
+  --section-y: clamp(30px, 3.4vw, 44px);
 
   /* ---- Motion (restrained; gated by prefers-reduced-motion in base.css) ---- */
   --blink-duration: 2s;

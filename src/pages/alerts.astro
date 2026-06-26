@@ -116,8 +116,18 @@ const resources = [
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-4);
+  }
+  @media (max-width: 900px) {
+    .resources {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .resources {
+      grid-template-columns: 1fr;
+    }
   }
   .resource {
     display: flex;

@@ -189,6 +189,11 @@ const titleCase = (s: string) =>
     background: var(--brand-brass);
   }
 
+  @media (max-width: 900px) {
+    .roads {
+      grid-template-columns: 1fr;
+    }
+  }
   @media (max-width: 420px) {
     .road__metrics {
       grid-template-columns: repeat(2, 1fr);

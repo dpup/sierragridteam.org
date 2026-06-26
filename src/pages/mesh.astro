@@ -25,12 +25,7 @@ const description =
       <span data-mesh-toggle-label>Hide panel</span>
     </button>
 
-    <aside
-      class="mesh-layout__panel"
-      id="mesh-panel"
-      aria-label="Mesh network information"
-      tabindex="0"
-    >
+    <aside class="mesh-layout__panel" id="mesh-panel" aria-label="Mesh network information">
       <MeshSidebar />
     </aside>
   </div>
@@ -58,8 +53,8 @@ const description =
     position: relative;
     display: grid;
     grid-template-columns: 1fr 380px;
-    height: calc(100dvh - var(--topbar-h));
-    min-height: 520px;
+    align-items: stretch;
+    min-height: calc(100dvh - var(--topbar-h));
     border-bottom: var(--border);
     transition: grid-template-columns var(--transition);
   }
@@ -75,8 +70,6 @@ const description =
   .mesh-layout__panel {
     border-left: var(--border);
     background: var(--surface-card);
-    overflow-y: auto;
-    overflow-x: hidden;
   }
   .mesh-layout[data-panel='closed'] .mesh-layout__panel {
     border-left: 0;
@@ -132,8 +125,8 @@ const description =
       height: auto;
     }
     .mesh-layout__map {
-      height: 60vh;
-      min-height: 360px;
+      height: 52vh;
+      min-height: 320px;
     }
     .mesh-layout__panel {
       border-left: 0;
