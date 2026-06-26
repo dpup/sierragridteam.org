@@ -6,14 +6,16 @@ Most are external/account actions that can't be done from the codebase.
 ## Must-do before launch
 
 - [x] **Contact email set live** (`info@sierragridteam.org`, `emailIsPlaceholder:
-    false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
+false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 - [x] **P.O. Box ZIP corrected to 95247** (the brief's 95427 was a digit
       transposition); updated in `src/config/site.ts`.
-- [ ] **AWS + Hostinger.** Create the S3 bucket + CloudFront distribution, map
-      403/404 → `/404.html`, attach the ACM cert, and point Hostinger DNS at
-      CloudFront. See `docs/deployment.md`.
-- [ ] **GitHub deploy secrets.** Set `AWS_ROLE_ARN` (or access keys), `AWS_REGION`,
-      `S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID` so `deploy.yml` can run.
+- [ ] **AWS infra (Terraform, separate project).** Provision the S3 bucket +
+      CloudFront (OAC, 403/404 → `/404.html`, ACM cert) and a deploy IAM user, then
+      add the Hostinger DNS records. See `docs/deployment.md`.
+- [ ] **GitHub deploy secrets.** Add as **secrets**: `AWS_ACCESS_KEY_ID`,
+      `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_ACCOUNT_ID`, `S3_BUCKET`,
+      `CLOUDFRONT_DISTRIBUTION_ID`. Deploy then **auto-runs on merge** (after CI) and
+      aborts if the account id doesn't match.
 - [ ] **Push to a remote** (the repo is currently local-only) so CI/CD runs.
 
 ## Should-do
