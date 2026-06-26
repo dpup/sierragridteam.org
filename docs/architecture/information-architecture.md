@@ -70,7 +70,7 @@ Order, top to bottom:
 
 - Full-page embedded **live map** (`https://livemap.wcmesh.com/bayarea/`) with a loading state
   while it initializes. **This is the authoritative live map** — the homepage hero is not.
-- Collapsible info **sidebar**: tech specs (LoRa/Meshtastic), S.I.E.R.R.A deployment zones
+- Collapsible info **sidebar**: tech specs (LoRa/MeshCore), S.I.E.R.R.A deployment zones
   (Murphys, Angels Camp, Sonora, Arnold, …), security notes.
 - External **"Open Full Map"** link.
 

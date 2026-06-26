@@ -16,7 +16,7 @@ export const ogCards: Record<string, OgCard> = {
   mesh: {
     kicker: mesh.kicker,
     title: mesh.title,
-    subtitle: 'Live LoRa / Meshtastic coverage across the Highway 4 & 49 corridors.',
+    subtitle: 'Live LoRa / MeshCore coverage across the Highway 4 & 49 corridors.',
   },
   alerts: {
     kicker: alerts.kicker,

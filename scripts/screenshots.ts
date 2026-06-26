@@ -23,6 +23,8 @@ const FIXED = new Date('2026-06-25T13:30:00-07:00'); // 13:30 PT, stable
 
 const viewports = [
   { name: 'desktop', width: 1440, height: 900 },
+  { name: 'w1000', width: 1000, height: 900 },
+  { name: 'w880', width: 880, height: 1000 },
   { name: 'tablet', width: 834, height: 1112 },
   { name: 'mobile', width: 390, height: 844 },
 ];

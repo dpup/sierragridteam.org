@@ -29,7 +29,7 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
 | Path       | Description (draft)                                                                                                                                                     |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/`        | Off-grid emergency communications for the Calaveras & Tuolumne foothills. S.I.E.R.R.A builds, operates, and trains the volunteers behind a resilient LoRa mesh network. |
-| `/mesh`    | Live coverage map of the S.I.E.R.R.A LoRa/Meshtastic mesh network across the Highway 4 and Highway 49 corridors.                                                        |
+| `/mesh`    | Live coverage map of the S.I.E.R.R.A LoRa/MeshCore mesh network across the Highway 4 and Highway 49 corridors.                                                          |
 | `/alerts`  | Current weather, fire-weather, and road alerts for the Calaveras & Tuolumne foothills, plus CHP dispatch and emergency resource links.                                  |
 | `/contact` | Volunteer with S.I.E.R.R.A — ham operators, LoRa techs, and emergency-management roles. Reach us by mail or email.                                                      |
 

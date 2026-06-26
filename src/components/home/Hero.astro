@@ -92,7 +92,6 @@ const roleClass: Record<string, string> = {
     border-bottom: var(--border);
     display: flex;
     flex-direction: column;
-    min-height: var(--hero-min-h);
     overflow: hidden;
   }
 
@@ -144,13 +143,10 @@ const roleClass: Record<string, string> = {
     );
   }
 
-  .hero__container {
+  .hero :global(.hero__container) {
     position: relative;
     z-index: 1;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    padding-block: var(--space-8);
+    padding-block: var(--space-9);
   }
 
   .hero__grid {
@@ -296,20 +292,15 @@ const roleClass: Record<string, string> = {
 
   /* Tablet and below: drop the map (and its legend); keep the brand + message. */
   @media (max-width: 900px) {
-    .hero {
-      min-height: 0;
-    }
     .hero__grid {
       grid-template-columns: 1fr;
     }
-    .hero__map {
-      display: none;
-    }
+    .hero__map,
     .hero__legend {
       display: none;
     }
-    .hero__container {
-      padding-block: var(--space-7);
+    .hero :global(.hero__container) {
+      padding-block: var(--space-8);
     }
   }
 </style>

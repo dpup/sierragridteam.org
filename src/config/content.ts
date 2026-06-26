@@ -67,7 +67,7 @@ export const home = {
 
 export const mesh = {
   title: 'Mesh Network',
-  kicker: 'LoRa · Meshtastic',
+  kicker: 'LoRa · MeshCore',
   intro:
     'A live view of the S.I.E.R.R.A mesh — solar-powered LoRa relays that pass text and ' +
     'telemetry across the foothills when power and cellular service are down. This map is the ' +
@@ -76,7 +76,7 @@ export const mesh = {
   mapEmbedTitle: 'S.I.E.R.R.A live mesh coverage map',
   specsHeading: 'Technical specifications',
   specs: [
-    { label: 'Protocol', value: 'LoRa · Meshtastic' },
+    { label: 'Protocol', value: 'LoRa · MeshCore' },
     { label: 'Band', value: '915 MHz (US ISM)' },
     { label: 'Topology', value: 'Self-healing mesh' },
     { label: 'Power', value: 'Solar + battery relays' },
@@ -119,7 +119,7 @@ export const contact = {
       desc: 'Licensed operators to staff nets, relay traffic, and support agency communications.',
     },
     {
-      name: 'LoRa / Meshtastic Technicians',
+      name: 'LoRa / MeshCore Technicians',
       desc: 'Build, deploy, and maintain solar relay sites and configure mesh nodes.',
     },
     {
