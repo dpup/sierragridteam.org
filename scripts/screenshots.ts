@@ -83,8 +83,13 @@ async function main() {
       });
       await page.evaluate(() => (document as Document).fonts.ready);
       await page.waitForTimeout(150);
-      const file = resolve(OUT, `${pg.name}-${vp.name}.png`);
-      await page.screenshot({ path: file, fullPage: true });
+      // Full page (whole scroll) + above-the-fold (viewport only) — the fold shot
+      // surfaces top-of-page issues like the nav/header overlap and the hero on tablet.
+      await page.screenshot({ path: resolve(OUT, `${pg.name}-${vp.name}.png`), fullPage: true });
+      await page.screenshot({
+        path: resolve(OUT, `${pg.name}-${vp.name}-fold.png`),
+        fullPage: false,
+      });
       await page.close();
       count++;
       console.error(`✓ ${pg.name} @ ${vp.name}`);

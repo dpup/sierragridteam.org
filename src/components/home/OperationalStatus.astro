@@ -7,7 +7,7 @@
  * the SSR values and shows a muted sync state — never a spinner or error.
  */
 import Container from '../Container.astro';
-import SectionHeader from '../SectionHeader.astro';
+import Kicker from '../Kicker.astro';
 import StatTile from '../StatTile.astro';
 import StatusPill from '../StatusPill.astro';
 import { ERSN_API_BASE, type OperationalStatus } from '@lib/ersn';
@@ -49,13 +49,19 @@ function formatPT(iso: string | null): string {
 const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last known';
 ---
 
-<section class="ops" aria-labelledby="ops-title" data-ops data-api-base={ERSN_API_BASE}>
+<section
+  class="ops"
+  aria-label="Real-time operational status"
+  data-ops
+  data-api-base={ERSN_API_BASE}
+>
   <Container wide>
-    <SectionHeader kicker={home.status.kicker} title={home.status.title} headingId="ops-title">
-      <StatusPill slot="aside" tone="muted" blink={false} data-synced>
+    <div class="ops__head">
+      <Kicker>{home.status.kicker}</Kicker>
+      <StatusPill tone="muted" blink={false} data-synced>
         {syncedLabel}
       </StatusPill>
-    </SectionHeader>
+    </div>
 
     <div class="ops__grid">
       <StatTile
@@ -87,16 +93,6 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
         key="fire"
       />
     </div>
-
-    {
-      status.fireWeatherPlaceholder && (
-        <p class="ops__note">
-          Fire-weather classification (Normal / Elevated / Red Flag) is pending an upstream data
-          source; the tile shows a conservative default and never reports a Red Flag it cannot
-          confirm.
-        </p>
-      )
-    }
   </Container>
 </section>
 
@@ -171,8 +167,16 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
     background: var(--surface-page);
   }
 
+  .ops__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+
   .ops__grid {
-    margin-top: var(--space-6);
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--space-4);

@@ -1,9 +1,10 @@
 ---
 /**
- * Hero — the homepage coverage-map band (design-system §6).
- * Left: emblem, two-tone headline, subhead, two buttons. Right: CoverageMap.
- * A thin legend strip is pinned to the bottom explaining the marker roles.
- * Min-height ~680px, NOT forced to full viewport; anchored to the wide container.
+ * Hero — the homepage coverage band (design-system §6).
+ * Left: brand lockup (mark + S.I.E.R.R.A + full-name definition), two-tone
+ * headline, subhead, two buttons. Right: the thin CoverageMap.
+ * The faint surveyed grid + soft topographic contours span the WHOLE band
+ * (behind everything), not just the map. On tablet and below the map is dropped.
  */
 import Container from '../Container.astro';
 import Logo from '../Logo.astro';
@@ -11,6 +12,7 @@ import Button from '../Button.astro';
 import CoverageMap from './CoverageMap.astro';
 import { home } from '@config/content';
 import { legend } from '@config/coverage';
+import { site } from '@config/site';
 
 const { hero } = home;
 const roleClass: Record<string, string> = {
@@ -21,12 +23,28 @@ const roleClass: Record<string, string> = {
 ---
 
 <section class="hero" aria-labelledby="hero-title">
+  {/* Full-width band texture: faint grid (CSS) + soft contours (SVG) */}
+  <div class="hero__bg" aria-hidden="true">
+    <svg class="hero__contours" viewBox="0 0 1320 760" preserveAspectRatio="none">
+      <path class="hero__contour" d="M-20 168 C 330 110, 640 250, 1340 150"></path>
+      <path class="hero__contour is-brass" d="M-20 372 C 380 312, 740 470, 1340 360"></path>
+      <path class="hero__contour" d="M-20 560 C 300 500, 680 650, 1340 548"></path>
+      <path class="hero__contour is-brass" d="M-20 690 C 360 640, 720 770, 1340 680"></path>
+    </svg>
+  </div>
   <div class="hero__glow" aria-hidden="true"></div>
 
   <Container wide class="hero__container">
     <div class="hero__grid">
       <div class="hero__message">
-        <Logo variant="mark" height={54} class="hero__emblem" />
+        <div class="hero__lockup">
+          <Logo variant="mark" height={46} class="hero__emblem" />
+          <div class="hero__lockup-text">
+            <span class="hero__wordmark">{site.name}</span>
+            <span class="hero__defn">{site.legalName}</span>
+          </div>
+        </div>
+
         <h1 id="hero-title" class="hero__headline">
           <span class="hero__headline-muted">{hero.headlineMuted}</span>
           <span class="hero__headline-strong">{hero.headlineStrong}</span>
@@ -78,21 +96,57 @@ const roleClass: Record<string, string> = {
     overflow: hidden;
   }
 
-  /* The single permitted decorative gradient — a barely-visible green glow
-     toward the upper-right where the map sits. */
+  /* Faint surveyed grid across the whole band — softer than the map ever was. */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 52px 52px;
+  }
+
+  .hero__contours {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .hero__contour {
+    fill: none;
+    stroke: var(--brand-green);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.09;
+  }
+  .hero__contour.is-brass {
+    stroke: var(--brand-brass);
+    opacity: 0.11;
+  }
+
+  /* The single permitted decorative gradient — a barely-visible green glow. */
   .hero__glow {
     position: absolute;
     inset: 0;
-    background: radial-gradient(
-      120% 80% at 78% 22%,
-      color-mix(in srgb, var(--brand-green) 12%, transparent),
-      transparent 60%
-    );
     pointer-events: none;
+    background: radial-gradient(
+      120% 80% at 80% 24%,
+      color-mix(in srgb, var(--brand-green) 9%, transparent),
+      transparent 58%
+    );
   }
 
   .hero__container {
     position: relative;
+    z-index: 1;
     flex: 1;
     display: flex;
     align-items: center;
@@ -111,8 +165,35 @@ const roleClass: Record<string, string> = {
     max-width: 560px;
   }
 
-  .hero__emblem {
+  /* Brand lockup: mark + wordmark + the full-name definition (Jay's ask). */
+  .hero__lockup {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
     margin-bottom: var(--space-6);
+  }
+  .hero__lockup-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .hero__wordmark {
+    font-family: var(--font-display);
+    font-weight: var(--fw-semibold);
+    font-size: 1.25rem;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--ink-strong);
+  }
+  .hero__defn {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.12em;
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+    max-width: 44ch;
   }
 
   .hero__headline {
@@ -156,11 +237,12 @@ const roleClass: Record<string, string> = {
     display: flex;
   }
 
-  /* Legend strip pinned to the bottom of the band */
+  /* Legend strip pinned to the bottom of the band (explains the map markers) */
   .hero__legend {
     position: relative;
+    z-index: 1;
     border-top: var(--border);
-    background: color-mix(in srgb, var(--surface-hero) 60%, var(--surface-page));
+    background: color-mix(in srgb, var(--surface-hero) 55%, var(--surface-page));
     padding-block: var(--space-4);
   }
 
@@ -212,17 +294,22 @@ const roleClass: Record<string, string> = {
     color: var(--brand-brass-text);
   }
 
+  /* Tablet and below: drop the map (and its legend); keep the brand + message. */
   @media (max-width: 900px) {
-    .hero__grid {
-      grid-template-columns: 1fr;
-      gap: var(--space-6);
-    }
-    .hero__map {
-      min-height: 300px;
-      order: 2;
-    }
     .hero {
       min-height: 0;
+    }
+    .hero__grid {
+      grid-template-columns: 1fr;
+    }
+    .hero__map {
+      display: none;
+    }
+    .hero__legend {
+      display: none;
+    }
+    .hero__container {
+      padding-block: var(--space-7);
     }
   }
 </style>

@@ -1,38 +1,35 @@
 ---
 /**
- * CoverageMap — the homepage hero's stylized topographic coverage map.
+ * CoverageMap — the homepage hero's town network (corridors + markers + labels).
  *
- * HONESTY RULE (design-system §6): this is an IDENTITY / coverage visual, NOT
- * live network topology. It must never claim real-time node positions. Towns are
- * placed in true relative geography (src/config/coverage.ts); markers and the
- * corridor links share ONE coordinate system so they stay aligned at any width.
+ * HONESTY RULE (design-system §6): an IDENTITY / coverage visual, NOT live network
+ * topology. Towns are placed in true relative geography (src/config/coverage.ts);
+ * markers and the corridor links share ONE coordinate system so they stay aligned.
  *
- * Layer stack (back → front): faint grid · topo contours · coverage links ·
- * town markers + labels. The radial glow + surface live on the Hero band.
+ * The faint grid + topographic contours now live on the Hero band background
+ * (full-width), not here. This component stays deliberately thin and quiet:
+ * 1px non-scaling strokes, small dots, small labels.
  */
 import { towns, corridors, townById } from '@config/coverage';
 
-// Compute a viewBox from the town bounds (+ padding) so everything aligns.
+// viewBox from the town bounds (+ padding) so markers and links share one system.
 const xs = towns.map((t) => t.x);
 const ys = towns.map((t) => t.y);
-const PAD = 38;
+const PAD = 34;
 const minX = Math.min(...xs) - PAD;
 const minY = Math.min(...ys) - PAD;
 const w = Math.max(...xs) - Math.min(...xs) + PAD * 2;
 const h = Math.max(...ys) - Math.min(...ys) + PAD * 2;
 const viewBox = `${minX} ${minY} ${w} ${h}`;
 
-// Build an SVG polyline path string for a corridor from its town ids.
 const corridorPath = (ids: readonly string[]) =>
   ids
     .map((id, i) => {
       const t = townById(id);
-      if (!t) return '';
-      return `${i === 0 ? 'M' : 'L'} ${t.x} ${t.y}`;
+      return t ? `${i === 0 ? 'M' : 'L'} ${t.x} ${t.y}` : '';
     })
     .join(' ');
 
-// Decide a label's side so it reads clearly and stays inside the frame.
 const labelSide = (x: number) => (x > minX + w * 0.62 ? 'left' : 'right');
 
 const ariaLabel =
@@ -47,41 +44,20 @@ const ariaLabel =
     preserveAspectRatio="xMidYMid meet"
     aria-hidden="true"
   >
-    <defs>
-      <pattern id="cov-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-        <path d="M 20 0 L 0 0 0 20" fill="none" class="coverage__grid-line"></path>
-      </pattern>
-    </defs>
-
-    {/* Layer 2 — faint surveyed grid */}
-    <rect x={minX} y={minY} width={w} height={h} fill="url(#cov-grid)"></rect>
-
-    {/* Layer 3 — soft topographic contours (decorative) */}
-    <g class="coverage__contours">
-      <path
-        d={`M ${minX} ${minY + h * 0.3} C ${minX + w * 0.3} ${minY + h * 0.18}, ${minX + w * 0.62} ${minY + h * 0.42}, ${minX + w} ${minY + h * 0.26}`}
-      ></path>
-      <path
-        d={`M ${minX} ${minY + h * 0.52} C ${minX + w * 0.34} ${minY + h * 0.4}, ${minX + w * 0.66} ${minY + h * 0.66}, ${minX + w} ${minY + h * 0.5}`}
-        class="is-brass"></path>
-      <path
-        d={`M ${minX} ${minY + h * 0.74} C ${minX + w * 0.3} ${minY + h * 0.64}, ${minX + w * 0.7} ${minY + h * 0.86}, ${minX + w} ${minY + h * 0.72}`}
-      ></path>
-    </g>
-
-    {/* Layer 4 — coverage links along road corridors */}
+    {/* Coverage links along road corridors — true 1px regardless of scale */}
     <g class="coverage__links">
       {
         corridors.map((c) => (
           <path
             d={corridorPath(c.path)}
             class:list={['coverage__link', { 'is-dashed': c.kind === 'dashed' }]}
+            vector-effect="non-scaling-stroke"
           />
         ))
       }
     </g>
 
-    {/* Layer 5 — town markers + labels */}
+    {/* Town markers + labels */}
     <g class="coverage__markers">
       {
         towns.map((t, i) => (
@@ -91,16 +67,17 @@ const ariaLabel =
           >
             <circle
               class="coverage__ping"
-              r="5"
+              r="3.4"
               style={`animation-delay:${(i * 0.4).toFixed(2)}s`}
             />
-            <circle class="coverage__dot" r="4.5" />
+            <circle class="coverage__dot" r="3" vector-effect="non-scaling-stroke" />
             {t.label && (
               <text
                 class="coverage__label"
-                x={labelSide(t.x) === 'left' ? -9 : 9}
-                y="1.5"
+                x={labelSide(t.x) === 'left' ? -7 : 7}
+                y="1.4"
                 text-anchor={labelSide(t.x) === 'left' ? 'end' : 'start'}
+                vector-effect="non-scaling-stroke"
               >
                 {t.name}
                 {t.role === 'hq' ? ' · HQ' : ''}
@@ -117,7 +94,7 @@ const ariaLabel =
   .coverage {
     width: 100%;
     height: 100%;
-    min-height: 320px;
+    min-height: 300px;
     display: flex;
   }
 
@@ -126,35 +103,19 @@ const ariaLabel =
     height: 100%;
   }
 
-  .coverage__grid-line {
-    stroke: var(--brand-green);
-    stroke-width: 0.5;
-    opacity: 0.07;
-  }
-
-  .coverage__contours path {
-    fill: none;
-    stroke: var(--brand-green);
-    stroke-width: 1.2;
-    opacity: 0.16;
-  }
-  .coverage__contours path.is-brass {
-    stroke: var(--brand-brass);
-    opacity: 0.2;
-  }
-
+  /* Corridor links — 1px on screen at any width */
   .coverage__link {
     fill: none;
     stroke: var(--brand-green);
-    stroke-width: 1.4;
+    stroke-width: 1;
     stroke-linecap: round;
     stroke-linejoin: round;
-    opacity: 0.55;
+    opacity: 0.45;
   }
   .coverage__link.is-dashed {
     stroke: var(--brand-brass);
-    stroke-dasharray: 3 4;
-    opacity: 0.7;
+    stroke-dasharray: 4 5;
+    opacity: 0.55;
   }
 
   .coverage__dot {
@@ -173,7 +134,7 @@ const ariaLabel =
 
   .coverage__ping {
     fill: none;
-    stroke-width: 1.5;
+    stroke-width: 1;
     transform-box: fill-box;
     transform-origin: center;
     animation: coverage-ping var(--ping-duration) ease-out infinite;
@@ -190,26 +151,26 @@ const ariaLabel =
 
   @keyframes coverage-ping {
     0% {
-      transform: scale(0.6);
-      opacity: 0.7;
+      transform: scale(0.7);
+      opacity: 0.6;
     }
     70%,
     100% {
-      transform: scale(3.2);
+      transform: scale(3);
       opacity: 0;
     }
   }
 
   .coverage__label {
     font-family: var(--font-ui);
-    font-size: 7px;
+    font-size: 6px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     fill: var(--ink-strong);
     paint-order: stroke;
     stroke: var(--surface-hero);
-    stroke-width: 2.5px;
+    stroke-width: 3px;
     stroke-linejoin: round;
   }
   .coverage__marker--hq .coverage__label {

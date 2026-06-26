@@ -4,6 +4,7 @@ import Hero from '@components/home/Hero.astro';
 import OperationalStatus from '@components/home/OperationalStatus.astro';
 import Section from '@components/Section.astro';
 import SectionHeader from '@components/SectionHeader.astro';
+import Kicker from '@components/Kicker.astro';
 import DoctrineCard from '@components/DoctrineCard.astro';
 import ServiceBanner from '@components/ServiceBanner.astro';
 import { buildSnapshot, deriveOperationalStatus } from '@lib/ersn';
@@ -41,11 +42,10 @@ const websiteSchema = {
 
   <Section surface="page" labelledby="mission-title">
     <div class="mission">
-      <SectionHeader
-        kicker={home.mission.kicker}
-        title={home.mission.title}
-        headingId="mission-title"
-      />
+      <div class="mission__lead">
+        <Kicker>{home.mission.kicker}</Kicker>
+        <h2 id="mission-title" class="mission__title">{home.mission.title}</h2>
+      </div>
       <p class="mission__body">{home.mission.body}</p>
     </div>
   </Section>
@@ -72,13 +72,28 @@ const websiteSchema = {
 
 <style>
   .mission {
-    max-width: 72ch;
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+  .mission__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+    max-width: 18ch;
   }
   .mission__body {
-    margin-top: var(--space-5);
     font-size: var(--fs-mission);
     line-height: 1.55;
     color: var(--ink-body);
+    max-width: 60ch;
+  }
+
+  @media (max-width: 760px) {
+    .mission {
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+    }
   }
 
   .doctrine-grid {

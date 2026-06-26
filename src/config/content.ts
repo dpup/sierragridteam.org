@@ -18,7 +18,6 @@ export const home = {
 
   status: {
     kicker: 'Real-time Operational Status',
-    title: 'What we can show, honestly.',
   },
 
   mission: {
