@@ -7,12 +7,17 @@
 - Repo: https://github.com/dpup/info.ersn.net · Site: https://ersn.net
 - Base URL: `https://info.ersn.net/api/v1`
 
-## Endpoints & real response shapes (captured 2026-06-25)
+## Endpoints & real response shapes (captured 2026-06-26)
+
+> All five feature requests that gate live data (FR-1/2/3/4/7) shipped on
+> 2026-06-26 and are now wired up — see `FEATURE_REQUESTS.md`. The shapes below are
+> the current ones.
 
 ### `GET /roads` → `{ roads: Road[], lastUpdated: string }`
 
-3 roads on the Hwy 4 corridor — **directly inside S.I.E.R.R.A's service area**:
-`hwy4-angels-murphys`, `hwy4-murphys-arnold`, `hwy4-arnold-bearvalley`.
+4 road segments — the Hwy 4 corridor (`hwy4-angels-murphys`, `hwy4-murphys-arnold`,
+`hwy4-arnold-bearvalley`) plus `hwy49-angels-sonora` (FR-4) — **inside the service
+area**.
 
 ```jsonc
 Road = {
@@ -29,9 +34,10 @@ RoadAlert = {
 }
 ```
 
-### `GET /weather` → `{ weatherData: Weather[], lastUpdated: string }`
+### `GET /weather` → `{ weatherData: Weather[], lastUpdated, fireWeather }`
 
-3 locations: **Murphys, Arnold, Bear Valley** (units: °C, km, km/h).
+7 locations (FR-4): Murphys, Arnold, Bear Valley, Sonora, Columbia, Twain Harte,
+Dorrington (units: °C, km, km/h). Powers the **Current conditions** strip on /alerts.
 
 ```jsonc
 Weather = {
@@ -39,30 +45,60 @@ Weather = {
   temperatureCelsius, feelsLikeCelsius, humidityPercent,
   windSpeedKmh, windDirectionDegrees, visibilityKm, alerts: []
 }
+// Top-level fireWeather (FR-3) — the authoritative Red Flag classification:
+fireWeather = {
+  state: "FIRE_WEATHER_STATE_UNSPECIFIED"|"NORMAL"|"ELEVATED"|"RED_FLAG",
+  sourceEvent, headline, senderName, effective, expires, zones: []
+}
 ```
 
-### `GET /weather/alerts` → `{ alerts: Alert[], lastUpdated: string }`
+### `GET /weather/alerts?zones=CAZ064,CAZ065,CAZ258,CAZ259` (FR-2)
 
-Currently `alerts: []`. Shape used for the Active-Alerts tile and `/alerts` cards.
+`{ alerts: Alert[], lastUpdated }`. NWS / OpenWeatherMap zone alerts for the foothill
+forecast zones. Powers AlertsFeed + the home "Active Alerts" tile.
+
+```jsonc
+Alert = {
+  id, senderName, event, description, headline, summary, details,
+  source: "NWS"|"OPENWEATHERMAP", severity: "INFO"|"WARNING"|"CRITICAL",
+  zones: string[], startTime, endTime, tags: []
+}
+```
+
+### `GET /incidents/{area}` → `{ incidents: Incident[], lastUpdated, area }` (FR-7)
+
+Region-wide CHP/Caltrans dispatch incidents (`area` = `mother-lode`). This spans the
+whole Mother Lode (incl. Modesto, Tahoe, Merced), so `splitIncidents` (src/lib/ersn.ts)
+partitions it into the foothill service area (see `serviceAreaBounds`) vs the wider
+region for the "CHP & Caltrans incidents" section.
+
+```jsonc
+Incident = {
+  id, type: "INCIDENT"|"CLOSURE", severity: "INFO"|"WARNING"|"CRITICAL",
+  location: { latitude, longitude }, locationDescription, description,
+  status: "ACTIVE"|…, logNumber, started, lastUpdated, area
+}
+```
 
 ## Architecture: hybrid SSG snapshot + client refresh
 
-**Why hybrid:** A direct browser fetch from `sierragridteam.org` to `info.ersn.net` is currently
-**CORS-blocked** — the API returns `Access-Control-Allow-Credentials: true` but **no
-`Access-Control-Allow-Origin`** header, even when an `Origin` is sent. So client-side fetch will
-fail cross-origin until the API adds the header (filed as FR-1).
+**Why hybrid:** Build-time SSR is the SEO-visible, always-present "last-known value"; the client
+refresh keeps it current. As of 2026-06-26 CORS is **resolved** (FR-1) — the API returns
+`Access-Control-Allow-Origin` for `https://sierragridteam.org` and `http://localhost:4321`, so the
+client refresh now works live in both production and dev. (A non-allowlisted origin still gets no
+header, and the island degrades silently — the SSR snapshot stays.)
 
-Strategy that is correct **today** and upgrades automatically once CORS lands:
+The same hybrid strategy still holds:
 
 1. **Build-time fetch (server-side, no CORS limit).** `src/lib/ersn.ts` fetches roads + weather +
    alerts during `astro build` and writes a typed snapshot. This is the SSR/SSG content — always
    present, SEO-visible, fast. It is also the design's required "last-known value."
 2. **Checked-in fallback snapshot** (`src/data/ersn-snapshot.json`) so the build still succeeds if
    the API is unreachable at build time (CI resilience). Refreshed by `make snapshot`.
-3. **Client refresh island** attempts a live fetch every 5 min. On success it updates values +
-   the "Synced [time]" indicator. **On any failure (incl. CORS) it silently keeps the build-time
-   snapshot** and shows a muted "—" sync state — per the design's "never show a spinner/error in
-   the hero" rule. When FR-1 ships, live refresh starts working with zero code change.
+3. **Client refresh island** fetches live every 5 min (`/weather` + zone-filtered `/weather/alerts`).
+   On success it updates the tiles + the "Synced [time]" indicator. **On any failure it silently
+   keeps the build-time snapshot** — per the design's "never show a spinner/error in the hero" rule.
+   (Road conditions, current conditions, and incidents are SSR-only from the snapshot.)
 
 ```
 build ──fetch──> ersn.ts ──> snapshot (typed) ──> SSR HTML  ──hydrate──> client refresh (5 min)
@@ -73,18 +109,18 @@ build ──fetch──> ersn.ts ──> snapshot (typed) ──> SSR HTML  ─�
 All units converted for display in `src/lib/units.ts` (°C→°F, km→mi, km/h→mph) since the audience
 is US public-safety/residents.
 
-## Data gaps → feature requests (FR) + UI placeholders
+## Data gaps → feature requests (FR)
 
-| FR       | Gap                                                                                                                                             | Where it shows                   | UI placeholder behavior                                                                                                          |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **FR-1** | No CORS `Access-Control-Allow-Origin` → client refresh blocked                                                                                  | Home stats, /alerts auto-refresh | SSR snapshot shown; "—" sync state; refresh upgrades silently when fixed                                                         |
-| **FR-2** | No NWS zone alerts for **CAZ064/065/258/259** (design's specified source)                                                                       | /alerts, Active-Alerts tile      | Use `/weather/alerts` + road incidents; label scope "Calaveras & Tuolumne"; placeholder card noting NWS-zone integration pending |
-| **FR-3** | No **fire-weather Red Flag** classification (Normal/Elevated/Red Flag)                                                                          | Home "Fire Weather" tile         | Tile shows "Normal\*" with a footnote; cannot escalate to orange until provided                                                  |
-| **FR-4** | **Hwy 49 / Tuolumne** towns absent (Sonora, Columbia, Twain Harte, Dorrington) — feed is Hwy 4 only (Angels Camp, Murphys, Arnold, Bear Valley) | Home map, /mesh zones, weather   | Those towns rendered as coverage markers w/o live data; "data coming soon" where a value would be                                |
-| **FR-5** | No **per-relay-site status** (the org's own mesh nodes)                                                                                         | Home "Relay Sites" tile, /mesh   | "Relay Sites" uses owned static config; no live up/down until a status feed exists                                               |
-| **FR-6** | No structured **mesh node** feed (count/health)                                                                                                 | /mesh sidebar                    | Static deployment-zone list; live counts pending                                                                                 |
+**FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26 and are wired up** — see
+`FEATURE_REQUESTS.md` for the endpoint/component mapping. The remaining placeholders
+are the org's own mesh/relay status (FR-5/FR-6), which info.ersn.net does not own:
 
-FR-1–FR-4 and FR-7 are filed as issues on `dpup/info.ersn.net` (#3, #4, #5, #6, #7). FR-5/FR-6 concern
-the org’s own mesh/relay infrastructure (out of info.ersn.net’s roads/weather domain) and
+| FR       | Gap                                                     | Where it shows                 | UI behavior today                                                                |
+| -------- | ------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------- |
+| **FR-5** | No **per-relay-site status** (the org's own mesh nodes) | Home "Relay Sites" tile, /mesh | "Relay Sites" uses owned static config; no live up/down until a feed exists      |
+| **FR-6** | No structured **mesh node** feed (count/health)         | /mesh sidebar                  | Static deployment-zone list (`live` flags in `coverage.ts`); live counts pending |
+
+FR-5/FR-6 concern the org’s own mesh/relay infrastructure (out of info.ersn.net’s roads/weather
+domain) and
 are tracked locally — see `FEATURE_REQUESTS.md`. Placeholders must be visually honest: a
 muted note, never an invented number.

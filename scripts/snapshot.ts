@@ -21,12 +21,16 @@ async function get(path: string): Promise<unknown> {
   return res.json();
 }
 
+const NWS_ZONES = ['CAZ064', 'CAZ065', 'CAZ258', 'CAZ259'];
+const INCIDENT_AREA = 'mother-lode';
+
 async function main() {
   console.error(`Fetching snapshot from ${API_BASE} ...`);
-  const [roads, weather, alerts] = await Promise.all([
+  const [roads, weather, alerts, incidents] = await Promise.all([
     get('/roads'),
     get('/weather'),
-    get('/weather/alerts'),
+    get(`/weather/alerts?zones=${NWS_ZONES.join(',')}`),
+    get(`/incidents/${INCIDENT_AREA}`),
   ]);
   const snapshot = {
     fetchedAt: new Date().toISOString(),
@@ -34,6 +38,7 @@ async function main() {
     roads,
     weather,
     alerts,
+    incidents,
   };
   writeFileSync(OUT, JSON.stringify(snapshot, null, 2) + '\n');
   console.error(`Wrote ${OUT}`);

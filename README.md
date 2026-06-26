@@ -57,10 +57,13 @@ warm-parchment identity, not a tech-startup aesthetic.
 
 ## Live data & known gaps
 
-The site reads roads/weather/alerts from info.ersn.net. Data the feed doesn't yet
-provide (browser CORS, NWS zone alerts, Red-Flag classification, the Hwy 49 /
-Tuolumne towns, per-relay status) is shown as an honest placeholder and tracked as
-feature requests — see `FEATURE_REQUESTS.md` and `docs/architecture/data-feed.md`.
+The site reads roads, weather, NWS zone alerts, fire-weather, and region-wide
+CHP/Caltrans incidents live from info.ersn.net (FR-1 CORS, FR-2, FR-3, FR-4, FR-7 all
+delivered 2026-06-26 — home tiles + /alerts refresh every 5 min, with the build-time
+snapshot as the last-known fallback). The only remaining data gap shown as an honest
+placeholder is S.I.E.R.R.A's own per-relay / mesh-node status (FR-5/FR-6), which
+info.ersn.net does not own — see `FEATURE_REQUESTS.md` and
+`docs/architecture/data-feed.md`.
 
 ## Before launch (open items)
 

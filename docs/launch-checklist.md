@@ -27,14 +27,22 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 
 ## Should-do
 
-- [x] **info.ersn.net feature requests filed** ([#3–#7](https://github.com/dpup/info.ersn.net/issues));
-      #3 (CORS) is the unblocker for the live client refresh. See `FEATURE_REQUESTS.md`.
+- [x] **info.ersn.net feature requests delivered + wired** (2026-06-26). FR-1 (CORS),
+      FR-2 (NWS zone alerts), FR-3 (Red Flag fire-weather), FR-4 (Hwy 49 / Tuolumne
+      towns), FR-7 (region-wide CHP/Caltrans incidents) all ship and are consumed live;
+      placeholders removed. FR-5/FR-6 (the org's own mesh/relay status) remain. See
+      `FEATURE_REQUESTS.md`.
+- [ ] **Verify the NWS forecast zones.** Zone CAZ065 currently returns a San-Diego-area
+      Wind Advisory, so `NWS_ZONES` (CAZ064/065/258/259, in `src/lib/ersn.ts`) may not be
+      the right Calaveras/Tuolumne zones. Confirm against NWS Sacramento and fix the
+      one-line list if needed — otherwise the site can surface irrelevant alerts.
 - [x] **Embeds decided.** Mesh map stays embedded (confirmed no X-Frame-Options). The
       CHP CAD iframe was removed in favor of native incident data via info.ersn.net (#7);
       CHP is now a resource link. Verify the mesh map renders once live.
-- [x] **Data freshness — relying on client refresh** (no scheduled rebuild). Once CORS
-      (#3) lands the browser refreshes live every 5 min; until then data is
-      as-of-last-deploy. `make snapshot` refreshes the committed baseline manually.
+- [x] **Data freshness — client refresh is live** (no scheduled rebuild). CORS (FR-1)
+      shipped, so the browser refreshes the home tiles + /alerts every 5 min; SSR shows
+      the build-time snapshot as the last-known value. `make snapshot` refreshes the
+      committed baseline manually.
 - [x] **Dynamic per-page OG cards** built (satori + resvg) at `/og/<slug>.png` — on-brand
       (mark, serif title, brass kicker, network motif); tags complete. Validate the live
       unfurl with a sharing debugger once the domain is up.

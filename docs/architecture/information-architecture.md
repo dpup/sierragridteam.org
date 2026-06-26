@@ -55,10 +55,11 @@ Order, top to bottom:
    "Synced [time]" indicator on the right; a 4-column row of bordered tiles:
    - **Relay Sites** — `6 Active` — static owned config.
    - **Coverage** — `2 Counties` — static scope (Calaveras & Tuolumne).
-   - **Active Alerts** — live count (info.ersn.net `/weather/alerts`; design's NWS-zone source
-     is a feature request). `0 Active` normal; `>0` escalates count + dot to orange.
-   - **Fire Weather** — `Normal` → `Elevated` (brass) → `Red Flag` (orange). Red-Flag
-     classification is a **feature request** against info.ersn.net; placeholder until then.
+   - **Active Alerts** — live count from info.ersn.net `/weather/alerts?zones=…` (NWS foothill
+     zones, FR-2). `0 Active` normal; `>0` escalates count + dot to orange.
+   - **Fire Weather** — `Normal` → `Elevated` (brass) → `Red Flag` (orange), from the feed's
+     authoritative `weather.fireWeather.state` (FR-3). Falls back to a conservative `Normal*`
+     only if the feed omits the classification — never fabricates a Red Flag.
    - On fetch failure: show last-known (build-time snapshot) value + muted "—" sync state.
      **Never** show a spinner or error in the hero region.
 3. **Mission statement** — Newsreader 21px, editorial gravitas. Builds + operates + trains.
@@ -76,13 +77,15 @@ Order, top to bottom:
 
 ### Alerts (`/alerts`)
 
-- Live alert cards, color-coded by severity (Extreme=red `--signal-orange`, Severe=orange,
-  Moderate=brass, Minor=green/neutral), expandable detail, auto-refresh every 5 min.
-  - Data: info.ersn.net `/weather/alerts` (+ road incident alerts from `/roads`).
-    Design's NWS zones CAZ064/065/258/259 are a **feature request**; show region scope + placeholder.
-- Embedded **CHP CAD dispatch** view (cad.chp.ca.gov) framed with browser-chrome UI.
-- County quick-links (Angels Camp + Sonora/Mother Lode).
-- Resource links: NWS Sacramento, CAL FIRE, USGS Earthquakes.
+- **Current conditions** strip — per-town temp / sky / wind for the 7 covered towns
+  (info.ersn.net `/weather`, FR-4), °C→°F / km/h→mph converted.
+- **Active weather alerts** — cards color-coded by severity (Critical=`--signal-orange`,
+  Warning=brass, Info=green/neutral), expandable detail, auto-refresh every 5 min. Data:
+  zone-filtered `/weather/alerts?zones=CAZ064,CAZ065,CAZ258,CAZ259` (FR-2, NWS/OpenWeatherMap).
+- **Road conditions** — live status/travel/delay/chains for the Hwy 4 + Hwy 49 segments (`/roads`).
+- **CHP & Caltrans incidents** — region-wide dispatch feed (`/incidents/mother-lode`, FR-7),
+  split service-area-first with a collapsible "wider Mother Lode region" group (`splitIncidents`).
+- Resource links: CHP Dispatch (cad.chp.ca.gov), NWS Sacramento, CAL FIRE, USGS Earthquakes.
 
 ### Contact (`/contact`)
 

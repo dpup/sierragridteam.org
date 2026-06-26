@@ -7,7 +7,9 @@
  * so the PNGs are byte-stable and safe to diff or analyze.
  *
  * Requires the built site served at BASE_URL (default http://localhost:4321).
- * Run: `npm run screenshots` after `npm run build` + `astro preview`.
+ * Build the SSR with the CHECKED-IN snapshot so the SSR-only sections (road
+ * conditions, current conditions, incidents) are byte-stable:
+ *   ERSN_FETCH_AT_BUILD=0 npm run build && npm run preview & npm run screenshots
  * Optional: SCENARIO=redflag to render the alarm state.
  */
 import { chromium, type Route } from 'playwright';
@@ -40,9 +42,24 @@ const pages = [
 ];
 
 const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/ersn-snapshot.json'), 'utf8'));
-const redflag = JSON.parse(
-  readFileSync(resolve(root, 'src/data/__fixtures__/alerts-redflag.json'), 'utf8')
-);
+
+// The "redflag" alarm scenario, synthesized (no fixture file): a Red Flag weather
+// alert + the feed's authoritative fireWeather.state = RED_FLAG (FR-3) so the Fire
+// Weather tile escalates to orange and a CRITICAL alert card renders.
+const redflagAlert = {
+  id: 'urn:test:redflag',
+  senderName: 'NWS Sacramento CA',
+  event: 'Red Flag Warning',
+  description:
+    'Gusty winds and low humidity will create critical fire weather conditions across the ' +
+    'Calaveras and Tuolumne foothills.',
+  headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
+  source: 'NWS',
+  severity: 'CRITICAL',
+  zones: ['CAZ064'],
+  startTime: '2026-06-25T18:00:00Z',
+  endTime: '2026-06-26T03:00:00Z',
+};
 
 function mockErsn(route: Route) {
   const url = route.request().url();
@@ -53,12 +70,22 @@ function mockErsn(route: Route) {
       headers: { 'access-control-allow-origin': '*' },
       body: JSON.stringify(body),
     });
+  // Order matters: '/weather/alerts' and '/incidents' before the bare '/weather'.
   if (url.includes('/weather/alerts')) {
+    // 'calm' = the common quiet state (no active alerts); 'redflag' = the alarm.
     return json(
-      SCENARIO === 'redflag' ? redflag : { alerts: [], lastUpdated: FIXED.toISOString() }
+      SCENARIO === 'redflag'
+        ? { alerts: [redflagAlert], lastUpdated: FIXED.toISOString() }
+        : { alerts: [], lastUpdated: FIXED.toISOString() }
     );
   }
-  if (url.includes('/weather')) return json(snapshot.weather);
+  if (url.includes('/incidents')) return json(snapshot.incidents);
+  if (url.includes('/weather')) {
+    const w = snapshot.weather;
+    return json(
+      SCENARIO === 'redflag' ? { ...w, fireWeather: { ...w.fireWeather, state: 'RED_FLAG' } } : w
+    );
+  }
   if (url.includes('/roads')) return json(snapshot.roads);
   return json({});
 }

@@ -10,7 +10,7 @@ import Container from '../Container.astro';
 import Kicker from '../Kicker.astro';
 import StatTile from '../StatTile.astro';
 import StatusPill from '../StatusPill.astro';
-import { ERSN_API_BASE, type OperationalStatus } from '@lib/ersn';
+import { ERSN_API_BASE, NWS_ZONES, type OperationalStatus } from '@lib/ersn';
 import { home } from '@config/content';
 import { TIMEZONE, site } from '@config/site';
 
@@ -31,6 +31,9 @@ const fireState =
       ? 'elevated'
       : 'ok';
 const alertState = status.activeAlertCount > 0 ? 'alarm' : 'ok';
+// Honest placeholder: if the feed couldn't classify fire-weather, mark the value with
+// "*" rather than presenting an unconfirmed "Normal" as a confident all-clear (FR-3).
+const fireFootnote = status.fireWeatherPlaceholder ? '*' : undefined;
 
 function formatPT(iso: string | null): string {
   if (!iso) return '—';
@@ -54,6 +57,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
   aria-label="Real-time operational status"
   data-ops
   data-api-base={ERSN_API_BASE}
+  data-zones={NWS_ZONES.join(',')}
 >
   <Container wide>
     <div class="ops__head">
@@ -81,7 +85,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
       <StatTile
         label="Active Alerts"
         value={`${status.activeAlertCount} Active`}
-        sublabel="Region · live feed"
+        sublabel="NWS foothill zones"
         state={alertState}
         key="alerts"
       />
@@ -90,9 +94,19 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
         value={fireLabel[status.fireWeather]}
         sublabel="Calaveras & Tuolumne"
         state={fireState}
+        footnote={fireFootnote}
         key="fire"
       />
     </div>
+
+    {
+      status.fireWeatherPlaceholder && (
+        <p class="ops__note">
+          * Fire-weather classification is unavailable from the feed; showing a conservative
+          “Normal.”
+        </p>
+      )
+    }
   </Container>
 </section>
 
@@ -102,6 +116,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
   const section = document.querySelector<HTMLElement>('[data-ops]');
   if (section) {
     const base = section.dataset.apiBase ?? 'https://info.ersn.net/api/v1';
+    const zones = section.dataset.zones ?? '';
 
     const setTile = (key: string, value: string, state: string) => {
       const el = section.querySelector<HTMLElement>(`[data-stat-key="${key}"]`);
@@ -125,32 +140,40 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
       }
     };
 
+    const alertsUrl = zones ? `${base}/weather/alerts?zones=${zones}` : `${base}/weather/alerts`;
+
     const refresh = async () => {
       try {
-        const res = await fetch(`${base}/weather/alerts`, {
-          headers: { accept: 'application/json' },
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          alerts?: { event?: string; headline?: string }[];
+        const [weatherRes, alertsRes] = await Promise.all([
+          fetch(`${base}/weather`, { headers: { accept: 'application/json' } }),
+          fetch(alertsUrl, { headers: { accept: 'application/json' } }),
+        ]);
+        if (!weatherRes.ok || !alertsRes.ok) return;
+        const weather = (await weatherRes.json()) as {
+          fireWeather?: { state?: string };
           lastUpdated?: string;
         };
-        const list = data.alerts ?? [];
-        const count = list.length;
+        const alertsData = (await alertsRes.json()) as {
+          alerts?: unknown[];
+          lastUpdated?: string;
+        };
+
+        const count = (alertsData.alerts ?? []).length;
         setTile('alerts', `${count} Active`, count > 0 ? 'alarm' : 'ok');
 
-        const text = list
-          .map((a) => `${a.event ?? ''} ${a.headline ?? ''}`.toLowerCase())
-          .join(' ');
-        const fire = text.includes('red flag')
-          ? { label: 'Red Flag', state: 'alarm' }
-          : text.includes('fire')
-            ? { label: 'Elevated', state: 'elevated' }
-            : { label: 'Normal', state: 'ok' };
+        // Authoritative fire-weather state from the feed (FR-3) — never inferred.
+        const state = (weather.fireWeather?.state ?? '').toUpperCase();
+        const fire =
+          state === 'RED_FLAG'
+            ? { label: 'Red Flag', state: 'alarm' }
+            : state === 'ELEVATED'
+              ? { label: 'Elevated', state: 'elevated' }
+              : { label: 'Normal', state: 'ok' };
         setTile('fire', fire.label, fire.state);
 
         const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
-        if (synced && data.lastUpdated) synced.textContent = fmtPT(data.lastUpdated);
+        const ts = weather.lastUpdated ?? alertsData.lastUpdated;
+        if (synced && ts) synced.textContent = fmtPT(ts);
       } catch {
         /* keep the SSR snapshot — never show an error in the hero region */
       }

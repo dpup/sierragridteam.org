@@ -2,14 +2,16 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
-import Callout from '@components/Callout.astro';
 import AlertsFeed from '@components/alerts/AlertsFeed.astro';
+import CurrentConditions from '@components/alerts/CurrentConditions.astro';
 import RoadConditions from '@components/alerts/RoadConditions.astro';
-import { buildSnapshot } from '@lib/ersn';
+import Incidents from '@components/alerts/Incidents.astro';
+import { buildSnapshot, splitIncidents } from '@lib/ersn';
 import { alerts as copy } from '@config/content';
 import { externalLinks } from '@config/site';
 
 const snapshot = await buildSnapshot();
+const { inArea, wider } = splitIncidents(snapshot);
 
 const description =
   'Current weather, fire-weather, and road alerts for the Calaveras & Tuolumne foothills, ' +
@@ -39,7 +41,20 @@ const resources = [
       <p class="alerts-head__intro">{copy.intro}</p>
     </header>
 
+    {
+      !snapshot.live && (
+        <p class="alerts-stale" role="note">
+          {copy.staleNote}
+        </p>
+      )
+    }
+
     <div class="alerts-stack">
+      <section aria-labelledby="conditions-title">
+        <h2 id="conditions-title" class="alerts-h2">{copy.conditionsHeading}</h2>
+        <CurrentConditions weather={snapshot.weather} />
+      </section>
+
       <AlertsFeed alerts={snapshot.alerts} />
 
       <section aria-labelledby="roads-title">
@@ -47,11 +62,10 @@ const resources = [
         <RoadConditions roads={snapshot.roads} />
       </section>
 
-      <section aria-labelledby="chp-title">
-        <h2 id="chp-title" class="alerts-h2">{copy.chpHeading}</h2>
-        <Callout accent="brass" heading="Live feed pending">
-          {copy.chpNote}
-        </Callout>
+      <section aria-labelledby="incidents-title">
+        <h2 id="incidents-title" class="alerts-h2">{copy.incidentsHeading}</h2>
+        <p class="alerts-sub">{copy.incidentsNote}</p>
+        <Incidents inArea={inArea} wider={wider} />
       </section>
 
       <section aria-labelledby="resources-title">
@@ -92,6 +106,18 @@ const resources = [
     font-size: var(--fs-lead);
     line-height: var(--lh-body);
     color: var(--ink-body);
+  }
+
+  .alerts-stale {
+    margin-bottom: var(--space-7);
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface-card);
+    border: var(--border);
+    border-left: 3px solid var(--brand-brass);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
   }
 
   .alerts-stack {

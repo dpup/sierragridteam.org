@@ -13,7 +13,7 @@
   feed doc), derive conservatively and mark it a placeholder — e.g.
   `deriveFireWeather` returns `placeholder: true` and never reports a Red Flag it
   can't confirm.
-- **Types mirror the real API** (captured 2026-06-25). If the API shape changes,
+- **Types mirror the real API** (captured 2026-06-26). If the API shape changes,
   update the interfaces here and the snapshot, and re-run `bun test src/`.
 - Keep derivation functions **pure** (no fetch/IO) so they stay unit-tested.
 

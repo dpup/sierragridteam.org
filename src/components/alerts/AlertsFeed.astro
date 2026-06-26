@@ -1,13 +1,12 @@
 ---
 /**
- * AlertsFeed — active weather alerts for the service area. SSR from the
- * build-time snapshot; a client island refreshes every 5 minutes and silently
- * keeps the SSR list on failure (incl. the current CORS block, FR-1). A note
- * flags that NWS zone-specific alerts (CAZ064/065/258/259) are pending (FR-2).
+ * AlertsFeed — active NWS zone alerts for the foothills (CAZ064/065/258/259, FR-2).
+ * SSR from the build-time snapshot; a client island refreshes every 5 minutes from
+ * the zone-filtered `/weather/alerts` endpoint and silently keeps the SSR list on
+ * any failure (CORS now allowed for our origins, FR-1).
  */
 import AlertCard from './AlertCard.astro';
-import Callout from '../Callout.astro';
-import { ERSN_API_BASE, type AlertsResponse } from '@lib/ersn';
+import { ERSN_API_BASE, NWS_ZONES, type AlertsResponse } from '@lib/ersn';
 import { alerts as copy } from '@config/content';
 
 interface Props {
@@ -17,7 +16,13 @@ const { alerts } = Astro.props;
 const list = alerts?.alerts ?? [];
 ---
 
-<section class="feed" aria-labelledby="feed-title" data-feed data-api-base={ERSN_API_BASE}>
+<section
+  class="feed"
+  aria-labelledby="feed-title"
+  data-feed
+  data-api-base={ERSN_API_BASE}
+  data-zones={NWS_ZONES.join(',')}
+>
   <div class="feed__head">
     <h2 id="feed-title" class="feed__title">{copy.feedHeading}</h2>
     <p class="feed__synced" data-feed-synced>Auto-refreshes every 5 minutes</p>
@@ -36,20 +41,14 @@ const list = alerts?.alerts ?? [];
             title={a.event ?? 'Weather alert'}
             summary={a.headline}
             detail={a.description}
-            meta={a.sender}
+            meta={a.senderName}
           />
         ))
       )
     }
   </div>
 
-  <div class="feed__note">
-    <Callout accent="brass" heading="Coverage note">
-      Zone-specific National Weather Service alerts (CAZ064 / CAZ065 / CAZ258 / CAZ259) are not yet
-      available from the data feed; this list reflects the regional weather feed. NWS-zone
-      integration is tracked as a feature request.
-    </Callout>
-  </div>
+  <p class="feed__scope">{copy.feedNote}</p>
 </section>
 
 <script>
@@ -57,6 +56,7 @@ const list = alerts?.alerts ?? [];
   const root = document.querySelector<HTMLElement>('[data-feed]');
   if (root) {
     const base = root.dataset.apiBase ?? 'https://info.ersn.net/api/v1';
+    const zones = root.dataset.zones ?? '';
     const listEl = root.querySelector<HTMLElement>('[data-alerts-list]');
     const syncedEl = root.querySelector<HTMLElement>('[data-feed-synced]');
 
@@ -65,7 +65,7 @@ const list = alerts?.alerts ?? [];
 
     const accentFor = (sev: string) => {
       const s = (sev || '').toLowerCase();
-      if (s.includes('extreme') || s.includes('severe')) return 'orange';
+      if (s.includes('extreme') || s.includes('severe') || s.includes('critical')) return 'orange';
       if (s.includes('moderate') || s.includes('warning')) return 'brass';
       return 'green';
     };
@@ -75,7 +75,7 @@ const list = alerts?.alerts ?? [];
       severity?: string;
       headline?: string;
       description?: string;
-      sender?: string;
+      senderName?: string;
     };
 
     const render = (items: Alert[]) => {
@@ -99,7 +99,7 @@ const list = alerts?.alerts ?? [];
             </summary>
             <div class="alert-card__body">
               ${a.description ? `<p class="alert-card__detail">${esc(a.description)}</p>` : ''}
-              ${a.sender ? `<p class="alert-card__meta">${esc(a.sender)}</p>` : ''}
+              ${a.senderName ? `<p class="alert-card__meta">${esc(a.senderName)}</p>` : ''}
             </div>
           </details>`;
         })
@@ -108,9 +108,8 @@ const list = alerts?.alerts ?? [];
 
     const refresh = async () => {
       try {
-        const res = await fetch(`${base}/weather/alerts`, {
-          headers: { accept: 'application/json' },
-        });
+        const url = zones ? `${base}/weather/alerts?zones=${zones}` : `${base}/weather/alerts`;
+        const res = await fetch(url, { headers: { accept: 'application/json' } });
         if (!res.ok) return;
         const data = (await res.json()) as { alerts?: Alert[]; lastUpdated?: string };
         render(data.alerts ?? []);
@@ -176,7 +175,10 @@ const list = alerts?.alerts ?? [];
     text-align: center;
   }
 
-  .feed__note {
-    margin-top: var(--space-5);
+  .feed__scope {
+    margin-top: var(--space-4);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
   }
 </style>

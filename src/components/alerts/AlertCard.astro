@@ -18,7 +18,7 @@ const { severity = '', title, summary, detail, meta, open = false } = Astro.prop
 
 function accentFor(sev: string): 'orange' | 'brass' | 'green' {
   const s = sev.toLowerCase();
-  if (s.includes('extreme') || s.includes('severe')) return 'orange';
+  if (s.includes('extreme') || s.includes('severe') || s.includes('critical')) return 'orange';
   if (s.includes('moderate') || s.includes('warning')) return 'brass';
   return 'green';
 }

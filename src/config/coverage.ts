@@ -141,3 +141,21 @@ export const operations = {
 } as const;
 
 export const townById = (id: string): CoverageTown | undefined => towns.find((t) => t.id === id);
+
+/**
+ * Geographic bounding box of S.I.E.R.R.A's service area (Calaveras & Tuolumne
+ * foothills). Used to split the region-wide info.ersn.net incident feed
+ * (`/incidents/mother-lode`, which spans the whole Mother Lode incl. Modesto,
+ * Lake Tahoe, Merced) into "in service area" vs "wider region". Tuned to include
+ * the Hwy 4 / 49 / 108 / 120 corridors and exclude the Central Valley, Tahoe
+ * basin, and El Dorado/Placer foothills. Widen only to match real geography.
+ */
+export const serviceAreaBounds = {
+  minLat: 37.55,
+  maxLat: 38.55,
+  minLng: -120.75,
+  maxLng: -119.55,
+} as const;
+
+/** info.ersn.net dispatch area slug for the region-wide CHP/Caltrans incident feed. */
+export const incidentArea = 'mother-lode' as const;
