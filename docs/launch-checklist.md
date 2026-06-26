@@ -35,10 +35,14 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 
 ## Nice-to-have
 
-- [ ] Add `www → apex` (or apex → www) redirect at CloudFront.
-- [ ] Google Search Console + submit `sitemap-index.xml`.
-- [ ] Analytics (privacy-respecting, e.g. Plausible) if desired.
-- [x] Scheduled rebuild — declined (relying on client refresh; see item 8).
+- [x] **www → apex redirect** — handled in your Terraform/infra (apex is canonical
+      site-wide; no repo change needed).
+- [x] **Analytics — none** by choice; use CloudFront's server-side request metrics
+      (no client script, cookieless, zero perf cost).
+- [x] **Scheduled rebuild — declined** (relying on client refresh; see Data freshness).
+- [ ] **After launch:** verify `sierragridteam.org` in Google Search Console and submit
+      `https://sierragridteam.org/sitemap-index.xml` (DNS verification — nothing needed
+      in the repo).
 
 ## Verified already ✓
 
