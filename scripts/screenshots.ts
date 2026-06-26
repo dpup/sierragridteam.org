@@ -43,23 +43,42 @@ const pages = [
 
 const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/ersn-snapshot.json'), 'utf8'));
 
-// The "redflag" alarm scenario, synthesized (no fixture file): a Red Flag weather
-// alert + the feed's authoritative fireWeather.state = RED_FLAG (FR-3) so the Fire
-// Weather tile escalates to orange and a CRITICAL alert card renders.
-const redflagAlert = {
-  id: 'urn:test:redflag',
-  senderName: 'NWS Sacramento CA',
-  event: 'Red Flag Warning',
-  description:
-    'Gusty winds and low humidity will create critical fire weather conditions across the ' +
-    'Calaveras and Tuolumne foothills.',
-  headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
-  source: 'NWS',
-  severity: 'CRITICAL',
-  zones: ['CAZ069'],
-  startTime: '2026-06-25T18:00:00Z',
-  endTime: '2026-06-26T03:00:00Z',
-};
+// The "redflag" alarm scenario: a realistic fire-season foothill event modeled on the
+// real NWS Sacramento alert shape (see info.ersn.net tests/testdata/weather). A Red Flag
+// Warning + a co-occurring High Wind Warning (wind drives red-flag conditions) so the
+// AlertsFeed renders multiple cards, plus fireWeather.state = RED_FLAG (FR-3) escalates
+// the Fire Weather tile to orange.
+const redflagAlerts = [
+  {
+    id: 'urn:test:redflag',
+    senderName: 'NWS Sacramento CA',
+    event: 'Red Flag Warning',
+    description:
+      'Gusty north winds and single-digit humidity will create critical fire weather ' +
+      'conditions across the Mother Lode and Sierra foothills. Any fire that develops will ' +
+      'likely spread rapidly.',
+    headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
+    source: 'NWS',
+    severity: 'CRITICAL',
+    zones: ['CAZ069'],
+    startTime: '2026-06-25T18:00:00Z',
+    endTime: '2026-06-26T03:00:00Z',
+  },
+  {
+    id: 'urn:test:wind',
+    senderName: 'NWS Sacramento CA',
+    event: 'High Wind Warning',
+    description:
+      'North winds 25 to 35 mph with gusts up to 60 mph expected across the Motherlode and ' +
+      'Northeast Foothills. Strong winds could blow down trees and power lines.',
+    headline: 'High Wind Warning in effect until 8 PM PDT',
+    source: 'NWS',
+    severity: 'WARNING',
+    zones: ['CAZ067'],
+    startTime: '2026-06-25T17:00:00Z',
+    endTime: '2026-06-26T03:00:00Z',
+  },
+];
 
 function mockErsn(route: Route) {
   const url = route.request().url();
@@ -75,7 +94,7 @@ function mockErsn(route: Route) {
     // 'calm' = the common quiet state (no active alerts); 'redflag' = the alarm.
     return json(
       SCENARIO === 'redflag'
-        ? { alerts: [redflagAlert], lastUpdated: FIXED.toISOString() }
+        ? { alerts: redflagAlerts, lastUpdated: FIXED.toISOString() }
         : { alerts: [], lastUpdated: FIXED.toISOString() }
     );
   }
