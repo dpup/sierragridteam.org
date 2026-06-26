@@ -67,5 +67,5 @@ feature requests — see `FEATURE_REQUESTS.md` and `docs/architecture/data-feed.
 - Confirm the contact email (`info@sierragridteam.org` is a placeholder in
   `src/config/site.ts`).
 - Wire AWS/Hostinger per `docs/deployment.md` and set the deploy secrets.
-- Verify the **95427** ZIP for the Murphys P.O. Box (carried verbatim from the
-  brief; Murphys is more commonly 95247).
+- Contact email — confirm `info@sierragridteam.org` is monitored (it's set live;
+  override via `PUBLIC_CONTACT_EMAIL` if needed).

@@ -33,9 +33,9 @@ export const site = {
     poBox: 'P.O. Box 2071',
     city: 'Murphys',
     state: 'CA',
-    zip: '95427',
+    zip: '95247',
     /** Single-line form for footer/meta. */
-    line: 'P.O. Box 2071, Murphys, CA 95427',
+    line: 'P.O. Box 2071, Murphys, CA 95247',
   },
 
   counties: ['Calaveras County', 'Tuolumne County'] as const,

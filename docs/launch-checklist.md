@@ -5,12 +5,10 @@ Most are external/account actions that can't be done from the codebase.
 
 ## Must-do before launch
 
-- [ ] **Confirm the contact email.** `info@sierragridteam.org` is a placeholder
-      (`src/config/site.ts`, `emailIsPlaceholder: true`). Set the real address and
-      flip the flag to `false`.
-- [ ] **Verify the P.O. Box ZIP.** The brief says **95427**; Murphys, CA is more
-      commonly **95247**. Confirm with the org and correct `src/config/site.ts` if
-      needed (it propagates to footer, contact page, and JSON-LD).
+- [x] **Contact email set live** (`info@sierragridteam.org`, `emailIsPlaceholder:
+    false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
+- [x] **P.O. Box ZIP corrected to 95247** (the brief's 95427 was a digit
+      transposition); updated in `src/config/site.ts`.
 - [ ] **AWS + Hostinger.** Create the S3 bucket + CloudFront distribution, map
       403/404 → `/404.html`, attach the ACM cert, and point Hostinger DNS at
       CloudFront. See `docs/deployment.md`.
