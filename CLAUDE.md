@@ -35,9 +35,10 @@ version of the rules below.
    brand and all primary actions; brass/gold is for small accents/labels only (never
    large fills); **burnt orange = risk/alert ONLY** (Red Flag, active alerts). If a
    page is calm, orange must be absent. **The one sanctioned exception** is the
-   **Donate** call-to-action (header, About CTA, `Button variant="donate"`), which uses
-   the orange accent by org decision to make giving unmistakable. Don't extend this to
-   any other element — Donate is the only non-risk use of orange.
+   **Donate** call-to-action — the header link (orange-accent _text_) and the
+   About-page CTA button (`Button variant="donate"`) — which uses the orange accent by
+   org decision to make giving unmistakable. Don't extend this to any other element —
+   Donate is the only non-risk use of orange.
 3. **Geometry:** square corners (radius 0), 1px warm-tan borders, **no drop shadows
    on cards** (border + lighter fill defines them).
 4. **Type:** serif (`--font-display`) for headings/body, never heavier than 600;

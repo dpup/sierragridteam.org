@@ -2,11 +2,10 @@
 /**
  * TopBar — the operations nav (design-system §6 "Top bar").
  * Brand lockup (left, hidden on the homepage where the hero emblem stands in),
- * primary links, a Donate CTA (orange accent), and a live local clock.
+ * primary links, a Donate link (orange-accent text), and a live local clock.
  * Sticky, parchment, thin tan bottom rule ("fixed-feel").
  */
 import Logo from './Logo.astro';
-import Button from './Button.astro';
 import LocalClock from './LocalClock.astro';
 import Container from './Container.astro';
 import { nav, site, donate } from '@config/site';
@@ -58,10 +57,8 @@ const isActive = (href: string) => path === href || path === `${href}/`;
       </nav>
 
       <div class="topbar__actions">
+        <a href={donate.href} class="topbar__donate">{donate.label}</a>
         <span class="topbar__clock"><LocalClock /></span>
-        <span class="topbar__donate">
-          <Button variant="donate" href={donate.href}>{donate.label}</Button>
-        </span>
       </div>
     </div>
   </Container>
@@ -136,12 +133,24 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     gap: var(--space-4);
   }
 
-  .topbar__donate :global(.btn) {
-    padding: var(--space-3) var(--space-5);
+  /* Donate: an orange-accent text link (not a filled button), styled like the nav
+     labels. Uses the AA-compliant small-text orange. The sole sanctioned non-risk
+     use of orange (org decision — see CLAUDE.md). */
+  .topbar__donate {
+    font-family: var(--font-ui);
     font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--signal-orange-text);
+    padding-block: var(--space-2);
+  }
+  .topbar__donate:hover {
+    color: var(--signal-orange-hover);
+    text-decoration: none;
   }
 
-  /* On narrow screens, drop the clock; keep brand + links + the Donate CTA. */
+  /* On narrow screens, drop the clock; keep brand + links + the Donate link. */
   @media (max-width: 860px) {
     .topbar__clock {
       display: none;
@@ -151,13 +160,36 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     }
   }
 
-  /* Very narrow: drop the wordmark (keep the mark) so the links never clip. */
+  /* Very narrow: drop the wordmark (keep the mark) and tighten gaps + tracking so
+     the four links + Donate stay on one row without clipping. */
   @media (max-width: 480px) {
     .topbar__brand :global(.logo__wordmark) {
       display: none;
     }
+    .topbar__inner {
+      gap: var(--space-3);
+    }
     .topbar__links {
-      gap: var(--space-4);
+      gap: var(--space-3);
+    }
+    .topbar__link,
+    .topbar__donate {
+      letter-spacing: 0.08em;
+    }
+  }
+
+  /* Smallest phones (~360px): step the labels down a size and tighten further. */
+  @media (max-width: 400px) {
+    .topbar__inner {
+      gap: var(--space-2);
+    }
+    .topbar__links {
+      gap: var(--space-2);
+    }
+    .topbar__link,
+    .topbar__donate {
+      font-size: var(--fs-micro);
+      letter-spacing: 0.06em;
     }
   }
 </style>
