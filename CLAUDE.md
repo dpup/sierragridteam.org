@@ -54,10 +54,25 @@ version of the rules below.
 
 ## How to build pages
 
-Pages are **assembled from existing components only** (`src/components/`). Don't
+Pages (`src/pages/*.astro`) are **assembled from existing components only**. Don't
 write bespoke layout/markup in a page when a component exists. If you genuinely need
 a new pattern, build a small component that uses tokens, matches the others, and add
-it — don't inline one-off styles. Each folder has its own `CLAUDE.md` with specifics.
+it — don't inline one-off styles. Most `src/` folders have their own `CLAUDE.md` with
+specifics (components, config, lib, styles).
+
+Page rules:
+
+- **Always wrap in `BaseLayout`** with `title`, `description`, `path` — that produces
+  the correct `<head>`, SEO/OG/JSON-LD, nav, footer, skip link, and fonts.
+- **Copy comes from `src/config/content.ts`**, not inline strings; data comes from
+  `src/lib/ersn.ts` (`buildSnapshot()`) or `src/config`.
+- One `<h1>` per page; correct heading order; real landmarks.
+- The homepage sets `hideBrandInNav`; other pages show the compact brand automatically.
+- ⚠️ **Do not put a `CLAUDE.md` (or any `.md`) in `src/pages/`** — Astro would route it
+  as a public page. Page guidance lives here in the root CLAUDE.md.
+- Adding a page: create it, add copy to `content.ts` + a nav entry in `site.ts` if it
+  should appear in the nav, add an OG card in `src/config/og.ts`, and add it to the
+  `tests/` page lists (a11y, smoke, screenshots). Then `make ci` and review screenshots.
 
 ## Before you commit
 

@@ -26,17 +26,19 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 - [x] **Embeds decided.** Mesh map stays embedded (confirmed no X-Frame-Options). The
       CHP CAD iframe was removed in favor of native incident data via info.ersn.net (#7);
       CHP is now a resource link. Verify the mesh map renders once live.
-- [ ] **Refresh the data snapshot** at deploy time (`make snapshot` + commit, or a
-      scheduled rebuild) so the SSR "last-known" values aren't stale.
-- [ ] **Social/OG check.** Validate `og-default.png` and the Open Graph tags with a
-      sharing debugger once the domain is live.
+- [x] **Data freshness — relying on client refresh** (no scheduled rebuild). Once CORS
+      (#3) lands the browser refreshes live every 5 min; until then data is
+      as-of-last-deploy. `make snapshot` refreshes the committed baseline manually.
+- [x] **Dynamic per-page OG cards** built (satori + resvg) at `/og/<slug>.png` — on-brand
+      (mark, serif title, brass kicker, network motif); tags complete. Validate the live
+      unfurl with a sharing debugger once the domain is up.
 
 ## Nice-to-have
 
 - [ ] Add `www → apex` (or apex → www) redirect at CloudFront.
 - [ ] Google Search Console + submit `sitemap-index.xml`.
 - [ ] Analytics (privacy-respecting, e.g. Plausible) if desired.
-- [ ] A scheduled GitHub Action to rebuild daily so the data snapshot stays fresh.
+- [x] Scheduled rebuild — declined (relying on client refresh; see item 8).
 
 ## Verified already ✓
 

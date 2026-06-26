@@ -6,6 +6,7 @@
  * See docs/architecture/seo-metadata.md.
  */
 import { site } from '@config/site';
+import { ogSlugForPath } from '@config/og';
 
 interface Props {
   title: string;
@@ -26,7 +27,7 @@ const { title, description, path, ogImage, fullTitle, noindex = false, schema } 
 // trailingSlash: 'never' — root keeps its slash, all others have none.
 const canonical = `${site.url}${path === '/' ? '' : path}`;
 const docTitle = fullTitle ?? `${title} — ${site.name}`;
-const image = new URL(ogImage ?? site.ogImage, site.url).href;
+const image = new URL(ogImage ?? `/og/${ogSlugForPath(path)}.png`, site.url).href;
 
 const orgSchema = {
   '@context': 'https://schema.org',
