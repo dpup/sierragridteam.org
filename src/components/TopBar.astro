@@ -1,7 +1,7 @@
 ---
 /**
  * TopBar — the operations nav (design-system §6 "Top bar").
- * Brand lockup (left, hidden on the homepage where the hero emblem stands in),
+ * Brand mark (left, hidden on the homepage where the hero emblem stands in),
  * primary links, a Donate link (orange-accent text), and a live local clock.
  * Sticky, parchment, thin tan bottom rule ("fixed-feel").
  */
@@ -32,7 +32,7 @@ const isActive = (href: string) => path === href || path === `${href}/`;
             </a>
           ) : (
             <a class="topbar__brandlink" href="/" aria-label={`${site.name} home`}>
-              <Logo variant="compact" height={28} />
+              <Logo variant="mark" height={30} />
             </a>
           )
         }
@@ -160,12 +160,8 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     }
   }
 
-  /* Very narrow: drop the wordmark (keep the mark) and tighten gaps + tracking so
-     the four links + Donate stay on one row without clipping. */
+  /* Very narrow: tighten gaps + tracking so the links + Donate stay on one row. */
   @media (max-width: 480px) {
-    .topbar__brand :global(.logo__wordmark) {
-      display: none;
-    }
     .topbar__inner {
       gap: var(--space-3);
     }

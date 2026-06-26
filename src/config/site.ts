@@ -44,8 +44,13 @@ export const site = {
   ogImage: '/og/default.png',
 } as const;
 
-/** Primary navigation. Order is intentional — Mesh is first (flagship capability). */
+/**
+ * Primary navigation. Order is intentional — Home first, then Mesh (the flagship
+ * capability) ahead of the rest. This list drives both the header nav and the
+ * footer "Site" list, so adding an entry here surfaces it in both places.
+ */
 export const nav: ReadonlyArray<{ label: string; href: string }> = [
+  { label: 'Home', href: '/' },
   { label: 'Mesh', href: '/mesh' },
   { label: 'Alerts', href: '/alerts' },
   { label: 'About', href: '/about' },
