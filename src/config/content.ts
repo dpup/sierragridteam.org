@@ -100,7 +100,9 @@ export const alerts = {
   roadsHeading: 'Road conditions',
   chpHeading: 'CHP dispatch (Mother Lode)',
   chpNote:
-    'Live California Highway Patrol incident dispatch for the Mother Lode communications center.',
+    'Region-wide CHP dispatch incidents will appear here once available as a structured feed ' +
+    'from info.ersn.net (tracked as #7). Incidents on the monitored Highway 4 corridor already ' +
+    'show under Road conditions above; the full CHP CAD dashboard is linked under Resources.',
   resourcesHeading: 'Additional resources',
   emptyState: 'No active weather alerts for the service area right now.',
 } as const;

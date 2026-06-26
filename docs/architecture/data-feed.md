@@ -84,7 +84,7 @@ is US public-safety/residents.
 | **FR-5** | No **per-relay-site status** (the org's own mesh nodes)                                                                                         | Home "Relay Sites" tile, /mesh   | "Relay Sites" uses owned static config; no live up/down until a status feed exists                                               |
 | **FR-6** | No structured **mesh node** feed (count/health)                                                                                                 | /mesh sidebar                    | Static deployment-zone list; live counts pending                                                                                 |
 
-FR-1–FR-4 are filed as issues on `dpup/info.ersn.net` (#3, #4, #5, #6). FR-5/FR-6 concern
+FR-1–FR-4 and FR-7 are filed as issues on `dpup/info.ersn.net` (#3, #4, #5, #6, #7). FR-5/FR-6 concern
 the org’s own mesh/relay infrastructure (out of info.ersn.net’s roads/weather domain) and
 are tracked locally — see `FEATURE_REQUESTS.md`. Placeholders must be visually honest: a
 muted note, never an invented number.

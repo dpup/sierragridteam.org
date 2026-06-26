@@ -2,9 +2,9 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
+import Callout from '@components/Callout.astro';
 import AlertsFeed from '@components/alerts/AlertsFeed.astro';
 import RoadConditions from '@components/alerts/RoadConditions.astro';
-import EmbeddedDashboard from '@components/alerts/EmbeddedDashboard.astro';
 import { buildSnapshot } from '@lib/ersn';
 import { alerts as copy } from '@config/content';
 import { externalLinks } from '@config/site';
@@ -13,9 +13,10 @@ const snapshot = await buildSnapshot();
 
 const description =
   'Current weather, fire-weather, and road alerts for the Calaveras & Tuolumne foothills, ' +
-  'plus CHP dispatch and emergency resource links.';
+  'plus live road incidents and emergency resource links.';
 
 const resources = [
+  { label: 'CHP Dispatch', desc: 'CAD incidents — Mother Lode', href: externalLinks.chpCad },
   {
     label: 'NWS Sacramento',
     desc: 'Forecasts, watches & warnings',
@@ -48,12 +49,9 @@ const resources = [
 
       <section aria-labelledby="chp-title">
         <h2 id="chp-title" class="alerts-h2">{copy.chpHeading}</h2>
-        <p class="alerts-sub">{copy.chpNote}</p>
-        <EmbeddedDashboard
-          src={externalLinks.chpCad}
-          title="California Highway Patrol CAD dispatch — Mother Lode"
-          urlLabel="cad.chp.ca.gov"
-        />
+        <Callout accent="brass" heading="Live feed pending">
+          {copy.chpNote}
+        </Callout>
       </section>
 
       <section aria-labelledby="resources-title">

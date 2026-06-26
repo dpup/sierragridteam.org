@@ -16,17 +16,16 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_ACCOUNT_ID`, `S3_BUCKET`,
       `CLOUDFRONT_DISTRIBUTION_ID`. Deploy then **auto-runs on merge** (after CI) and
       aborts if the account id doesn't match.
-- [ ] **Push to a remote** (the repo is currently local-only) so CI/CD runs.
+- [ ] **Push to a remote** (currently local-only) so CI/CD runs. When ready:
+      `gh repo create dpup/sierragridteam --private --source . --remote origin --push`
 
 ## Should-do
 
-- [ ] **info.ersn.net feature requests.** Track [#3–#6](https://github.com/dpup/info.ersn.net/issues);
-      when CORS (#3) lands, the live client refresh starts working with no code change.
-      See `FEATURE_REQUESTS.md`.
-- [ ] **Confirm external embeds load** in production: the mesh map
-      (`livemap.wcmesh.com/bayarea/`) and CHP CAD (`cad.chp.ca.gov`). If either sends
-      `X-Frame-Options: DENY`, it won't embed — the "Open Full Map" / "Open" links are
-      the fallback. Decide whether to keep the embed or switch to a link card.
+- [x] **info.ersn.net feature requests filed** ([#3–#7](https://github.com/dpup/info.ersn.net/issues));
+      #3 (CORS) is the unblocker for the live client refresh. See `FEATURE_REQUESTS.md`.
+- [x] **Embeds decided.** Mesh map stays embedded (confirmed no X-Frame-Options). The
+      CHP CAD iframe was removed in favor of native incident data via info.ersn.net (#7);
+      CHP is now a resource link. Verify the mesh map renders once live.
 - [ ] **Refresh the data snapshot** at deploy time (`make snapshot` + commit, or a
       scheduled rebuild) so the SSR "last-known" values aren't stale.
 - [ ] **Social/OG check.** Validate `og-default.png` and the Open Graph tags with a
