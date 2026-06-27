@@ -12,13 +12,19 @@ Before touching a `.astro` file, ask: can this be done by editing
 `src/config/content.ts` (copy), `src/config/site.ts` (contact/nav/org facts), or
 `src/config/coverage.ts` (towns/zones)? Usually yes. Prefer that path.
 
-## Design source of truth
+## Sources of truth
 
-`docs/design/design-system.html` (v1.0 "Civic Direction") is **canonical**. The
-older `docs/design/content-brief.md` is superseded wherever they conflict — in
+**Look:** `docs/design/design-system.html` (v1.0 "Civic Direction") is **canonical**.
+The older `docs/design/content-brief.md` is superseded wherever they conflict — in
 particular, ignore its glass-morphism / neon / "animated" ideas. The intended feel
 is a **calm, institutional, warm-parchment identity** (think a county fire district,
 not a tech startup). Three words: **Elite · Pioneering · Trustworthy.**
+
+**Words:** `docs/content-style-guide.md` is **canonical for all user-facing copy** —
+voice, tone, terminology (S.I.E.R.R.A naming, exact agency/place/tech names), the
+mechanics (capitalization, units, no exclamation marks), and the **data-honesty rules**
+(never fabricate, never imply an all-clear, label stale data). **Read it before writing
+or editing any copy.**
 
 `docs/architecture/` holds the detailed plans (IA, design tokens, data feed, SEO,
 accessibility, testing). `docs/architecture/design-tokens.md` is the human-readable
@@ -76,7 +82,8 @@ Page rules:
 
 - **Always wrap in `BaseLayout`** with `title`, `description`, `path` — that produces
   the correct `<head>`, SEO/OG/JSON-LD, nav, footer, skip link, and fonts.
-- **Copy comes from `src/config/content.ts`**, not inline strings; data comes from
+- **Copy comes from `src/config/content.ts`**, not inline strings — and follows
+  `docs/content-style-guide.md` (voice + honesty rules); data comes from
   `src/lib/ersn.ts` (`buildSnapshot()` — roads/weather/alerts) or `src/lib/hazards.ts`
   (`buildSituationSnapshot()` — the unified wildfire/evac/seismic/road hazard layers,
   `/situation`, `/scanners`) or `src/config`. The hazard layers are re-filtered to the

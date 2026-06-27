@@ -2,7 +2,8 @@
  * Editable page copy. ALL human-readable text for the pages lives here so a
  * non-technical editor changes words, never layout or design. Keep the VOICE
  * institutional and calm (Elite · Pioneering · Trustworthy) — no hype, no neon.
- * See src/config/CLAUDE.md before editing.
+ * See docs/content-style-guide.md (voice, terminology, honesty rules) and
+ * src/config/CLAUDE.md before editing.
  */
 
 export const home = {

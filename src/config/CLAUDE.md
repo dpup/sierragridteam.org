@@ -9,8 +9,9 @@ for non-technical edits.
 - **`site.ts`** — organization facts: name, legal name, tagline, **contact email**,
   P.O. Box address, counties, nav links, external URLs, timezone.
 - **`content.ts`** — all human-readable page copy (hero, mission, doctrine, mesh,
-  alerts, contact). Edit the words here; keep the **voice** institutional and calm
-  (no hype, no exclamation-mark marketing).
+  live feed, contact). Edit the words here; keep the **voice** institutional and calm
+  (no hype, no exclamation-mark marketing). Follow **`docs/content-style-guide.md`** for
+  voice, terminology, and the data-honesty rules.
 - **`coverage.ts`** — service-area geography: town coordinates + roles (drives the
   homepage map), road corridors, deployment zones, the relay-site count.
 
