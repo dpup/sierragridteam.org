@@ -1,9 +1,9 @@
 # Content & Messaging Style Guide — sierragridteam.org
 
-> **Status:** first draft (for review/editing). This is the canonical guide for the
-> _words_ on the site — voice, tone, terminology, and the honesty rules. It complements
-> `docs/design/design-system.html` (the canonical guide for the _look_). Where the older
-> `docs/design/content-brief.md` conflicts, this guide wins.
+> This is the **canonical** guide for the _words_ on the site — voice, tone, terminology,
+> and the honesty rules. It complements `docs/design/design-system.html` (the canonical
+> guide for the _look_). Where the older `docs/design/content-brief.md` conflicts, this
+> guide wins.
 
 **Read this before writing or editing any user-facing copy.** Most copy lives in data
 files, not markup — edit `src/config/content.ts` (page copy), `src/config/site.ts`
@@ -68,7 +68,7 @@ Trust is the product. These are non-negotiable in copy:
 - **The organization:** always **`S.I.E.R.R.A`** with periods in visible copy. ("SIERRA"
   without periods only appears in code/IDs.) The full legal name —
   **Signal Integrity & Emergency Radio Response Alliance** — must appear at least once
-  per page (the footer does this automatically).
+  per page.
 - **Place:** "the **Calaveras & Tuolumne foothills**," or "the foothills." Counties:
   Calaveras County, Tuolumne County. Corridors: **Highway 4** and **Highway 49** (short:
   Hwy 4, Hwy 49); Highway 108 for the Tuolumne side. Towns: Murphys (HQ), Angels Camp,

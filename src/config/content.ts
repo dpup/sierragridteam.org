@@ -118,7 +118,7 @@ export const alerts = {
 /** The Live Feed (situation) page — the public flagship during an emergency. */
 export const live = {
   title: 'Live Feed',
-  kicker: 'Calaveras County · Situation',
+  kicker: 'Calaveras & Tuolumne · Situation',
   heading: 'The Live Feed',
   intro:
     'One page for an unfolding emergency — official wildfire, evacuation, weather, seismic, ' +
@@ -208,7 +208,7 @@ export const about = {
     'all-volunteer non-profit that builds, operates, and trains the people behind an off-grid ' +
     'emergency communications network for the Calaveras & Tuolumne foothills.',
   story: {
-    kicker: 'Our story',
+    kicker: 'Our Story',
     title: 'Founded for the next emergency.',
     // PLACEHOLDER: replace with the real founding story (who, when, why).
     body:
@@ -236,7 +236,7 @@ export const about = {
 } as const;
 
 export const donate = {
-  kicker: 'Support the mission',
+  kicker: 'Support the Mission',
   title: 'Help keep the foothills connected.',
   intro:
     'S.I.E.R.R.A is an all-volunteer non-profit. Your support funds the solar-powered relays, ' +
@@ -245,18 +245,18 @@ export const donate = {
   waysHeading: 'Ways to give',
   ways: [
     {
-      name: 'Give online',
+      name: 'Give Online',
       // PLACEHOLDER: wire up a donation provider (Donorbox / Stripe / PayPal Giving / Givebutter).
       desc: 'Online giving is being set up. [Placeholder — connect your donation platform here.]',
       status: 'pending',
     },
     {
-      name: 'By mail',
+      name: 'By Mail',
       desc: 'Mail a check payable to the Signal Integrity & Emergency Radio Response Alliance, P.O. Box 2071, Murphys, CA 95247.',
       status: 'live',
     },
     {
-      name: 'Equipment & in-kind',
+      name: 'Equipment & In-Kind',
       desc: 'Radios, solar gear, antennas, and ridge-top tower space help as much as cash. Reach out via the contact page.',
       status: 'live',
     },
