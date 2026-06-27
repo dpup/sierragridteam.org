@@ -101,14 +101,14 @@ const schema = {
 <BaseLayout title={copy.title} description={description} path="/live" schema={schema}>
   <Section surface="page" labelledby="live-title">
     <header class="live-head">
-      <div class="live-head__top">
-        <Kicker>{copy.kicker}</Kicker>
-        <StatusPill tone={status.tone} blink={status.tone === 'alarm'}>{status.label}</StatusPill>
-      </div>
+      <Kicker>{copy.kicker}</Kicker>
       <h1 id="live-title" class="live-head__title">{copy.heading}</h1>
       <p class="live-head__intro">{copy.intro}</p>
-      <p class="live-head__sync">
-        <span data-live-synced>{syncedLabel}</span> · {copy.autoRefresh}
+      <p class="live-head__status">
+        <StatusPill tone={status.tone} blink={status.tone === 'alarm'}>{status.label}</StatusPill>
+        <span class="live-head__sync"
+          ><span data-live-synced>{syncedLabel}</span> · {copy.autoRefresh}</span
+        >
       </p>
     </header>
 
@@ -134,7 +134,7 @@ const schema = {
           : summary.evacuations > 0
             ? `${summary.evacuations} Zones`
             : 'None'}
-        sublabel={summary.evacuations == null ? 'Source unavailable' : 'Cal OES'}
+        sublabel={summary.evacuations == null ? 'No active orders · Cal OES' : 'Cal OES'}
         state={summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok'}
       />
       <StatTile
@@ -232,13 +232,6 @@ const schema = {
   .live-head {
     max-width: 70ch;
   }
-  .live-head__top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-  }
   .live-head__title {
     margin-top: var(--space-3);
     font-size: var(--fs-h2);
@@ -249,8 +242,15 @@ const schema = {
     line-height: var(--lh-body);
     color: var(--ink-body);
   }
+  /* Live-status cluster: the status pill sits with the synced/refresh line. */
+  .live-head__status {
+    margin-top: var(--space-5);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+  }
   .live-head__sync {
-    margin-top: var(--space-4);
     font-family: var(--font-ui);
     font-size: var(--fs-label);
     letter-spacing: var(--tracking-label);

@@ -2,15 +2,15 @@
 /**
  * HazardMap — the live situation map (/live). MapLibre GL JS (open, non-Google) over
  * a CARTO Positron basemap, with the relevance-filtered hazard GeoJSON layers from
- * info.ersn.net severity-colored on the S.I.E.R.R.A palette, plus the org's own
- * network sites overlaid. Progressive enhancement: the server renders a fallback note
+ * info.ersn.net severity-colored on the S.I.E.R.R.A palette (the org's own network
+ * sites live on /mesh, not here). Progressive enhancement: the server renders a fallback note
  * + legend; the client island builds the map and silently keeps the fallback on any
  * failure (no WebGL, blocked tiles) — the same hazards are always in the alert stream.
  *
  * Colors are read from the CSS tokens at runtime (tokens.css stays the source of
  * truth) — MapLibre paint needs literal colors, so we can't pass var(--…) directly.
  */
-import { mapSites, serviceAreaBounds } from '@config/coverage';
+import { serviceAreaBounds } from '@config/coverage';
 import type { HazardFeature } from '@lib/hazards';
 
 interface Props {
@@ -19,19 +19,9 @@ interface Props {
 }
 const { mapLayers } = Astro.props;
 
-const sites = {
-  type: 'FeatureCollection',
-  features: mapSites.map((s) => ({
-    type: 'Feature',
-    geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
-    properties: { name: s.name, role: s.role },
-  })),
-};
-
-const mapData = { sites, layers: mapLayers, bounds: serviceAreaBounds };
+const mapData = { layers: mapLayers, bounds: serviceAreaBounds };
 
 const legend = [
-  { key: 'site', label: 'Network site' },
   { key: 'wildfire', label: 'Wildfire' },
   { key: 'evacuation', label: 'Evacuation' },
   { key: 'incident', label: 'Road incident' },
@@ -82,7 +72,6 @@ const legend = [
     if (!root || !canvas || !dataEl) return;
 
     const data = JSON.parse(dataEl.textContent || '{}') as {
-      sites: GeoFC;
       layers: Record<string, GeoFC>;
       bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number };
     };
@@ -225,46 +214,6 @@ const legend = [
         });
         interactive('incidents');
 
-        // Our network sites — markers + labels, drawn on top.
-        map.addSource('sites', { type: 'geojson', data: data.sites });
-        map.addLayer({
-          id: 'sites',
-          type: 'circle',
-          source: 'sites',
-          paint: {
-            'circle-radius': [
-              'match',
-              ['get', 'role'],
-              'hq',
-              6,
-              4,
-            ] as unknown as maplibregl.ExpressionSpecification,
-            'circle-color': [
-              'match',
-              ['get', 'role'],
-              'hq',
-              C.green,
-              C.brass,
-            ] as unknown as maplibregl.ExpressionSpecification,
-            'circle-stroke-color': C.surface,
-            'circle-stroke-width': 1.5,
-          },
-        });
-        map.addLayer({
-          id: 'site-labels',
-          type: 'symbol',
-          source: 'sites',
-          layout: {
-            'text-field': ['get', 'name'] as unknown as maplibregl.ExpressionSpecification,
-            'text-size': 11,
-            'text-offset': [0, 1.1],
-            'text-anchor': 'top',
-            'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-          },
-          paint: { 'text-color': C.ink, 'text-halo-color': C.surface, 'text-halo-width': 1.4 },
-        });
-        interactive('sites');
-
         // Only hide the fallback once every layer added cleanly.
         const fb = root.querySelector<HTMLElement>('[data-map-fallback]');
         if (fb) fb.style.display = 'none';
@@ -340,11 +289,6 @@ const legend = [
     height: 10px;
     flex-shrink: 0;
     border: 1px solid var(--ink-muted);
-  }
-  .hazard-map__swatch--site {
-    background: var(--brand-green);
-    border-radius: 50%;
-    border-color: var(--brand-green);
   }
   .hazard-map__swatch--wildfire,
   .hazard-map__swatch--evacuation {
