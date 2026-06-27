@@ -1,0 +1,68 @@
+---
+/**
+ * HowItWorks — provenance block for /live: how the feed is sourced/cached + the
+ * official agency behind each layer. Honest, plain, institutional.
+ */
+interface Props {
+  body: string;
+  sources: ReadonlyArray<{ label: string; detail: string }>;
+}
+const { body, sources } = Astro.props;
+---
+
+<div class="works">
+  <p class="works__body">{body}</p>
+  <dl class="works__sources">
+    {
+      sources.map((s) => (
+        <div class="works__source">
+          <dt class="works__label">{s.label}</dt>
+          <dd class="works__detail">{s.detail}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>
+
+<style>
+  .works__body {
+    max-width: 70ch;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+  .works__sources {
+    margin: var(--space-6) 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5) var(--space-6);
+  }
+  .works__source {
+    border-top: var(--border-soft);
+    padding-top: var(--space-3);
+  }
+  .works__label {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+  }
+  .works__detail {
+    margin: var(--space-1) 0 0;
+    font-size: var(--fs-small);
+    color: var(--ink-body);
+  }
+
+  @media (max-width: 760px) {
+    .works__sources {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 460px) {
+    .works__sources {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

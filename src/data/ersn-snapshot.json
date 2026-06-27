@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-26T20:47:03.409Z",
+  "fetchedAt": "2026-06-27T00:43:13.387Z",
   "live": true,
   "roads": {
     "roads": [
@@ -9,7 +9,7 @@
         "section": "Angels Camp to Murphys",
         "status": "OPEN",
         "statusExplanation": "",
-        "durationMinutes": 12,
+        "durationMinutes": 11,
         "distanceKm": 13,
         "congestionLevel": "CLEAR",
         "delayMinutes": 0,
@@ -46,7 +46,7 @@
         "section": "Murphys to Arnold",
         "status": "OPEN",
         "statusExplanation": "",
-        "durationMinutes": 17,
+        "durationMinutes": 16,
         "distanceKm": 20,
         "congestionLevel": "CLEAR",
         "delayMinutes": 0,
@@ -83,10 +83,10 @@
         "section": "Arnold to Bear Valley",
         "status": "OPEN",
         "statusExplanation": "",
-        "durationMinutes": 29,
+        "durationMinutes": 28,
         "distanceKm": 38,
         "congestionLevel": "CLEAR",
-        "delayMinutes": 1,
+        "delayMinutes": 0,
         "chainControl": "NONE",
         "alerts": [
           {
@@ -120,10 +120,10 @@
         "section": "Angels Camp to Sonora",
         "status": "OPEN",
         "statusExplanation": "",
-        "durationMinutes": 26,
+        "durationMinutes": 23,
         "distanceKm": 25,
-        "congestionLevel": "LIGHT",
-        "delayMinutes": 2,
+        "congestionLevel": "CLEAR",
+        "delayMinutes": 0,
         "chainControl": "NONE",
         "alerts": [
           {
@@ -196,7 +196,7 @@
         "chainControlInfo": null
       }
     ],
-    "lastUpdated": "2026-06-26T20:43:15.695933272Z"
+    "lastUpdated": "2026-06-27T00:29:23.151816340Z"
   },
   "weather": {
     "weatherData": [
@@ -204,13 +204,13 @@
         "locationId": "murphys",
         "locationName": "Murphys, CA",
         "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
-        "weatherIcon": "04d",
+        "weatherDescription": "few clouds",
+        "weatherIcon": "02d",
         "temperatureCelsius": 23,
-        "feelsLikeCelsius": 22,
-        "humidityPercent": 44,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 214,
+        "feelsLikeCelsius": 23,
+        "humidityPercent": 49,
+        "windSpeedKmh": 13,
+        "windDirectionDegrees": 240,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -218,13 +218,13 @@
         "locationId": "arnold",
         "locationName": "Arnold, CA",
         "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
+        "weatherDescription": "broken clouds",
         "weatherIcon": "04d",
         "temperatureCelsius": 18,
-        "feelsLikeCelsius": 17,
-        "humidityPercent": 56,
+        "feelsLikeCelsius": 18,
+        "humidityPercent": 58,
         "windSpeedKmh": 1,
-        "windDirectionDegrees": 161,
+        "windDirectionDegrees": 118,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -234,53 +234,53 @@
         "weatherMain": "Clouds",
         "weatherDescription": "overcast clouds",
         "weatherIcon": "04d",
-        "temperatureCelsius": 14,
+        "temperatureCelsius": 13,
         "feelsLikeCelsius": 12,
-        "humidityPercent": 41,
-        "windSpeedKmh": 12,
-        "windDirectionDegrees": 205,
+        "humidityPercent": 69,
+        "windSpeedKmh": 17,
+        "windDirectionDegrees": 221,
         "visibilityKm": 10,
         "alerts": []
       },
       {
         "locationId": "sonora",
         "locationName": "Sonora, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
-        "weatherIcon": "04d",
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
         "temperatureCelsius": 25,
-        "feelsLikeCelsius": 24,
-        "humidityPercent": 37,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 330,
+        "feelsLikeCelsius": 25,
+        "humidityPercent": 46,
+        "windSpeedKmh": 13,
+        "windDirectionDegrees": 252,
         "visibilityKm": 10,
         "alerts": []
       },
       {
         "locationId": "columbia",
         "locationName": "Columbia, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
-        "weatherIcon": "04d",
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
         "temperatureCelsius": 24,
-        "feelsLikeCelsius": 23,
-        "humidityPercent": 38,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 330,
+        "feelsLikeCelsius": 24,
+        "humidityPercent": 46,
+        "windSpeedKmh": 13,
+        "windDirectionDegrees": 247,
         "visibilityKm": 10,
         "alerts": []
       },
       {
         "locationId": "twainharte",
         "locationName": "Twain Harte, CA",
-        "weatherMain": "Rain",
-        "weatherDescription": "light rain",
-        "weatherIcon": "10d",
+        "weatherMain": "Clouds",
+        "weatherDescription": "few clouds",
+        "weatherIcon": "02d",
         "temperatureCelsius": 21,
-        "feelsLikeCelsius": 20,
-        "humidityPercent": 38,
-        "windSpeedKmh": 4,
-        "windDirectionDegrees": 236,
+        "feelsLikeCelsius": 21,
+        "humidityPercent": 46,
+        "windSpeedKmh": 13,
+        "windDirectionDegrees": 245,
         "visibilityKm": 10,
         "alerts": []
       },
@@ -290,16 +290,16 @@
         "weatherMain": "Clouds",
         "weatherDescription": "overcast clouds",
         "weatherIcon": "04d",
-        "temperatureCelsius": 16,
+        "temperatureCelsius": 15,
         "feelsLikeCelsius": 15,
-        "humidityPercent": 57,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 199,
+        "humidityPercent": 60,
+        "windSpeedKmh": 14,
+        "windDirectionDegrees": 225,
         "visibilityKm": 10,
         "alerts": []
       }
     ],
-    "lastUpdated": "2026-06-26T20:47:03.411468314Z",
+    "lastUpdated": "2026-06-27T00:43:12.483728743Z",
     "fireWeather": {
       "state": "NORMAL",
       "sourceEvent": "",
@@ -312,40 +312,88 @@
   },
   "alerts": {
     "alerts": [],
-    "lastUpdated": "2026-06-26T20:44:11.379134667Z"
+    "lastUpdated": "2026-06-27T00:43:12.558827188Z"
   },
   "incidents": {
     "incidents": [
       {
-        "id": "260626ST0233",
+        "id": "260626ST0352",
         "type": "INCIDENT",
         "severity": "WARNING",
         "location": {
-          "latitude": 37.794189,
-          "longitude": -120.978273
+          "latitude": 37.798078,
+          "longitude": -121.092413
         },
-        "locationDescription": "Sr120 / Campbell Ave",
+        "locationDescription": "Sr120 / French Camp Rd",
         "description": "Traffic Collision-No Injury",
         "status": "ACTIVE",
-        "logNumber": "260626ST0233",
-        "started": "2026-06-26T19:44:00Z",
-        "lastUpdated": "2026-06-26T20:44:00Z",
+        "logNumber": "260626ST0352",
+        "started": "2026-06-26T23:59:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
         "area": "mother-lode"
       },
       {
-        "id": "260626TK0009",
+        "id": "260626ST0340",
         "type": "INCIDENT",
-        "severity": "INFO",
+        "severity": "WARNING",
         "location": {
-          "latitude": 38.787842,
-          "longitude": -119.9461
+          "latitude": 38.544516,
+          "longitude": -120.370798
         },
-        "locationDescription": "Sr 89 El Dorado / Alpine County Line",
-        "description": "Assist CT with Maintenance",
+        "locationDescription": "Sr88 / Panther Creek Rd",
+        "description": "Traffic Collision-No Injury",
         "status": "ACTIVE",
-        "logNumber": "260626TK0009",
-        "started": "2026-06-26T11:08:00Z",
-        "lastUpdated": "2026-06-26T20:44:00Z",
+        "logNumber": "260626ST0340",
+        "started": "2026-06-26T23:21:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
+        "area": "mother-lode"
+      },
+      {
+        "id": "260626TK0119",
+        "type": "INCIDENT",
+        "severity": "WARNING",
+        "location": {
+          "latitude": 38.880686,
+          "longitude": -120.062314
+        },
+        "locationDescription": "518 Fallen Leaf Rd",
+        "description": "Hit and Run No Injuries",
+        "status": "ACTIVE",
+        "logNumber": "260626TK0119",
+        "started": "2026-06-27T00:20:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
+        "area": "mother-lode"
+      },
+      {
+        "id": "260626MR0458",
+        "type": "INCIDENT",
+        "severity": "CRITICAL",
+        "location": {
+          "latitude": 37.547932,
+          "longitude": -120.905349
+        },
+        "locationDescription": "Sr99 N / E Keyes Rd",
+        "description": "Report of Fire",
+        "status": "ACTIVE",
+        "logNumber": "260626MR0458",
+        "started": "2026-06-27T00:12:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
+        "area": "mother-lode"
+      },
+      {
+        "id": "260626MR0402",
+        "type": "INCIDENT",
+        "severity": "WARNING",
+        "location": {
+          "latitude": 37.32768,
+          "longitude": -119.564012
+        },
+        "locationDescription": "39744 Road 274",
+        "description": "Hit and Run No Injuries",
+        "status": "ACTIVE",
+        "logNumber": "260626MR0402",
+        "started": "2026-06-26T22:54:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
         "area": "mother-lode"
       },
       {
@@ -361,23 +409,7 @@
         "status": "ACTIVE",
         "logNumber": "C49NA",
         "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C89LA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 38.787613,
-          "longitude": -119.945609
-        },
-        "locationDescription": "From Alpine County Line to Route 50 (South)",
-        "description": "Northbound / Southbound 89 Lane Closure",
-        "status": "ACTIVE",
-        "logNumber": "C89LA",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
         "area": "mother-lode"
       },
       {
@@ -393,71 +425,7 @@
         "status": "ACTIVE",
         "logNumber": "P193HA",
         "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C89HA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 38.933393,
-          "longitude": -120.055879
-        },
-        "locationDescription": "From Taylor Creek to Eagle Point Campground",
-        "description": "Route 89 One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "C89HA",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C50GA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 38.768991,
-          "longitude": -120.443626
-        },
-        "locationDescription": "From At PM40 to At PM50",
-        "description": "Route 50 One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "C50GA",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C49CB",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 38.694815,
-          "longitude": -120.813357
-        },
-        "locationDescription": "From Throwita Way to Bradley Drive",
-        "description": "Southbound 49 Lane Closure",
-        "status": "ACTIVE",
-        "logNumber": "C49CB",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "P49LA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 38.594238,
-          "longitude": -120.846982
-        },
-        "locationDescription": "From Union Mine Rd (South) to Lotus Rd",
-        "description": "Route 49 One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "P49LA",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
         "area": "mother-lode"
       },
       {
@@ -473,59 +441,11 @@
         "status": "ACTIVE",
         "logNumber": "P132HA",
         "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C132AA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 37.713194,
-          "longitude": -120.210324
-        },
-        "locationDescription": "From 17.72 .9 miles west of old hwy to Route 49, Coulterville",
-        "description": "Route 132 One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "C132AA",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "C49AB",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 37.736307,
-          "longitude": -120.230434
-        },
-        "locationDescription": "From Penon Blanco Road to Shilling Road (Right)",
-        "description": "Route 49 One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "C49AB",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
-        "area": "mother-lode"
-      },
-      {
-        "id": "P99DA",
-        "type": "CLOSURE",
-        "severity": "WARNING",
-        "location": {
-          "latitude": 37.340232,
-          "longitude": -120.593511
-        },
-        "locationDescription": "East Atwater Over-head Route 99",
-        "description": "Route 99 Surface Street One-way Traffic Operation",
-        "status": "ACTIVE",
-        "logNumber": "P99DA",
-        "started": null,
-        "lastUpdated": "2026-06-26T20:43:00Z",
+        "lastUpdated": "2026-06-27T00:42:00Z",
         "area": "mother-lode"
       }
     ],
-    "lastUpdated": "2026-06-26T20:44:48.996771519Z",
+    "lastUpdated": "2026-06-27T00:43:13.265843488Z",
     "area": "mother-lode"
   }
 }

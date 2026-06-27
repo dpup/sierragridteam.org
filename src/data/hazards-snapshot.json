@@ -1,0 +1,645 @@
+{
+  "fetchedAt": "2026-06-27T00:43:14.650Z",
+  "live": true,
+  "area": "calaveras",
+  "situation": {
+    "area": "calaveras",
+    "area_name": "Calaveras County",
+    "generated_at": "2026-06-27T00:43:14Z",
+    "summary": {
+      "highest_severity": "SEVERE",
+      "highest_severity_rank": 3,
+      "severity_counts": {
+        "INFO": 5,
+        "MODERATE": 8,
+        "SEVERE": 1
+      },
+      "total_features": 14,
+      "active_evacuations": null,
+      "evacuation_status": "UNAVAILABLE",
+      "top_headlines": [
+        {
+          "layer": "road_incident",
+          "severity": "SEVERE",
+          "severity_rank": 3,
+          "headline": "Report of Fire",
+          "source": "CHP / Caltrans"
+        },
+        {
+          "layer": "road_incident",
+          "severity": "MODERATE",
+          "severity_rank": 2,
+          "headline": "Traffic Collision-No Injury",
+          "source": "CHP / Caltrans"
+        },
+        {
+          "layer": "road_incident",
+          "severity": "MODERATE",
+          "severity_rank": 2,
+          "headline": "Traffic Collision-No Injury",
+          "source": "CHP / Caltrans"
+        },
+        {
+          "layer": "road_incident",
+          "severity": "MODERATE",
+          "severity_rank": 2,
+          "headline": "Hit and Run No Injuries",
+          "source": "CHP / Caltrans"
+        },
+        {
+          "layer": "road_incident",
+          "severity": "MODERATE",
+          "severity_rank": 2,
+          "headline": "Hit and Run No Injuries",
+          "source": "CHP / Caltrans"
+        }
+      ]
+    },
+    "layers": [
+      {
+        "layer": "evacuation",
+        "source_status": "UNAVAILABLE",
+        "feature_count": 0,
+        "attribution": "Cal OES / California County Governments — reference only",
+        "source_url": "https://protect.genasys.com/"
+      },
+      {
+        "layer": "wildfire",
+        "source_status": "OK",
+        "feature_count": 0
+      },
+      {
+        "layer": "road_incident",
+        "source_status": "OK",
+        "feature_count": 8,
+        "highest_severity": "SEVERE"
+      },
+      {
+        "layer": "chain_control",
+        "source_status": "OK",
+        "feature_count": 0
+      },
+      {
+        "layer": "weather_alert",
+        "source_status": "OK",
+        "feature_count": 1,
+        "highest_severity": "MODERATE"
+      },
+      {
+        "layer": "fire_weather",
+        "source_status": "OK",
+        "feature_count": 1,
+        "highest_severity": "INFO"
+      },
+      {
+        "layer": "earthquake",
+        "source_status": "OK",
+        "feature_count": 0
+      },
+      {
+        "layer": "road_segment",
+        "source_status": "OK",
+        "feature_count": 4,
+        "highest_severity": "INFO"
+      }
+    ],
+    "scanners": [
+      {
+        "feed_id": "13524",
+        "channel_label": "Sheriff / CAL FIRE Dispatch",
+        "agency": "Calaveras SO / CAL FIRE",
+        "broadcastify_url": "https://www.broadcastify.com/listen/feed/13524"
+      },
+      {
+        "feed_id": "28469",
+        "channel_label": "Fire / USFS",
+        "agency": "CAL FIRE / USFS",
+        "broadcastify_url": "https://www.broadcastify.com/listen/feed/28469"
+      },
+      {
+        "feed_id": "41042",
+        "channel_label": "CAL FIRE TCU / USFS",
+        "agency": "CAL FIRE TCU",
+        "broadcastify_url": "https://www.broadcastify.com/listen/feed/41042"
+      },
+      {
+        "feed_id": "45443",
+        "channel_label": "CHP — Stockton",
+        "agency": "CHP",
+        "broadcastify_url": "https://www.broadcastify.com/listen/feed/45443"
+      }
+    ]
+  },
+  "layers": {
+    "road_incident": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-121.09241, 37.79808]
+          },
+          "properties": {
+            "id": "chp:260626ST0352",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "incident",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Traffic Collision-No Injury",
+            "status": "active",
+            "effective": "2026-06-26T23:59:00Z",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "Sr120 / French Camp Rd",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "260626ST0352"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-120.3708, 38.54452]
+          },
+          "properties": {
+            "id": "chp:260626ST0340",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "incident",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Traffic Collision-No Injury",
+            "status": "active",
+            "effective": "2026-06-26T23:21:00Z",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "Sr88 / Panther Creek Rd",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "260626ST0340"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-120.06231, 38.88069]
+          },
+          "properties": {
+            "id": "chp:260626TK0119",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "incident",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Hit and Run No Injuries",
+            "status": "active",
+            "effective": "2026-06-27T00:20:00Z",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "518 Fallen Leaf Rd",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "260626TK0119"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-120.90535, 37.54793]
+          },
+          "properties": {
+            "id": "chp:260626MR0458",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "incident",
+            "severity": "SEVERE",
+            "severity_rank": 3,
+            "headline": "Report of Fire",
+            "status": "active",
+            "effective": "2026-06-27T00:12:00Z",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "Sr99 N / E Keyes Rd",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "260626MR0458"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-119.56401, 37.32768]
+          },
+          "properties": {
+            "id": "chp:260626MR0402",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "incident",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Hit and Run No Injuries",
+            "status": "active",
+            "effective": "2026-06-26T22:54:00Z",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "39744 Road 274",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "260626MR0402"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-120.89558, 38.80564]
+          },
+          "properties": {
+            "id": "chp:C49NA",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "closure",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Route 49 One-way Traffic Operation",
+            "status": "active",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "From North Beach Entrance to Bacchi Rd (North)",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "C49NA"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-121.13414, 38.87632]
+          },
+          "properties": {
+            "id": "chp:P193HA",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "closure",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Eastbound / Westbound 193 Lane Closure",
+            "status": "active",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "From Sierra College Blvd to Newcastle Tunnel",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "P193HA"
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-121.0036, 37.64167]
+          },
+          "properties": {
+            "id": "chp:P132HA",
+            "layer": "road_incident",
+            "kind": "Road incident",
+            "category": "closure",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Westbound 132 Lane Closure",
+            "status": "active",
+            "updated_at": "2026-06-27T00:42:00Z",
+            "area_label": "From G Street/9th Street to H Street/9th Street",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "log_number": "P132HA"
+            }
+          }
+        }
+      ],
+      "metadata": {
+        "layer": "road_incident",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    },
+    "road_segment": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-120.5402, 38.0674],
+              [-120.45611, 38.13912]
+            ]
+          },
+          "properties": {
+            "id": "road:hwy4-angels-murphys",
+            "layer": "road_segment",
+            "kind": "Road segment",
+            "severity": "INFO",
+            "severity_rank": 0,
+            "headline": "Hwy 4 — Angels Camp to Murphys",
+            "status": "open",
+            "area_label": "Angels Camp to Murphys",
+            "source": {
+              "id": "google",
+              "name": "Google Routes + Caltrans"
+            },
+            "road": {
+              "road_id": "hwy4-angels-murphys",
+              "congestion": "CLEAR",
+              "delay_minutes": 0,
+              "duration_minutes": 11,
+              "distance_km": 13
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-120.45611, 38.13912],
+              [-120.33365, 38.26501]
+            ]
+          },
+          "properties": {
+            "id": "road:hwy4-murphys-arnold",
+            "layer": "road_segment",
+            "kind": "Road segment",
+            "severity": "INFO",
+            "severity_rank": 0,
+            "headline": "Hwy 4 — Murphys to Arnold",
+            "status": "open",
+            "area_label": "Murphys to Arnold",
+            "source": {
+              "id": "google",
+              "name": "Google Routes + Caltrans"
+            },
+            "road": {
+              "road_id": "hwy4-murphys-arnold",
+              "congestion": "CLEAR",
+              "delay_minutes": 0,
+              "duration_minutes": 16,
+              "distance_km": 20
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-120.33365, 38.26501],
+              [-120.04237, 38.46105]
+            ]
+          },
+          "properties": {
+            "id": "road:hwy4-arnold-bearvalley",
+            "layer": "road_segment",
+            "kind": "Road segment",
+            "severity": "INFO",
+            "severity_rank": 0,
+            "headline": "Hwy 4 — Arnold to Bear Valley",
+            "status": "open",
+            "area_label": "Arnold to Bear Valley",
+            "source": {
+              "id": "google",
+              "name": "Google Routes + Caltrans"
+            },
+            "road": {
+              "road_id": "hwy4-arnold-bearvalley",
+              "congestion": "CLEAR",
+              "delay_minutes": 0,
+              "duration_minutes": 28,
+              "distance_km": 38
+            }
+          }
+        },
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              [-120.5402, 38.0674],
+              [-120.3827, 37.9841]
+            ]
+          },
+          "properties": {
+            "id": "road:hwy49-angels-sonora",
+            "layer": "road_segment",
+            "kind": "Road segment",
+            "severity": "INFO",
+            "severity_rank": 0,
+            "headline": "Hwy 49 — Angels Camp to Sonora",
+            "status": "open",
+            "area_label": "Angels Camp to Sonora",
+            "source": {
+              "id": "google",
+              "name": "Google Routes + Caltrans"
+            },
+            "road": {
+              "road_id": "hwy49-angels-sonora",
+              "congestion": "CLEAR",
+              "delay_minutes": 0,
+              "duration_minutes": 23,
+              "distance_km": 25
+            }
+          }
+        }
+      ],
+      "metadata": {
+        "layer": "road_segment",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    },
+    "chain_control": {
+      "type": "FeatureCollection",
+      "features": [],
+      "metadata": {
+        "layer": "chain_control",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    },
+    "weather_alert": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": null,
+          "properties": {
+            "id": "wx:urn:oid:2.49.0.1.840.0.ac04609d38a51541cd7c2cd84fee2202da9738e7.002.1",
+            "layer": "weather_alert",
+            "kind": "Weather alert",
+            "category": "Wind Advisory",
+            "severity": "MODERATE",
+            "severity_rank": 2,
+            "headline": "Wind Advisory issued June 26 at 5:01PM PDT until June 28 at 11:00AM PDT by NWS San Diego CA",
+            "description": "* WHAT...West winds 30 to 45 mph with gusts to 65 mph expected.\nStrongest winds on Saturday afternoon and evening.\n\n* WHERE...San Gorgonio Pass near Banning.\n\n* WHEN...Until 5 PM PDT Sunday.\n\n* IMPACTS...Gusty winds will blow around unsecured objects. Tree\nlimbs could be blown down and a few power outages may result.",
+            "effective": "2026-06-27T00:01:00Z",
+            "expires": "2026-06-27T10:00:00Z",
+            "source": {
+              "id": "nws",
+              "name": "NWS San Diego CA"
+            },
+            "weather": {
+              "event": "Wind Advisory",
+              "source": "NWS",
+              "zones": ["CAZ065"]
+            }
+          }
+        }
+      ],
+      "metadata": {
+        "layer": "weather_alert",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    },
+    "fire_weather": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": null,
+          "properties": {
+            "id": "fw:region",
+            "layer": "fire_weather",
+            "kind": "Fire weather",
+            "category": "normal",
+            "severity": "INFO",
+            "severity_rank": 0,
+            "headline": "Fire weather: normal",
+            "source": {
+              "id": "nws",
+              "name": "National Weather Service"
+            },
+            "fire_weather": {
+              "state": "normal"
+            }
+          }
+        }
+      ],
+      "metadata": {
+        "layer": "fire_weather",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    },
+    "wildfire": {
+      "type": "FeatureCollection",
+      "features": [],
+      "metadata": {
+        "layer": "wildfire",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    },
+    "evacuation": {
+      "type": "FeatureCollection",
+      "features": [],
+      "metadata": {
+        "layer": "evacuation",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "UNAVAILABLE",
+        "attribution": "Cal OES / California County Governments — reference only",
+        "source_url": "https://protect.genasys.com/",
+        "schema_version": 1
+      }
+    },
+    "earthquake": {
+      "type": "FeatureCollection",
+      "features": [],
+      "metadata": {
+        "layer": "earthquake",
+        "area": "calaveras",
+        "generated_at": "2026-06-27T00:43:14Z",
+        "source_status": "OK",
+        "schema_version": 1
+      }
+    }
+  },
+  "scanners": [
+    {
+      "feed_id": "13524",
+      "channel_label": "Sheriff / CAL FIRE Dispatch",
+      "agency": "Calaveras SO / CAL FIRE",
+      "broadcastify_url": "https://www.broadcastify.com/listen/feed/13524"
+    },
+    {
+      "feed_id": "28469",
+      "channel_label": "Fire / USFS",
+      "agency": "CAL FIRE / USFS",
+      "broadcastify_url": "https://www.broadcastify.com/listen/feed/28469"
+    },
+    {
+      "feed_id": "41042",
+      "channel_label": "CAL FIRE TCU / USFS",
+      "agency": "CAL FIRE TCU",
+      "broadcastify_url": "https://www.broadcastify.com/listen/feed/41042"
+    },
+    {
+      "feed_id": "45443",
+      "channel_label": "CHP — Stockton",
+      "agency": "CHP",
+      "broadcastify_url": "https://www.broadcastify.com/listen/feed/45443"
+    }
+  ]
+}

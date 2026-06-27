@@ -1,0 +1,413 @@
+---
+/**
+ * HazardMap — the live situation map (/live). MapLibre GL JS (open, non-Google) over
+ * a CARTO Positron basemap, with the relevance-filtered hazard GeoJSON layers from
+ * info.ersn.net severity-colored on the S.I.E.R.R.A palette, plus the org's own
+ * network sites overlaid. Progressive enhancement: the server renders a fallback note
+ * + legend; the client island builds the map and silently keeps the fallback on any
+ * failure (no WebGL, blocked tiles) — the same hazards are always in the alert stream.
+ *
+ * Colors are read from the CSS tokens at runtime (tokens.css stays the source of
+ * truth) — MapLibre paint needs literal colors, so we can't pass var(--…) directly.
+ */
+import { mapSites, serviceAreaBounds } from '@config/coverage';
+import type { HazardFeature } from '@lib/hazards';
+
+interface Props {
+  /** Relevance-filtered FeatureCollections keyed by layer (from the page). */
+  mapLayers: Record<string, { type: 'FeatureCollection'; features: HazardFeature[] }>;
+}
+const { mapLayers } = Astro.props;
+
+const sites = {
+  type: 'FeatureCollection',
+  features: mapSites.map((s) => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
+    properties: { name: s.name, role: s.role },
+  })),
+};
+
+const mapData = { sites, layers: mapLayers, bounds: serviceAreaBounds };
+
+const legend = [
+  { key: 'site', label: 'Network site' },
+  { key: 'wildfire', label: 'Wildfire' },
+  { key: 'evacuation', label: 'Evacuation' },
+  { key: 'incident', label: 'Road incident' },
+  { key: 'quake', label: 'Earthquake' },
+];
+---
+
+<figure class="hazard-map" data-hazard-map>
+  <div class="hazard-map__canvas" data-map-canvas>
+    <p class="hazard-map__fallback" data-map-fallback>
+      The live hazard map needs JavaScript and WebGL. Every active hazard is also listed in the
+      alert stream below.
+    </p>
+  </div>
+
+  <figcaption class="hazard-map__foot">
+    <ul class="hazard-map__legend">
+      {
+        legend.map((l) => (
+          <li class="hazard-map__legenditem">
+            <span
+              class:list={['hazard-map__swatch', `hazard-map__swatch--${l.key}`]}
+              aria-hidden="true"
+            />
+            {l.label}
+          </li>
+        ))
+      }
+    </ul>
+    <p class="hazard-map__attrib">
+      Basemap &copy; OpenStreetMap, &copy; CARTO · Hazards via info.ersn.net
+    </p>
+  </figcaption>
+
+  <script type="application/json" data-map-data set:html={JSON.stringify(mapData)} />
+</figure>
+
+<script>
+  import maplibregl from 'maplibre-gl';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+
+  type GeoFC = GeoJSON.FeatureCollection;
+
+  function initHazardMap() {
+    const root = document.querySelector<HTMLElement>('[data-hazard-map]');
+    const canvas = root?.querySelector<HTMLElement>('[data-map-canvas]');
+    const dataEl = root?.querySelector<HTMLElement>('[data-map-data]');
+    if (!root || !canvas || !dataEl) return;
+
+    const data = JSON.parse(dataEl.textContent || '{}') as {
+      sites: GeoFC;
+      layers: Record<string, GeoFC>;
+      bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number };
+    };
+    const fc = (l: string): GeoFC => data.layers[l] ?? { type: 'FeatureCollection', features: [] };
+
+    // Pull design tokens so the map matches the site (tokens.css = source of truth).
+    const cs = getComputedStyle(document.documentElement);
+    const tok = (n: string, fb: string) => cs.getPropertyValue(n).trim() || fb;
+    const C = {
+      green: tok('--brand-green', '#1d5b3f'),
+      brass: tok('--brand-brass', '#9a7d3a'),
+      orange: tok('--signal-orange', '#c2410c'),
+      ink: tok('--ink-strong', '#2b2720'),
+      surface: tok('--surface-page', '#f4eee2'),
+    };
+    // severity_rank → color (orange reserved for SEVERE/EXTREME).
+    const sevColor = [
+      'case',
+      ['>=', ['get', 'severity_rank'], 3],
+      C.orange,
+      ['==', ['get', 'severity_rank'], 2],
+      C.brass,
+      C.green,
+    ] as unknown as maplibregl.ExpressionSpecification;
+
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: canvas,
+        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        bounds: [
+          [data.bounds.minLng, data.bounds.minLat],
+          [data.bounds.maxLng, data.bounds.maxLat],
+        ],
+        fitBoundsOptions: { padding: 36 },
+        attributionControl: false,
+        dragRotate: false,
+        pitchWithRotate: false,
+        cooperativeGestures: true,
+      });
+    } catch {
+      return; // no WebGL → keep the SSR fallback
+    }
+    map.on('error', () => {}); // swallow tile/style errors — never surface them
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    map.touchZoomRotate?.disableRotation();
+
+    const esc = (s: unknown) =>
+      String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+    const popup = (e: maplibregl.MapLayerMouseEvent) => {
+      const p = (e.features?.[0]?.properties ?? {}) as Record<string, unknown>;
+      // MapLibre serializes object properties to JSON strings — parse defensively.
+      let src: { name?: string } | undefined =
+        typeof p.source === 'object' ? (p.source as { name?: string }) : undefined;
+      if (typeof p.source === 'string') {
+        try {
+          src = JSON.parse(p.source);
+        } catch {
+          src = undefined;
+        }
+      }
+      const html =
+        `<div class="map-pop">` +
+        (p.severity ? `<span class="map-pop__sev">${esc(p.severity)}</span>` : '') +
+        `<p class="map-pop__title">${esc(p.headline || p.kind || p.name)}</p>` +
+        (p.area_label ? `<p class="map-pop__where">${esc(p.area_label)}</p>` : '') +
+        (src?.name ? `<p class="map-pop__src">${esc(src.name)}</p>` : '') +
+        `</div>`;
+      new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    };
+    const interactive = (id: string) => {
+      map.on('click', id, popup);
+      map.on('mouseenter', id, () => (map.getCanvas().style.cursor = 'pointer'));
+      map.on('mouseleave', id, () => (map.getCanvas().style.cursor = ''));
+    };
+
+    map.on('load', () => {
+      try {
+        // Monitored corridors (road segments) — thin lines under everything.
+        map.addSource('segments', { type: 'geojson', data: fc('road_segment') });
+        map.addLayer({
+          id: 'segments',
+          type: 'line',
+          source: 'segments',
+          paint: { 'line-color': sevColor, 'line-width': 3, 'line-opacity': 0.65 },
+        });
+
+        // Wildfire + evacuation polygons (fill + outline).
+        for (const l of ['wildfire', 'evacuation'] as const) {
+          map.addSource(l, { type: 'geojson', data: fc(l) });
+          map.addLayer({
+            id: `${l}-fill`,
+            type: 'fill',
+            source: l,
+            paint: { 'fill-color': C.orange, 'fill-opacity': 0.18 },
+          });
+          map.addLayer({
+            id: `${l}-line`,
+            type: 'line',
+            source: l,
+            paint: { 'line-color': C.orange, 'line-width': 1.5 },
+          });
+          interactive(`${l}-fill`);
+        }
+
+        // Earthquakes — hollow circles sized by magnitude.
+        map.addSource('earthquake', { type: 'geojson', data: fc('earthquake') });
+        map.addLayer({
+          id: 'earthquake',
+          type: 'circle',
+          source: 'earthquake',
+          paint: {
+            'circle-radius': [
+              '+',
+              4,
+              ['*', 2, ['coalesce', ['get', 'magnitude'], 1]],
+            ] as unknown as maplibregl.ExpressionSpecification,
+            'circle-color': 'rgba(0,0,0,0)',
+            'circle-stroke-color': sevColor,
+            'circle-stroke-width': 2,
+          },
+        });
+        interactive('earthquake');
+
+        // Road incidents — filled severity circles.
+        map.addSource('incidents', { type: 'geojson', data: fc('road_incident') });
+        map.addLayer({
+          id: 'incidents',
+          type: 'circle',
+          source: 'incidents',
+          paint: {
+            'circle-radius': 5,
+            'circle-color': sevColor,
+            'circle-stroke-color': C.surface,
+            'circle-stroke-width': 1.5,
+          },
+        });
+        interactive('incidents');
+
+        // Our network sites — markers + labels, drawn on top.
+        map.addSource('sites', { type: 'geojson', data: data.sites });
+        map.addLayer({
+          id: 'sites',
+          type: 'circle',
+          source: 'sites',
+          paint: {
+            'circle-radius': [
+              'match',
+              ['get', 'role'],
+              'hq',
+              6,
+              4,
+            ] as unknown as maplibregl.ExpressionSpecification,
+            'circle-color': [
+              'match',
+              ['get', 'role'],
+              'hq',
+              C.green,
+              C.brass,
+            ] as unknown as maplibregl.ExpressionSpecification,
+            'circle-stroke-color': C.surface,
+            'circle-stroke-width': 1.5,
+          },
+        });
+        map.addLayer({
+          id: 'site-labels',
+          type: 'symbol',
+          source: 'sites',
+          layout: {
+            'text-field': ['get', 'name'] as unknown as maplibregl.ExpressionSpecification,
+            'text-size': 11,
+            'text-offset': [0, 1.1],
+            'text-anchor': 'top',
+            'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
+          },
+          paint: { 'text-color': C.ink, 'text-halo-color': C.surface, 'text-halo-width': 1.4 },
+        });
+        interactive('sites');
+
+        // Only hide the fallback once every layer added cleanly.
+        const fb = root.querySelector<HTMLElement>('[data-map-fallback]');
+        if (fb) fb.style.display = 'none';
+      } catch {
+        /* keep the SSR fallback note visible if layer setup fails */
+      }
+    });
+  }
+
+  initHazardMap();
+</script>
+
+<style>
+  .hazard-map {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .hazard-map__canvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    min-height: 320px;
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .hazard-map__fallback {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7);
+    text-align: center;
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  .hazard-map__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+  }
+
+  .hazard-map__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+  .hazard-map__legenditem {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  .hazard-map__swatch {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border: 1px solid var(--ink-muted);
+  }
+  .hazard-map__swatch--site {
+    background: var(--brand-green);
+    border-radius: 50%;
+    border-color: var(--brand-green);
+  }
+  .hazard-map__swatch--wildfire,
+  .hazard-map__swatch--evacuation {
+    background: color-mix(in srgb, var(--signal-orange) 18%, transparent);
+    border-color: var(--signal-orange);
+  }
+  .hazard-map__swatch--incident {
+    background: var(--brand-brass);
+    border-radius: 50%;
+    border-color: var(--brand-brass);
+  }
+  .hazard-map__swatch--quake {
+    background: transparent;
+    border-radius: 50%;
+    border-color: var(--brand-green);
+  }
+
+  .hazard-map__attrib {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
+  }
+
+  /* MapLibre popup + controls, restyled to the system (square, tan, parchment). */
+  .hazard-map :global(.maplibregl-popup-content) {
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+    background: var(--surface-card);
+    padding: var(--space-4) var(--space-5);
+    font-family: var(--font-display);
+  }
+  .hazard-map :global(.maplibregl-popup-tip) {
+    display: none;
+  }
+  .hazard-map :global(.map-pop__sev) {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .hazard-map :global(.map-pop__title) {
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+    margin-top: var(--space-1);
+  }
+  .hazard-map :global(.map-pop__where) {
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+    margin-top: var(--space-1);
+  }
+  .hazard-map :global(.map-pop__src) {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
+    margin-top: var(--space-2);
+  }
+  .hazard-map :global(.maplibregl-ctrl-group) {
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+</style>

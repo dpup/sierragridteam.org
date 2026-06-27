@@ -1,0 +1,72 @@
+---
+/**
+ * ScannerLinks — Broadcastify public-safety scanner feeds for the area (/scanners).
+ * Link-out only; audio is never hosted or rebroadcast here (licensing).
+ */
+import type { Scanner } from '@lib/hazards';
+
+interface Props {
+  scanners: Scanner[];
+}
+const { scanners } = Astro.props;
+---
+
+{
+  scanners.length > 0 && (
+    <ul class="scanners">
+      {scanners.map((s) => (
+        <li>
+          <a class="scanner" href={s.broadcastify_url} target="_blank" rel="noopener external">
+            <span class="scanner__label">
+              {s.channel_label}
+              <span class="scanner__arrow" aria-hidden="true">
+                &#8599;
+              </span>
+            </span>
+            <span class="scanner__agency">{s.agency}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .scanners {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-4);
+  }
+  .scanner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+  }
+  .scanner:hover {
+    text-decoration: none;
+    border-color: var(--brand-green);
+  }
+  .scanner__label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-green);
+  }
+  .scanner__agency {
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+</style>

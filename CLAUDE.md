@@ -77,7 +77,13 @@ Page rules:
 - **Always wrap in `BaseLayout`** with `title`, `description`, `path` — that produces
   the correct `<head>`, SEO/OG/JSON-LD, nav, footer, skip link, and fonts.
 - **Copy comes from `src/config/content.ts`**, not inline strings; data comes from
-  `src/lib/ersn.ts` (`buildSnapshot()`) or `src/config`.
+  `src/lib/ersn.ts` (`buildSnapshot()` — roads/weather/alerts) or `src/lib/hazards.ts`
+  (`buildSituationSnapshot()` — the unified wildfire/evac/seismic/road hazard layers,
+  `/situation`, `/scanners`) or `src/config`. The hazard layers are re-filtered to the
+  service area / NWS zones in `hazards.ts` (the road_incident layer is region-wide and
+  the server weather_alert zones include an out-of-area zone) — never surface raw
+  region-wide hazards as local. Evacuation `UNAVAILABLE` must read as "unknown", never
+  all-clear.
 - One `<h1>` per page; correct heading order; real landmarks.
 - The homepage sets `hideBrandInNav`; other pages show the compact brand automatically.
 - ⚠️ **Do not put a `CLAUDE.md` (or any `.md`) in `src/pages/`** — Astro would route it
@@ -121,6 +127,14 @@ stable.
 ## Project facts
 
 - **Stack:** Astro 7 (static `output: 'static'`), self-hosted fonts, no UI framework.
+  The one runtime library is **MapLibre GL JS** (open, non-Google) for the `/live`
+  hazard map, on a **CARTO Positron** basemap (no API key). It loads only on `/live`;
+  the map reads its colors from the CSS tokens at runtime and degrades to a static
+  fallback if WebGL/tiles are unavailable (the hazards are always in the alert stream).
+- **`/live` is the flagship** situation page (replaced `/alerts`, which now redirects).
+  The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
+  (an active **evacuation or wildfire** — both area-scoped, so the region-wide rollup is
+  never trusted) — its orange is a sanctioned genuine-alert use.
 - **Package manager:** npm (`bun install` hangs behind some proxies; `bun` is used
   only as a test/script runner). Use `make install`.
 - **Deploy:** AWS S3 + CloudFront, DNS at Hostinger — see `docs/deployment.md`.

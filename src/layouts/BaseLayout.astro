@@ -16,6 +16,7 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '../styles/global.css';
 
 import Seo from '@components/Seo.astro';
+import EmergencyBanner from '@components/EmergencyBanner.astro';
 import TopBar from '@components/TopBar.astro';
 import SiteFooter from '@components/SiteFooter.astro';
 
@@ -64,6 +65,7 @@ const {
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    <EmergencyBanner />
     <TopBar hideBrand={hideBrandInNav} path={path} />
     <main id="main" class={mainClass} tabindex="-1">
       <slot />

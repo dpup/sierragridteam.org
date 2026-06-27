@@ -34,7 +34,7 @@ const viewports = [
 const pages = [
   { name: 'home', path: '/' },
   { name: 'mesh', path: '/mesh' },
-  { name: 'alerts', path: '/alerts' },
+  { name: 'live', path: '/live' },
   { name: 'contact', path: '/contact' },
   { name: 'about', path: '/about' },
   { name: 'donate', path: '/donate' },
@@ -42,6 +42,16 @@ const pages = [
 ];
 
 const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/ersn-snapshot.json'), 'utf8'));
+const hazards = JSON.parse(readFileSync(resolve(root, 'src/data/hazards-snapshot.json'), 'utf8'));
+
+// Minimal offline basemap so the MapLibre map's `load` fires without external tiles
+// (the headless browser can't reach tile hosts through the auth proxy). The hazard
+// overlays still render on a plain parchment background.
+const OFFLINE_STYLE = {
+  version: 8,
+  sources: {},
+  layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#efe7d6' } }],
+};
 
 // The "redflag" alarm scenario: a realistic fire-season foothill event modeled on the
 // real NWS Sacramento alert shape (see info.ersn.net tests/testdata/weather). A Red Flag
@@ -89,6 +99,19 @@ function mockErsn(route: Route) {
       headers: { 'access-control-allow-origin': '*' },
       body: JSON.stringify(body),
     });
+  // Hazard routes first — a '…/weather_alert.geojson' URL contains '/weather'.
+  if (url.includes('/situation/')) return json(hazards.situation);
+  if (url.includes('/scanners/')) return json(hazards.scanners);
+  const geo = url.match(/\/hazards\/[^/]+\/([^/?]+)\.geojson/);
+  if (geo) {
+    return json(
+      hazards.layers[geo[1]] ?? {
+        type: 'FeatureCollection',
+        features: [],
+        metadata: { source_status: 'OK' },
+      }
+    );
+  }
   // Order matters: '/weather/alerts' and '/incidents' before the bare '/weather'.
   if (url.includes('/weather/alerts')) {
     // 'calm' = the common quiet state (no active alerts); 'redflag' = the alarm.
@@ -121,11 +144,25 @@ async function main() {
       reducedMotion: 'reduce',
     });
     await ctx.route(/info\.ersn\.net/, mockErsn);
+    // Offline basemap (broad abort first, specific style mock last = higher priority).
+    await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
+    await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>
+      r.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(OFFLINE_STYLE),
+      })
+    );
 
     for (const pg of pages) {
       const page = await ctx.newPage();
       await page.clock.setFixedTime(FIXED);
       await page.goto(`${BASE}${pg.path}`, { waitUntil: 'networkidle' });
+      // The live map renders via WebGL after tiles/style settle.
+      if (pg.path === '/live') {
+        await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
+        await page.waitForTimeout(2500);
+      }
       // Kill any residual motion + the text caret for byte-stability.
       await page.addStyleTag({
         content:

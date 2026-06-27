@@ -63,11 +63,28 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       `https://sierragridteam.org/sitemap-index.xml` (DNS verification — nothing needed
       in the repo).
 
+## Live Feed (situation page)
+
+- [x] **`/live` flagship built** — MapLibre GL + CARTO Positron map, prioritized hazard
+      stream, situation tiles, scanners, provenance; consumes the new info.ersn.net
+      hazard/situation/scanner feeds. `/alerts` 301-redirects to `/live`.
+- [x] **Site-wide emergency banner** (life-safety only: active evacuation or wildfire).
+- [ ] **Confirm the server-side `calaveras` weather_alert zones.** The hazard
+      `weather_alert` layer still returns an out-of-area zone (CAZ065 San Diego); we
+      filter it out client/build-side to `NWS_ZONES`, but it should be fixed in
+      info.ersn.net's `prefab.yaml` area config so the `/situation` rollup counts are
+      right too.
+- [ ] **Verify the Broadcastify scanner feed IDs** (`/scanners/calaveras`) point at the
+      right Calaveras/CAL FIRE TCU channels before launch.
+- [ ] **CARTO basemap** is the keyless free tier; if traffic grows, move to a
+      self-hosted Protomaps PMTiles basemap (no third-party dependency) — one-line style
+      swap in `HazardMap.astro`.
+
 ## Verified already ✓
 
-- All 7 routes build statically (home, mesh, alerts, about, donate, contact, 404);
-  `make ci` green (types, stylelint, prettier, unit tests, build, Playwright a11y +
-  smoke).
+- All routes build statically (home, mesh, live, about, donate, contact, 404; /alerts
+  → /live redirect); `make ci` green (types, stylelint, prettier, unit tests, build,
+  Playwright a11y + smoke).
 - WCAG 2.2 AA: zero critical/serious axe violations on every page.
 - Deterministic screenshots at 3 viewports (`tests/screenshots/`), incl. a verified
   Red-Flag alarm state.

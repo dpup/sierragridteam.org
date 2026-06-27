@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 const pages = [
   { name: 'home', path: '/', h1: /signal stays up/i },
   { name: 'mesh', path: '/mesh', h1: /mesh network/i },
-  { name: 'alerts', path: '/alerts', h1: /emergency alerts/i },
+  { name: 'live', path: '/live', h1: /the live feed/i },
   { name: 'contact', path: '/contact', h1: /contact & volunteer/i },
   { name: 'about', path: '/about', h1: /resilient communications/i },
   { name: 'donate', path: '/donate', h1: /help keep the foothills connected/i },

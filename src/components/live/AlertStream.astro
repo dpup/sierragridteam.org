@@ -1,0 +1,203 @@
+---
+/**
+ * AlertStream — the prioritized "active alerts" list on /live: every relevant hazard
+ * from every layer, most-urgent first, severity-accented (orange = SEVERE/EXTREME only),
+ * each an expandable <details>. Built from deriveStream() in src/lib/hazards.ts.
+ */
+import { toneFor, severityLabel, type HazardFeature } from '@lib/hazards';
+
+interface Props {
+  items: HazardFeature[];
+  emptyText: string;
+}
+const { items, emptyText } = Astro.props;
+
+/** A short per-kind detail line (acres/containment, magnitude, evac level). */
+function extra(f: HazardFeature): string | null {
+  const p = f.properties;
+  if (p.wildfire) {
+    const bits = [
+      p.wildfire.acres != null ? `${p.wildfire.acres.toLocaleString()} acres` : null,
+      p.wildfire.containment != null ? `${p.wildfire.containment}% contained` : null,
+    ].filter(Boolean);
+    return bits.length ? bits.join(' · ') : null;
+  }
+  if (p.earthquake) {
+    const bits = [
+      p.earthquake.magnitude != null ? `M${p.earthquake.magnitude}` : null,
+      p.earthquake.depth_km != null ? `depth ${p.earthquake.depth_km} km` : null,
+    ].filter(Boolean);
+    return bits.length ? bits.join(' · ') : null;
+  }
+  if (p.evacuation) {
+    return [p.evacuation.level, p.evacuation.event_type].filter(Boolean).join(' · ') || null;
+  }
+  return null;
+}
+---
+
+{
+  items.length === 0 ? (
+    <p class="stream__empty">{emptyText}</p>
+  ) : (
+    <ul class="stream">
+      {items.map((f) => {
+        const tone = toneFor(f);
+        const p = f.properties;
+        const ex = extra(f);
+        return (
+          <li>
+            <details class:list={['stream__card', `stream__card--${tone}`]}>
+              <summary class="stream__summary">
+                <span class="stream__head">
+                  <span class="stream__kicker">
+                    <span class="stream__sev">{severityLabel(String(p.severity))}</span>
+                    <span class="stream__kind">{p.kind}</span>
+                  </span>
+                  <span class="stream__title">{p.headline}</span>
+                  {p.area_label && <span class="stream__where">{p.area_label}</span>}
+                </span>
+                <span class="stream__chevron" aria-hidden="true" />
+              </summary>
+              <div class="stream__body">
+                {ex && <p class="stream__extra">{ex}</p>}
+                {p.description && <p class="stream__desc">{p.description}</p>}
+                <p class="stream__src">{p.source?.name}</p>
+              </div>
+            </details>
+          </li>
+        );
+      })}
+    </ul>
+  )
+}
+
+<style>
+  .stream {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .stream__empty {
+    padding: var(--space-6);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  .stream__card {
+    background: var(--surface-card);
+    border: var(--border);
+    border-left-width: 3px;
+    border-radius: var(--radius);
+  }
+  .stream__card--alarm {
+    border-left-color: var(--signal-orange);
+  }
+  .stream__card--elevated {
+    border-left-color: var(--brand-brass);
+  }
+  .stream__card--ok,
+  .stream__card--muted {
+    border-left-color: var(--brand-green);
+  }
+
+  .stream__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+  }
+  .stream__summary::-webkit-details-marker {
+    display: none;
+  }
+  .stream__head {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+  .stream__kicker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-3);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+  .stream__card--alarm .stream__sev {
+    color: var(--signal-orange-text);
+  }
+  .stream__card--elevated .stream__sev {
+    color: var(--brand-brass-text);
+  }
+  .stream__card--ok .stream__sev,
+  .stream__card--muted .stream__sev {
+    color: var(--brand-green);
+  }
+  .stream__kind {
+    color: var(--ink-muted);
+  }
+  .stream__title {
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+  .stream__where {
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  .stream__chevron {
+    margin-top: 6px;
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-right: 2px solid var(--ink-muted);
+    border-bottom: 2px solid var(--ink-muted);
+    transform: rotate(45deg);
+    transition: transform var(--transition);
+  }
+  .stream__card[open] .stream__chevron {
+    transform: rotate(-135deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stream__chevron {
+      transition: none;
+    }
+  }
+
+  .stream__body {
+    padding: 0 var(--space-5) var(--space-5) calc(var(--space-5) + var(--space-3));
+  }
+  .stream__extra {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--ink-strong);
+    margin-bottom: var(--space-2);
+  }
+  .stream__desc {
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+    white-space: pre-line;
+  }
+  .stream__src {
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
+  }
+</style>

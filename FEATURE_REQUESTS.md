@@ -22,6 +22,19 @@ These shipped and are now consumed live — placeholders removed.
 > (Tuolumne + Mother Lode foothills, lower Calaveras, and the Hwy 4 Alpine/high-Sierra
 > country) — verified to no longer return out-of-area alerts.
 
+## ✅ Hazard aggregation (M1–M5) delivered + wired (2026-06-27)
+
+The unified hazard API shipped and powers the new **/live** situation page:
+`/hazards/{area}/{layer}.geojson` (wildfire, evacuation, earthquake, weather_alert,
+fire_weather, road_incident, road_segment, chain_control), `/situation/{area}`, and
+`/scanners/{area}`. See `src/lib/hazards.ts` and `docs/architecture/data-feed.md`.
+
+> ⚠️ **Open server-config item:** the `calaveras` area's `weather_alert` layer still
+> returns an out-of-area zone (CAZ065, NWS San Diego). We filter it to `NWS_ZONES`
+> client/build-side, but the `/situation` rollup counts still include it — fix the
+> zone list in info.ersn.net's `prefab.yaml` so the rollup is accurate too. Evacuation
+> is currently `UNAVAILABLE` (Cal OES upstream) — rendered honestly as "unknown".
+
 ## Tracked locally (out of info.ersn.net's roads/weather domain)
 
 These concern S.I.E.R.R.A's own mesh/relay infrastructure, not Ebbett's Pass

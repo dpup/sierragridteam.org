@@ -13,7 +13,7 @@ export const home = {
     subhead:
       'We build, operate, and train the volunteers behind an off-grid emergency communications network for the Calaveras & Tuolumne foothills.',
     primaryCta: { label: 'Open Live Map', href: '/mesh' },
-    secondaryCta: { label: 'View Emergency Alerts', href: '/alerts' },
+    secondaryCta: { label: 'View the Live Feed', href: '/live' },
   },
 
   status: {
@@ -112,6 +112,53 @@ export const alerts = {
   staleNote:
     'Showing last-known values — the live info.ersn.net feed was unreachable at build time. ' +
     'Conditions below may be out of date.',
+} as const;
+
+/** The Live Feed (situation) page — the public flagship during an emergency. */
+export const live = {
+  title: 'Live Feed',
+  kicker: 'Calaveras County · Situation',
+  heading: 'The Live Feed',
+  intro:
+    'One page for an unfolding emergency — official wildfire, evacuation, weather, seismic, ' +
+    'and road feeds for the foothills on a single map with a prioritized alert stream. Built ' +
+    'to answer one question fast: is my area safe right now?',
+  autoRefresh: 'Auto-refreshes every 90 seconds',
+  mapHeading: 'Live hazard map',
+  streamHeading: 'Active alerts',
+  streamEmpty: 'No active hazards in the service area right now. The map and feeds below are live.',
+  conditionsHeading: 'Current conditions',
+  roadsHeading: 'Road conditions',
+  scannersHeading: 'Dispatch audio',
+  scannersNote:
+    'Live public-safety scanner feeds via Broadcastify. Link-out only — audio is not hosted ' +
+    'or rebroadcast here.',
+  worksHeading: 'How this feed works',
+  worksBody:
+    'Every layer comes from an official agency feed, aggregated and cached by info.ersn.net ' +
+    '(refreshed about every 90 seconds) so your browser never hammers the agencies directly ' +
+    'during a disaster. Nothing here is simulated — when a source is unavailable it says so, ' +
+    'and an empty evacuation feed is never read as an all-clear.',
+  /** Provenance — the official sources behind each layer. */
+  sources: [
+    { label: 'Fire perimeters', detail: 'NIFC / WFIGS interagency perimeters (ArcGIS)' },
+    { label: 'Wildfire incidents', detail: 'CAL FIRE active incidents' },
+    { label: 'Evacuations', detail: 'Cal OES / Genasys — presence only, link-out' },
+    { label: 'Weather & fire weather', detail: 'National Weather Service' },
+    { label: 'Seismic', detail: 'USGS earthquake feed' },
+    { label: 'Road incidents', detail: 'CHP / Caltrans (QuickMap)' },
+  ],
+  resourcesHeading: 'Official sources',
+  staleNote:
+    'Showing last-known values — the live feed was unreachable at build time. The situation ' +
+    'below may be out of date; check official sources during an active emergency.',
+} as const;
+
+/** Site-wide emergency banner copy (shown only on a SEVERE/EXTREME hazard). */
+export const emergencyBanner = {
+  feedLabel: 'View the Live Feed',
+  evacLabel: 'Open evacuation map',
+  evacUrl: 'https://protect.genasys.com/',
 } as const;
 
 export const contact = {

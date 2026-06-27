@@ -159,3 +159,25 @@ export const serviceAreaBounds = {
 
 /** info.ersn.net dispatch area slug for the region-wide CHP/Caltrans incident feed. */
 export const incidentArea = 'mother-lode' as const;
+
+/**
+ * Network sites in REAL geographic coordinates (WGS84 lat/long), for the live
+ * hazard map on /live (MapLibre overlays the org's own sites on a real basemap).
+ * Separate from the hero CoverageMap's stylized x/y projection. `role`: hq=green,
+ * relay=brass, hub=orange. Keep coordinates accurate to the actual towns.
+ */
+export const mapSites: ReadonlyArray<{
+  name: string;
+  lat: number;
+  lng: number;
+  role: TownRole;
+}> = [
+  { name: 'Murphys (HQ)', lat: 38.1374, lng: -120.4583, role: 'hq' },
+  { name: 'Angels Camp', lat: 38.0683, lng: -120.5391, role: 'town' },
+  { name: 'Arnold', lat: 38.2555, lng: -120.3513, role: 'town' },
+  { name: 'Dorrington', lat: 38.3119, lng: -120.2702, role: 'town' },
+  { name: 'Bear Valley', lat: 38.4577, lng: -120.043, role: 'town' },
+  { name: 'Columbia', lat: 38.0357, lng: -120.4002, role: 'town' },
+  { name: 'Sonora', lat: 37.9829, lng: -120.3822, role: 'town' },
+  { name: 'Twain Harte', lat: 38.0421, lng: -120.2299, role: 'town' },
+];

@@ -14,6 +14,11 @@ export default defineConfig({
   // client-side for the live clock and data refresh. See docs/architecture/data-feed.md.
   output: 'static',
   trailingSlash: 'never',
+  // /alerts was folded into the flagship /live situation page. Astro emits a static
+  // redirect (meta-refresh + canonical); a true 301 can also be set at CloudFront.
+  redirects: {
+    '/alerts': '/live',
+  },
   build: {
     // Emit clean URLs: /mesh -> mesh.html, served as /mesh by CloudFront.
     format: 'file',

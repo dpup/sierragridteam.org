@@ -9,20 +9,22 @@
 
 ```
 /                 Home        — hero coverage map → operational status → mission → doctrine → service banner
+/live             Live Feed   — situation map (MapLibre) + prioritized hazard stream + conditions/roads/scanners
 /mesh             Mesh / LoRa — embedded live mesh map (authoritative) + collapsible info sidebar
-/alerts           Alerts      — live NWS/region alert cards + CHP CAD dispatch + resource links
+/about            About       — story, doctrine, by-the-numbers, leadership, get-involved CTA
 /contact          Contact     — P.O. Box, volunteer roles, mailto form, 911 disclaimer
+/donate           Donate      — ways to give (placeholder until a provider is wired)
+/alerts → /live   redirect    — the old alerts page folded into the Live Feed
 /404              Not found   — on-brand fallback
 robots.txt, sitemap-index.xml, site.webmanifest, og images   (generated)
 ```
 
-**Primary nav order (left→right):** Mesh · Alerts · Contact.
-Mesh is the **first** nav item (the live map is the organization's flagship capability).
-Brand lockup sits left of the nav on every page **except** the homepage, where the hero
-emblem stands in for it.
+**Primary nav order (left→right):** Home · Live Feed · Mesh · About · Contact, plus a
+**Donate** CTA (orange-accent text) and a **live local clock** (America/Los_Angeles, 24h,
+"PT" suffix). The header brand is the mark alone (no wordmark); the homepage hides it (the
+hero emblem stands in). **Live Feed** is the public flagship during an emergency.
 
-Nav also contains: an **"Operational" status pill** (blinking green dot) and a **live local
-clock** (America/Los_Angeles, 24h, "PT" suffix).
+When a life-safety hazard is active, a site-wide **EmergencyBanner** sits above the nav.
 
 ## Global chrome
 

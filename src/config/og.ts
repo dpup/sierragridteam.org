@@ -4,7 +4,7 @@
  * Keep titles short — they render at 64px on the card.
  */
 import type { OgCard } from '@lib/og';
-import { home, mesh, alerts, contact, about, donate } from './content';
+import { home, mesh, live, contact, about, donate } from './content';
 import { site } from './site';
 
 export const ogCards: Record<string, OgCard> = {
@@ -18,10 +18,10 @@ export const ogCards: Record<string, OgCard> = {
     title: mesh.title,
     subtitle: 'Live LoRa / MeshCore coverage across the Highway 4 & 49 corridors.',
   },
-  alerts: {
-    kicker: alerts.kicker,
-    title: alerts.title,
-    subtitle: 'Weather, fire-weather & road conditions for the foothills.',
+  live: {
+    kicker: live.kicker,
+    title: live.heading,
+    subtitle: 'Live wildfire, evacuation, weather & road feeds for the foothills.',
   },
   contact: {
     kicker: contact.kicker,

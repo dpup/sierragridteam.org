@@ -1,0 +1,167 @@
+---
+/**
+ * EmergencyBanner — the site-wide alarm band (in BaseLayout, every page). Renders
+ * nothing on calm days; when a life-safety hazard is active (an active evacuation or
+ * wildfire, per deriveBanner — both area-scoped) it shows a slim orange band naming the
+ * hazard with links to the Live Feed + (if evacuating) the authoritative evacuation map.
+ * Orange here is a sanctioned genuine-alert use. SSR from the build-time situation; a
+ * client island re-checks /situation every 90s and shows/hides — silently keeping SSR
+ * on failure, never trusting the rollup's region-wide severity, and only writing to the
+ * role="alert" region when the state actually changes.
+ */
+import { buildSituationSnapshot, deriveBanner, HAZARD_AREA } from '@lib/hazards';
+import { ERSN_API_BASE } from '@lib/ersn';
+import { emergencyBanner as copy } from '@config/content';
+
+const banner = deriveBanner(await buildSituationSnapshot());
+---
+
+<aside
+  class="ebanner"
+  data-ebanner
+  data-area={HAZARD_AREA}
+  data-api-base={ERSN_API_BASE}
+  role="alert"
+  aria-label="Emergency alert"
+  hidden={!banner.active}
+>
+  <div class="ebanner__inner">
+    <span class="ebanner__icon" aria-hidden="true">▲</span>
+    <p class="ebanner__text">
+      <strong class="ebanner__label" data-ebanner-label>{banner.label}</strong>
+      <span data-ebanner-headline>{banner.headline}</span>
+    </p>
+    <span class="ebanner__actions">
+      <a class="ebanner__link" href="/live">{copy.feedLabel} &rarr;</a>
+      <a
+        class="ebanner__link ebanner__link--evac"
+        href={copy.evacUrl}
+        target="_blank"
+        rel="noopener external"
+        data-ebanner-evac
+        hidden={!banner.hasEvacuation}>{copy.evacLabel} &rarr;</a
+      >
+    </span>
+  </div>
+</aside>
+
+<script>
+  const el = document.querySelector<HTMLElement>('[data-ebanner]');
+  if (el) {
+    const base = el.dataset.apiBase ?? 'https://info.ersn.net/api/v1';
+    const area = el.dataset.area ?? 'calaveras';
+    let lastSig = '';
+    const set = (sel: string, text: string) => {
+      const t = el.querySelector<HTMLElement>(sel);
+      if (t) t.textContent = text;
+    };
+    const refresh = async () => {
+      try {
+        const res = await fetch(`${base}/situation/${area}`, {
+          headers: { accept: 'application/json' },
+        });
+        if (!res.ok) return;
+        const s = (await res.json()) as {
+          summary?: {
+            active_evacuations?: number | null;
+            top_headlines?: { layer: string; headline: string }[];
+          };
+          layers?: { layer: string; feature_count: number }[];
+        };
+        const sum = s.summary ?? {};
+        const heads = sum.top_headlines ?? [];
+        const hasEvac = (sum.active_evacuations ?? 0) > 0;
+        const hasWildfire =
+          ((s.layers ?? []).find((l) => l.layer === 'wildfire')?.feature_count ?? 0) > 0;
+
+        // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The rollup's
+        // region-wide highest_severity / road / weather headlines are never trusted —
+        // they can describe an out-of-area event (matches the SSR deriveBanner contract).
+        const active = hasEvac || hasWildfire;
+        const layer = hasEvac ? 'evacuation' : 'wildfire';
+        const headline =
+          heads.find((h) => h.layer === layer)?.headline ??
+          (hasEvac
+            ? 'Active evacuation in the service area'
+            : 'Active wildfire near the foothills');
+        const label = hasEvac ? 'Evacuation' : 'Active Wildfire';
+
+        // Only touch the DOM when something actually changed — the role="alert" live
+        // region must not re-announce on every 90s poll during a sustained emergency.
+        const sig = `${active}|${label}|${headline}|${hasEvac}`;
+        if (sig === lastSig) return;
+        lastSig = sig;
+
+        if (!active) {
+          el.hidden = true;
+          return;
+        }
+        set('[data-ebanner-headline]', headline);
+        set('[data-ebanner-label]', label);
+        const evacEl = el.querySelector<HTMLElement>('[data-ebanner-evac]');
+        if (evacEl) evacEl.hidden = !hasEvac;
+        el.hidden = false;
+      } catch {
+        /* keep the SSR banner state */
+      }
+    };
+    refresh();
+    setInterval(refresh, 90_000);
+  }
+</script>
+
+<style>
+  .ebanner {
+    background: var(--signal-orange);
+    color: var(--surface-page);
+  }
+  .ebanner[hidden] {
+    display: none;
+  }
+  .ebanner__inner {
+    max-width: var(--container-wide);
+    margin-inline: auto;
+    padding: var(--space-3) var(--gutter);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+    flex-wrap: wrap;
+  }
+  .ebanner__icon {
+    font-size: var(--fs-small);
+  }
+  .ebanner__text {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+  }
+  .ebanner__label {
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    margin-right: var(--space-2);
+  }
+  .ebanner__actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+  .ebanner__link {
+    color: var(--surface-page);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+  }
+  .ebanner__link:hover {
+    color: var(--surface-page);
+    text-decoration: none;
+  }
+</style>

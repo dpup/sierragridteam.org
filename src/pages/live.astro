@@ -1,0 +1,352 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import StatusPill from '@components/StatusPill.astro';
+import StatTile from '@components/StatTile.astro';
+import HazardMap from '@components/live/HazardMap.astro';
+import AlertStream from '@components/live/AlertStream.astro';
+import ScannerLinks from '@components/live/ScannerLinks.astro';
+import HowItWorks from '@components/live/HowItWorks.astro';
+import CurrentConditions from '@components/alerts/CurrentConditions.astro';
+import RoadConditions from '@components/alerts/RoadConditions.astro';
+import {
+  buildSituationSnapshot,
+  deriveStream,
+  deriveSituationSummary,
+  layerFeatures,
+} from '@lib/hazards';
+import { buildSnapshot } from '@lib/ersn';
+import { live as copy } from '@config/content';
+import { externalLinks, site, TIMEZONE } from '@config/site';
+
+const haz = await buildSituationSnapshot();
+const ersn = await buildSnapshot();
+
+const stream = deriveStream(haz);
+const summary = deriveSituationSummary(haz);
+
+const mapLayers: Record<string, { type: 'FeatureCollection'; features: never[] }> = {};
+for (const l of ['road_incident', 'wildfire', 'evacuation', 'earthquake', 'road_segment']) {
+  let feats = layerFeatures(haz, l);
+  // MapLibre paint can't index nested props — promote earthquake magnitude to top level.
+  if (l === 'earthquake') {
+    feats = feats.map((f) => ({
+      ...f,
+      properties: { ...f.properties, magnitude: f.properties.earthquake?.magnitude ?? 1 },
+    }));
+  }
+  mapLayers[l] = { type: 'FeatureCollection', features: feats as never[] };
+}
+
+// At-a-glance status from the locally-relevant highest severity.
+const status =
+  summary.highestRank >= 3
+    ? { tone: 'alarm' as const, label: 'Active Incident' }
+    : summary.highestRank === 2
+      ? { tone: 'elevated' as const, label: 'Advisory' }
+      : { tone: 'ok' as const, label: 'Operational' };
+
+const fireMap: Record<string, { label: string; state: 'ok' | 'elevated' | 'alarm' | 'muted' }> = {
+  RED_FLAG: { label: 'Red Flag', state: 'alarm' },
+  ELEVATED: { label: 'Elevated', state: 'elevated' },
+  NORMAL: { label: 'Normal', state: 'ok' },
+  UNKNOWN: { label: 'Unknown', state: 'muted' },
+};
+const fire = fireMap[summary.fireWeather] ?? fireMap.UNKNOWN;
+
+function fmtPT(iso: string | null): string {
+  if (!iso) return '—';
+  try {
+    const t = new Intl.DateTimeFormat('en-GB', {
+      timeZone: TIMEZONE,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(new Date(iso));
+    return `${t} PT`;
+  } catch {
+    return '—';
+  }
+}
+const syncedLabel = summary.live ? `Synced ${fmtPT(summary.syncedAt)}` : 'Last known';
+
+const resources = [
+  { label: 'CHP Dispatch', desc: 'CAD incidents — Mother Lode', href: externalLinks.chpCad },
+  { label: 'CAL FIRE', desc: 'Wildfire activity & readiness', href: externalLinks.calFire },
+  {
+    label: 'NWS Sacramento',
+    desc: 'Forecasts, watches & warnings',
+    href: externalLinks.nwsSacramento,
+  },
+  {
+    label: 'USGS Earthquakes',
+    desc: 'Recent seismic activity',
+    href: externalLinks.usgsEarthquakes,
+  },
+];
+
+const description =
+  'Live situation map and prioritized alert stream for the Calaveras & Tuolumne foothills — ' +
+  'wildfire, evacuation, weather, seismic, and road feeds aggregated from official sources.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: `${copy.heading} — ${site.name}`,
+  url: `${site.url}/live`,
+};
+---
+
+<BaseLayout title={copy.title} description={description} path="/live" schema={schema}>
+  <Section surface="page" labelledby="live-title">
+    <header class="live-head">
+      <div class="live-head__top">
+        <Kicker>{copy.kicker}</Kicker>
+        <StatusPill tone={status.tone} blink={status.tone === 'alarm'}>{status.label}</StatusPill>
+      </div>
+      <h1 id="live-title" class="live-head__title">{copy.heading}</h1>
+      <p class="live-head__intro">{copy.intro}</p>
+      <p class="live-head__sync">
+        <span data-live-synced>{syncedLabel}</span> · {copy.autoRefresh}
+      </p>
+    </header>
+
+    {
+      !haz.live && (
+        <p class="live-stale" role="note">
+          {copy.staleNote}
+        </p>
+      )
+    }
+
+    <div class="live-tiles">
+      <StatTile
+        label="Wildfires"
+        value={summary.wildfires > 0 ? `${summary.wildfires} Active` : 'None'}
+        sublabel="CAL FIRE"
+        state={summary.wildfires > 0 ? 'alarm' : 'ok'}
+      />
+      <StatTile
+        label="Evacuations"
+        value={summary.evacuations == null
+          ? 'Unknown'
+          : summary.evacuations > 0
+            ? `${summary.evacuations} Zones`
+            : 'None'}
+        sublabel={summary.evacuations == null ? 'Source unavailable' : 'Cal OES'}
+        state={summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok'}
+      />
+      <StatTile
+        label="Weather Alerts"
+        value={summary.weatherAlerts > 0 ? `${summary.weatherAlerts} Active` : 'None'}
+        sublabel="NWS foothill zones"
+        state={summary.weatherAlerts > 0 ? 'elevated' : 'ok'}
+      />
+      <StatTile
+        label="Fire Weather"
+        value={fire.label}
+        sublabel="Calaveras & Tuolumne"
+        state={fire.state}
+      />
+    </div>
+
+    <div class="live-grid">
+      <section class="live-grid__map" aria-labelledby="map-title">
+        <h2 id="map-title" class="live-h2">{copy.mapHeading}</h2>
+        <HazardMap mapLayers={mapLayers} />
+      </section>
+      <section class="live-grid__stream" aria-labelledby="stream-title">
+        <h2 id="stream-title" class="live-h2">{copy.streamHeading}</h2>
+        <AlertStream items={stream} emptyText={copy.streamEmpty} />
+      </section>
+    </div>
+  </Section>
+
+  <Section surface="page" labelledby="cond-title">
+    <h2 id="cond-title" class="live-h2">{copy.conditionsHeading}</h2>
+    <CurrentConditions weather={ersn.weather} />
+  </Section>
+
+  <Section surface="page" labelledby="roads-title">
+    <h2 id="roads-title" class="live-h2">{copy.roadsHeading}</h2>
+    <RoadConditions roads={ersn.roads} />
+  </Section>
+
+  <Section surface="page" labelledby="scan-title">
+    <h2 id="scan-title" class="live-h2">{copy.scannersHeading}</h2>
+    <p class="live-sub">{copy.scannersNote}</p>
+    <ScannerLinks scanners={haz.scanners ?? []} />
+  </Section>
+
+  <Section surface="page" labelledby="works-title">
+    <h2 id="works-title" class="live-h2">{copy.worksHeading}</h2>
+    <HowItWorks body={copy.worksBody} sources={copy.sources} />
+  </Section>
+
+  <Section surface="page" labelledby="res-title">
+    <h2 id="res-title" class="live-h2">{copy.resourcesHeading}</h2>
+    <ul class="live-resources">
+      {
+        resources.map((r) => (
+          <li>
+            <a class="resource" href={r.href} target="_blank" rel="noopener external">
+              <span class="resource__label">
+                {r.label}
+                <span class="resource__arrow" aria-hidden="true">
+                  &#8599;
+                </span>
+              </span>
+              <span class="resource__desc">{r.desc}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+</BaseLayout>
+
+<script>
+  // Keep the "Synced" stamp honest with a periodic situation poll (the components
+  // each own their own data; this just refreshes the header timestamp).
+  const el = document.querySelector<HTMLElement>('[data-live-synced]');
+  if (el) {
+    const fmt = () => {
+      try {
+        const t = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'America/Los_Angeles',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).format(new Date());
+        return `Synced ${t} PT`;
+      } catch {
+        return el.textContent || '';
+      }
+    };
+    setInterval(() => (el.textContent = fmt()), 90_000);
+  }
+</script>
+
+<style>
+  .live-head {
+    max-width: 70ch;
+  }
+  .live-head__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .live-head__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .live-head__intro {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .live-head__sync {
+    margin-top: var(--space-4);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .live-stale {
+    margin-top: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface-card);
+    border: var(--border);
+    border-left: 3px solid var(--brand-brass);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  .live-tiles {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+
+  .live-grid {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+  .live-h2 {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--space-5);
+  }
+  .live-sub {
+    margin-top: calc(var(--space-5) * -1 + var(--space-2));
+    margin-bottom: var(--space-5);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  .live-resources {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+  .resource {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+  }
+  .resource:hover {
+    text-decoration: none;
+    border-color: var(--brand-green);
+  }
+  .resource__label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-green);
+  }
+  .resource__desc {
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+
+  @media (max-width: 900px) {
+    .live-tiles {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .live-grid {
+      grid-template-columns: 1fr;
+    }
+    .live-resources {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .live-tiles,
+    .live-resources {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -55,15 +55,20 @@ older `docs/design/content-brief.md` conflicts (it describes a flashier neon
 treatment), the design system wins — the look is a calm, institutional,
 warm-parchment identity, not a tech-startup aesthetic.
 
-## Live data & known gaps
+## Live data & the Live Feed
 
-The site reads roads, weather, NWS zone alerts, fire-weather, and region-wide
-CHP/Caltrans incidents live from info.ersn.net (FR-1 CORS, FR-2, FR-3, FR-4, FR-7 all
-delivered 2026-06-26 — home tiles + /alerts refresh every 5 min, with the build-time
-snapshot as the last-known fallback). The only remaining data gap shown as an honest
-placeholder is S.I.E.R.R.A's own per-relay / mesh-node status (FR-5/FR-6), which
-info.ersn.net does not own — see `FEATURE_REQUESTS.md` and
-`docs/architecture/data-feed.md`.
+The flagship **`/live`** situation page aggregates official wildfire, evacuation,
+weather, fire-weather, seismic, and road feeds from info.ersn.net's hazard API
+(`/hazards/*.geojson`, `/situation`, `/scanners`) onto one **MapLibre GL + CARTO
+Positron** map and a prioritized alert stream, with a site-wide emergency banner on a
+life-safety event. Roads, weather conditions, and NWS zone alerts also feed the home
+status tiles. Everything renders SSR from a build-time snapshot (last-known fallback)
+and refreshes client-side. Region-wide hazard layers are re-filtered to the actual
+service area; evacuation `UNAVAILABLE` reads as "unknown", never all-clear.
+
+The only data gap shown as an honest placeholder is S.I.E.R.R.A's own per-relay /
+mesh-node status (FR-5/FR-6), which info.ersn.net does not own — see
+`FEATURE_REQUESTS.md` and `docs/architecture/data-feed.md`.
 
 ## Before launch (open items)
 
