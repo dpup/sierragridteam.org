@@ -27,7 +27,7 @@ const stream = deriveStream(haz);
 const summary = deriveSituationSummary(haz);
 
 const mapLayers: Record<string, { type: 'FeatureCollection'; features: never[] }> = {};
-for (const l of ['road_incident', 'wildfire', 'evacuation', 'earthquake', 'road_segment']) {
+for (const l of ['road_incident', 'wildfire', 'evacuation', 'earthquake']) {
   let feats = layerFeatures(haz, l);
   // MapLibre paint can't index nested props — promote earthquake magnitude to top level.
   if (l === 'earthquake') {
@@ -134,7 +134,7 @@ const schema = {
           : summary.evacuations > 0
             ? `${summary.evacuations} Zones`
             : 'None'}
-        sublabel={summary.evacuations == null ? 'No active orders · Cal OES' : 'Cal OES'}
+        sublabel="Cal OES"
         state={summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok'}
       />
       <StatTile

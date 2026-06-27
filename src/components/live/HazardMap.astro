@@ -10,7 +10,7 @@
  * Colors are read from the CSS tokens at runtime (tokens.css stays the source of
  * truth) — MapLibre paint needs literal colors, so we can't pass var(--…) directly.
  */
-import { serviceAreaBounds } from '@config/coverage';
+import { mapSites, serviceAreaBounds } from '@config/coverage';
 import type { HazardFeature } from '@lib/hazards';
 
 interface Props {
@@ -19,9 +19,21 @@ interface Props {
 }
 const { mapLayers } = Astro.props;
 
-const mapData = { layers: mapLayers, bounds: serviceAreaBounds };
+// Subtle town reference dots (no connecting lines, no labels — the basemap labels the
+// towns) so active hazards/incidents stay the focus.
+const towns = {
+  type: 'FeatureCollection',
+  features: mapSites.map((s) => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
+    properties: { name: s.name },
+  })),
+};
+
+const mapData = { towns, layers: mapLayers, bounds: serviceAreaBounds };
 
 const legend = [
+  { key: 'town', label: 'Town' },
   { key: 'wildfire', label: 'Wildfire' },
   { key: 'evacuation', label: 'Evacuation' },
   { key: 'incident', label: 'Road incident' },
@@ -72,6 +84,7 @@ const legend = [
     if (!root || !canvas || !dataEl) return;
 
     const data = JSON.parse(dataEl.textContent || '{}') as {
+      towns: GeoFC;
       layers: Record<string, GeoFC>;
       bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number };
     };
@@ -86,6 +99,7 @@ const legend = [
       orange: tok('--signal-orange', '#c2410c'),
       ink: tok('--ink-strong', '#2b2720'),
       surface: tok('--surface-page', '#f4eee2'),
+      muted: tok('--ink-muted', '#6f6750'),
     };
     // severity_rank → color (orange reserved for SEVERE/EXTREME).
     const sevColor = [
@@ -154,12 +168,21 @@ const legend = [
     map.on('load', () => {
       try {
         // Monitored corridors (road segments) — thin lines under everything.
-        map.addSource('segments', { type: 'geojson', data: fc('road_segment') });
+        // Subtle town reference dots, under everything — small + muted so they orient
+        // without competing with the hazards.
+        map.addSource('towns', { type: 'geojson', data: data.towns });
         map.addLayer({
-          id: 'segments',
-          type: 'line',
-          source: 'segments',
-          paint: { 'line-color': sevColor, 'line-width': 3, 'line-opacity': 0.65 },
+          id: 'towns',
+          type: 'circle',
+          source: 'towns',
+          paint: {
+            'circle-radius': 3,
+            'circle-color': C.muted,
+            'circle-opacity': 0.55,
+            'circle-stroke-color': C.surface,
+            'circle-stroke-width': 1,
+            'circle-stroke-opacity': 0.6,
+          },
         });
 
         // Wildfire + evacuation polygons (fill + outline).
@@ -199,17 +222,18 @@ const legend = [
         });
         interactive('earthquake');
 
-        // Road incidents — filled severity circles.
+        // Road incidents — filled severity circles, drawn on top so accidents/incidents
+        // are the most visible thing on the map.
         map.addSource('incidents', { type: 'geojson', data: fc('road_incident') });
         map.addLayer({
           id: 'incidents',
           type: 'circle',
           source: 'incidents',
           paint: {
-            'circle-radius': 5,
+            'circle-radius': 6,
             'circle-color': sevColor,
             'circle-stroke-color': C.surface,
-            'circle-stroke-width': 1.5,
+            'circle-stroke-width': 2,
           },
         });
         interactive('incidents');
@@ -289,6 +313,11 @@ const legend = [
     height: 10px;
     flex-shrink: 0;
     border: 1px solid var(--ink-muted);
+  }
+  .hazard-map__swatch--town {
+    background: color-mix(in srgb, var(--ink-muted) 55%, transparent);
+    border-radius: 50%;
+    border-color: var(--ink-muted);
   }
   .hazard-map__swatch--wildfire,
   .hazard-map__swatch--evacuation {
