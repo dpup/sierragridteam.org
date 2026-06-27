@@ -108,14 +108,12 @@
 
   /* ---- Layout misc ---- */
   --topbar-h: 64px;
-  --hero-min-h: 680px;
   --z-skiplink: 100;
   --z-topbar: 50;
   --z-overlay: 40;
 
-  /* Cards never use drop shadows. This token exists only for the rare elevated
+  /* Cards never use drop shadows. --shadow-overlay exists only for the rare elevated
      overlay (e.g. a loading panel over an iframe) and stays subtle. */
-  --shadow-none: none;
   --shadow-overlay: 0 1px 0 var(--line);
 }
 

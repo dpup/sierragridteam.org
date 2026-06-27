@@ -32,7 +32,8 @@ full list and each component's contract.
 
 ## Live-data islands
 
-`OperationalStatus`, `AlertsFeed`, `LocalClock`, `MeshMap` use small client
-`<script>`s. They must **degrade gracefully**: SSR renders the build-time snapshot;
-the client refresh enhances it and, on any failure (including CORS), **silently keeps
-the SSR content** — never a spinner or error in view. Keep that contract.
+`OperationalStatus`, `EmergencyBanner`, `live/HazardMap`, `LocalClock`, and `MeshMap`
+use small client `<script>`s. They must **degrade gracefully**: SSR renders the
+build-time snapshot; the client refresh enhances it and, on any failure (including
+CORS, blocked map tiles, or no WebGL), **silently keeps the SSR content/fallback** —
+never a spinner or error in view. Keep that contract.

@@ -56,7 +56,7 @@ fireWeather = {
 
 `{ alerts: Alert[], lastUpdated }`. NWS / OpenWeatherMap zone alerts for the service-area
 forecast zones (Tuolumne + Mother Lode foothills 067/069, lower Calaveras 019, Alpine/
-high-Sierra 072 — see `NWS_ZONES`). Powers AlertsFeed + the home "Active Alerts" tile.
+high-Sierra 072 — see `NWS_ZONES`). Powers the /live alert stream + the home "Active Alerts" tile.
 
 ```jsonc
 Alert = {
@@ -66,20 +66,12 @@ Alert = {
 }
 ```
 
-### `GET /incidents/{area}` → `{ incidents: Incident[], lastUpdated, area }` (FR-7)
+### `GET /incidents/{area}` (region-wide CHP/Caltrans incidents)
 
-Region-wide CHP/Caltrans dispatch incidents (`area` = `mother-lode`). This spans the
-whole Mother Lode (incl. Modesto, Tahoe, Merced), so `splitIncidents` (src/lib/ersn.ts)
-partitions it into the foothill service area (see `serviceAreaBounds`) vs the wider
-region for the "CHP & Caltrans incidents" section.
-
-```jsonc
-Incident = {
-  id, type: "INCIDENT"|"CLOSURE", severity: "INFO"|"WARNING"|"CRITICAL",
-  location: { latitude, longitude }, locationDescription, description,
-  status: "ACTIVE"|…, logNumber, started, lastUpdated, area
-}
-```
+The typed `/incidents/{area}` endpoint still exists, but the site **no longer consumes
+it** — road incidents now arrive via the hazard `road_incident` GeoJSON layer (see the
+hazard-aggregation section / `src/lib/hazards.ts`), filtered to the foothill service area
+by `isInServiceArea` / `serviceAreaBounds` in `src/lib/ersn.ts`.
 
 ## Architecture: hybrid SSG snapshot + client refresh
 
@@ -99,7 +91,7 @@ The same hybrid strategy still holds:
 3. **Client refresh island** fetches live every 5 min (`/weather` + zone-filtered `/weather/alerts`).
    On success it updates the tiles + the "Synced [time]" indicator. **On any failure it silently
    keeps the build-time snapshot** — per the design's "never show a spinner/error in the hero" rule.
-   (Road conditions, current conditions, and incidents are SSR-only from the snapshot.)
+   (Road conditions and current conditions are SSR-only from the snapshot.)
 
 ```
 build ──fetch──> ersn.ts ──> snapshot (typed) ──> SSR HTML  ──hydrate──> client refresh (5 min)

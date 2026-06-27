@@ -8,11 +8,9 @@ import {
   deriveFireWeather,
   deriveOperationalStatus,
   isInServiceArea,
-  splitIncidents,
   fallbackSnapshot,
   type ErsnSnapshot,
   type FireWeather,
-  type Incident,
 } from './ersn';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
 import active from '../data/__fixtures__/alerts-active.json';
@@ -40,24 +38,6 @@ function withAlerts(alerts: ErsnSnapshot['alerts']): ErsnSnapshot {
   return { ...fallbackSnapshot, alerts };
 }
 
-function withIncidents(incidents: Incident[]): ErsnSnapshot {
-  return { ...fallbackSnapshot, incidents: { incidents, lastUpdated: '', area: 'mother-lode' } };
-}
-
-const mkIncident = (latitude: number, longitude: number, severity = 'WARNING'): Incident => ({
-  id: 'x',
-  type: 'INCIDENT',
-  severity,
-  location: { latitude, longitude },
-  locationDescription: 'somewhere',
-  description: 'Test incident',
-  status: 'ACTIVE',
-  logNumber: '0',
-  started: null,
-  lastUpdated: '',
-  area: 'mother-lode',
-});
-
 test('units convert metric → imperial correctly', () => {
   expect(cToF(0)).toBe(32);
   expect(cToF(30)).toBe(86);
@@ -72,7 +52,6 @@ test('fallback snapshot is well-formed real data', () => {
   expect(fallbackSnapshot.roads?.roads.length).toBeGreaterThan(0);
   expect(fallbackSnapshot.weather?.weatherData.length).toBeGreaterThan(0);
   expect(Array.isArray(fallbackSnapshot.alerts?.alerts)).toBe(true);
-  expect(Array.isArray(fallbackSnapshot.incidents?.incidents)).toBe(true);
 });
 
 test('fire weather reads the feed authoritative state (FR-3)', () => {
@@ -122,26 +101,6 @@ test('isInServiceArea bounds the Calaveras/Tuolumne foothills', () => {
   expect(isInServiceArea(null)).toBe(false);
 });
 
-test('splitIncidents groups in-area vs wider, most-severe first', () => {
-  const { inArea, wider } = splitIncidents(
-    withIncidents([
-      mkIncident(38.14, -120.45, 'WARNING'), // in area
-      mkIncident(38.14, -120.45, 'CRITICAL'), // in area — should sort first
-      mkIncident(37.34, -120.59, 'WARNING'), // wider (Merced)
-    ])
-  );
-  expect(inArea.length).toBe(2);
-  expect(inArea[0].severity).toBe('CRITICAL');
-  expect(wider.length).toBe(1);
-});
-
-test('an incident without coordinates is grouped under wider region (honest)', () => {
-  const noLoc: Incident = { ...mkIncident(0, 0), location: undefined };
-  const { inArea, wider } = splitIncidents(withIncidents([noLoc]));
-  expect(inArea.length).toBe(0);
-  expect(wider.length).toBe(1);
-});
-
 test('deriveOperationalStatus surfaces owned config + live flag', () => {
   const status = deriveOperationalStatus(fallbackSnapshot, owned);
   expect(status.relaySites).toBe(6);
@@ -157,11 +116,8 @@ test('derivations never throw on a null/empty snapshot', () => {
     roads: null,
     weather: null,
     alerts: null,
-    incidents: null,
   };
   expect(() => countActiveAlerts(empty)).not.toThrow();
   expect(() => deriveOperationalStatus(empty, owned)).not.toThrow();
-  expect(() => splitIncidents(empty)).not.toThrow();
   expect(countActiveAlerts(empty)).toBe(0);
-  expect(splitIncidents(empty)).toEqual({ inArea: [], wider: [] });
 });

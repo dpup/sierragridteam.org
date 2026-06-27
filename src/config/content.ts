@@ -90,31 +90,6 @@ export const mesh = {
     'exact node coordinates, site access, or operator identities.',
 } as const;
 
-export const alerts = {
-  title: 'Emergency Alerts',
-  kicker: 'Calaveras & Tuolumne',
-  intro:
-    'Current conditions, weather alerts, road status, and CHP / Caltrans incidents for the ' +
-    'Highway 4 and Highway 49 corridors, drawn live from the info.ersn.net feed. ' +
-    'Auto-refreshes every 5 minutes.',
-  conditionsHeading: 'Current conditions',
-  feedHeading: 'Active weather alerts',
-  feedNote:
-    'Alerts for the service-area NWS forecast zones (CAZ019 / CAZ067 / CAZ069 / CAZ072), ' +
-    'from the National Weather Service and OpenWeatherMap.',
-  roadsHeading: 'Road conditions',
-  incidentsHeading: 'CHP & Caltrans incidents',
-  incidentsNote:
-    'Active California Highway Patrol and Caltrans dispatch incidents. Those inside the ' +
-    'Calaveras & Tuolumne service area are listed first; the wider Mother Lode region is ' +
-    'grouped below.',
-  resourcesHeading: 'Additional resources',
-  emptyState: 'No active weather alerts for the service area right now.',
-  staleNote:
-    'Showing last-known values — the live info.ersn.net feed was unreachable at build time. ' +
-    'Conditions below may be out of date.',
-} as const;
-
 /** The Live Feed (situation) page — the public flagship during an emergency. */
 export const live = {
   title: 'Live Feed',

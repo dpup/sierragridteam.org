@@ -55,9 +55,9 @@ const OFFLINE_STYLE = {
 
 // The "redflag" alarm scenario: a realistic fire-season foothill event modeled on the
 // real NWS Sacramento alert shape (see info.ersn.net tests/testdata/weather). A Red Flag
-// Warning + a co-occurring High Wind Warning (wind drives red-flag conditions) so the
-// AlertsFeed renders multiple cards, plus fireWeather.state = RED_FLAG (FR-3) escalates
-// the Fire Weather tile to orange.
+// Warning + a co-occurring High Wind Warning (wind drives red-flag conditions) drive the
+// home "Active Alerts" tile, plus fireWeather.state = RED_FLAG (FR-3) escalates the Fire
+// Weather tile to orange.
 const redflagAlerts = [
   {
     id: 'urn:test:redflag',
@@ -121,7 +121,6 @@ function mockErsn(route: Route) {
         : { alerts: [], lastUpdated: FIXED.toISOString() }
     );
   }
-  if (url.includes('/incidents')) return json(snapshot.incidents);
   if (url.includes('/weather')) {
     const w = snapshot.weather;
     return json(

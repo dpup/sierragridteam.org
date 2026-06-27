@@ -260,7 +260,6 @@ function mockErsn(route, snap) {
     );
   if (url.includes('/weather/alerts'))
     return json({ alerts: [], lastUpdated: FIXED.toISOString() });
-  if (url.includes('/incidents')) return json(calmErsn.incidents);
   if (url.includes('/weather')) return json(calmErsn.weather);
   if (url.includes('/roads')) return json(calmErsn.roads);
   return json({});

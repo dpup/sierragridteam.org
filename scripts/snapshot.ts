@@ -26,7 +26,6 @@ async function get(path: string): Promise<unknown> {
 }
 
 const NWS_ZONES = ['CAZ019', 'CAZ067', 'CAZ069', 'CAZ072'];
-const INCIDENT_AREA = 'mother-lode';
 const HAZARD_AREA = 'calaveras';
 // All hazard GeoJSON layers (one FeatureCollection each).
 const HAZARD_LAYERS = [
@@ -43,16 +42,15 @@ const HAZARD_LAYERS = [
 async function main() {
   console.error(`Fetching snapshots from ${API_BASE} ...`);
 
-  const [roads, weather, alerts, incidents] = await Promise.all([
+  const [roads, weather, alerts] = await Promise.all([
     get('/roads'),
     get('/weather'),
     get(`/weather/alerts?zones=${NWS_ZONES.join(',')}`),
-    get(`/incidents/${INCIDENT_AREA}`),
   ]);
   writeFileSync(
     ERSN_OUT,
     JSON.stringify(
-      { fetchedAt: new Date().toISOString(), live: true, roads, weather, alerts, incidents },
+      { fetchedAt: new Date().toISOString(), live: true, roads, weather, alerts },
       null,
       2
     ) + '\n'

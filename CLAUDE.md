@@ -130,6 +130,11 @@ stable.
   the data.
 - ❌ Disable a stylelint guardrail, an a11y test, or the type-checker to "make it
   pass." Fix the cause.
+- ❌ **Leave dead code.** When a change makes a file, export, component, type, content
+  key, fixture, or dependency unused, **remove it in the same change** — don't comment it
+  out or keep it "just in case." If a page/feature is removed, sweep its orphaned
+  components, copy, types, and tests too. Git history is the backup. `astro check` will
+  flag broken imports; grep to confirm an export/key has no remaining references.
 
 ## Project facts
 

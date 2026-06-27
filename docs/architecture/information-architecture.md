@@ -46,7 +46,7 @@ Order, top to bottom:
      meaning — no color pop, no italics. Balance line 1 so no word is orphaned.
    - Subhead (one sentence): builds + operates + trains.
    - Buttons: primary **"Open Live Map"** (green fill → `/mesh`),
-     secondary **"View Emergency Alerts"** (brass outline → `/alerts`).
+     secondary **"View the Live Feed"** (brass outline → `/live`).
    - **Map honesty rule:** the hero map is an _identity/coverage_ visual, NOT live network
      topology. It must never claim real-time node positions. Six town markers in true relative
      geography: Dorrington, Arnold, Murphys (HQ), Angels Camp, Columbia, Sonora; links follow
@@ -77,17 +77,21 @@ Order, top to bottom:
   (Murphys, Angels Camp, Sonora, Arnold, …), security notes.
 - External **"Open Full Map"** link.
 
-### Alerts (`/alerts`)
+### Live Feed (`/live`) — the situation flagship (replaced `/alerts`)
 
-- **Current conditions** strip — per-town temp / sky / wind for the 7 covered towns
-  (info.ersn.net `/weather`, FR-4), °C→°F / km/h→mph converted.
-- **Active weather alerts** — cards color-coded by severity (Critical=`--signal-orange`,
-  Warning=brass, Info=green/neutral), expandable detail, auto-refresh every 5 min. Data:
-  zone-filtered `/weather/alerts?zones=CAZ019,CAZ067,CAZ069,CAZ072` (FR-2, NWS/OpenWeatherMap).
-- **Road conditions** — live status/travel/delay/chains for the Hwy 4 + Hwy 49 segments (`/roads`).
-- **CHP & Caltrans incidents** — region-wide dispatch feed (`/incidents/mother-lode`, FR-7),
-  split service-area-first with a collapsible "wider Mother Lode region" group (`splitIncidents`).
-- Resource links: CHP Dispatch (cad.chp.ca.gov), NWS Sacramento, CAL FIRE, USGS Earthquakes.
+- **Status header** — situation status pill (Operational / Advisory / Active Incident) +
+  "Synced … · Auto-refreshes every 90s".
+- **Summary tiles** — Wildfires / Evacuations / Weather Alerts / Fire Weather (honest
+  "Unknown" when a source is unavailable, never an implied all-clear).
+- **Evacuation callout** — the official Cal OES / Genasys evacuation map link.
+- **Live hazard map** (`live/HazardMap`) — MapLibre GL + CARTO Positron, with the
+  `/hazards/*.geojson` layers severity-colored; subtle town reference dots; SSR fallback.
+- **Active alerts stream** (`live/AlertStream`) — every relevant hazard, most-urgent first
+  (`deriveStream` in `src/lib/hazards.ts`). The region-wide `road_incident` layer is
+  filtered to the service area (`isInServiceArea`), so out-of-area incidents never show.
+- **Current conditions** strip (`/weather`, FR-4) + **Road conditions** (`/roads`).
+- **Dispatch audio** — Broadcastify scanner link-outs (`/scanners`).
+- **How this feed works** — provenance for each layer + official-source resource links.
 
 ### Contact (`/contact`)
 

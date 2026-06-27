@@ -9,7 +9,7 @@
  * This module is the SERVER/BUILD side. Browser refresh lives in island scripts.
  */
 import fallback from '../data/ersn-snapshot.json';
-import { serviceAreaBounds, incidentArea } from '../config/coverage';
+import { serviceAreaBounds } from '../config/coverage';
 
 export const ERSN_API_BASE =
   import.meta.env?.PUBLIC_ERSN_API_BASE ?? 'https://info.ersn.net/api/v1';
@@ -126,30 +126,6 @@ export interface AlertsResponse {
   lastUpdated: string;
 }
 
-/** A region-wide CHP/Caltrans dispatch incident — `/incidents/{area}` (FR-7). */
-export interface Incident {
-  id: string;
-  /** INCIDENT | CLOSURE */
-  type: string;
-  /** INFO | WARNING | CRITICAL */
-  severity: string;
-  location?: { latitude: number; longitude: number };
-  locationDescription: string;
-  description: string;
-  /** ACTIVE | … */
-  status: string;
-  logNumber: string;
-  started: string | null;
-  lastUpdated: string;
-  area: string;
-}
-
-export interface IncidentsResponse {
-  incidents: Incident[];
-  lastUpdated: string;
-  area: string;
-}
-
 export interface ErsnSnapshot {
   /** ISO timestamp when this snapshot was produced. */
   fetchedAt: string;
@@ -158,8 +134,6 @@ export interface ErsnSnapshot {
   roads: RoadsResponse | null;
   weather: WeatherResponse | null;
   alerts: AlertsResponse | null;
-  /** Region-wide CHP/Caltrans incidents (FR-7); may be null on older snapshots. */
-  incidents: IncidentsResponse | null;
 }
 
 export type FireWeatherState = 'normal' | 'elevated' | 'red-flag';
@@ -194,8 +168,6 @@ export const getRoads = () => fetchJson<RoadsResponse>('/roads');
 export const getWeather = () => fetchJson<WeatherResponse>('/weather');
 export const getAlerts = () =>
   fetchJson<AlertsResponse>(`/weather/alerts?zones=${NWS_ZONES.join(',')}`);
-export const getIncidents = (area: string = incidentArea) =>
-  fetchJson<IncidentsResponse>(`/incidents/${area}`);
 
 /** The checked-in fallback, typed. */
 export const fallbackSnapshot = fallback as unknown as ErsnSnapshot;
@@ -214,20 +186,16 @@ export async function buildSnapshot(): Promise<ErsnSnapshot> {
     return { ...fallbackSnapshot };
   }
 
-  const [roadsR, weatherR, alertsR, incidentsR] = await Promise.allSettled([
+  const [roadsR, weatherR, alertsR] = await Promise.allSettled([
     getRoads(),
     getWeather(),
     getAlerts(),
-    getIncidents(),
   ]);
 
   const roads = roadsR.status === 'fulfilled' ? roadsR.value : fallbackSnapshot.roads;
   const weather = weatherR.status === 'fulfilled' ? weatherR.value : fallbackSnapshot.weather;
   const alerts = alertsR.status === 'fulfilled' ? alertsR.value : fallbackSnapshot.alerts;
-  const incidents =
-    incidentsR.status === 'fulfilled' ? incidentsR.value : fallbackSnapshot.incidents;
-  // `live` gates the home tiles' "Synced" label and tracks the core feeds (roads,
-  // weather, alerts). Incidents is supplementary — its hiccup falls back quietly.
+  // `live` gates the home tiles' "Synced" label and tracks the core feeds.
   const live =
     roadsR.status === 'fulfilled' &&
     weatherR.status === 'fulfilled' &&
@@ -239,7 +207,6 @@ export async function buildSnapshot(): Promise<ErsnSnapshot> {
     roads,
     weather,
     alerts,
-    incidents,
   };
 }
 
@@ -257,7 +224,7 @@ function nowIso(): string {
 /**
  * Active weather/emergency alert count for the home "Active Alerts" tile.
  * Weather alerts ONLY — matches the design's NWS-alert tile and the client refresh
- * (which fetches /weather/alerts). Road incidents are surfaced separately on /alerts
+ * (which fetches /weather/alerts). Road status is surfaced separately on /live
  * (RoadConditions), not counted here, so SSR and client stay in lockstep.
  */
 export function countActiveAlerts(snapshot: ErsnSnapshot): number {
@@ -298,27 +265,6 @@ export function isInServiceArea(loc?: { latitude: number; longitude: number } | 
     loc.longitude >= minLng &&
     loc.longitude <= maxLng
   );
-}
-
-const SEVERITY_RANK: Record<string, number> = { CRITICAL: 0, WARNING: 1, INFO: 2 };
-const rank = (sev: string) => SEVERITY_RANK[(sev ?? '').toUpperCase()] ?? 3;
-const bySeverity = (a: Incident, b: Incident) => rank(a.severity) - rank(b.severity);
-
-/**
- * Split the region-wide incident feed into incidents inside the service area vs the
- * wider Mother Lode region (each sorted most-severe first). An incident with no
- * coordinates can't be geolocated, so it's grouped under "wider region" (honest:
- * we don't claim it's local). Pure — unit-tested.
- */
-export function splitIncidents(snapshot: ErsnSnapshot): {
-  inArea: Incident[];
-  wider: Incident[];
-} {
-  const all = snapshot.incidents?.incidents ?? [];
-  const inArea: Incident[] = [];
-  const wider: Incident[] = [];
-  for (const i of all) (isInServiceArea(i.location) ? inArea : wider).push(i);
-  return { inArea: inArea.sort(bySeverity), wider: wider.sort(bySeverity) };
 }
 
 export function deriveOperationalStatus(

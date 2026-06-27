@@ -11,7 +11,7 @@
 | ------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `BaseLayout` | `layouts/BaseLayout.astro`    | HTML shell: `<head>` via `<Seo>`, skip-link, `<TopBar>`, `<slot/>`, `<SiteFooter>`. Props: `title`, `description`, `path`, `ogImage?`, `hideBrandInNav?`, `wide?`. |
 | `Seo`        | `components/Seo.astro`        | All `<head>` meta: title, description, canonical, OG, Twitter, JSON-LD, favicons, theme-color. Props from page frontmatter.                                        |
-| `TopBar`     | `components/TopBar.astro`     | Brand lockup (hidden when `hideBrand`), nav (Mesh·Alerts·Contact), `<StatusPill>`, `<LocalClock>`.                                                                 |
+| `TopBar`     | `components/TopBar.astro`     | Brand mark (hidden when `hideBrand`), nav (Home·Live Feed·Mesh·About·Contact), Donate link, `<LocalClock>`.                                                        |
 | `SiteFooter` | `components/SiteFooter.astro` | Mark + full legal name + P.O. Box + established 2026 + quick links + 911 disclaimer line.                                                                          |
 | `Container`  | `components/Container.astro`  | Centered max-width wrapper (`--container-max`/`--container-wide` via `wide` prop) + gutters.                                                                       |
 | `Section`    | `components/Section.astro`    | Vertical-rhythm section wrapper (`--space-8`/`--space-9` padding), optional `surface` prop.                                                                        |
@@ -46,13 +46,14 @@
 
 ## Live-data islands (client JS; framework: vanilla `<script>` or Astro island)
 
-| Component           | File                                        | Contract                                                                                                                                   |
-| ------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `LocalClock`        | `components/LocalClock.astro`               | America/Los_Angeles, 24h, "PT". Hydrates client-side; SSR renders build-time value.                                                        |
-| `OperationalStatus` | `components/home/OperationalStatus.astro`   | The 4 stat tiles + "Synced" indicator. SSR from build-time snapshot; client refresh every 5 min from info.ersn.net with graceful fallback. |
-| `AlertsFeed`        | `components/alerts/AlertsFeed.astro`        | Live alert cards; SSR snapshot + 5-min client refresh; expandable detail; severity color-coding.                                           |
-| `MeshMap`           | `components/mesh/MeshMap.astro`             | `<iframe>` embed of livemap.wcmesh.com with loading state + "Open Full Map".                                                               |
-| `EmbeddedDashboard` | `components/alerts/EmbeddedDashboard.astro` | Browser-chrome-framed `<iframe>` (CHP CAD).                                                                                                |
+| Component           | File                                      | Contract                                                                                                                                   |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `LocalClock`        | `components/LocalClock.astro`             | America/Los_Angeles, 24h, "PT". Hydrates client-side; SSR renders build-time value.                                                        |
+| `OperationalStatus` | `components/home/OperationalStatus.astro` | The 4 stat tiles + "Synced" indicator. SSR from build-time snapshot; client refresh every 5 min from info.ersn.net with graceful fallback. |
+| `EmergencyBanner`   | `components/EmergencyBanner.astro`        | Site-wide alarm band (in BaseLayout); shows only on an active evacuation/wildfire; SSR + client `/situation` poll, silent on failure.      |
+| `live/HazardMap`    | `components/live/HazardMap.astro`         | MapLibre GL + CARTO Positron situation map (hazard GeoJSON layers); SSR fallback note if WebGL/tiles unavailable.                          |
+| `live/AlertStream`  | `components/live/AlertStream.astro`       | The prioritized hazard stream on /live; severity-accented, expandable only when there's detail.                                            |
+| `MeshMap`           | `components/mesh/MeshMap.astro`           | `<iframe>` embed of livemap.wcmesh.com with loading state + "Open Full Map".                                                               |
 
 ## Hard rules for every component
 
