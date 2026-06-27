@@ -45,26 +45,42 @@ function extra(f: HazardFeature): string | null {
         const tone = toneFor(f);
         const p = f.properties;
         const ex = extra(f);
+        const hasBody = !!(ex || p.description);
+        const head = (
+          <span class="stream__head">
+            <span class="stream__kicker">
+              <span class="stream__sev">{severityLabel(String(p.severity))}</span>
+              <span class="stream__kind">{p.kind}</span>
+            </span>
+            <span class="stream__title">{p.headline}</span>
+            {p.area_label && <span class="stream__where">{p.area_label}</span>}
+          </span>
+        );
+        const source = p.source?.name ? <span class="stream__source">{p.source.name}</span> : null;
         return (
           <li>
-            <details class:list={['stream__card', `stream__card--${tone}`]}>
-              <summary class="stream__summary">
-                <span class="stream__head">
-                  <span class="stream__kicker">
-                    <span class="stream__sev">{severityLabel(String(p.severity))}</span>
-                    <span class="stream__kind">{p.kind}</span>
+            {hasBody ? (
+              <details class:list={['stream__card', `stream__card--${tone}`]}>
+                <summary class="stream__summary">
+                  {head}
+                  <span class="stream__meta">
+                    {source}
+                    <span class="stream__chevron" aria-hidden="true" />
                   </span>
-                  <span class="stream__title">{p.headline}</span>
-                  {p.area_label && <span class="stream__where">{p.area_label}</span>}
-                </span>
-                <span class="stream__chevron" aria-hidden="true" />
-              </summary>
-              <div class="stream__body">
-                {ex && <p class="stream__extra">{ex}</p>}
-                {p.description && <p class="stream__desc">{p.description}</p>}
-                <p class="stream__src">{p.source?.name}</p>
+                </summary>
+                <div class="stream__body">
+                  {ex && <p class="stream__extra">{ex}</p>}
+                  {p.description && <p class="stream__desc">{p.description}</p>}
+                </div>
+              </details>
+            ) : (
+              <div class:list={['stream__card', 'stream__card--static', `stream__card--${tone}`]}>
+                <div class="stream__summary">
+                  {head}
+                  <span class="stream__meta">{source}</span>
+                </div>
               </div>
-            </details>
+            )}
           </li>
         );
       })}
@@ -115,9 +131,29 @@ function extra(f: HazardFeature): string | null {
     gap: var(--space-3);
     padding: var(--space-4) var(--space-5);
   }
+  .stream__card--static .stream__summary {
+    cursor: default;
+  }
   .stream__summary::-webkit-details-marker {
     display: none;
   }
+
+  /* Source tag + chevron, top-right of the card. */
+  .stream__meta {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-2);
+    text-align: right;
+  }
+  .stream__source {
+    font-family: var(--font-mono);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
   .stream__head {
     flex: 1;
     display: flex;
@@ -161,7 +197,7 @@ function extra(f: HazardFeature): string | null {
   }
 
   .stream__chevron {
-    margin-top: 6px;
+    margin-top: 2px;
     width: 7px;
     height: 7px;
     flex-shrink: 0;
@@ -193,11 +229,5 @@ function extra(f: HazardFeature): string | null {
     line-height: var(--lh-body);
     color: var(--ink-body);
     white-space: pre-line;
-  }
-  .stream__src {
-    margin-top: var(--space-2);
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    color: var(--ink-muted);
   }
 </style>

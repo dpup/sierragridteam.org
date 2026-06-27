@@ -43,6 +43,9 @@ test-browser: ## A11y + smoke tests (Playwright)
 screenshots: ## Capture deterministic screenshots → tests/screenshots
 	npm run screenshots
 
+scenarios: ## Screenshot /live under synthetic hazard configs (needs a running preview)
+	node scripts/scenario-shots.mjs
+
 snapshot: ## Refresh the checked-in info.ersn.net data snapshot
 	npm run snapshot
 
