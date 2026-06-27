@@ -33,14 +33,6 @@ const banner = deriveBanner(await buildSituationSnapshot());
     </p>
     <span class="ebanner__actions">
       <a class="ebanner__link" href="/live">{copy.feedLabel} &rarr;</a>
-      <a
-        class="ebanner__link ebanner__link--evac"
-        href={copy.evacUrl}
-        target="_blank"
-        rel="noopener external"
-        data-ebanner-evac
-        hidden={!banner.hasEvacuation}>{copy.evacLabel} &rarr;</a
-      >
     </span>
   </div>
 </aside>
@@ -98,8 +90,6 @@ const banner = deriveBanner(await buildSituationSnapshot());
         }
         set('[data-ebanner-headline]', headline);
         set('[data-ebanner-label]', label);
-        const evacEl = el.querySelector<HTMLElement>('[data-ebanner-evac]');
-        if (evacEl) evacEl.hidden = !hasEvac;
         el.hidden = false;
       } catch {
         /* keep the SSR banner state */

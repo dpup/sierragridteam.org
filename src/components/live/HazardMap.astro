@@ -100,6 +100,7 @@ const legend = [
       ink: tok('--ink-strong', '#2b2720'),
       surface: tok('--surface-page', '#f4eee2'),
       muted: tok('--ink-muted', '#6f6750'),
+      orangeDeep: tok('--signal-orange-hover', '#9a330a'),
     };
     // severity_rank → color (orange reserved for SEVERE/EXTREME).
     const sevColor = [
@@ -185,22 +186,31 @@ const legend = [
           },
         });
 
-        // Wildfire + evacuation polygons (fill + outline).
-        for (const l of ['wildfire', 'evacuation'] as const) {
-          map.addSource(l, { type: 'geojson', data: fc(l) });
+        // Wildfire (orange, solid) vs evacuation (deep red, dashed zone boundary) —
+        // distinct so a fire perimeter and a "must-leave" zone never read as one thing.
+        const polys: { l: string; color: string; width: number; dash: number[] | null }[] = [
+          { l: 'wildfire', color: C.orange, width: 1.5, dash: null },
+          { l: 'evacuation', color: C.orangeDeep, width: 2.5, dash: [2, 1.5] },
+        ];
+        for (const cfg of polys) {
+          map.addSource(cfg.l, { type: 'geojson', data: fc(cfg.l) });
           map.addLayer({
-            id: `${l}-fill`,
+            id: `${cfg.l}-fill`,
             type: 'fill',
-            source: l,
-            paint: { 'fill-color': C.orange, 'fill-opacity': 0.18 },
+            source: cfg.l,
+            paint: { 'fill-color': cfg.color, 'fill-opacity': 0.16 },
           });
           map.addLayer({
-            id: `${l}-line`,
+            id: `${cfg.l}-line`,
             type: 'line',
-            source: l,
-            paint: { 'line-color': C.orange, 'line-width': 1.5 },
+            source: cfg.l,
+            paint: {
+              'line-color': cfg.color,
+              'line-width': cfg.width,
+              ...(cfg.dash ? { 'line-dasharray': cfg.dash } : {}),
+            },
           });
-          interactive(`${l}-fill`);
+          interactive(`${cfg.l}-fill`);
         }
 
         // Earthquakes — hollow circles sized by magnitude.
@@ -319,10 +329,14 @@ const legend = [
     border-radius: 50%;
     border-color: var(--ink-muted);
   }
-  .hazard-map__swatch--wildfire,
-  .hazard-map__swatch--evacuation {
+  .hazard-map__swatch--wildfire {
     background: color-mix(in srgb, var(--signal-orange) 18%, transparent);
     border-color: var(--signal-orange);
+  }
+  .hazard-map__swatch--evacuation {
+    background: color-mix(in srgb, var(--signal-orange-hover) 16%, transparent);
+    border-style: dashed;
+    border-color: var(--signal-orange-hover);
   }
   .hazard-map__swatch--incident {
     background: var(--brand-brass);

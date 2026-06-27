@@ -129,6 +129,11 @@ export const live = {
   streamEmpty: 'No active hazards in the service area right now. The map and feeds below are live.',
   conditionsHeading: 'Current conditions',
   roadsHeading: 'Road conditions',
+  evacHeading: 'Evacuation zones & orders',
+  evacNote:
+    'Evacuation zones for Calaveras & Tuolumne are published by Cal OES. During an active ' +
+    'event this is the authoritative source — look up your address and follow official orders.',
+  evacLinkLabel: 'Open the evacuation map (Genasys)',
   scannersHeading: 'Dispatch audio',
   scannersNote:
     'Live public-safety scanner feeds via Broadcastify. Link-out only — audio is not hosted ' +
@@ -154,11 +159,10 @@ export const live = {
     'below may be out of date; check official sources during an active emergency.',
 } as const;
 
-/** Site-wide emergency banner copy (shown only on a SEVERE/EXTREME hazard). */
+/** Site-wide emergency banner copy. One CTA only — it takes you to the Live Feed,
+ *  where the official evacuation-map links live. */
 export const emergencyBanner = {
   feedLabel: 'View the Live Feed',
-  evacLabel: 'Open evacuation map',
-  evacUrl: 'https://protect.genasys.com/',
 } as const;
 
 export const contact = {

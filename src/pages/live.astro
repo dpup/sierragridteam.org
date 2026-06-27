@@ -151,6 +151,22 @@ const schema = {
       />
     </div>
 
+    <aside class="live-evac" aria-label="Evacuation maps">
+      <div class="live-evac__text">
+        <p class="live-evac__head">{copy.evacHeading}</p>
+        <p class="live-evac__note">{copy.evacNote}</p>
+      </div>
+      <a
+        class="live-evac__link"
+        href={externalLinks.genasysEvac}
+        target="_blank"
+        rel="noopener external"
+      >
+        {copy.evacLinkLabel}
+        <span class="live-evac__arrow" aria-hidden="true">&#8599;</span>
+      </a>
+    </aside>
+
     <div class="live-grid">
       <section class="live-grid__map" aria-labelledby="map-title">
         <h2 id="map-title" class="live-h2">{copy.mapHeading}</h2>
@@ -268,6 +284,48 @@ const schema = {
     font-family: var(--font-ui);
     font-size: var(--fs-small);
     color: var(--ink-secondary);
+  }
+
+  .live-evac {
+    margin-top: var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface-card);
+    border: var(--border);
+    border-left: 3px solid var(--brand-brass);
+    border-radius: var(--radius);
+  }
+  .live-evac__head {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+  }
+  .live-evac__note {
+    margin-top: var(--space-1);
+    max-width: 68ch;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+  .live-evac__link {
+    flex-shrink: 0;
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-green);
+  }
+  .live-evac__link:hover {
+    text-decoration: none;
+    color: var(--brand-green-hover);
   }
 
   .live-tiles {

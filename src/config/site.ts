@@ -76,6 +76,8 @@ export const externalLinks = {
   nwsSacramento: 'https://www.weather.gov/sto/',
   calFire: 'https://www.fire.ca.gov/',
   usgsEarthquakes: 'https://earthquake.usgs.gov/earthquakes/map/',
+  /** Authoritative California evacuation-zone viewer (Cal OES / county source). */
+  genasysEvac: 'https://protect.genasys.com/',
 } as const;
 
 /** Timezone for the live clock + "Synced" stamps. */
