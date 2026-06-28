@@ -16,22 +16,41 @@ import { chromium, type Route } from 'playwright';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { inMoat, startMoatRelay } from './moat-relay.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const OUT = resolve(root, 'tests/screenshots');
 const BASE = process.env.BASE_URL ?? 'http://localhost:4321';
 const SCENARIO = process.env.SCENARIO ?? 'calm';
 const FIXED = new Date('2026-06-25T13:30:00-07:00'); // 13:30 PT, stable
 
-const viewports = [
+// LIVE=1 renders against the REAL info.ersn.net feed + CARTO basemap instead of the
+// frozen/mocked defaults — for eyeballing the live page, not regression (it's not
+// deterministic). Inside Moat it tunnels through the auth-injecting relay (the headless
+// browser can't use the Moat proxy directly); elsewhere it goes direct. Output lands in a
+// separate, git-ignored dir so it never clobbers the committed deterministic set.
+//
+// Best-effort, IN-SANDBOX ONLY: the Moat proxy MITMs TLS and reframes upstream responses
+// (keep-alive, no Content-Length), which makes /live's burst of ~12 parallel fetches flaky
+// — it may stall past the page's 9s timeout and fall to the honest "Last known" fallback,
+// and the keyless CARTO basemap may not finish. The home page (2 fetches) is reliably live.
+// None of this affects production, where browsers hit info.ersn.net directly.
+const LIVE = process.env.LIVE === '1';
+const OUT = resolve(root, LIVE ? 'tests/screenshots/_live' : 'tests/screenshots');
+
+const allViewports = [
   { name: 'desktop', width: 1440, height: 900 },
   { name: 'w1000', width: 1000, height: 900 },
   { name: 'w880', width: 880, height: 1000 },
   { name: 'tablet', width: 834, height: 1112 },
   { name: 'mobile', width: 390, height: 844 },
 ];
+// LIVE mode loads the real CARTO basemap per /live capture; keep it to two viewports so
+// the keyless free-tier basemap doesn't get throttled mid-run (and it stays quick).
+const viewports = LIVE
+  ? allViewports.filter((v) => v.name === 'desktop' || v.name === 'mobile')
+  : allViewports;
 
-const pages = [
+const allPages = [
   { name: 'home', path: '/' },
   { name: 'mesh', path: '/mesh' },
   { name: 'live', path: '/live' },
@@ -40,6 +59,8 @@ const pages = [
   { name: 'donate', path: '/donate' },
   { name: 'notfound', path: '/this-route-does-not-exist' },
 ];
+// LIVE mode only cares about the data-driven pages (home tiles/banner + the live feed).
+const pages = LIVE ? allPages.filter((p) => p.path === '/' || p.path === '/live') : allPages;
 
 const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/ersn-snapshot.json'), 'utf8'));
 const hazards = JSON.parse(readFileSync(resolve(root, 'src/data/hazards-snapshot.json'), 'utf8'));
@@ -133,6 +154,17 @@ function mockErsn(route: Route) {
 
 async function main() {
   mkdirSync(OUT, { recursive: true });
+
+  // LIVE: tunnel the browser through the Moat proxy (the headless browser can't use it
+  // directly — see scripts/moat-relay.mjs); outside Moat, go direct.
+  const relay = LIVE && inMoat() ? await startMoatRelay() : null;
+  if (LIVE) {
+    console.error(
+      `⚡ LIVE — real info.ersn.net + CARTO (${relay ? 'via Moat relay' : 'direct'}); ` +
+        `non-deterministic, → ${OUT}`
+    );
+  }
+
   const browser = await chromium.launch();
   let count = 0;
 
@@ -141,30 +173,47 @@ async function main() {
       viewport: { width: vp.width, height: vp.height },
       deviceScaleFactor: 2,
       reducedMotion: 'reduce',
+      ...(relay ? { proxy: relay.proxy, ignoreHTTPSErrors: true } : {}),
     });
-    await ctx.route(/info\.ersn\.net/, mockErsn);
-    // Offline basemap (broad abort first, specific style mock last = higher priority).
-    await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
-    await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>
-      r.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(OFFLINE_STYLE),
-      })
-    );
+    if (!LIVE) {
+      await ctx.route(/info\.ersn\.net/, mockErsn);
+      // Offline basemap (broad abort first, specific style mock last = higher priority).
+      await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
+      await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>
+        r.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(OFFLINE_STYLE),
+        })
+      );
+    }
 
     for (const pg of pages) {
       const page = await ctx.newPage();
-      await page.clock.setFixedTime(FIXED);
-      await page.goto(`${BASE}${pg.path}`, { waitUntil: 'networkidle' });
+      if (!LIVE) await page.clock.setFixedTime(FIXED);
+      await page.goto(`${BASE}${pg.path}`, {
+        waitUntil: LIVE ? 'domcontentloaded' : 'networkidle',
+      });
       // /live is client-rendered: wait for the body to be revealed, then for the map
-      // (WebGL) to settle on top of the mocked basemap.
+      // (WebGL) to settle (on the mocked basemap, or real CARTO tiles in LIVE mode).
       if (pg.path === '/live') {
         await page
-          .waitForSelector('html[data-live-boot="ready"]', { timeout: 10000 })
+          .waitForSelector('html[data-live-boot="ready"]', { timeout: LIVE ? 20000 : 10000 })
           .catch(() => {});
         await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
-        await page.waitForTimeout(2500);
+        // In LIVE mode the real CARTO basemap streams in — wait for it to actually paint
+        // (the fallback note is hidden once the map's layers add). Best-effort through the
+        // Moat proxy (see the header note) — it may keep the SSR fallback note.
+        if (LIVE) {
+          await page
+            .waitForSelector('[data-map-fallback]', { state: 'hidden', timeout: 12000 })
+            .catch(() => {});
+        }
+        await page.waitForTimeout(LIVE ? 4000 : 2500);
+      } else if (LIVE) {
+        // Other live pages (home tiles + banner) refresh client-side — let that settle so
+        // the capture shows live values, not the build-time snapshot.
+        await page.waitForTimeout(3500);
       }
       // Kill any residual motion + the text caret for byte-stability.
       await page.addStyleTag({
@@ -188,7 +237,10 @@ async function main() {
   }
 
   await browser.close();
-  console.error(`\nCaptured ${count} screenshots → ${OUT} (scenario: ${SCENARIO})`);
+  if (relay) await relay.close();
+  console.error(
+    `\nCaptured ${count} screenshots → ${OUT} (${LIVE ? 'LIVE' : `scenario: ${SCENARIO}`})`
+  );
 }
 
 main().catch((err) => {

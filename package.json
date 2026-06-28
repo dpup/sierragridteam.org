@@ -16,6 +16,7 @@
     "snapshot": "bun run scripts/snapshot.ts",
     "gen-assets": "bun run scripts/gen-assets.ts",
     "screenshots": "bun run scripts/screenshots.ts",
+    "screenshots:live": "LIVE=1 bun run scripts/screenshots.ts",
     "lint": "stylelint \"src/**/*.{css,astro}\"",
     "fmt": "prettier --write .",
     "fmt:check": "prettier --check .",

@@ -12,6 +12,8 @@ node_modules/
 /playwright/.cache/
 tests/screenshots/**/*-actual.png
 tests/screenshots/**/*-diff.png
+# LIVE=1 screenshots (real feed data; non-deterministic, for eyeballing only)
+tests/screenshots/_live/
 
 # generated (kept out of source; produced by `make gen-assets` / build)
 # NOTE: committed favicons/og live in public/ and are NOT ignored.
