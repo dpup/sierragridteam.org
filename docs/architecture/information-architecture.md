@@ -84,14 +84,20 @@ Order, top to bottom:
 - **Summary tiles** — Wildfires / Evacuations / Weather Alerts / Fire Weather (honest
   "Unknown" when a source is unavailable, never an implied all-clear).
 - **Evacuation callout** — the official Cal OES / Genasys evacuation map link.
-- **Live hazard map** (`live/HazardMap`) — MapLibre GL + CARTO Positron, with the
+- **Live hazard map** (`src/lib/live-map.ts`) — MapLibre GL + CARTO Positron, with the
   `/hazards/*.geojson` layers severity-colored; subtle town reference dots; SSR fallback.
-- **Active alerts stream** (`live/AlertStream`) — every relevant hazard, most-urgent first
-  (`deriveStream` in `src/lib/hazards.ts`). The region-wide `road_incident` layer is
-  filtered to the service area (`isInServiceArea`), so out-of-area incidents never show.
-- **Current conditions** strip (`/weather`, FR-4) + **Road conditions** (`/roads`).
+- **Active alerts stream** (`renderStream` in `src/lib/live-view.ts`) — every relevant hazard,
+  most-urgent first (`deriveStream` in `src/lib/hazards.ts`). The region-wide `road_incident`
+  layer is filtered to the service area (`isInServiceArea`), so out-of-area incidents never show.
+
+> `/live` is **client-rendered live**: the browser re-fetches the feeds and re-renders these
+> regions from the shared `src/lib/live-view.ts` functions (same code as the SSR fallback),
+> showing a loader until the first fetch resolves. See the component inventory for the contract.
+
+- **Weather band** — a thin per-town conditions strip above the map (`/weather`, FR-4), each
+  chip opening a popover; + **Road conditions** (`/roads`).
 - **Dispatch audio** — Broadcastify scanner link-outs (`/scanners`).
-- **How this feed works** — provenance for each layer + official-source resource links.
+- **Official sources** — link-outs to CHP, CAL FIRE, NWS, and USGS.
 
 ### Contact (`/contact`)
 

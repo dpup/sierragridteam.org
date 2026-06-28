@@ -82,6 +82,7 @@ export const live = {
   title: 'Live Feed',
   kicker: 'Calaveras & Tuolumne · Situation',
   heading: 'The Live Feed',
+  loading: 'Loading the latest situation…',
   intro:
     'Official wildfire, evacuation, weather, seismic, and road feeds for the Calaveras & ' +
     'Tuolumne foothills, gathered onto one map with the most urgent first. When something is ' +

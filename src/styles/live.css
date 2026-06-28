@@ -1,0 +1,429 @@
+/*
+ * live.css — styles for the /live data regions that are RENDERED BY THE BROWSER.
+ *
+ * /live re-fetches and re-renders its hazard regions client-side (see
+ * src/lib/live-view.ts), and Astro scoped styles don't apply to client-injected HTML.
+ * So the weather band, alert stream, road conditions, scanner links, and map popup —
+ * everything produced by live-view.ts / live-map.ts — are styled here, globally but
+ * namespaced under `.live-view`. Imported only by src/pages/live.astro, so it ships on
+ * /live alone. Tokens only (no raw colors/fonts) — same rules as a component.
+ *
+ * Page chrome that lives in the .astro template (header, status line, tiles, evac
+ * callout, grid, section headings, loader, map frame) keeps its scoped styles in
+ * live.astro. This file is only the re-rendered fragments + the runtime map popup.
+ */
+
+/* ---- Weather band (chips + per-town popover) ---- */
+.live-view .wband {
+  list-style: none;
+  margin: var(--space-6) 0 var(--space-4);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.live-view .wband__item,
+.live-view .wband__details {
+  position: relative;
+}
+.live-view .wband__chip {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-card);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+}
+.live-view .wband__chip::-webkit-details-marker {
+  display: none;
+}
+.live-view .wband__details[open] .wband__chip {
+  border-color: var(--brand-green);
+}
+.live-view .wicon {
+  width: 1.2em;
+  height: 1.2em;
+  flex-shrink: 0;
+}
+.live-view .wband__icon {
+  color: var(--ink-secondary);
+}
+.live-view .wband__town {
+  color: var(--ink-body);
+}
+.live-view .wband__temp {
+  font-family: var(--font-mono);
+  color: var(--ink-strong);
+}
+.live-view .wband__pop {
+  position: absolute;
+  z-index: var(--z-overlay);
+  top: calc(100% + var(--space-1));
+  left: 0;
+  min-width: 200px;
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-card);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
+}
+.live-view .wband__poptitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--ink-strong);
+}
+.live-view .wband__popsky {
+  margin-top: var(--space-1);
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.live-view .wband__stats {
+  margin: var(--space-3) 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+}
+.live-view .wband__stats dt {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.live-view .wband__stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-strong);
+}
+
+/* ---- Alert stream ---- */
+.live-view .stream {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.live-view .stream__empty {
+  padding: var(--space-6);
+  background: var(--surface-card);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.live-view .stream__card {
+  background: var(--surface-card);
+  border: var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+}
+.live-view .stream__card--alarm {
+  border-left-color: var(--signal-orange);
+}
+.live-view .stream__card--elevated {
+  border-left-color: var(--brand-brass);
+}
+.live-view .stream__card--ok,
+.live-view .stream__card--muted {
+  border-left-color: var(--brand-green);
+}
+.live-view .stream__summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+.live-view .stream__card--static .stream__summary {
+  cursor: default;
+}
+.live-view .stream__summary::-webkit-details-marker {
+  display: none;
+}
+.live-view .stream__meta {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  text-align: right;
+}
+.live-view .stream__source {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.live-view .stream__head {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.live-view .stream__kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.live-view .stream__card--alarm .stream__sev {
+  color: var(--signal-orange-text);
+}
+.live-view .stream__card--elevated .stream__sev {
+  color: var(--brand-brass-text);
+}
+.live-view .stream__card--ok .stream__sev,
+.live-view .stream__card--muted .stream__sev {
+  color: var(--brand-green);
+}
+.live-view .stream__kind {
+  color: var(--ink-muted);
+}
+.live-view .stream__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--ink-strong);
+}
+.live-view .stream__where {
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.live-view .stream__chevron {
+  margin-top: 2px;
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-right: 2px solid var(--ink-muted);
+  border-bottom: 2px solid var(--ink-muted);
+  transform: rotate(45deg);
+  transition: transform var(--transition);
+}
+.live-view .stream__card[open] .stream__chevron {
+  transform: rotate(-135deg);
+}
+.live-view .stream__body {
+  padding: 0 var(--space-5) var(--space-5) calc(var(--space-5) + var(--space-3));
+}
+.live-view .stream__extra {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-strong);
+  margin-bottom: var(--space-2);
+}
+.live-view .stream__desc {
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--ink-body);
+  white-space: pre-line;
+}
+
+/* ---- Road conditions ---- */
+.live-view .roads {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+.live-view .road {
+  background: var(--surface-card);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.live-view .road__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.live-view .road__name {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--ink-strong);
+}
+.live-view .road__section {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.live-view .road__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.live-view .road__status--ok {
+  color: var(--brand-green);
+}
+.live-view .road__status--elevated {
+  color: var(--brand-brass-text);
+}
+.live-view .road__status--alarm {
+  color: var(--signal-orange-text);
+}
+.live-view .road__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+.live-view .road__metrics {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+.live-view .road__metrics dt {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.live-view .road__metrics dd {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-strong);
+}
+.live-view .road__incidents {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-4) 0 0;
+  border-top: var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.live-view .road__incident {
+  position: relative;
+  padding-left: var(--space-4);
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--ink-body);
+}
+.live-view .road__incident::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  background: var(--brand-brass);
+}
+
+/* ---- Scanner links ---- */
+.live-view .scanners {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+.live-view .scanner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--surface-card);
+  border: var(--border);
+  border-radius: var(--radius);
+}
+.live-view .scanner:hover {
+  text-decoration: none;
+  border-color: var(--brand-green);
+}
+.live-view .scanner__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-label-lg);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-green);
+}
+.live-view .scanner__agency {
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+
+/* ---- MapLibre popup + controls (injected at runtime), restyled to the system ---- */
+.live-view .maplibregl-popup-content {
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  background: var(--surface-card);
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-display);
+}
+.live-view .maplibregl-popup-tip {
+  display: none;
+}
+.live-view .map-pop__sev {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.live-view .map-pop__title {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--ink-strong);
+  margin-top: var(--space-1);
+}
+.live-view .map-pop__where {
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+  margin-top: var(--space-1);
+}
+.live-view .map-pop__src {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  color: var(--ink-muted);
+  margin-top: var(--space-2);
+}
+.live-view .maplibregl-ctrl-group {
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-view .stream__chevron {
+    transition: none;
+  }
+}

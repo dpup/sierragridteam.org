@@ -303,6 +303,7 @@ try {
       await p.clock.setFixedTime(FIXED);
       await p.goto(BASE + path, { waitUntil: 'networkidle' });
       if (path === '/live') {
+        await p.waitForSelector('html[data-live-boot="ready"]', { timeout: 10000 }).catch(() => {});
         await p.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
         await p.waitForTimeout(2800);
       }

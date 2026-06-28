@@ -17,6 +17,13 @@ const pages = [
 for (const pg of pages) {
   test(`${pg.name} has no critical/serious a11y violations`, async ({ page }) => {
     await page.goto(pg.path, { waitUntil: 'domcontentloaded' });
+    // /live reveals its body after the first live fetch (or its failure) — scan the
+    // revealed page, not the loader.
+    if (pg.path === '/live') {
+      await page
+        .waitForSelector('html[data-live-boot="ready"]', { timeout: 12000 })
+        .catch(() => {});
+    }
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
       .analyze();

@@ -157,8 +157,12 @@ async function main() {
       const page = await ctx.newPage();
       await page.clock.setFixedTime(FIXED);
       await page.goto(`${BASE}${pg.path}`, { waitUntil: 'networkidle' });
-      // The live map renders via WebGL after tiles/style settle.
+      // /live is client-rendered: wait for the body to be revealed, then for the map
+      // (WebGL) to settle on top of the mocked basemap.
       if (pg.path === '/live') {
+        await page
+          .waitForSelector('html[data-live-boot="ready"]', { timeout: 10000 })
+          .catch(() => {});
         await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
         await page.waitForTimeout(2500);
       }

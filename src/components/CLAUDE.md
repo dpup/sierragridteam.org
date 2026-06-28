@@ -32,8 +32,15 @@ full list and each component's contract.
 
 ## Live-data islands
 
-`OperationalStatus`, `EmergencyBanner`, `live/HazardMap`, `LocalClock`, and `MeshMap`
-use small client `<script>`s. They must **degrade gracefully**: SSR renders the
-build-time snapshot; the client refresh enhances it and, on any failure (including
-CORS, blocked map tiles, or no WebGL), **silently keeps the SSR content/fallback** —
-never a spinner or error in view. Keep that contract.
+`OperationalStatus`, `EmergencyBanner`, `LocalClock`, and `MeshMap` use small client
+`<script>`s. They must **degrade gracefully**: SSR renders the build-time snapshot; the
+client refresh enhances it and, on any failure (including CORS, blocked map tiles, or no
+WebGL), **silently keeps the SSR content/fallback** — never a spinner or error in view.
+Keep that contract.
+
+> `/live` goes further: it is **client-rendered live**. Its data regions are produced by
+> shared render functions in `src/lib/live-view.ts` (used by BOTH the SSR fallback and the
+> browser refresh) and the map by `src/lib/live-map.ts`; their CSS is global+namespaced in
+> `src/styles/live.css` (Astro scoped styles don't reach client-injected HTML). The page
+> shows a loader, then reveals the whole body once the first fetch resolves; on failure it
+> reveals the build snapshot as "last known". Same graceful-degradation contract.

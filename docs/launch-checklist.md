@@ -87,7 +87,7 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       right Calaveras/CAL FIRE TCU channels before launch.
 - [ ] **CARTO basemap** is the keyless free tier; if traffic grows, move to a
       self-hosted Protomaps PMTiles basemap (no third-party dependency) — one-line style
-      swap in `HazardMap.astro`.
+      swap in `src/lib/live-map.ts`.
 
 ## Verified already ✓
 

@@ -144,6 +144,14 @@ stable.
   the map reads its colors from the CSS tokens at runtime and degrades to a static
   fallback if WebGL/tiles are unavailable (the hazards are always in the alert stream).
 - **`/live` is the flagship** situation page (replaced `/alerts`, which now redirects).
+  Unlike the rest of the site, it is **client-rendered live**: the static header paints,
+  a loader shows, then the browser fetches info.ersn.net and renders the whole body at
+  once (footer gated until then). Its data regions come from shared render functions in
+  `src/lib/live-view.ts` (used by BOTH the SSR fallback and the browser), the map from
+  `src/lib/live-map.ts`, CSS from `src/styles/live.css` (global, `.live-view`-namespaced —
+  Astro scoped styles don't reach client-injected HTML). On any fetch failure it reveals
+  the build snapshot as "last known". **Don't reintroduce `/live` per-region components**
+  (it would split the markup between SSR and the live re-render) — edit `live-view.ts`.
   The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
   (an active **evacuation or wildfire** — both area-scoped, so the region-wide rollup is
   never trusted) — its orange is a sanctioned genuine-alert use.

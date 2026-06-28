@@ -225,7 +225,7 @@ function nowIso(): string {
  * Active weather/emergency alert count for the home "Active Alerts" tile.
  * Weather alerts ONLY — matches the design's NWS-alert tile and the client refresh
  * (which fetches /weather/alerts). Road status is surfaced separately on /live
- * (RoadConditions), not counted here, so SSR and client stay in lockstep.
+ * (the road-conditions region), not counted here, so SSR and client stay in lockstep.
  */
 export function countActiveAlerts(snapshot: ErsnSnapshot): number {
   // Double optional-chain: proto3/JSON omits empty repeated fields, so a 0-alert

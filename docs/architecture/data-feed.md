@@ -88,10 +88,14 @@ The same hybrid strategy still holds:
    present, SEO-visible, fast. It is also the design's required "last-known value."
 2. **Checked-in fallback snapshot** (`src/data/ersn-snapshot.json`) so the build still succeeds if
    the API is unreachable at build time (CI resilience). Refreshed by `make snapshot`.
-3. **Client refresh island** fetches live every 5 min (`/weather` + zone-filtered `/weather/alerts`).
-   On success it updates the tiles + the "Synced [time]" indicator. **On any failure it silently
-   keeps the build-time snapshot** — per the design's "never show a spinner/error in the hero" rule.
-   (Road conditions and current conditions are SSR-only from the snapshot.)
+3. **Client refresh islands** fetch live and update in place. On the **home** page the
+   `OperationalStatus` island refreshes the tiles + "Synced [time]" every 5 min (`/weather` +
+   zone-filtered `/weather/alerts`). The **`/live`** page goes further — it is _client-rendered
+   live_: it re-fetches the full situation (`/situation`, the `/hazards/*.geojson` layers,
+   `/roads`, `/weather`, `/scanners`) every 90 s and re-renders every region (map, stream, tiles,
+   weather band, roads, scanners) from the shared `src/lib/live-view.ts` functions. **On any
+   failure it silently keeps the build-time snapshot** (revealed as "last known") — per the
+   design's "never show a spinner/error" rule.
 
 ```
 build ──fetch──> ersn.ts ──> snapshot (typed) ──> SSR HTML  ──hydrate──> client refresh (5 min)

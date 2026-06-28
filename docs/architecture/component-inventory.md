@@ -51,9 +51,15 @@
 | `LocalClock`        | `components/LocalClock.astro`             | America/Los_Angeles, 24h, "PT". Hydrates client-side; SSR renders build-time value.                                                        |
 | `OperationalStatus` | `components/home/OperationalStatus.astro` | The 4 stat tiles + "Synced" indicator. SSR from build-time snapshot; client refresh every 5 min from info.ersn.net with graceful fallback. |
 | `EmergencyBanner`   | `components/EmergencyBanner.astro`        | Site-wide alarm band (in BaseLayout); shows only on an active evacuation/wildfire; SSR + client `/situation` poll, silent on failure.      |
-| `live/HazardMap`    | `components/live/HazardMap.astro`         | MapLibre GL + CARTO Positron situation map (hazard GeoJSON layers); SSR fallback note if WebGL/tiles unavailable.                          |
-| `live/AlertStream`  | `components/live/AlertStream.astro`       | The prioritized hazard stream on /live; severity-accented, expandable only when there's detail.                                            |
 | `MeshMap`           | `components/mesh/MeshMap.astro`           | `<iframe>` embed of livemap.wcmesh.com with loading state + "Open Full Map".                                                               |
+
+> **`/live` is not built from components** — it is client-rendered live. Its data regions
+> (status tiles, weather band, alert stream, road conditions, scanners) come from shared
+> render functions in `src/lib/live-view.ts` (used by BOTH the SSR fallback and the
+> in-browser refresh), the MapLibre situation map from `src/lib/live-map.ts`, and their CSS
+> from `src/styles/live.css` (global + `.live-view`-namespaced, because Astro scoped styles
+> don't reach client-injected HTML). The page shows a loader, then reveals the whole body
+> once the first fetch resolves; on failure it reveals the build snapshot as "last known".
 
 ## Hard rules for every component
 

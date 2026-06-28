@@ -4,71 +4,27 @@ import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
 import StatusPill from '@components/StatusPill.astro';
 import StatTile from '@components/StatTile.astro';
-import HazardMap from '@components/live/HazardMap.astro';
-import WeatherBand from '@components/live/WeatherBand.astro';
-import AlertStream from '@components/live/AlertStream.astro';
-import ScannerLinks from '@components/live/ScannerLinks.astro';
-import RoadConditions from '@components/alerts/RoadConditions.astro';
-import {
-  buildSituationSnapshot,
-  deriveStream,
-  deriveSituationSummary,
-  layerFeatures,
-} from '@lib/hazards';
+import { buildSituationSnapshot } from '@lib/hazards';
 import { buildSnapshot } from '@lib/ersn';
+import { buildView } from '@lib/live-view';
 import { live as copy } from '@config/content';
-import { externalLinks, site, TIMEZONE } from '@config/site';
+import { externalLinks, site } from '@config/site';
+import '../styles/live.css';
 
+// SSR fallback / no-JS / SEO render from the build-time snapshot. The browser then
+// re-fetches info.ersn.net and re-renders these regions live (see the script below),
+// so the SAME view-model + render functions produce both passes (src/lib/live-view.ts).
 const haz = await buildSituationSnapshot();
 const ersn = await buildSnapshot();
+const view = buildView(haz, ersn);
 
-const stream = deriveStream(haz);
-const summary = deriveSituationSummary(haz);
-
-const mapLayers: Record<string, { type: 'FeatureCollection'; features: never[] }> = {};
-for (const l of ['road_incident', 'wildfire', 'evacuation', 'earthquake']) {
-  let feats = layerFeatures(haz, l);
-  // MapLibre paint can't index nested props — promote earthquake magnitude to top level.
-  if (l === 'earthquake') {
-    feats = feats.map((f) => ({
-      ...f,
-      properties: { ...f.properties, magnitude: f.properties.earthquake?.magnitude ?? 1 },
-    }));
-  }
-  mapLayers[l] = { type: 'FeatureCollection', features: feats as never[] };
-}
-
-// At-a-glance status from the locally-relevant highest severity.
-const status =
-  summary.highestRank >= 3
-    ? { tone: 'alarm' as const, label: 'Active Incident' }
-    : summary.highestRank === 2
-      ? { tone: 'elevated' as const, label: 'Advisory' }
-      : { tone: 'ok' as const, label: 'Operational' };
-
-const fireMap: Record<string, { label: string; state: 'ok' | 'elevated' | 'alarm' | 'muted' }> = {
-  RED_FLAG: { label: 'Red Flag', state: 'alarm' },
-  ELEVATED: { label: 'Elevated', state: 'elevated' },
-  NORMAL: { label: 'Normal', state: 'ok' },
-  UNKNOWN: { label: 'Unknown', state: 'muted' },
-};
-const fire = fireMap[summary.fireWeather] ?? fireMap.UNKNOWN;
-
-function fmtPT(iso: string | null): string {
-  if (!iso) return '—';
-  try {
-    const t = new Intl.DateTimeFormat('en-GB', {
-      timeZone: TIMEZONE,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(new Date(iso));
-    return `${t} PT`;
-  } catch {
-    return '—';
-  }
-}
-const syncedLabel = summary.live ? `Synced ${fmtPT(summary.syncedAt)}` : 'Last known';
+const legend = [
+  { key: 'town', label: 'Town' },
+  { key: 'wildfire', label: 'Wildfire' },
+  { key: 'evacuation', label: 'Evacuation' },
+  { key: 'incident', label: 'Road incident' },
+  { key: 'quake', label: 'Earthquake' },
+];
 
 const resources = [
   { label: 'CHP Dispatch', desc: 'CAD incidents — Mother Lode', href: externalLinks.chpCad },
@@ -98,141 +54,310 @@ const schema = {
 ---
 
 <BaseLayout title={copy.title} description={description} path="/live" schema={schema}>
+  {
+    /* Hide the live body + footer and show the loader before the page paints — set here
+      (not in deferred JS) so there's no flash of the build-time snapshot. */
+  }
+  <script is:inline>
+    document.documentElement.dataset.liveBoot = 'loading';
+  </script>
+
   <Section surface="page" labelledby="live-title">
     <header class="live-head">
       <Kicker>{copy.kicker}</Kicker>
       <h1 id="live-title" class="live-head__title">{copy.heading}</h1>
       <p class="live-head__intro">{copy.intro}</p>
-      <p class="live-head__status">
-        <StatusPill tone={status.tone} blink={status.tone === 'alarm'}>{status.label}</StatusPill>
-        <span class="live-head__sync"
-          ><span data-live-synced>{syncedLabel}</span> · {copy.autoRefresh}</span
-        >
-      </p>
     </header>
 
-    {
-      !haz.live && (
-        <p class="live-stale" role="note">
-          {copy.staleNote}
-        </p>
-      )
-    }
-
-    <div class="live-tiles">
-      <StatTile
-        label="Wildfires"
-        value={summary.wildfires > 0 ? `${summary.wildfires} Active` : 'None'}
-        sublabel="CAL FIRE"
-        state={summary.wildfires > 0 ? 'alarm' : 'ok'}
-      />
-      <StatTile
-        label="Evacuations"
-        value={summary.evacuations == null
-          ? 'Unknown'
-          : summary.evacuations > 0
-            ? `${summary.evacuations} Zones`
-            : 'None'}
-        sublabel="Cal OES"
-        state={summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok'}
-      />
-      <StatTile
-        label="Weather Alerts"
-        value={summary.weatherAlerts > 0 ? `${summary.weatherAlerts} Active` : 'None'}
-        sublabel="NWS foothill zones"
-        state={summary.weatherAlerts > 0 ? 'elevated' : 'ok'}
-      />
-      <StatTile
-        label="Fire Weather"
-        value={fire.label}
-        sublabel="Calaveras & Tuolumne"
-        state={fire.state}
-      />
+    <div class="live-loader" data-live-loader role="status" aria-live="polite">
+      <span class="live-loader__dot" aria-hidden="true"></span>
+      <span class="live-loader__text">{copy.loading}</span>
     </div>
 
-    <aside class="live-evac" aria-label="Evacuation maps">
-      <div class="live-evac__text">
-        <p class="live-evac__head">{copy.evacHeading}</p>
-        <p class="live-evac__note">{copy.evacNote}</p>
+    <div class="live-view" data-live-body>
+      <p class="live-status">
+        <StatusPill tone={view.status.tone} blink={view.status.blink} data-live-pill>
+          {view.status.label}
+        </StatusPill>
+        <span class="live-status__sync"
+          ><span data-live-synced>{view.syncedLabel}</span> · {copy.autoRefresh}</span
+        >
+      </p>
+
+      <p class="live-stale" role="note" data-live-stale hidden={!view.stale}>{copy.staleNote}</p>
+
+      <div class="live-tiles">
+        <StatTile
+          label="Wildfires"
+          value={view.tiles.wildfires.value}
+          sublabel="CAL FIRE"
+          state={view.tiles.wildfires.state}
+          key="wildfires"
+        />
+        <StatTile
+          label="Evacuations"
+          value={view.tiles.evacuations.value}
+          sublabel="Cal OES"
+          state={view.tiles.evacuations.state}
+          key="evacuations"
+        />
+        <StatTile
+          label="Weather Alerts"
+          value={view.tiles.weatherAlerts.value}
+          sublabel="NWS foothill zones"
+          state={view.tiles.weatherAlerts.state}
+          key="weatherAlerts"
+        />
+        <StatTile
+          label="Fire Weather"
+          value={view.tiles.fireWeather.value}
+          sublabel="Calaveras & Tuolumne"
+          state={view.tiles.fireWeather.state}
+          key="fireWeather"
+        />
       </div>
-      <a
-        class="live-evac__link"
-        href={externalLinks.genasysEvac}
-        target="_blank"
-        rel="noopener external"
-      >
-        {copy.evacLinkLabel}
-        <span class="live-evac__arrow" aria-hidden="true">&#8599;</span>
-      </a>
-    </aside>
 
-    <WeatherBand weather={ersn.weather} label={copy.conditionsHeading} />
+      <aside class="live-evac" aria-label="Evacuation maps">
+        <div class="live-evac__text">
+          <p class="live-evac__head">{copy.evacHeading}</p>
+          <p class="live-evac__note">{copy.evacNote}</p>
+        </div>
+        <a
+          class="live-evac__link"
+          href={externalLinks.genasysEvac}
+          target="_blank"
+          rel="noopener external"
+        >
+          {copy.evacLinkLabel}
+          <span class="live-evac__arrow" aria-hidden="true">&#8599;</span>
+        </a>
+      </aside>
 
-    <div class="live-grid">
-      <section class="live-grid__map" aria-labelledby="map-title">
-        <h2 id="map-title" class="live-h2">{copy.mapHeading}</h2>
-        <HazardMap mapLayers={mapLayers} />
-      </section>
-      <section class="live-grid__stream" aria-labelledby="stream-title">
-        <h2 id="stream-title" class="live-h2">{copy.streamHeading}</h2>
-        <AlertStream items={stream} emptyText={copy.streamEmpty} />
-      </section>
+      <div data-live-weather set:html={view.html.weather} />
+
+      <div class="live-grid">
+        <section class="live-grid__map" aria-labelledby="map-title">
+          <h2 id="map-title" class="live-h2">{copy.mapHeading}</h2>
+          <figure class="hazard-map" data-live-map>
+            <div class="hazard-map__canvas" data-map-canvas>
+              <p class="hazard-map__fallback" data-map-fallback>
+                The live hazard map needs JavaScript and WebGL. Every active hazard is also listed
+                in the alert stream beside it.
+              </p>
+            </div>
+            <figcaption class="hazard-map__foot">
+              <ul class="hazard-map__legend">
+                {
+                  legend.map((l) => (
+                    <li class="hazard-map__legenditem">
+                      <span
+                        class:list={['hazard-map__swatch', `hazard-map__swatch--${l.key}`]}
+                        aria-hidden="true"
+                      />
+                      {l.label}
+                    </li>
+                  ))
+                }
+              </ul>
+              <p class="hazard-map__attrib">
+                Basemap &copy; OpenStreetMap, &copy; CARTO · Hazards via info.ersn.net
+              </p>
+            </figcaption>
+            <script
+              is:inline
+              type="application/json"
+              data-map-data
+              set:html={JSON.stringify(view.mapData)}
+            />
+          </figure>
+        </section>
+
+        <section class="live-grid__stream" aria-labelledby="stream-title">
+          <h2 id="stream-title" class="live-h2">{copy.streamHeading}</h2>
+          <div data-live-stream set:html={view.html.stream} />
+        </section>
+      </div>
     </div>
   </Section>
 
-  <Section surface="page" labelledby="roads-title">
-    <h2 id="roads-title" class="live-h2">{copy.roadsHeading}</h2>
-    <RoadConditions roads={ersn.roads} />
-  </Section>
+  <div class="live-view" data-live-body>
+    <Section surface="page" labelledby="roads-title">
+      <h2 id="roads-title" class="live-h2">{copy.roadsHeading}</h2>
+      <div data-live-roads set:html={view.html.roads} />
+    </Section>
 
-  <Section surface="page" labelledby="scan-title">
-    <h2 id="scan-title" class="live-h2">{copy.scannersHeading}</h2>
-    <p class="live-sub">{copy.scannersNote}</p>
-    <ScannerLinks scanners={haz.scanners ?? []} />
-  </Section>
+    <Section surface="page" labelledby="scan-title">
+      <h2 id="scan-title" class="live-h2">{copy.scannersHeading}</h2>
+      <p class="live-sub">{copy.scannersNote}</p>
+      <div data-live-scanners set:html={view.html.scanners} />
+    </Section>
 
-  <Section surface="page" labelledby="res-title">
-    <h2 id="res-title" class="live-h2">{copy.resourcesHeading}</h2>
-    <ul class="live-resources">
-      {
-        resources.map((r) => (
-          <li>
-            <a class="resource" href={r.href} target="_blank" rel="noopener external">
-              <span class="resource__label">
-                {r.label}
-                <span class="resource__arrow" aria-hidden="true">
-                  &#8599;
+    <Section surface="page" labelledby="res-title">
+      <h2 id="res-title" class="live-h2">{copy.resourcesHeading}</h2>
+      <ul class="live-resources">
+        {
+          resources.map((r) => (
+            <li>
+              <a class="resource" href={r.href} target="_blank" rel="noopener external">
+                <span class="resource__label">
+                  {r.label}
+                  <span class="resource__arrow" aria-hidden="true">
+                    &#8599;
+                  </span>
                 </span>
-              </span>
-              <span class="resource__desc">{r.desc}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </Section>
+                <span class="resource__desc">{r.desc}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </Section>
+  </div>
 </BaseLayout>
 
 <script>
-  // Keep the "Synced" stamp honest with a periodic situation poll (the components
-  // each own their own data; this just refreshes the header timestamp).
-  const el = document.querySelector<HTMLElement>('[data-live-synced]');
-  if (el) {
-    const fmt = () => {
-      try {
-        const t = new Intl.DateTimeFormat('en-GB', {
-          timeZone: 'America/Los_Angeles',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }).format(new Date());
-        return `Synced ${t} PT`;
-      } catch {
-        return el.textContent || '';
-      }
-    };
-    setInterval(() => (el.textContent = fmt()), 90_000);
+  // /live is genuinely live: re-fetch info.ersn.net in the browser, re-render every data
+  // region from the SAME view-model the server used, then reveal the page in one paint.
+  // On any failure it reveals the build-time snapshot as "last known" — never a spinner.
+  import { buildView } from '../lib/live-view';
+  import type { LiveView, LiveMapData } from '../lib/live-view';
+  import { initHazardMap, type MapHandle } from '../lib/live-map';
+  import { ERSN_API_BASE, NWS_ZONES, type ErsnSnapshot } from '../lib/ersn';
+  import { HAZARD_AREA, STREAM_LAYERS, type HazardsSnapshot } from '../lib/hazards';
+
+  const REFRESH_MS = 90_000;
+  const TIMEOUT_MS = 9_000;
+
+  const root = document.documentElement;
+  const figure = document.querySelector<HTMLElement>('[data-live-map]');
+  const sigs: Record<string, string> = {};
+  let handle: MapHandle | null = null;
+
+  const reveal = () => {
+    root.dataset.liveBoot = 'ready';
+  };
+
+  function setRegion(sel: string, html: string) {
+    const el = document.querySelector<HTMLElement>(sel);
+    if (!el || sigs[sel] === html) return;
+    sigs[sel] = html;
+    el.innerHTML = html;
   }
+
+  function setTile(key: string, t: { value: string; state: string }) {
+    const el = document.querySelector<HTMLElement>(`[data-stat-key="${key}"]`);
+    if (!el) return;
+    el.dataset.state = t.state;
+    const v = el.querySelector<HTMLElement>('[data-stat-value]');
+    if (v) v.textContent = t.value;
+  }
+
+  function applyView(view: LiveView) {
+    setRegion('[data-live-weather]', view.html.weather);
+    setRegion('[data-live-stream]', view.html.stream);
+    setRegion('[data-live-roads]', view.html.roads);
+    setRegion('[data-live-scanners]', view.html.scanners);
+
+    setTile('wildfires', view.tiles.wildfires);
+    setTile('evacuations', view.tiles.evacuations);
+    setTile('weatherAlerts', view.tiles.weatherAlerts);
+    setTile('fireWeather', view.tiles.fireWeather);
+
+    const pill = document.querySelector<HTMLElement>('[data-live-pill]');
+    if (pill) {
+      pill.classList.remove('pill--ok', 'pill--elevated', 'pill--alarm', 'pill--muted');
+      pill.classList.add(`pill--${view.status.tone}`);
+      pill.classList.toggle('pill--blink', view.status.blink);
+      const label = pill.querySelector<HTMLElement>('.pill__label');
+      if (label) label.textContent = view.status.label;
+    }
+
+    const synced = document.querySelector<HTMLElement>('[data-live-synced]');
+    if (synced) synced.textContent = view.syncedLabel;
+    const stale = document.querySelector<HTMLElement>('[data-live-stale]');
+    if (stale) stale.hidden = !view.stale;
+  }
+
+  function fallbackMapData(): LiveMapData {
+    try {
+      const el = figure?.querySelector<HTMLElement>('[data-map-data]');
+      return JSON.parse(el?.textContent || '{}') as LiveMapData;
+    } catch {
+      return {
+        towns: { type: 'FeatureCollection', features: [] },
+        layers: {},
+        bounds: {} as never,
+      };
+    }
+  }
+
+  async function fetchSnapshots(signal: AbortSignal): Promise<{
+    haz: HazardsSnapshot;
+    ersn: ErsnSnapshot;
+  }> {
+    const get = async (path: string) => {
+      const res = await fetch(`${ERSN_API_BASE}${path}`, {
+        headers: { accept: 'application/json' },
+        signal,
+      });
+      if (!res.ok) throw new Error(`${path} → ${res.status}`);
+      return res.json();
+    };
+    const [situation, scanners, roads, weather, alerts, ...layerList] = await Promise.all([
+      get(`/situation/${HAZARD_AREA}`),
+      get(`/scanners/${HAZARD_AREA}`),
+      get('/roads'),
+      get('/weather'),
+      get(`/weather/alerts?zones=${NWS_ZONES.join(',')}`),
+      ...STREAM_LAYERS.map((l) => get(`/hazards/${HAZARD_AREA}/${l}.geojson`)),
+    ]);
+    const layers: Record<string, unknown> = {};
+    STREAM_LAYERS.forEach((l, i) => (layers[l] = layerList[i]));
+    const haz = {
+      fetchedAt: '',
+      live: true,
+      area: HAZARD_AREA,
+      situation,
+      layers,
+      scanners,
+    } as unknown as HazardsSnapshot;
+    const ersn = { fetchedAt: '', live: true, roads, weather, alerts } as unknown as ErsnSnapshot;
+    return { haz, ersn };
+  }
+
+  async function run(initial: boolean) {
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
+    try {
+      const { haz, ersn } = await fetchSnapshots(ac.signal);
+      clearTimeout(timer);
+      const view = buildView(haz, ersn);
+      applyView(view);
+      if (initial) {
+        reveal();
+        requestAnimationFrame(() => {
+          if (figure) handle = initHazardMap(figure, view.mapData);
+        });
+      } else if (handle) {
+        handle.update(view.mapData);
+      }
+    } catch {
+      clearTimeout(timer);
+      if (initial) {
+        // Couldn't refresh — reveal the build-time snapshot, honestly labelled.
+        const synced = document.querySelector<HTMLElement>('[data-live-synced]');
+        if (synced) synced.textContent = 'Last known';
+        reveal();
+        requestAnimationFrame(() => {
+          if (figure) handle = initHazardMap(figure, fallbackMapData());
+        });
+      }
+      // A periodic refresh that fails leaves the current view untouched.
+    }
+  }
+
+  run(true);
+  setInterval(() => run(false), REFRESH_MS);
 </script>
 
 <style>
@@ -249,15 +374,55 @@ const schema = {
     line-height: var(--lh-body);
     color: var(--ink-body);
   }
+
+  /* Loading affordance — calm pulse, no spinner; honors reduced motion.
+     `display` is owned by the boot-gate (:global) rules below so it can be toggled;
+     these are only the flex-layout + look properties, applied once it's shown. */
+  .live-loader {
+    min-height: 48vh;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+  .live-loader__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--brand-brass);
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+  .live-loader__text {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  @keyframes live-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-loader__dot {
+      animation-duration: 3.2s;
+    }
+  }
+
   /* Live-status cluster: the status pill sits with the synced/refresh line. */
-  .live-head__status {
+  .live-status {
     margin-top: var(--space-5);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2) var(--space-4);
   }
-  .live-head__sync {
+  .live-status__sync {
     font-family: var(--font-ui);
     font-size: var(--fs-label);
     letter-spacing: var(--tracking-label);
@@ -275,6 +440,13 @@ const schema = {
     font-family: var(--font-ui);
     font-size: var(--fs-small);
     color: var(--ink-secondary);
+  }
+
+  .live-tiles {
+    margin-top: var(--space-7);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
   }
 
   .live-evac {
@@ -319,13 +491,6 @@ const schema = {
     color: var(--brand-green-hover);
   }
 
-  .live-tiles {
-    margin-top: var(--space-7);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-4);
-  }
-
   .live-grid {
     margin-top: var(--space-7);
     display: grid;
@@ -342,6 +507,97 @@ const schema = {
     margin-bottom: var(--space-5);
     font-size: var(--fs-small);
     color: var(--ink-secondary);
+  }
+
+  /* Hazard-map frame (the figure is static; MapLibre mounts into the canvas). */
+  .hazard-map {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .hazard-map__canvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 11;
+    min-height: 320px;
+    max-height: 440px;
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .hazard-map__fallback {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7);
+    text-align: center;
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+  .hazard-map__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+  }
+  .hazard-map__legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+  .hazard-map__legenditem {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  .hazard-map__swatch {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border: 1px solid var(--ink-muted);
+  }
+  .hazard-map__swatch--town {
+    background: color-mix(in srgb, var(--ink-muted) 55%, transparent);
+    border-radius: 50%;
+    border-color: var(--ink-muted);
+  }
+  .hazard-map__swatch--wildfire {
+    background: color-mix(in srgb, var(--signal-orange) 18%, transparent);
+    border-color: var(--signal-orange);
+  }
+  .hazard-map__swatch--evacuation {
+    background: color-mix(in srgb, var(--signal-orange-hover) 16%, transparent);
+    border-style: dashed;
+    border-color: var(--signal-orange-hover);
+  }
+  .hazard-map__swatch--incident {
+    background: var(--brand-brass);
+    border-radius: 50%;
+    border-color: var(--brand-brass);
+  }
+  .hazard-map__swatch--quake {
+    background: transparent;
+    border-radius: 50%;
+    border-color: var(--brand-green);
+  }
+  .hazard-map__attrib {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
   }
 
   .live-resources {
@@ -397,5 +653,21 @@ const schema = {
     .live-resources {
       grid-template-columns: 1fr;
     }
+  }
+</style>
+
+{/* Boot gate: header + nav stay; the live body and footer wait for the first paint. */}
+<style is:global>
+  [data-live-loader] {
+    display: none;
+  }
+  html[data-live-boot='loading'] [data-live-body] {
+    display: none;
+  }
+  html[data-live-boot='loading'] [data-live-loader] {
+    display: flex;
+  }
+  html[data-live-boot='loading'] [data-site-footer] {
+    display: none;
   }
 </style>
