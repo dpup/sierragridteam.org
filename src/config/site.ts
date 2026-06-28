@@ -71,6 +71,9 @@ export const donate = {
 
 /** External destinations referenced across the site. */
 export const externalLinks = {
+  // TODO(mesh-map): this embed currently shows the Bay Area mesh. Investigate whether
+  // `https://map.wcmesh.com/` accepts region/bounds/channel parameters to scope it to the
+  // Calaveras & Tuolumne foothills, and switch to that. See docs/launch-checklist.md.
   liveMeshMap: 'https://livemap.wcmesh.com/bayarea/',
   chpCad: 'https://cad.chp.ca.gov/',
   nwsSacramento: 'https://www.weather.gov/sto/',

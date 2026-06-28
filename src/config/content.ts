@@ -25,16 +25,16 @@ export const home = {
     kicker: 'Mission',
     title: 'Resilience is built before the disaster.',
     body:
-      'S.I.E.R.R.A is a volunteer non-profit that builds and operates off-grid emergency ' +
-      'communication infrastructure across the Calaveras and Tuolumne foothills — and trains ' +
-      'the people who keep it running. When wildfire, storm, or blackout takes the grid down, ' +
-      'our LoRa mesh and amateur-radio network keeps neighbors, first responders, and ' +
-      'emergency managers connected.',
+      'S.I.E.R.R.A — the Signal Integrity & Emergency Radio Response Alliance — is a volunteer ' +
+      'non-profit that builds and operates off-grid emergency communication infrastructure across ' +
+      'the Calaveras and Tuolumne foothills, and trains the people who keep it running. When ' +
+      'wildfire, storm, or blackout takes the grid down, our LoRa mesh and amateur-radio network ' +
+      'keeps neighbors, first responders, and emergency managers connected.',
   },
 
   doctrine: {
     kicker: 'Operational Doctrine',
-    title: 'Educate, build, operate.',
+    title: 'How the network stays ready.',
     cards: [
       {
         number: '01',
@@ -75,19 +75,6 @@ export const mesh = {
     'authoritative live view; the homepage map is an identity visual only.',
   openMapLabel: 'Open Full Map',
   mapEmbedTitle: 'S.I.E.R.R.A live mesh coverage map',
-  specsHeading: 'Technical specifications',
-  specs: [
-    { label: 'Protocol', value: 'LoRa · MeshCore' },
-    { label: 'Band', value: '915 MHz (US ISM)' },
-    { label: 'Topology', value: 'Self-healing mesh' },
-    { label: 'Power', value: 'Solar + battery relays' },
-    { label: 'Reach', value: 'Ridge-to-ridge, line of sight' },
-  ],
-  zonesHeading: 'Deployment zones',
-  securityHeading: 'Security & privacy',
-  security:
-    'Operational channels are encrypted. The public map shows approximate coverage only — never ' +
-    'exact node coordinates, site access, or operator identities.',
 } as const;
 
 /** The Live Feed (situation) page — the public flagship during an emergency. */
@@ -96,9 +83,9 @@ export const live = {
   kicker: 'Calaveras & Tuolumne · Situation',
   heading: 'The Live Feed',
   intro:
-    'One page for an unfolding emergency — official wildfire, evacuation, weather, seismic, ' +
-    'and road feeds for the foothills on a single map with a prioritized alert stream. Built ' +
-    'to answer one question fast: is my area safe right now?',
+    'Official wildfire, evacuation, weather, seismic, and road feeds for the Calaveras & ' +
+    'Tuolumne foothills, gathered onto one map with the most urgent first. When something is ' +
+    'unfolding, start here to check whether your area is safe.',
   autoRefresh: 'Auto-refreshes every 90 seconds',
   mapHeading: 'Live hazard map',
   streamHeading: 'Active alerts',
@@ -114,21 +101,6 @@ export const live = {
   scannersNote:
     'Live public-safety scanner feeds via Broadcastify. Link-out only — audio is not hosted ' +
     'or rebroadcast here.',
-  worksHeading: 'How this feed works',
-  worksBody:
-    'Every layer comes from an official agency feed, aggregated and cached by info.ersn.net ' +
-    '(refreshed about every 90 seconds) so your browser never hammers the agencies directly ' +
-    'during a disaster. Nothing here is simulated — when a source is unavailable it says so, ' +
-    'and an empty evacuation feed is never read as an all-clear.',
-  /** Provenance — the official sources behind each layer. */
-  sources: [
-    { label: 'Fire perimeters', detail: 'NIFC / WFIGS interagency perimeters (ArcGIS)' },
-    { label: 'Wildfire incidents', detail: 'CAL FIRE active incidents' },
-    { label: 'Evacuations', detail: 'Cal OES / Genasys — presence only, link-out' },
-    { label: 'Weather & fire weather', detail: 'National Weather Service' },
-    { label: 'Seismic', detail: 'USGS earthquake feed' },
-    { label: 'Road incidents', detail: 'CHP / Caltrans (QuickMap)' },
-  ],
   resourcesHeading: 'Official sources',
   staleNote:
     'Showing last-known values — the live feed was unreachable at build time. The situation ' +

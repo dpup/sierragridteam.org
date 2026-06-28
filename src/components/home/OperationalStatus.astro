@@ -73,6 +73,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
         value={`${status.relaySites} Active`}
         sublabel="Deployed relay sites"
         state="ok-static"
+        href="/live"
         key="relay"
       />
       <StatTile
@@ -80,6 +81,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
         value={`${status.coverageCounties} Counties`}
         sublabel={site.counties.join(' & ').replace(/ County/g, '')}
         state="ok-static"
+        href="/live"
         key="coverage"
       />
       <StatTile
@@ -87,6 +89,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
         value={`${status.activeAlertCount} Active`}
         sublabel="NWS foothill zones"
         state={alertState}
+        href="/live"
         key="alerts"
       />
       <StatTile
@@ -95,6 +98,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
         sublabel="Calaveras & Tuolumne"
         state={fireState}
         footnote={fireFootnote}
+        href="/live"
         key="fire"
       />
     </div>

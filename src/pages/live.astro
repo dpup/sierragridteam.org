@@ -5,10 +5,9 @@ import Kicker from '@components/Kicker.astro';
 import StatusPill from '@components/StatusPill.astro';
 import StatTile from '@components/StatTile.astro';
 import HazardMap from '@components/live/HazardMap.astro';
+import WeatherBand from '@components/live/WeatherBand.astro';
 import AlertStream from '@components/live/AlertStream.astro';
 import ScannerLinks from '@components/live/ScannerLinks.astro';
-import HowItWorks from '@components/live/HowItWorks.astro';
-import CurrentConditions from '@components/alerts/CurrentConditions.astro';
 import RoadConditions from '@components/alerts/RoadConditions.astro';
 import {
   buildSituationSnapshot,
@@ -167,6 +166,8 @@ const schema = {
       </a>
     </aside>
 
+    <WeatherBand weather={ersn.weather} label={copy.conditionsHeading} />
+
     <div class="live-grid">
       <section class="live-grid__map" aria-labelledby="map-title">
         <h2 id="map-title" class="live-h2">{copy.mapHeading}</h2>
@@ -179,11 +180,6 @@ const schema = {
     </div>
   </Section>
 
-  <Section surface="page" labelledby="cond-title">
-    <h2 id="cond-title" class="live-h2">{copy.conditionsHeading}</h2>
-    <CurrentConditions weather={ersn.weather} />
-  </Section>
-
   <Section surface="page" labelledby="roads-title">
     <h2 id="roads-title" class="live-h2">{copy.roadsHeading}</h2>
     <RoadConditions roads={ersn.roads} />
@@ -193,11 +189,6 @@ const schema = {
     <h2 id="scan-title" class="live-h2">{copy.scannersHeading}</h2>
     <p class="live-sub">{copy.scannersNote}</p>
     <ScannerLinks scanners={haz.scanners ?? []} />
-  </Section>
-
-  <Section surface="page" labelledby="works-title">
-    <h2 id="works-title" class="live-h2">{copy.worksHeading}</h2>
-    <HowItWorks body={copy.worksBody} sources={copy.sources} />
   </Section>
 
   <Section surface="page" labelledby="res-title">

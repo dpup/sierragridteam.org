@@ -16,13 +16,21 @@ interface Props {
   key?: string;
   /** Footnote marker (e.g. "*") appended to the value for placeholder data. */
   footnote?: string;
+  /** If set, the whole tile becomes a link to this href. */
+  href?: string;
   class?: string;
 }
 
-const { label, value, sublabel, state = 'ok', key, footnote, class: className } = Astro.props;
+const { label, value, sublabel, state = 'ok', key, footnote, href, class: className } = Astro.props;
+const Tag = href ? 'a' : 'div';
 ---
 
-<div class:list={['stat', className]} data-state={state} data-stat-key={key}>
+<Tag
+  class:list={['stat', { 'stat--link': href }, className]}
+  data-state={state}
+  data-stat-key={key}
+  {...href ? { href } : {}}
+>
   <div class="stat__top">
     <span class="stat__dot" aria-hidden="true" data-stat-dot></span>
     <span class="stat__label">{label}</span>
@@ -31,7 +39,7 @@ const { label, value, sublabel, state = 'ok', key, footnote, class: className } 
     {value}{footnote && <span class="stat__footnote">{footnote}</span>}
   </div>
   <div class="stat__sub">{sublabel}</div>
-</div>
+</Tag>
 
 <style>
   .stat {
@@ -42,6 +50,16 @@ const { label, value, sublabel, state = 'ok', key, footnote, class: className } 
     background: var(--surface-card);
     border: var(--border);
     border-radius: var(--radius);
+  }
+
+  /* Linked tiles (e.g. the home status grid → /live). */
+  a.stat--link {
+    text-decoration: none;
+    transition: border-color var(--transition);
+  }
+  a.stat--link:hover {
+    text-decoration: none;
+    border-color: var(--brand-green);
   }
 
   .stat__top {

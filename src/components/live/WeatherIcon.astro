@@ -1,0 +1,123 @@
+---
+/**
+ * WeatherIcon — a small stroked weather glyph. The icons are Lucide designs inlined as
+ * SVG (rather than pulling in an icon-library build integration for ~7 glyphs); they
+ * inherit `currentColor` + font-size, so they style like text. Resolves the
+ * OpenWeatherMap icon code / condition to the right glyph.
+ */
+interface Props {
+  /** OpenWeatherMap icon code, e.g. "04d". */
+  code?: string;
+  /** weatherMain fallback, e.g. "Clouds". */
+  main?: string;
+  class?: string;
+}
+const { code = '', main = '', class: className } = Astro.props;
+
+function resolve(c: string, m: string): string {
+  const p = c.slice(0, 2);
+  if (p === '01') return 'sun';
+  if (p === '02') return 'cloud-sun';
+  if (p === '03' || p === '04') return 'cloud';
+  if (p === '09' || p === '10') return 'cloud-rain';
+  if (p === '11') return 'cloud-lightning';
+  if (p === '13') return 'cloud-snow';
+  if (p === '50') return 'cloud-fog';
+  const ml = m.toLowerCase();
+  if (ml.includes('clear')) return 'sun';
+  if (ml.includes('rain') || ml.includes('drizzle')) return 'cloud-rain';
+  if (ml.includes('snow')) return 'cloud-snow';
+  if (ml.includes('thunder')) return 'cloud-lightning';
+  if (ml.includes('fog') || ml.includes('mist') || ml.includes('haze')) return 'cloud-fog';
+  return 'cloud';
+}
+const name = resolve(code, main);
+---
+
+<svg
+  class:list={['wicon', className]}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {
+    name === 'sun' && (
+      <Fragment>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2" />
+        <path d="M12 20v2" />
+        <path d="m4.93 4.93 1.41 1.41" />
+        <path d="m17.66 17.66 1.41 1.41" />
+        <path d="M2 12h2" />
+        <path d="M20 12h2" />
+        <path d="m6.34 17.66-1.41 1.41" />
+        <path d="m19.07 4.93-1.41 1.41" />
+      </Fragment>
+    )
+  }
+  {name === 'cloud' && <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />}
+  {
+    name === 'cloud-sun' && (
+      <Fragment>
+        <path d="M12 2v2" />
+        <path d="m4.93 4.93 1.41 1.41" />
+        <path d="M20 12h2" />
+        <path d="m19.07 4.93-1.41 1.41" />
+        <path d="M15.947 12.65a4 4 0 0 0-5.925-4.128" />
+        <path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z" />
+      </Fragment>
+    )
+  }
+  {
+    name === 'cloud-rain' && (
+      <Fragment>
+        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+        <path d="M16 14v6" />
+        <path d="M8 14v6" />
+        <path d="M12 16v6" />
+      </Fragment>
+    )
+  }
+  {
+    name === 'cloud-snow' && (
+      <Fragment>
+        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+        <path d="M8 15h.01" />
+        <path d="M8 19h.01" />
+        <path d="M12 17h.01" />
+        <path d="M12 21h.01" />
+        <path d="M16 15h.01" />
+        <path d="M16 19h.01" />
+      </Fragment>
+    )
+  }
+  {
+    name === 'cloud-lightning' && (
+      <Fragment>
+        <path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973" />
+        <path d="m13 12-3 5h4l-3 5" />
+      </Fragment>
+    )
+  }
+  {
+    name === 'cloud-fog' && (
+      <Fragment>
+        <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+        <path d="M16 17H7" />
+        <path d="M17 21H9" />
+      </Fragment>
+    )
+  }
+</svg>
+
+<style>
+  .wicon {
+    width: 1.2em;
+    height: 1.2em;
+    flex-shrink: 0;
+  }
+</style>

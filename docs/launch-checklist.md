@@ -63,6 +63,15 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       `https://sierragridteam.org/sitemap-index.xml` (DNS verification — nothing needed
       in the repo).
 
+## Mesh page
+
+- [ ] **Scope the embedded mesh map to our region.** `/mesh` currently embeds
+      `livemap.wcmesh.com/bayarea/` (the **Bay Area** mesh). Investigate whether
+      `https://map.wcmesh.com/` (or another wcmesh entrypoint) accepts region / bounds /
+      channel URL parameters to show the **Calaveras & Tuolumne foothills**; if so, switch
+      `externalLinks.liveMeshMap` in `src/config/site.ts`. It appears frameable (no obvious
+      X-Frame-Options); the open question is the right parameters.
+
 ## Live Feed (situation page)
 
 - [x] **`/live` flagship built** — MapLibre GL + CARTO Positron map, prioritized hazard

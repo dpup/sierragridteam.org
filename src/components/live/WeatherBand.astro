@@ -1,0 +1,161 @@
+---
+/**
+ * WeatherBand — a thin current-conditions strip above the hazard map. One compact chip
+ * per covered town (icon + name + temp); clicking a chip opens a small popover with the
+ * full reading (feels-like, sky, wind, humidity). SSR-only from the build snapshot; no
+ * faked values — renders nothing if the feed has no weather.
+ */
+import WeatherIcon from './WeatherIcon.astro';
+import { cToF, kmhToMph, degreesToCompass } from '@lib/units';
+import type { WeatherResponse } from '@lib/ersn';
+
+interface Props {
+  weather: WeatherResponse | null;
+  /** Accessible label for the band (no visible heading — it's a thin strip). */
+  label: string;
+}
+const { weather, label } = Astro.props;
+const towns = weather?.weatherData ?? [];
+
+const shortName = (n: string) => n.replace(/,\s*CA$/i, '');
+const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+const wind = (kmh: number, deg: number) =>
+  kmhToMph(kmh) <= 1 ? 'Calm' : `${kmhToMph(kmh)} mph ${degreesToCompass(deg)}`;
+---
+
+{
+  towns.length > 0 && (
+    <ul class="wband" aria-label={label}>
+      {towns.map((w) => (
+        <li class="wband__item">
+          <details class="wband__details" name="weather-pop">
+            <summary class="wband__chip">
+              <WeatherIcon code={w.weatherIcon} main={w.weatherMain} class="wband__icon" />
+              <span class="wband__town">{shortName(w.locationName)}</span>
+              <span class="wband__temp">{cToF(w.temperatureCelsius)}&deg;</span>
+            </summary>
+            <div class="wband__pop">
+              <p class="wband__poptitle">{shortName(w.locationName)}</p>
+              <p class="wband__popsky">{titleCase(w.weatherDescription)}</p>
+              <dl class="wband__stats">
+                <div>
+                  <dt>Temp</dt>
+                  <dd>{cToF(w.temperatureCelsius)}&deg;F</dd>
+                </div>
+                <div>
+                  <dt>Feels</dt>
+                  <dd>{cToF(w.feelsLikeCelsius)}&deg;F</dd>
+                </div>
+                <div>
+                  <dt>Wind</dt>
+                  <dd>{wind(w.windSpeedKmh, w.windDirectionDegrees)}</dd>
+                </div>
+                <div>
+                  <dt>Humidity</dt>
+                  <dd>{w.humidityPercent}%</dd>
+                </div>
+              </dl>
+            </div>
+          </details>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .wband {
+    list-style: none;
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .wband__item {
+    position: relative;
+  }
+  .wband__details {
+    position: relative;
+  }
+
+  .wband__chip {
+    list-style: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-ui);
+    font-size: var(--fs-small);
+  }
+  .wband__chip::-webkit-details-marker {
+    display: none;
+  }
+  .wband__details[open] .wband__chip {
+    border-color: var(--brand-green);
+  }
+  .wband__icon {
+    color: var(--ink-secondary);
+  }
+  .wband__town {
+    color: var(--ink-body);
+  }
+  .wband__temp {
+    font-family: var(--font-mono);
+    color: var(--ink-strong);
+  }
+
+  /* Popover — drops below the chip, over the map. */
+  .wband__pop {
+    position: absolute;
+    z-index: var(--z-overlay);
+    top: calc(100% + var(--space-1));
+    left: 0;
+    min-width: 200px;
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-overlay);
+  }
+  .wband__poptitle {
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+  .wband__popsky {
+    margin-top: var(--space-1);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+  .wband__stats {
+    margin: var(--space-3) 0 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2) var(--space-4);
+  }
+  .wband__stats dt {
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .wband__stats dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    color: var(--ink-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wband__details {
+      transition: none;
+    }
+  }
+</style>
