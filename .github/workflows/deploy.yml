@@ -4,13 +4,13 @@ name: Deploy
 # (i.e. on merge). Infra — bucket, distribution, OAC, ACM cert, DNS — is
 # provisioned separately (Terraform). No secrets are committed.
 #
-# Set these repo SECRETS (Settings → Secrets and variables → Actions → Secrets):
-#   AWS_ACCESS_KEY_ID         deploy user's access key
-#   AWS_SECRET_ACCESS_KEY     deploy user's secret key
-#   AWS_REGION                e.g. us-west-2
-#   AWS_ACCOUNT_ID            expected account (deploy aborts if it doesn't match)
-#   S3_BUCKET                 target bucket name
-#   CLOUDFRONT_DISTRIBUTION_ID  distribution to invalidate
+# Configure under Settings → Secrets and variables → Actions
+# (matches the dpup/ersn.net convention: only the keys are secret):
+#   Secrets:    AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#   Variables:  AWS_REGION         e.g. us-west-2
+#               AWS_ACCOUNT_ID     expected account (deploy aborts if it differs)
+#               S3_BUCKET_NAME     target bucket
+#               CF_DISTRO_ID       CloudFront distribution to invalidate
 
 on:
   workflow_dispatch:
@@ -50,13 +50,13 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Verify target AWS account
         run: |
           ACCT=$(aws sts get-caller-identity --query Account --output text)
-          if [ "$ACCT" != "${{ secrets.AWS_ACCOUNT_ID }}" ]; then
-            echo "::error::Authenticated account $ACCT does not match expected ${{ secrets.AWS_ACCOUNT_ID }} — aborting."
+          if [ "$ACCT" != "${{ vars.AWS_ACCOUNT_ID }}" ]; then
+            echo "::error::Authenticated account $ACCT does not match expected ${{ vars.AWS_ACCOUNT_ID }} — aborting."
             exit 1
           fi
           echo "Deploying to AWS account $ACCT"
@@ -64,7 +64,7 @@ jobs:
       # Hashed, fingerprinted assets → cache forever (immutable).
       - name: Sync immutable assets
         run: |
-          aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}" \
+          aws s3 sync dist/ "s3://${{ vars.S3_BUCKET_NAME }}" \
             --delete \
             --exclude "*.html" \
             --exclude "*.xml" \
@@ -75,7 +75,7 @@ jobs:
       # HTML + manifests → always revalidate.
       - name: Sync HTML & manifests
         run: |
-          aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}" \
+          aws s3 sync dist/ "s3://${{ vars.S3_BUCKET_NAME }}" \
             --exclude "*" \
             --include "*.html" \
             --include "*.xml" \
@@ -86,5 +86,5 @@ jobs:
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --distribution-id "${{ vars.CF_DISTRO_ID }}" \
             --paths "/*"

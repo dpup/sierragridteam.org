@@ -27,18 +27,18 @@ configured target is **AWS S3 + CloudFront**, with DNS managed at **Hostinger**.
 
 ### 2. GitHub repo secrets / variables
 
-Set under **Settings → Secrets and variables → Actions**:
+Set under **Settings → Secrets and variables → Actions**. Following the
+`dpup/ersn.net` convention, **only the access keys are Secrets**; the rest are
+non-sensitive **Variables** (Terraform outputs all of them):
 
-Set all of these as **Secrets** (Terraform outputs the values):
-
-| Secret                       | Example              |
-| ---------------------------- | -------------------- |
-| `AWS_ACCESS_KEY_ID`          | `AKIA…`              |
-| `AWS_SECRET_ACCESS_KEY`      | `…`                  |
-| `AWS_REGION`                 | `us-west-2`          |
-| `AWS_ACCOUNT_ID`             | `123456789012`       |
-| `S3_BUCKET`                  | `sierragridteam.org` |
-| `CLOUDFRONT_DISTRIBUTION_ID` | `E1ABCDEF…`          |
+| Name                    | Kind         | Example              |
+| ----------------------- | ------------ | -------------------- |
+| `AWS_ACCESS_KEY_ID`     | **Secret**   | `AKIA…`              |
+| `AWS_SECRET_ACCESS_KEY` | **Secret**   | `…`                  |
+| `AWS_REGION`            | **Variable** | `us-west-2`          |
+| `AWS_ACCOUNT_ID`        | **Variable** | `123456789012`       |
+| `S3_BUCKET_NAME`        | **Variable** | `sierragridteam.org` |
+| `CF_DISTRO_ID`          | **Variable** | `E1ABCDEF…`          |
 
 The deploy job runs `sts get-caller-identity` and **aborts if the authenticated
 account ≠ `AWS_ACCOUNT_ID`**, so a mis-scoped key can't push to the wrong account.

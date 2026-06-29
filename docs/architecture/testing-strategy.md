@@ -59,9 +59,9 @@ overflow, contrast, alignment, and design-system conformance (Phase 8). Optional
 
 - On push to `main` after CI passes: `make build` → `aws s3 sync dist/ s3://$BUCKET --delete`
   → `aws cloudfront create-invalidation --paths "/*"`.
-- Credentials as repo **secrets**: `AWS_ROLE_ARN` (OIDC preferred) / `AWS_ACCESS_KEY_ID` +
-  `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`. Documented in
-  `docs/deployment.md`. Workflow is a ready template — no secrets are committed.
+- Credentials as repo **secrets** `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`; config as
+  **variables** `AWS_REGION`, `AWS_ACCOUNT_ID`, `S3_BUCKET_NAME`, `CF_DISTRO_ID`. Documented
+  in `docs/deployment.md`. No secrets are committed.
 
 ## Make targets (developer + CI entrypoints)
 

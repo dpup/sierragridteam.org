@@ -12,12 +12,11 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 - [ ] **AWS infra (Terraform, separate project).** Provision the S3 bucket +
       CloudFront (OAC, 403/404 → `/404.html`, ACM cert) and a deploy IAM user, then
       add the Hostinger DNS records. See `docs/deployment.md`.
-- [ ] **GitHub deploy secrets.** Add as **secrets**: `AWS_ACCESS_KEY_ID`,
-      `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `AWS_ACCOUNT_ID`, `S3_BUCKET`,
-      `CLOUDFRONT_DISTRIBUTION_ID`. Deploy then **auto-runs on merge** (after CI) and
-      aborts if the account id doesn't match.
-- [ ] **Push to a remote** (currently local-only) so CI/CD runs. When ready:
-      `gh repo create dpup/sierragridteam --private --source . --remote origin --push`
+- [ ] **GitHub deploy secrets/variables.** Add **secrets** `AWS_ACCESS_KEY_ID`,
+      `AWS_SECRET_ACCESS_KEY` and **variables** `AWS_REGION`, `AWS_ACCOUNT_ID`,
+      `S3_BUCKET_NAME`, `CF_DISTRO_ID` (matches the `dpup/ersn.net` convention). Deploy
+      then **auto-runs on merge** (after CI) and aborts if the account id doesn't match.
+- [x] **Push to a remote** so CI/CD runs: `dpup/sierragridteam.org` (private).
 - [ ] **Wire up the Donate destination.** The header/About **Donate** CTA and the
       `/donate` page are **placeholders** (`donate.isPlaceholder: true` in
       `src/config/site.ts`). Pick a provider (Donorbox / Stripe / Zeffy / etc.), point
