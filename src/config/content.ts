@@ -13,7 +13,7 @@ export const home = {
     headlineStrong: 'the signal stays up.',
     subhead:
       'We build, operate, and train the volunteers behind an off-grid emergency communications network for the Calaveras & Tuolumne foothills.',
-    primaryCta: { label: 'Open Live Map', href: '/mesh' },
+    primaryCta: { label: 'Open Mesh Map', href: '/mesh' },
     secondaryCta: { label: 'View the Live Feed', href: '/live' },
   },
 
