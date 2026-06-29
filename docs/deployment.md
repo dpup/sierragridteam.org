@@ -10,22 +10,24 @@ configured target is **AWS S3 + CloudFront**, with DNS managed at **Hostinger**.
 
 ### 1. AWS (provisioned via Terraform)
 
-- **S3 bucket** (e.g. `sierragridteam.org`) for the static files. Block public
+- **S3 bucket** (`sierragridteam.org-n01ckq`) for the static files. Block public
   access and serve via CloudFront with Origin Access Control (recommended), or
   enable static website hosting if you prefer.
 - **CloudFront distribution** in front of the bucket:
   - Default root object: `index.html`.
-  - **Clean-URL rewrite (required).** The build emits `live.html` / `about.html`
-    (Astro `build.format: 'file'`), but the site links to extensionless URLs like
-    `/live`. An OAC (S3 REST) origin has no index-document logic, so without a rewrite
-    every sub-page returns **403**. Attach a **CloudFront Function (viewer-request)**
-    that appends `.html` to extensionless paths (and `index.html` to directories):
+  - **Clean-URL rewrite (required).** The build emits `live/index.html` /
+    `about/index.html` (Astro `build.format: 'directory'`), but the site links to
+    extensionless URLs like `/live`. An OAC (S3 REST) origin has no index-document logic,
+    so without a rewrite every sub-page returns **403**. Attach a **CloudFront Function
+    (viewer-request)** that resolves a directory / extensionless path to its `index.html`:
 
     ```js
     function handler(event) {
       var req = event.request;
-      if (req.uri.endsWith('/')) req.uri += 'index.html';
-      else if (!req.uri.split('/').pop().includes('.')) req.uri += '.html';
+      var uri = req.uri;
+      if (uri.endsWith('/'))
+        req.uri += 'index.html'; // /live/ -> /live/index.html
+      else if (!uri.split('/').pop().includes('.')) req.uri += '/index.html'; // /live -> /live/index.html
       return req;
     }
     ```
@@ -33,9 +35,11 @@ configured target is **AWS S3 + CloudFront**, with DNS managed at **Hostinger**.
     If you already run a viewer-request function (e.g. the apex-canonical redirect),
     fold this into it.
 
-  - **Custom error response:** map 403/404 → `/404.html` (status 404) for genuinely
-    missing paths. This runs _after_ the rewrite above, so real pages still resolve —
-    it is NOT what makes clean URLs work.
+  - **Error pages.** A missing object on a private (OAC) origin returns **403**, not 404,
+    so set CloudFront custom error responses for BOTH: **403 → `/403.html`** and **404 →
+    `/404.html`**, each with **response code 404**. Both are the same on-brand not-found
+    page (`/403.html` is a build-time copy of `/404.html` — see `astro.config.mjs`). They
+    run _after_ the rewrite above, so real pages still resolve.
   - Attach an ACM certificate (us-east-1) for `sierragridteam.org` +
     `www.sierragridteam.org`.
   - Compress objects automatically (gzip/brotli).
@@ -51,14 +55,14 @@ Set under **Settings → Secrets and variables → Actions**. Following the
 `dpup/ersn.net` convention, **only the access keys are Secrets**; the rest are
 non-sensitive **Variables** (Terraform outputs all of them):
 
-| Name                    | Kind         | Example              |
-| ----------------------- | ------------ | -------------------- |
-| `AWS_ACCESS_KEY_ID`     | **Secret**   | `AKIA…`              |
-| `AWS_SECRET_ACCESS_KEY` | **Secret**   | `…`                  |
-| `AWS_REGION`            | **Variable** | `us-west-2`          |
-| `AWS_ACCOUNT_ID`        | **Variable** | `123456789012`       |
-| `S3_BUCKET_NAME`        | **Variable** | `sierragridteam.org` |
-| `CF_DISTRO_ID`          | **Variable** | `E1ABCDEF…`          |
+| Name                    | Kind         | Example                     |
+| ----------------------- | ------------ | --------------------------- |
+| `AWS_ACCESS_KEY_ID`     | **Secret**   | `AKIA…`                     |
+| `AWS_SECRET_ACCESS_KEY` | **Secret**   | `…`                         |
+| `AWS_REGION`            | **Variable** | `us-east-1`                 |
+| `AWS_ACCOUNT_ID`        | **Variable** | `230964283885`              |
+| `S3_BUCKET_NAME`        | **Variable** | `sierragridteam.org-n01ckq` |
+| `CF_DISTRO_ID`          | **Variable** | `E2M7XGNO0BYU06`            |
 
 The deploy job runs `sts get-caller-identity` and **aborts if the authenticated
 account ≠ `AWS_ACCOUNT_ID`**, so a mis-scoped key can't push to the wrong account.
@@ -68,8 +72,8 @@ account ≠ `AWS_ACCOUNT_ID`**, so a mis-scoped key can't push to the wrong acco
 Point the domain at CloudFront:
 
 - `sierragridteam.org` → CloudFront (ALIAS/ANAME, or A/AAAA via Hostinger's
-  CNAME-flattening at the apex) to `dXXXX.cloudfront.net`.
-- `www` → CNAME → `dXXXX.cloudfront.net` (or redirect www→apex at CloudFront).
+  CNAME-flattening at the apex) to `d3j7seetfd6zbh.cloudfront.net`.
+- `www` → CNAME → `d3j7seetfd6zbh.cloudfront.net` (or redirect www→apex at CloudFront).
 
 ## How deploys run
 
@@ -80,17 +84,22 @@ Point the domain at CloudFront:
   locally:
   ```sh
   make build
-  aws s3 sync dist/ s3://sierragridteam.org --delete \
+  aws s3 sync dist/ s3://sierragridteam.org-n01ckq --delete \
     --exclude "*.html" --cache-control "public,max-age=31536000,immutable"
-  aws s3 sync dist/ s3://sierragridteam.org \
+  aws s3 sync dist/ s3://sierragridteam.org-n01ckq \
     --exclude "*" --include "*.html" --cache-control "public,max-age=0,must-revalidate"
-  aws cloudfront create-invalidation --distribution-id EXXXX --paths "/*"
+  aws cloudfront create-invalidation --distribution-id E2M7XGNO0BYU06 --paths "/*"
   ```
 
 ## Data freshness
 
-The live data snapshot (`src/data/ersn-snapshot.json`) is baked at build time.
-To refresh it between content deploys, run `make snapshot` and commit, or rely on
-the browser's 5-minute client refresh (once info.ersn.net CORS lands — see FR-1
-in `docs/architecture/data-feed.md`). Consider a scheduled rebuild (cron workflow)
-if you want the SSR snapshot to stay current without manual commits.
+`/live` is rendered entirely in the browser from info.ersn.net (re-fetched every 90s);
+nothing stale is baked in, and if the feed is unreachable it shows the official sources —
+so its freshness is independent of deploys.
+
+The home operational-status tiles and the site-wide emergency banner are server-rendered
+from a build-time snapshot (`src/data/*.json`) and then upgraded by a client refresh on
+load. Those checked-in JSON files are only the build-time / offline fallback — the CI
+build fetches info.ersn.net live, so each deploy bakes a current one. `make snapshot`
+refreshes the checked-in fallback (needs direct network; it can't run behind the Moat
+proxy).

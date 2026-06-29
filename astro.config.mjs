@@ -1,6 +1,22 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { copyFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+// S3 with Origin Access Control returns 403 (not 404) for a missing object, and
+// CloudFront serves a status-matched error page. Ship /403.html next to /404.html —
+// the same on-brand "off the grid" page — by copying it at build time (one source).
+/** @type {import('astro').AstroIntegration} */
+const emit403 = {
+  name: 'emit-403',
+  hooks: {
+    'astro:build:done': ({ dir }) => {
+      const out = fileURLToPath(dir);
+      copyFileSync(`${out}404.html`, `${out}403.html`);
+    },
+  },
+};
 
 // The canonical production origin. DNS is managed via Hostinger; the static
 // output is deployed to AWS S3 + CloudFront. See docs/deployment.md.
@@ -20,8 +36,10 @@ export default defineConfig({
     '/alerts': '/live',
   },
   build: {
-    // Emit clean URLs: /mesh -> mesh.html, served as /mesh by CloudFront.
-    format: 'file',
+    // Directory output: /mesh -> mesh/index.html (Astro's default, matches the other
+    // sites + standard S3/CloudFront hosting). A CloudFront viewer-request function maps
+    // the clean URL /mesh -> /mesh/index.html — see docs/deployment.md.
+    format: 'directory',
     inlineStylesheets: 'auto',
   },
   integrations: [
@@ -29,6 +47,7 @@ export default defineConfig({
       // Keep the sitemap honest: only real, indexable pages.
       filter: (page) => !page.includes('/404'),
     }),
+    emit403,
   ],
   // Deterministic, dependency-light builds: no telemetry, predictable asset names.
   devToolbar: { enabled: false },
