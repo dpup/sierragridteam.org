@@ -103,9 +103,10 @@ export const live = {
     'Live public-safety scanner feeds via Broadcastify. Link-out only — audio is not hosted ' +
     'or rebroadcast here.',
   resourcesHeading: 'Official sources',
-  staleNote:
-    'Showing last-known values — the live feed was unreachable at build time. The situation ' +
-    'below may be out of date; check official sources during an active emergency.',
+  failHeading: 'Live feed unavailable',
+  failBody:
+    "We couldn't reach the data feeds right now. Rather than show stale information, here are " +
+    'the official sources — check them directly for current conditions.',
 } as const;
 
 /** Site-wide emergency banner copy. One CTA only — it takes you to the Live Feed,

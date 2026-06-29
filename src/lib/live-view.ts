@@ -35,8 +35,6 @@ export interface LiveMapData {
 }
 
 export interface LiveView {
-  /** false = produced from the checked-in fallback (drives the "last known" stale note). */
-  live: boolean;
   status: { tone: StatusTone; label: string; blink: boolean };
   syncedLabel: string;
   tiles: Record<
@@ -307,9 +305,8 @@ export function buildView(haz: HazardsSnapshot, ersn: ErsnSnapshot): LiveView {
         : { tone: 'ok', label: 'Operational', blink: false };
 
   return {
-    live: summary.live,
     status,
-    syncedLabel: summary.live ? `Synced ${formatPtTime(summary.syncedAt)}` : 'Last known',
+    syncedLabel: `Synced ${formatPtTime(summary.syncedAt)}`,
     tiles: {
       wildfires: {
         value:

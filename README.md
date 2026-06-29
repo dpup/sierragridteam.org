@@ -68,7 +68,7 @@ service area; evacuation `UNAVAILABLE` reads as "unknown", never all-clear.
 
 The only data gap shown as an honest placeholder is S.I.E.R.R.A's own per-relay /
 mesh-node status (FR-5/FR-6), which info.ersn.net does not own — see
-`FEATURE_REQUESTS.md` and `docs/architecture/data-feed.md`.
+`docs/architecture/data-feed.md`.
 
 ## Before launch (open items)
 

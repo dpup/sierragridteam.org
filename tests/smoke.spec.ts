@@ -16,11 +16,13 @@ const pages = [
 for (const pg of pages) {
   test(`${pg.name} renders core structure`, async ({ page }) => {
     await page.goto(pg.path, { waitUntil: 'domcontentloaded' });
-    // /live keeps its body + footer gated behind a loader until the first live fetch
-    // resolves (or fails) — wait for the reveal before asserting on the footer.
+    // /live gates body + footer behind a loader until the first fetch settles into ready
+    // (ok) or failed (feed unreachable) — wait for that before asserting on the footer.
     if (pg.path === '/live') {
       await page
-        .waitForSelector('html[data-live-boot="ready"]', { timeout: 12000 })
+        .waitForSelector('html[data-live-boot="ready"], html[data-live-boot="failed"]', {
+          timeout: 12000,
+        })
         .catch(() => {});
     }
 

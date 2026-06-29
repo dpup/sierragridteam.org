@@ -17,11 +17,13 @@ const pages = [
 for (const pg of pages) {
   test(`${pg.name} has no critical/serious a11y violations`, async ({ page }) => {
     await page.goto(pg.path, { waitUntil: 'domcontentloaded' });
-    // /live reveals its body after the first live fetch (or its failure) — scan the
-    // revealed page, not the loader.
+    // /live settles into ready (fetch ok) or failed (feed unreachable) — scan that terminal
+    // state, not the loader.
     if (pg.path === '/live') {
       await page
-        .waitForSelector('html[data-live-boot="ready"]', { timeout: 12000 })
+        .waitForSelector('html[data-live-boot="ready"], html[data-live-boot="failed"]', {
+          timeout: 12000,
+        })
         .catch(() => {});
     }
     const results = await new AxeBuilder({ page })

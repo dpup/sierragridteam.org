@@ -57,7 +57,7 @@ version of the rules below.
    color alone; images have alt text. `make ci` runs axe — keep it green.
 7. **Data honesty.** Live data comes from info.ersn.net. If the feed can't provide
    something, show an honest placeholder/note — **never invent a number.** See
-   `docs/architecture/data-feed.md` and `FEATURE_REQUESTS.md`.
+   `docs/architecture/data-feed.md`.
 8. **Naming:** always `S.I.E.R.R.A` with periods in visible copy ("SIERRA" only in
    code). The full legal name must appear at least once per page (the footer does
    this automatically).

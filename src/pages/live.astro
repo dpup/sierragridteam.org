@@ -4,19 +4,14 @@ import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
 import StatusPill from '@components/StatusPill.astro';
 import StatTile from '@components/StatTile.astro';
-import { buildSituationSnapshot } from '@lib/hazards';
-import { buildSnapshot } from '@lib/ersn';
-import { buildView } from '@lib/live-view';
 import { live as copy } from '@config/content';
 import { externalLinks, site } from '@config/site';
 import '../styles/live.css';
 
-// SSR fallback / no-JS / SEO render from the build-time snapshot. The browser then
-// re-fetches info.ersn.net and re-renders these regions live (see the script below),
-// so the SAME view-model + render functions produce both passes (src/lib/live-view.ts).
-const haz = await buildSituationSnapshot();
-const ersn = await buildSnapshot();
-const view = buildView(haz, ersn);
+// /live renders ENTIRELY in the browser from the live feed — NO build-time snapshot is
+// baked in (a stale "last known" all-clear would be dangerous on a life-safety page). SSR
+// is just the static header, an empty skeleton the client fills on a successful fetch, and
+// a failure panel (also the no-JS / crawler state) that points at the official sources.
 
 const legend = [
   { key: 'town', label: 'Town' },
@@ -41,6 +36,13 @@ const resources = [
   },
 ];
 
+// Shown on the failure / no-JS panel — evacuation map first (most critical), then the
+// per-domain feeds. (The live body repeats these under "Official sources".)
+const failSources = [
+  { label: 'Evacuation map (Genasys)', href: externalLinks.genasysEvac },
+  ...resources.map((r) => ({ label: r.label, href: r.href })),
+];
+
 const description =
   'Live situation map and prioritized alert stream for the Calaveras & Tuolumne foothills — ' +
   'wildfire, evacuation, weather, seismic, and road feeds aggregated from official sources.';
@@ -55,8 +57,8 @@ const schema = {
 
 <BaseLayout title={copy.title} description={description} path="/live" schema={schema}>
   {
-    /* Hide the live body + footer and show the loader before the page paints — set here
-      (not in deferred JS) so there's no flash of the build-time snapshot. */
+    /* Show the loader (and hide the body + failure panel + footer) before the page paints
+      — set here, not in deferred JS, so the failure panel never flashes on a normal load. */
   }
   <script is:inline>
     document.documentElement.dataset.liveBoot = 'loading';
@@ -74,45 +76,57 @@ const schema = {
       <span class="live-loader__text">{copy.loading}</span>
     </div>
 
+    {
+      /* Failure / no-JS / crawler state — never stale feed data, just an honest pointer to
+        the official sources. Visible by default (no JS) and when the live fetch fails. */
+    }
+    <section class="live-fail" data-live-fail aria-labelledby="fail-title">
+      <h2 id="fail-title" class="live-fail__head">{copy.failHeading}</h2>
+      <p class="live-fail__body">{copy.failBody}</p>
+      <ul class="live-fail__sources">
+        {
+          failSources.map((s) => (
+            <li>
+              <a class="live-fail__link" href={s.href} target="_blank" rel="noopener external">
+                {s.label}
+                <span class="live-fail__arrow" aria-hidden="true">
+                  &#8599;
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {/* Live body — an empty skeleton; the client fills every region from the live feed. */}
     <div class="live-view" data-live-body>
       <p class="live-status">
-        <StatusPill tone={view.status.tone} blink={view.status.blink} data-live-pill>
-          {view.status.label}
-        </StatusPill>
-        <span class="live-status__sync"
-          ><span data-live-synced>{view.syncedLabel}</span> · {copy.autoRefresh}</span
-        >
+        <StatusPill tone="muted" blink={false} data-live-pill>—</StatusPill>
+        <span class="live-status__sync"><span data-live-synced>—</span> · {copy.autoRefresh}</span>
       </p>
 
-      <p class="live-stale" role="note" data-live-stale hidden={view.live}>{copy.staleNote}</p>
-
       <div class="live-tiles">
-        <StatTile
-          label="Wildfires"
-          value={view.tiles.wildfires.value}
-          sublabel="CAL FIRE"
-          state={view.tiles.wildfires.state}
-          key="wildfires"
-        />
+        <StatTile label="Wildfires" value="—" sublabel="CAL FIRE" state="muted" key="wildfires" />
         <StatTile
           label="Evacuations"
-          value={view.tiles.evacuations.value}
+          value="—"
           sublabel="Cal OES"
-          state={view.tiles.evacuations.state}
+          state="muted"
           key="evacuations"
         />
         <StatTile
           label="Weather Alerts"
-          value={view.tiles.weatherAlerts.value}
+          value="—"
           sublabel="NWS foothill zones"
-          state={view.tiles.weatherAlerts.state}
+          state="muted"
           key="weatherAlerts"
         />
         <StatTile
           label="Fire Weather"
-          value={view.tiles.fireWeather.value}
+          value="—"
           sublabel="Calaveras & Tuolumne"
-          state={view.tiles.fireWeather.state}
+          state="muted"
           key="fireWeather"
         />
       </div>
@@ -133,7 +147,7 @@ const schema = {
         </a>
       </aside>
 
-      <div data-live-weather set:html={view.html.weather} />
+      <div data-live-weather></div>
 
       <div class="live-grid">
         <section class="live-grid__map" aria-labelledby="map-title">
@@ -163,22 +177,12 @@ const schema = {
                 Basemap &copy; OpenStreetMap, &copy; CARTO · Hazards via info.ersn.net
               </p>
             </figcaption>
-            {
-              /* Build-time map data, read ONLY by the controller's fetch-failure path to
-                still draw the last-known hazards (the success path uses live data). */
-            }
-            <script
-              is:inline
-              type="application/json"
-              data-map-data
-              set:html={JSON.stringify(view.mapData)}
-            />
           </figure>
         </section>
 
         <section class="live-grid__stream" aria-labelledby="stream-title">
           <h2 id="stream-title" class="live-h2">{copy.streamHeading}</h2>
-          <div data-live-stream set:html={view.html.stream} />
+          <div data-live-stream></div>
         </section>
       </div>
     </div>
@@ -187,13 +191,13 @@ const schema = {
   <div class="live-view" data-live-body>
     <Section surface="page" labelledby="roads-title">
       <h2 id="roads-title" class="live-h2">{copy.roadsHeading}</h2>
-      <div data-live-roads set:html={view.html.roads} />
+      <div data-live-roads></div>
     </Section>
 
     <Section surface="page" labelledby="scan-title">
       <h2 id="scan-title" class="live-h2">{copy.scannersHeading}</h2>
       <p class="live-sub">{copy.scannersNote}</p>
-      <div data-live-scanners set:html={view.html.scanners} />
+      <div data-live-scanners></div>
     </Section>
 
     <Section surface="page" labelledby="res-title">
@@ -220,11 +224,12 @@ const schema = {
 </BaseLayout>
 
 <script>
-  // /live is genuinely live: re-fetch info.ersn.net in the browser, re-render every data
-  // region from the SAME view-model the server used, then reveal the page in one paint.
-  // On any failure it reveals the build-time snapshot as "last known" — never a spinner.
+  // /live is live-only: re-fetch info.ersn.net in the browser, render every region from the
+  // empty skeleton, then reveal in one paint. On the FIRST-load failure it shows the failure
+  // panel (official sources) — never a stale build snapshot. A later poll that fails keeps
+  // the last LIVE data on screen (its "Synced" stamp shows how fresh that is).
   import { buildView } from '../lib/live-view';
-  import type { LiveView, LiveMapData } from '../lib/live-view';
+  import type { LiveView } from '../lib/live-view';
   import { initHazardMap, type MapHandle } from '../lib/live-map';
   import { ERSN_API_BASE, NWS_ZONES, type ErsnSnapshot } from '../lib/ersn';
   import { HAZARD_AREA, STREAM_LAYERS, type HazardsSnapshot } from '../lib/hazards';
@@ -237,8 +242,8 @@ const schema = {
   const sigs: Record<string, string> = {};
   let handle: MapHandle | null = null;
 
-  const reveal = () => {
-    root.dataset.liveBoot = 'ready';
+  const setBoot = (state: 'ready' | 'failed') => {
+    root.dataset.liveBoot = state;
   };
 
   function setRegion(sel: string, html: string) {
@@ -278,27 +283,6 @@ const schema = {
 
     const synced = document.querySelector<HTMLElement>('[data-live-synced]');
     if (synced) synced.textContent = view.syncedLabel;
-    const stale = document.querySelector<HTMLElement>('[data-live-stale]');
-    if (stale) stale.hidden = view.live;
-  }
-
-  // Show the "last known" stale note (used on the fetch-failure path, where we have no view).
-  function showStaleNote() {
-    const stale = document.querySelector<HTMLElement>('[data-live-stale]');
-    if (stale) stale.hidden = false;
-  }
-
-  function fallbackMapData(): LiveMapData {
-    try {
-      const el = figure?.querySelector<HTMLElement>('[data-map-data]');
-      return JSON.parse(el?.textContent || '{}') as LiveMapData;
-    } catch {
-      return {
-        towns: { type: 'FeatureCollection', features: [] },
-        layers: {},
-        bounds: {} as never,
-      };
-    }
   }
 
   async function fetchSnapshots(signal: AbortSignal): Promise<{
@@ -348,7 +332,7 @@ const schema = {
       const view = buildView(haz, ersn);
       applyView(view);
       if (initial) {
-        reveal();
+        setBoot('ready');
         requestAnimationFrame(() => {
           if (figure) handle = initHazardMap(figure, view.mapData);
         });
@@ -357,17 +341,9 @@ const schema = {
       }
     } catch {
       clearTimeout(timer);
-      if (initial) {
-        // Couldn't refresh — reveal the build-time snapshot, honestly labelled as stale.
-        const synced = document.querySelector<HTMLElement>('[data-live-synced]');
-        if (synced) synced.textContent = 'Last known';
-        showStaleNote();
-        reveal();
-        requestAnimationFrame(() => {
-          if (figure) handle = initHazardMap(figure, fallbackMapData());
-        });
-      }
-      // A periodic refresh that fails leaves the current view untouched.
+      // No stale cache on /live: on the FIRST-load failure show the honest failure panel
+      // (official sources). A later poll that fails just leaves the last LIVE data in place.
+      if (initial) setBoot('failed');
     }
   }
 
@@ -445,16 +421,48 @@ const schema = {
     color: var(--ink-muted);
   }
 
-  .live-stale {
-    margin-top: var(--space-6);
-    padding: var(--space-4) var(--space-5);
+  /* Failure / no-JS panel — honest "couldn't load, here are the official sources". */
+  .live-fail {
+    margin-top: var(--space-7);
+    max-width: 72ch;
+    padding: var(--space-6) var(--space-7);
     background: var(--surface-card);
     border: var(--border);
     border-left: 3px solid var(--brand-brass);
     border-radius: var(--radius);
+  }
+  .live-fail__head {
+    font-size: var(--fs-h3);
+  }
+  .live-fail__body {
+    margin-top: var(--space-3);
+    max-width: 60ch;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .live-fail__sources {
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .live-fail__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     font-family: var(--font-ui);
-    font-size: var(--fs-small);
-    color: var(--ink-secondary);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-green);
+  }
+  .live-fail__link:hover {
+    text-decoration: none;
+    color: var(--brand-green-hover);
   }
 
   .live-tiles {
@@ -671,19 +679,37 @@ const schema = {
   }
 </style>
 
-{/* Boot gate: header + nav stay; the live body and footer wait for the first paint. */}
+{
+  /* Boot gate. States via data-live-boot: (unset = no-JS/crawler) | loading | ready | failed.
+     Defaults (no attr) show the failure panel and hide the loader + body — we never bake
+     stale feed data into the page, so "no JS" degrades to the same honest official-sources
+     panel as a failed fetch. The header + nav are always present. */
+}
 <style is:global>
   [data-live-loader] {
     display: none;
   }
-  html[data-live-boot='loading'] [data-live-body] {
+  [data-live-body] {
     display: none;
   }
+
   html[data-live-boot='loading'] [data-live-loader] {
     display: flex;
+  }
+  html[data-live-boot='loading'] [data-live-fail] {
+    display: none;
   }
   /* [data-site-footer] is the hook on SiteFooter.astro's <footer> — keep them in sync. */
   html[data-live-boot='loading'] [data-site-footer] {
     display: none;
   }
+
+  html[data-live-boot='ready'] [data-live-body] {
+    display: block;
+  }
+  html[data-live-boot='ready'] [data-live-fail] {
+    display: none;
+  }
+
+  /* failed (and no-JS): defaults already hide loader + body and show [data-live-fail]. */
 </style>

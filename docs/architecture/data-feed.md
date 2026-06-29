@@ -10,7 +10,7 @@
 ## Endpoints & real response shapes (captured 2026-06-26)
 
 > All five feature requests that gate live data (FR-1/2/3/4/7) shipped on
-> 2026-06-26 and are now wired up — see `FEATURE_REQUESTS.md`. The shapes below are
+> 2026-06-26 and are now wired up. The shapes below are
 > the current ones.
 
 ### `GET /roads` → `{ roads: Road[], lastUpdated: string }`
@@ -108,9 +108,9 @@ is US public-safety/residents.
 
 ## Data gaps → feature requests (FR)
 
-**FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26 and are wired up** — see
-`FEATURE_REQUESTS.md` for the endpoint/component mapping. The remaining placeholders
-are the org's own mesh/relay status (FR-5/FR-6), which info.ersn.net does not own:
+**FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26 and are wired up.** The remaining
+placeholders are the org's own mesh/relay status (FR-5/FR-6), which info.ersn.net does
+not own:
 
 | FR       | Gap                                                     | Where it shows                 | UI behavior today                                                                |
 | -------- | ------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------- |
@@ -118,6 +118,5 @@ are the org's own mesh/relay status (FR-5/FR-6), which info.ersn.net does not ow
 | **FR-6** | No structured **mesh node** feed (count/health)         | /mesh sidebar                  | Static deployment-zone list (`live` flags in `coverage.ts`); live counts pending |
 
 FR-5/FR-6 concern the org’s own mesh/relay infrastructure (out of info.ersn.net’s roads/weather
-domain) and
-are tracked locally — see `FEATURE_REQUESTS.md`. Placeholders must be visually honest: a
+domain) and are tracked in the launch checklist. Placeholders must be visually honest: a
 muted note, never an invented number.

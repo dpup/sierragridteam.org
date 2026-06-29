@@ -29,8 +29,7 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
 - [x] **info.ersn.net feature requests delivered + wired** (2026-06-26). FR-1 (CORS),
       FR-2 (NWS zone alerts), FR-3 (Red Flag fire-weather), FR-4 (Hwy 49 / Tuolumne
       towns), FR-7 (region-wide CHP/Caltrans incidents) all ship and are consumed live;
-      placeholders removed. FR-5/FR-6 (the org's own mesh/relay status) remain. See
-      `FEATURE_REQUESTS.md`.
+      placeholders removed. FR-5/FR-6 (the org's own mesh/relay status) remain.
 - [x] **NWS forecast zones corrected.** The design's original list pulled a San-Diego-area
       alert (CAZ065); `NWS_ZONES` (in `src/lib/ersn.ts`) is now CAZ019 / CAZ067 / CAZ069 /
       CAZ072 (Tuolumne + foothills, lower Calaveras, Hwy 4 high country), verified to return
