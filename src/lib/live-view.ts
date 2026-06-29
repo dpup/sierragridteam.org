@@ -312,8 +312,13 @@ export function buildView(haz: HazardsSnapshot, ersn: ErsnSnapshot): LiveView {
     syncedLabel: summary.live ? `Synced ${formatPtTime(summary.syncedAt)}` : 'Last known',
     tiles: {
       wildfires: {
-        value: summary.wildfires > 0 ? `${summary.wildfires} Active` : 'None',
-        state: summary.wildfires > 0 ? 'alarm' : 'ok',
+        value:
+          summary.wildfires == null
+            ? 'Unknown'
+            : summary.wildfires > 0
+              ? `${summary.wildfires} Active`
+              : 'None',
+        state: summary.wildfires == null ? 'muted' : summary.wildfires > 0 ? 'alarm' : 'ok',
       },
       evacuations: {
         value:
@@ -325,8 +330,14 @@ export function buildView(haz: HazardsSnapshot, ersn: ErsnSnapshot): LiveView {
         state: summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok',
       },
       weatherAlerts: {
-        value: summary.weatherAlerts > 0 ? `${summary.weatherAlerts} Active` : 'None',
-        state: summary.weatherAlerts > 0 ? 'elevated' : 'ok',
+        value:
+          summary.weatherAlerts == null
+            ? 'Unknown'
+            : summary.weatherAlerts > 0
+              ? `${summary.weatherAlerts} Active`
+              : 'None',
+        state:
+          summary.weatherAlerts == null ? 'muted' : summary.weatherAlerts > 0 ? 'elevated' : 'ok',
       },
       fireWeather: { value: fire.label, state: fire.state },
     },

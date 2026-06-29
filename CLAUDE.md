@@ -89,8 +89,11 @@ Page rules:
   `/situation`, `/scanners`) or `src/config`. The hazard layers are re-filtered to the
   service area / NWS zones in `hazards.ts` (the road_incident layer is region-wide and
   the server weather_alert zones include an out-of-area zone) — never surface raw
-  region-wide hazards as local. Evacuation `UNAVAILABLE` must read as "unknown", never
-  all-clear.
+  region-wide hazards as local. A layer whose `source_status` is `UNAVAILABLE` (a sync
+  error) must read as "unknown", never all-clear — `deriveSituationSummary` returns `null`
+  for wildfire/evacuation/weather-alert counts in that case, and the tiles render "Unknown".
+  A confirmed-empty feed (`OK`/`STALE`) is a real `0` → "None" (info.ersn.net guarantees an
+  error never replays a cached `0`).
 - One `<h1>` per page; correct heading order; real landmarks.
 - The homepage sets `hideBrandInNav`; other pages show the compact brand automatically.
 - ⚠️ **Do not put a `CLAUDE.md` (or any `.md`) in `src/pages/`** — Astro would route it

@@ -138,6 +138,23 @@ test('evacuations are null (unknown) when the Cal OES source is unavailable', ()
   expect(sum.evacuationStatus).toBe('UNAVAILABLE');
 });
 
+test('evacuations are 0 (not null) when Cal OES is healthy but empty', () => {
+  // The no-data-vs-error split (CHANGELOG 2026-06-29): a confirmed-empty OK feed is a real 0.
+  const sum = deriveSituationSummary(snap({ evacuation: fc([], 'OK') }));
+  expect(sum.evacuations).toBe(0);
+  expect(sum.evacuationStatus).toBe('OK');
+});
+
+test('wildfire & weather counts are null (unknown) when their source is unavailable', () => {
+  const sum = deriveSituationSummary(
+    snap({ wildfire: fc([], 'UNAVAILABLE'), weather_alert: fc([], 'UNAVAILABLE') })
+  );
+  expect(sum.wildfires).toBeNull();
+  expect(sum.weatherAlerts).toBeNull();
+  // …but a healthy empty layer is a real 0, never an implied all-clear from an outage.
+  expect(deriveSituationSummary(snap({ wildfire: fc([], 'OK') })).wildfires).toBe(0);
+});
+
 test('fire-weather state normalizes hyphen/case to the canonical enum', () => {
   const fw = point('fire_weather', 3, 0, 0, { fire_weather: { state: 'red-flag' } });
   fw.geometry = null;

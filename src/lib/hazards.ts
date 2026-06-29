@@ -293,14 +293,17 @@ export function deriveStream(snapshot: HazardsSnapshot): HazardFeature[] {
 export interface SituationSummary {
   /** Highest tone present in the locally-relevant stream. */
   highestRank: number;
-  wildfires: number;
-  /** null = evacuation source unavailable (honest "unknown", never implied 0). */
+  /**
+   * Counts, or `null` when that layer's source is UNAVAILABLE — so an outage reads as an
+   * honest "unknown", never a false `0`/all-clear. A clean empty success (OK, or STALE
+   * served from the last good fetch) is a real `0`. Mirrors info.ersn.net's per-layer
+   * `source_status` and the evacuation no-data-vs-error split (CHANGELOG 2026-06-29).
+   */
+  wildfires: number | null;
   evacuations: number | null;
   evacuationStatus: string;
-  weatherAlerts: number;
+  weatherAlerts: number | null;
   fireWeather: string; // NORMAL | ELEVATED | RED_FLAG | UNKNOWN
-  earthquakes: number;
-  roadIncidents: number;
   syncedAt: string | null;
   live: boolean;
 }
@@ -308,9 +311,16 @@ export interface SituationSummary {
 /** Locally-recomputed summary (honest counts from filtered features). */
 export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSummary {
   const stream = deriveStream(snapshot);
-  const evacLayer = snapshot.layers?.evacuation ?? null;
-  const evacStatus = evacLayer?.metadata?.source_status ?? 'UNAVAILABLE';
-  const evacFeatures = layerFeatures(snapshot, 'evacuation');
+
+  // A layer's relevant-feature count, or null when its source is UNAVAILABLE (a sync
+  // error → "unknown", never a false 0). OK/STALE both yield a real count: a clean empty
+  // success is 0; STALE serves the last good fetch. info.ersn.net guarantees an error
+  // never replays a cached 0 (CHANGELOG 2026-06-29).
+  const statusOf = (layer: string): string =>
+    snapshot.layers?.[layer]?.metadata?.source_status ?? 'UNAVAILABLE';
+  const countOrUnknown = (layer: string): number | null =>
+    statusOf(layer) === 'UNAVAILABLE' ? null : layerFeatures(snapshot, layer).length;
+
   const fwFeature = (snapshot.layers?.fire_weather?.features ?? [])[0];
   // The hazard fire_weather layer reports state as e.g. "normal"/"red-flag" (lowercase,
   // hyphenated) — normalize to the canonical NORMAL/ELEVATED/RED_FLAG enum.
@@ -320,13 +330,11 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
 
   return {
     highestRank: stream.reduce((m, f) => Math.max(m, rankOf(f)), 0),
-    wildfires: layerFeatures(snapshot, 'wildfire').length,
-    evacuations: evacStatus === 'UNAVAILABLE' ? null : evacFeatures.length,
-    evacuationStatus: evacStatus,
-    weatherAlerts: layerFeatures(snapshot, 'weather_alert').length,
+    wildfires: countOrUnknown('wildfire'),
+    evacuations: countOrUnknown('evacuation'),
+    evacuationStatus: statusOf('evacuation'),
+    weatherAlerts: countOrUnknown('weather_alert'),
     fireWeather: fireState,
-    earthquakes: layerFeatures(snapshot, 'earthquake').length,
-    roadIncidents: layerFeatures(snapshot, 'road_incident').length,
     syncedAt: snapshot.situation?.generated_at ?? snapshot.fetchedAt ?? null,
     live: snapshot.live,
   };
