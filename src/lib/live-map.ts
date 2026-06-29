@@ -13,6 +13,7 @@
  */
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { escapeHtml as esc } from './format';
 import type { LiveMapData } from './live-view';
 
 type GeoFC = GeoJSON.FeatureCollection;
@@ -29,13 +30,16 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
   if (!canvas) return null;
 
   // Pull design tokens so the map matches the site (tokens.css = source of truth).
+  // The second arg to tok() is a last-resort literal used only if getComputedStyle can't
+  // read the var (effectively never in a browser); each MIRRORS the value in tokens.css —
+  // keep them in sync there, that file remains the canonical palette.
   const cs = getComputedStyle(document.documentElement);
   const tok = (n: string, fb: string) => cs.getPropertyValue(n).trim() || fb;
   const C = {
     green: tok('--brand-green', '#1d5b3f'),
-    brass: tok('--brand-brass', '#9a7d3a'),
+    brass: tok('--brand-brass', '#b08a3e'),
     orange: tok('--signal-orange', '#c2410c'),
-    surface: tok('--surface-page', '#f4eee2'),
+    surface: tok('--surface-page', '#f3efe4'),
     muted: tok('--ink-muted', '#6f6750'),
     orangeDeep: tok('--signal-orange-hover', '#9a330a'),
   };
@@ -71,8 +75,6 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   map.touchZoomRotate?.disableRotation();
 
-  const esc = (s: unknown) =>
-    String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
   const popup = (e: maplibregl.MapLayerMouseEvent) => {
     const p = (e.features?.[0]?.properties ?? {}) as Record<string, unknown>;
     // MapLibre serializes object properties to JSON strings — parse defensively.
@@ -196,14 +198,20 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     if (src) src.setData(data);
   };
 
+  const applyData = (data: LiveMapData) => {
+    // Towns are static; refresh only the hazard sources (the 90s live poll).
+    setData('wildfire', asFC(data, 'wildfire'));
+    setData('evacuation', asFC(data, 'evacuation'));
+    setData('earthquake', asFC(data, 'earthquake'));
+    setData('incidents', asFC(data, 'road_incident'));
+  };
+
   return {
     update(data: LiveMapData) {
-      // Towns are static; refresh only the hazard sources (the 90s live poll).
-      if (!map.isStyleLoaded()) return;
-      setData('wildfire', asFC(data, 'wildfire'));
-      setData('evacuation', asFC(data, 'evacuation'));
-      setData('earthquake', asFC(data, 'earthquake'));
-      setData('incidents', asFC(data, 'road_incident'));
+      // If a refresh lands while the style is (re)loading, don't drop it — apply the
+      // latest data once the map next goes idle.
+      if (map.isStyleLoaded()) applyData(data);
+      else map.once('idle', () => applyData(data));
     },
   };
 }

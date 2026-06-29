@@ -11,8 +11,9 @@ import Kicker from '../Kicker.astro';
 import StatTile from '../StatTile.astro';
 import StatusPill from '../StatusPill.astro';
 import { ERSN_API_BASE, NWS_ZONES, type OperationalStatus } from '@lib/ersn';
+import { formatPtTime } from '@lib/format';
 import { home } from '@config/content';
-import { TIMEZONE, site } from '@config/site';
+import { site } from '@config/site';
 
 interface Props {
   status: OperationalStatus;
@@ -35,21 +36,7 @@ const alertState = status.activeAlertCount > 0 ? 'alarm' : 'ok';
 // "*" rather than presenting an unconfirmed "Normal" as a confident all-clear (FR-3).
 const fireFootnote = status.fireWeatherPlaceholder ? '*' : undefined;
 
-function formatPT(iso: string | null): string {
-  if (!iso) return '—';
-  try {
-    const t = new Intl.DateTimeFormat('en-GB', {
-      timeZone: TIMEZONE,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(new Date(iso));
-    return `${t} PT`;
-  } catch {
-    return '—';
-  }
-}
-const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last known';
+const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'Last known';
 ---
 
 <section
@@ -115,6 +102,8 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
 </section>
 
 <script>
+  import { formatPtTime } from '@lib/format';
+
   // Live refresh — upgrades the SSR snapshot when CORS allows; silently keeps it otherwise.
   const REFRESH_MS = 5 * 60 * 1000;
   const section = document.querySelector<HTMLElement>('[data-ops]');
@@ -128,20 +117,6 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
       el.dataset.state = state;
       const v = el.querySelector<HTMLElement>('[data-stat-value]');
       if (v) v.textContent = value;
-    };
-
-    const fmtPT = (iso: string) => {
-      try {
-        const t = new Intl.DateTimeFormat('en-GB', {
-          timeZone: 'America/Los_Angeles',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }).format(new Date(iso));
-        return `Synced ${t} PT`;
-      } catch {
-        return 'Synced';
-      }
     };
 
     const alertsUrl = zones ? `${base}/weather/alerts?zones=${zones}` : `${base}/weather/alerts`;
@@ -177,7 +152,7 @@ const syncedLabel = status.live ? `Synced ${formatPT(status.syncedAt)}` : 'Last 
 
         const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
         const ts = weather.lastUpdated ?? alertsData.lastUpdated;
-        if (synced && ts) synced.textContent = fmtPT(ts);
+        if (synced && ts) synced.textContent = `Synced ${formatPtTime(ts)}`;
       } catch {
         /* keep the SSR snapshot — never show an error in the hero region */
       }

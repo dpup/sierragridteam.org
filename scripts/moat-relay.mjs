@@ -80,7 +80,20 @@ export async function startMoatRelay() {
       client.pipe(upstream);
     });
 
-    upstream.on('error', () => client.destroy());
+    upstream.on('error', () => {
+      // If the upstream proxy is unreachable before the tunnel opened, answer the pending
+      // CONNECT with a 502 so the browser fails cleanly instead of on a bare socket close.
+      // Once established the connection carries opaque TLS — just tear it down.
+      if (!established) {
+        try {
+          client.end('HTTP/1.1 502 Bad Gateway\r\n\r\n');
+        } catch {
+          client.destroy();
+        }
+      } else {
+        client.destroy();
+      }
+    });
     client.on('error', () => upstream.destroy());
   });
 

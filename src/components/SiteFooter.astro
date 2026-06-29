@@ -11,6 +11,10 @@ import { site, nav, externalLinks, donate } from '@config/site';
 const year = site.foundingYear;
 ---
 
+{
+  /* data-site-footer: hook for /live's boot gate (it hides the footer until the live body
+    is revealed — see the is:global rule in src/pages/live.astro). */
+}
 <footer class="footer" data-site-footer>
   <Container wide>
     <div class="footer__top">

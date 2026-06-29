@@ -84,7 +84,7 @@ const schema = {
         >
       </p>
 
-      <p class="live-stale" role="note" data-live-stale hidden={!view.stale}>{copy.staleNote}</p>
+      <p class="live-stale" role="note" data-live-stale hidden={view.live}>{copy.staleNote}</p>
 
       <div class="live-tiles">
         <StatTile
@@ -163,6 +163,10 @@ const schema = {
                 Basemap &copy; OpenStreetMap, &copy; CARTO · Hazards via info.ersn.net
               </p>
             </figcaption>
+            {
+              /* Build-time map data, read ONLY by the controller's fetch-failure path to
+                still draw the last-known hazards (the success path uses live data). */
+            }
             <script
               is:inline
               type="application/json"
@@ -275,7 +279,13 @@ const schema = {
     const synced = document.querySelector<HTMLElement>('[data-live-synced]');
     if (synced) synced.textContent = view.syncedLabel;
     const stale = document.querySelector<HTMLElement>('[data-live-stale]');
-    if (stale) stale.hidden = !view.stale;
+    if (stale) stale.hidden = view.live;
+  }
+
+  // Show the "last known" stale note (used on the fetch-failure path, where we have no view).
+  function showStaleNote() {
+    const stale = document.querySelector<HTMLElement>('[data-live-stale]');
+    if (stale) stale.hidden = false;
   }
 
   function fallbackMapData(): LiveMapData {
@@ -331,6 +341,10 @@ const schema = {
     try {
       const { haz, ersn } = await fetchSnapshots(ac.signal);
       clearTimeout(timer);
+      // Re-render every region each poll; the per-region sig cache in setRegion() already
+      // no-ops unchanged content (and preserves any open <details>), which is the cheap,
+      // correct way to avoid redundant work — a feed-timestamp guard would risk dropping
+      // independent weather/roads/scanner updates that share the situation timestamp.
       const view = buildView(haz, ersn);
       applyView(view);
       if (initial) {
@@ -344,9 +358,10 @@ const schema = {
     } catch {
       clearTimeout(timer);
       if (initial) {
-        // Couldn't refresh — reveal the build-time snapshot, honestly labelled.
+        // Couldn't refresh — reveal the build-time snapshot, honestly labelled as stale.
         const synced = document.querySelector<HTMLElement>('[data-live-synced]');
         if (synced) synced.textContent = 'Last known';
+        showStaleNote();
         reveal();
         requestAnimationFrame(() => {
           if (figure) handle = initHazardMap(figure, fallbackMapData());
@@ -667,6 +682,7 @@ const schema = {
   html[data-live-boot='loading'] [data-live-loader] {
     display: flex;
   }
+  /* [data-site-footer] is the hook on SiteFooter.astro's <footer> — keep them in sync. */
   html[data-live-boot='loading'] [data-site-footer] {
     display: none;
   }

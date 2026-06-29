@@ -21,9 +21,9 @@ import {
 } from './hazards';
 import type { ErsnSnapshot, RoadsResponse, WeatherResponse } from './ersn';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
+import { escapeHtml as esc, formatPtTime } from './format';
 import { mapSites, serviceAreaBounds } from '../config/coverage';
 import { live as copy } from '../config/content';
-import { TIMEZONE } from '../config/site';
 
 type StatusTone = 'ok' | 'elevated' | 'alarm';
 type TileState = 'ok' | 'elevated' | 'alarm' | 'muted';
@@ -35,9 +35,8 @@ export interface LiveMapData {
 }
 
 export interface LiveView {
+  /** false = produced from the checked-in fallback (drives the "last known" stale note). */
   live: boolean;
-  /** Build/feed was unreachable — show the "last known" stale note. */
-  stale: boolean;
   status: { tone: StatusTone; label: string; blink: boolean };
   syncedLabel: string;
   tiles: Record<
@@ -54,12 +53,6 @@ export interface LiveView {
 
 // ---- small helpers ----
 
-const esc = (s: unknown): string =>
-  String(s ?? '').replace(
-    /[&<>"]/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string
-  );
-
 const shortName = (n: string) => n.replace(/,\s*CA$/i, '');
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 const titleCaseRoad = (s: string) =>
@@ -67,21 +60,6 @@ const titleCaseRoad = (s: string) =>
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase())
     .replace(/_/g, ' ');
-
-function fmtPT(iso: string | null): string {
-  if (!iso) return '—';
-  try {
-    const t = new Intl.DateTimeFormat('en-GB', {
-      timeZone: TIMEZONE,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(new Date(iso));
-    return `${t} PT`;
-  } catch {
-    return '—';
-  }
-}
 
 // ---- weather band (was WeatherBand + WeatherIcon) ----
 
@@ -330,9 +308,8 @@ export function buildView(haz: HazardsSnapshot, ersn: ErsnSnapshot): LiveView {
 
   return {
     live: summary.live,
-    stale: !haz.live,
     status,
-    syncedLabel: summary.live ? `Synced ${fmtPT(summary.syncedAt)}` : 'Last known',
+    syncedLabel: summary.live ? `Synced ${formatPtTime(summary.syncedAt)}` : 'Last known',
     tiles: {
       wildfires: {
         value: summary.wildfires > 0 ? `${summary.wildfires} Active` : 'None',
