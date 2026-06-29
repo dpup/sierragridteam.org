@@ -4,6 +4,11 @@
  * Brand mark (left, hidden on the homepage where the hero emblem stands in),
  * primary links, a Donate link (orange-accent text), and a live local clock.
  * Sticky, parchment, thin tan bottom rule ("fixed-feel").
+ *
+ * Responsive: at desktop the links + Donate sit inline in the bar. On phones
+ * (<=768px) they collapse into a foldout panel behind a hamburger toggle — a
+ * tap reveals the stacked links; Escape / outside-tap / link-tap close it. No
+ * transforms (reduced-motion safe); the panel is a plain show/hide.
  */
 import Logo from './Logo.astro';
 import LocalClock from './LocalClock.astro';
@@ -21,7 +26,7 @@ const { hideBrand = false, path = '' } = Astro.props;
 const isActive = (href: string) => path === href || path === `${href}/`;
 ---
 
-<header class="topbar">
+<header class="topbar" data-topbar>
   <Container wide>
     <div class="topbar__inner">
       <div class="topbar__brand">
@@ -38,31 +43,99 @@ const isActive = (href: string) => path === href || path === `${href}/`;
         }
       </div>
 
-      <nav class="topbar__nav" aria-label="Primary">
-        <ul class="topbar__links">
-          {
-            nav.map((item) => (
-              <li>
-                <a
-                  href={item.href}
-                  class:list={['topbar__link', { 'is-active': isActive(item.href) }]}
-                  aria-current={isActive(item.href) ? 'page' : undefined}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </nav>
+      <button
+        class="topbar__toggle"
+        type="button"
+        aria-label="Menu"
+        aria-expanded="false"
+        aria-controls="primary-nav"
+        data-nav-toggle
+      >
+        <svg
+          class="topbar__icon topbar__icon--menu"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        <svg
+          class="topbar__icon topbar__icon--close"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <line x1="5" y1="5" x2="19" y2="19"></line>
+          <line x1="19" y1="5" x2="5" y2="19"></line>
+        </svg>
+      </button>
 
-      <div class="topbar__actions">
+      <div class="topbar__menu" id="primary-nav" data-nav-panel>
+        <nav class="topbar__nav" aria-label="Primary">
+          <ul class="topbar__links">
+            {
+              nav.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    class:list={['topbar__link', { 'is-active': isActive(item.href) }]}
+                    aria-current={isActive(item.href) ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
         <a href={donate.href} class="topbar__donate">{donate.label}</a>
-        <span class="topbar__clock"><LocalClock /></span>
       </div>
+
+      <span class="topbar__clock"><LocalClock /></span>
     </div>
   </Container>
 </header>
+
+<script>
+  // Mobile foldout: toggle the panel, keep aria-expanded in sync, and close on
+  // Escape, outside-tap, or a link tap. MPA navigation reloads the page (state
+  // resets), so this only needs to manage the open/closed panel on the current view.
+  const toggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const panel = document.querySelector<HTMLElement>('[data-nav-panel]');
+  const bar = document.querySelector<HTMLElement>('[data-topbar]');
+  if (toggle && panel && bar) {
+    const isOpen = () => toggle.getAttribute('aria-expanded') === 'true';
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      panel.toggleAttribute('data-open', open);
+    };
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+    panel.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (isOpen() && !bar.contains(e.target as Node)) setOpen(false);
+    });
+  }
+</script>
 
 <style>
   .topbar {
@@ -94,8 +167,44 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     text-decoration: none;
   }
 
+  /* The links + Donate live in one group so they collapse together into the
+     foldout on mobile. Inline in the bar at desktop. */
+  .topbar__menu {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+  }
+
   .topbar__nav {
     flex: 0 1 auto;
+  }
+
+  /* Hamburger toggle — only shown on mobile (see the foldout media query). */
+  .topbar__toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2);
+    margin-right: calc(var(--space-2) * -1);
+    background: none;
+    border: 0;
+    color: var(--ink-secondary);
+    cursor: pointer;
+  }
+  .topbar__toggle:hover {
+    color: var(--brand-green);
+  }
+  .topbar__icon {
+    display: block;
+  }
+  .topbar__icon--close {
+    display: none;
+  }
+  .topbar__toggle[aria-expanded='true'] .topbar__icon--menu {
+    display: none;
+  }
+  .topbar__toggle[aria-expanded='true'] .topbar__icon--close {
+    display: block;
   }
 
   .topbar__links {
@@ -126,13 +235,6 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     box-shadow: inset 0 -2px 0 var(--brand-green);
   }
 
-  .topbar__actions {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-  }
-
   /* Donate: an orange-accent text link (not a filled button), styled like the nav
      labels. Uses the AA-compliant small-text orange. The sole sanctioned non-risk
      use of orange (org decision — see CLAUDE.md). */
@@ -150,42 +252,48 @@ const isActive = (href: string) => path === href || path === `${href}/`;
     text-decoration: none;
   }
 
-  /* On narrow screens, drop the clock; keep brand + links + the Donate link. */
+  /* The clock drops before the bar gets tight (it's the least essential item). */
   @media (max-width: 860px) {
     .topbar__clock {
       display: none;
     }
-    .topbar__links {
-      gap: var(--space-5);
-    }
   }
 
-  /* Very narrow: tighten gaps + tracking so the links + Donate stay on one row. */
-  @media (max-width: 480px) {
-    .topbar__inner {
-      gap: var(--space-3);
+  /* Phones: collapse the links + Donate into a foldout panel behind the hamburger.
+     The panel drops full-width just below the sticky bar; links get the page gutter. */
+  @media (max-width: 768px) {
+    .topbar__toggle {
+      display: inline-flex;
+    }
+    .topbar__menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding-block: var(--space-2) var(--space-4);
+      background: var(--surface-page);
+      border-bottom: var(--border);
+    }
+    .topbar__menu[data-open] {
+      display: flex;
     }
     .topbar__links {
-      gap: var(--space-3);
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
     }
     .topbar__link,
     .topbar__donate {
-      letter-spacing: 0.08em;
+      display: block;
+      padding: var(--space-3) var(--gutter);
     }
-  }
-
-  /* Smallest phones (~360px): step the labels down a size and tighten further. */
-  @media (max-width: 400px) {
-    .topbar__inner {
-      gap: var(--space-2);
-    }
-    .topbar__links {
-      gap: var(--space-2);
-    }
-    .topbar__link,
-    .topbar__donate {
-      font-size: var(--fs-micro);
-      letter-spacing: 0.06em;
+    /* When stacked, mark the active link with a left rule (the inline underline reads wrong). */
+    .topbar__link.is-active {
+      box-shadow: inset 3px 0 0 var(--brand-green);
     }
   }
 </style>

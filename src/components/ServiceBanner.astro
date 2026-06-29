@@ -4,6 +4,7 @@
  * Top + bottom tan rules, centered uppercase town list with green (HQ) and
  * brass (separator) accents. Town list is sourced from src/config/coverage.ts.
  */
+import Container from './Container.astro';
 import { operations } from '@config/coverage';
 import { site } from '@config/site';
 
@@ -21,22 +22,24 @@ const counties = site.counties.join(' & ').replace(/ County/g, '') + ' Counties'
 ---
 
 <aside class:list={['service-banner', className]} aria-label="Service area">
-  <p class="service-banner__kicker">Service Area</p>
-  <p class="service-banner__counties">{counties}</p>
-  <ul class="service-banner__towns">
-    {
-      towns.map((t, i) => (
-        <li class:list={['service-banner__town', { 'is-hq': t.hq }]}>
-          {i > 0 && (
-            <span class="service-banner__sep" aria-hidden="true">
-              &middot;
-            </span>
-          )}
-          <span>{t.name}</span>
-        </li>
-      ))
-    }
-  </ul>
+  <Container>
+    <p class="service-banner__kicker">Service Area</p>
+    <p class="service-banner__counties">{counties}</p>
+    <ul class="service-banner__towns">
+      {
+        towns.map((t, i) => (
+          <li class:list={['service-banner__town', { 'is-hq': t.hq }]}>
+            {i > 0 && (
+              <span class="service-banner__sep" aria-hidden="true">
+                &middot;
+              </span>
+            )}
+            <span>{t.name}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </Container>
 </aside>
 
 <style>

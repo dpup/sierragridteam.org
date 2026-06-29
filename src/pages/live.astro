@@ -520,6 +520,11 @@ const schema = {
     gap: var(--space-7);
     align-items: start;
   }
+  /* Grid items default to min-width:auto, so the MapLibre canvas's intrinsic width would
+     force the column wider than the viewport on mobile. min-width:0 lets the track shrink. */
+  .live-grid > * {
+    min-width: 0;
+  }
   .live-h2 {
     font-size: var(--fs-h3);
     margin-bottom: var(--space-5);
@@ -541,6 +546,8 @@ const schema = {
   .hazard-map__canvas {
     position: relative;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     aspect-ratio: 16 / 11;
     min-height: 320px;
     max-height: 440px;
