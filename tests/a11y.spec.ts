@@ -26,6 +26,11 @@ for (const pg of pages) {
     }
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+      // Exclude the embedded wcmesh live-map iframe — it's third-party content we don't
+      // control (its own unlabeled controls would otherwise fail the gate). axe descends
+      // into it only when it actually loads (CI), not when the sandbox blocks it. The
+      // /mesh chrome around the embed is still scanned.
+      .exclude('[data-mesh-frame]')
       .analyze();
 
     const serious = results.violations.filter(
