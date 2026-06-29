@@ -1,6 +1,5 @@
 {
   "fetchedAt": "2026-06-27T00:43:14.650Z",
-  "live": true,
   "area": "calaveras",
   "situation": {
     "area": "calaveras",
@@ -60,7 +59,7 @@
         "layer": "evacuation",
         "source_status": "OK",
         "feature_count": 0,
-        "attribution": "Cal OES / California County Governments \u2014 reference only",
+        "attribution": "Cal OES / California County Governments — reference only",
         "source_url": "https://protect.genasys.com/"
       },
       {
@@ -124,7 +123,7 @@
       },
       {
         "feed_id": "45443",
-        "channel_label": "CHP \u2014 Stockton",
+        "channel_label": "CHP — Stockton",
         "agency": "CHP",
         "broadcastify_url": "https://www.broadcastify.com/listen/feed/45443"
       }
@@ -382,7 +381,7 @@
             "kind": "Road segment",
             "severity": "INFO",
             "severity_rank": 0,
-            "headline": "Hwy 4 \u2014 Angels Camp to Murphys",
+            "headline": "Hwy 4 — Angels Camp to Murphys",
             "status": "open",
             "area_label": "Angels Camp to Murphys",
             "source": {
@@ -413,7 +412,7 @@
             "kind": "Road segment",
             "severity": "INFO",
             "severity_rank": 0,
-            "headline": "Hwy 4 \u2014 Murphys to Arnold",
+            "headline": "Hwy 4 — Murphys to Arnold",
             "status": "open",
             "area_label": "Murphys to Arnold",
             "source": {
@@ -444,7 +443,7 @@
             "kind": "Road segment",
             "severity": "INFO",
             "severity_rank": 0,
-            "headline": "Hwy 4 \u2014 Arnold to Bear Valley",
+            "headline": "Hwy 4 — Arnold to Bear Valley",
             "status": "open",
             "area_label": "Arnold to Bear Valley",
             "source": {
@@ -475,7 +474,7 @@
             "kind": "Road segment",
             "severity": "INFO",
             "severity_rank": 0,
-            "headline": "Hwy 49 \u2014 Angels Camp to Sonora",
+            "headline": "Hwy 49 — Angels Camp to Sonora",
             "status": "open",
             "area_label": "Angels Camp to Sonora",
             "source": {
@@ -599,7 +598,7 @@
         "area": "calaveras",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
-        "attribution": "Cal OES / California County Governments \u2014 reference only",
+        "attribution": "Cal OES / California County Governments — reference only",
         "source_url": "https://protect.genasys.com/",
         "schema_version": 1
       }
@@ -637,7 +636,7 @@
     },
     {
       "feed_id": "45443",
-      "channel_label": "CHP \u2014 Stockton",
+      "channel_label": "CHP — Stockton",
       "agency": "CHP",
       "broadcastify_url": "https://www.broadcastify.com/listen/feed/45443"
     }

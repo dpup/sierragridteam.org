@@ -83,10 +83,11 @@ Page rules:
 - **Always wrap in `BaseLayout`** with `title`, `description`, `path` — that produces
   the correct `<head>`, SEO/OG/JSON-LD, nav, footer, skip link, and fonts.
 - **Copy comes from `src/config/content.ts`**, not inline strings — and follows
-  `docs/content-style-guide.md` (voice + honesty rules); data comes from
-  `src/lib/ersn.ts` (`buildSnapshot()` — roads/weather/alerts) or `src/lib/hazards.ts`
-  (`buildSituationSnapshot()` — the unified wildfire/evac/seismic/road hazard layers,
-  `/situation`, `/scanners`) or `src/config`. The hazard layers are re-filtered to the
+  `docs/content-style-guide.md` (voice + honesty rules). **Feed data is NEVER fetched at
+  build time** — pages render it live in the browser (the client assembles a snapshot from
+  info.ersn.net and passes it through the pure derivations in `src/lib/{ersn,hazards}.ts` →
+  `live-view.ts`). The checked-in `src/data/*.json` are test fixtures only. The hazard
+  layers are re-filtered to the
   service area / NWS zones in `hazards.ts` (the road_incident layer is region-wide and
   the server weather_alert zones include an out-of-area zone) — never surface raw
   region-wide hazards as local. A layer whose `source_status` is `UNAVAILABLE` (a sync

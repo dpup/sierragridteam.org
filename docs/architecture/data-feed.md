@@ -73,34 +73,36 @@ it** — road incidents now arrive via the hazard `road_incident` GeoJSON layer 
 hazard-aggregation section / `src/lib/hazards.ts`), filtered to the foothill service area
 by `isInServiceArea` / `serviceAreaBounds` in `src/lib/ersn.ts`.
 
-## Architecture: hybrid SSG snapshot + client refresh
+## Architecture: client-only live data (no build-time fetch)
 
-**Why hybrid:** Build-time SSR is the SEO-visible, always-present "last-known value"; the client
-refresh keeps it current. As of 2026-06-26 CORS is **resolved** (FR-1) — the API returns
-`Access-Control-Allow-Origin` for `https://sierragridteam.org` and `http://localhost:4321`, so the
-client refresh now works live in both production and dev. (A non-allowlisted origin still gets no
-header, and the island degrades silently — the SSR snapshot stays.)
+**Nothing feed-related is fetched at build time** — so no stale data can ever be baked into
+the HTML. Every page renders live from the browser (CORS is resolved, FR-1: the API returns
+`Access-Control-Allow-Origin` for `https://sierragridteam.org` and `http://localhost:4321`).
+The checked-in `src/data/*.json` are **test fixtures only** — the screenshot harness mocks the
+feed with them; no page imports them.
 
-The same hybrid strategy still holds:
-
-1. **Build-time fetch (server-side, no CORS limit).** `src/lib/ersn.ts` fetches roads + weather +
-   alerts during `astro build` and writes a typed snapshot. This is the SSR/SSG content — always
-   present, SEO-visible, fast. It is also the design's required "last-known value."
-2. **Checked-in fallback snapshot** (`src/data/ersn-snapshot.json`) so the build still succeeds if
-   the API is unreachable at build time (CI resilience). Refreshed by `make snapshot`.
-3. **Client refresh islands** fetch live and update in place. On the **home** page the
-   `OperationalStatus` island refreshes the tiles + "Synced [time]" every 5 min (`/weather` +
-   zone-filtered `/weather/alerts`). The **`/live`** page goes further — it is _client-rendered
-   live_: it re-fetches the full situation (`/situation`, the `/hazards/*.geojson` layers,
-   `/roads`, `/weather`, `/scanners`) every 90 s and re-renders every region (map, stream, tiles,
-   weather band, roads, scanners) from the shared `src/lib/live-view.ts` functions. **On any
-   failure it silently keeps the build-time snapshot** (revealed as "last known") — per the
-   design's "never show a spinner/error" rule.
+1. **Pure derivations.** `src/lib/{ersn,hazards}.ts` are typed API shapes + pure functions
+   (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, `isInServiceArea`, …). They take
+   a snapshot the _browser_ assembled from live fetches — no I/O of their own.
+2. **Client islands fetch + render live.**
+   - **`/live`** is fully client-rendered: a loader, then a fetch of the full situation
+     (`/situation`, the `/hazards/*.geojson` layers, `/roads`, `/weather`, `/scanners`), rendered
+     via `src/lib/live-view.ts`, refreshed every 90 s. On failure it shows an honest "feed
+     unavailable" panel with the official sources — never stale data.
+   - **Home `OperationalStatus`**: Active Alerts + Fire Weather start on a "—" placeholder and a
+     client island fills them from `/weather` + zone-filtered `/weather/alerts` (every 5 min);
+     on failure they stay "—". Relay Sites + Coverage are static owned config.
+   - **`EmergencyBanner`** (every page): SSR-hidden; a client island polls `/situation` and
+     shows it only on an active evacuation/wildfire.
+3. **No fallback to baked data** anywhere — the honest degraded state is a placeholder /
+   "unavailable", never a possibly-stale value.
 
 ```
-build ──fetch──> ersn.ts ──> snapshot (typed) ──> SSR HTML  ──hydrate──> client refresh (5 min)
-                    │                                                          │ fail → keep snapshot
-                    └─ on build fetch fail → ersn-snapshot.json (checked in) ──┘
+build ──> SSR HTML (placeholders, no feed data)
+                    │
+browser ──fetch──> ersn.ts/hazards.ts derivations ──> live render ──refresh──┐
+                    │                                                          │
+                    └─ on fetch fail → honest "—" / "feed unavailable" panel ──┘
 ```
 
 All units converted for display in `src/lib/units.ts` (°C→°F, km→mi, km/h→mph) since the audience

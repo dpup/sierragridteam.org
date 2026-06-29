@@ -7,17 +7,12 @@ import SectionHeader from '@components/SectionHeader.astro';
 import Kicker from '@components/Kicker.astro';
 import DoctrineCard from '@components/DoctrineCard.astro';
 import ServiceBanner from '@components/ServiceBanner.astro';
-import { buildSnapshot, deriveOperationalStatus } from '@lib/ersn';
 import { operations } from '@config/coverage';
 import { home } from '@config/content';
 import { site } from '@config/site';
 
-// Build-time data fetch (server-side, no CORS limit) with snapshot fallback.
-const snapshot = await buildSnapshot();
-const status = deriveOperationalStatus(snapshot, {
-  relaySites: operations.relaySitesActive,
-  coverageCounties: operations.coverageCounties,
-});
+// No build-time feed fetch — the operational-status live tiles are filled client-side
+// (only static owned facts are passed in). Nothing stale is ever baked into the page.
 
 const websiteSchema = {
   '@context': 'https://schema.org',
@@ -38,7 +33,10 @@ const websiteSchema = {
 >
   <Hero />
 
-  <OperationalStatus status={status} />
+  <OperationalStatus
+    relaySites={operations.relaySitesActive}
+    coverageCounties={operations.coverageCounties}
+  />
 
   <Section surface="page" labelledby="mission-title">
     <div class="mission">

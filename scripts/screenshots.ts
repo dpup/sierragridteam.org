@@ -6,10 +6,9 @@
  *   - DISABLED animations + reduced motion,
  * so the PNGs are byte-stable and safe to diff or analyze.
  *
- * Requires the built site served at BASE_URL (default http://localhost:4321).
- * Build the SSR with the CHECKED-IN snapshot so the SSR-only sections (road
- * conditions, current conditions, incidents) are byte-stable:
- *   ERSN_FETCH_AT_BUILD=0 npm run build && npm run preview & npm run screenshots
+ * Requires the built site served at BASE_URL (default http://localhost:4321). The build
+ * bakes NO feed data — every page renders client-side from the mocked responses here:
+ *   npm run build && npm run preview & npm run screenshots
  * Optional: SCENARIO=redflag to render the alarm state.
  */
 import { chromium, type Route } from 'playwright';
@@ -210,9 +209,22 @@ async function main() {
             .catch(() => {});
         }
         await page.waitForTimeout(LIVE ? 4000 : 2500);
+      } else if (pg.path === '/' && !LIVE) {
+        // Home tiles are client-filled: Active Alerts + Fire Weather SSR a "—" placeholder
+        // and the OperationalStatus island replaces it from the mocked feed. Wait for that
+        // swap (rather than racing networkidle) so the capture is deterministic.
+        await page
+          .waitForFunction(
+            () => {
+              const v = document.querySelector('[data-stat-key="alerts"] [data-stat-value]');
+              return !!v && v.textContent !== '—';
+            },
+            { timeout: 5000 }
+          )
+          .catch(() => {});
       } else if (LIVE) {
-        // Other live pages (home tiles + banner) refresh client-side — let that settle so
-        // the capture shows live values, not the build-time snapshot.
+        // Other live pages (home tiles + banner) fetch client-side — let that settle so the
+        // capture shows the fetched live values (the page SSRs only placeholders).
         await page.waitForTimeout(3500);
       }
       // Kill any residual motion + the text caret for byte-stability.

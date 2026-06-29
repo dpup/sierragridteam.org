@@ -1,42 +1,25 @@
 ---
 /**
- * OperationalStatus — the four "feasible data only" tiles (design-system §7).
- * SSR renders the build-time snapshot (always present, SEO-visible, the design's
- * required "last-known value"). A client island refreshes every 5 minutes from
- * info.ersn.net; on ANY failure (including the current CORS block, FR-1) it keeps
- * the SSR values and shows a muted sync state — never a spinner or error.
+ * OperationalStatus — the four operational-status tiles (design-system §7). Relay Sites +
+ * Coverage are static owned config. Active Alerts + Fire Weather are LIVE-ONLY: they SSR a
+ * muted "—" placeholder and a client island fills them from info.ersn.net on load (and every
+ * 5 min). On any failure they stay "—" (an honest "unknown") — never a stale baked value,
+ * never a spinner. (It doesn't need /live's full loader; the page isn't gated.)
  */
 import Container from '../Container.astro';
 import Kicker from '../Kicker.astro';
 import StatTile from '../StatTile.astro';
 import StatusPill from '../StatusPill.astro';
-import { ERSN_API_BASE, NWS_ZONES, type OperationalStatus } from '@lib/ersn';
-import { formatPtTime } from '@lib/format';
+import { ERSN_API_BASE, NWS_ZONES } from '@lib/ersn';
 import { home } from '@config/content';
 import { site } from '@config/site';
 
 interface Props {
-  status: OperationalStatus;
+  // Static owned facts (not from the feed) — the only data this component renders at SSR.
+  relaySites: number;
+  coverageCounties: number;
 }
-const { status } = Astro.props;
-
-const fireLabel: Record<string, string> = {
-  normal: 'Normal',
-  elevated: 'Elevated',
-  'red-flag': 'Red Flag',
-};
-const fireState =
-  status.fireWeather === 'red-flag'
-    ? 'alarm'
-    : status.fireWeather === 'elevated'
-      ? 'elevated'
-      : 'ok';
-const alertState = status.activeAlertCount > 0 ? 'alarm' : 'ok';
-// Honest placeholder: if the feed couldn't classify fire-weather, mark the value with
-// "*" rather than presenting an unconfirmed "Normal" as a confident all-clear (FR-3).
-const fireFootnote = status.fireWeatherPlaceholder ? '*' : undefined;
-
-const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'Last known';
+const { relaySites, coverageCounties } = Astro.props;
 ---
 
 <section
@@ -49,15 +32,13 @@ const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'L
   <Container wide>
     <div class="ops__head">
       <Kicker>{home.status.kicker}</Kicker>
-      <StatusPill tone="muted" blink={false} data-synced>
-        {syncedLabel}
-      </StatusPill>
+      <StatusPill tone="muted" blink={false} data-synced>{home.status.syncing}</StatusPill>
     </div>
 
     <div class="ops__grid">
       <StatTile
         label="Relay Sites"
-        value={`${status.relaySites} Active`}
+        value={`${relaySites} Active`}
         sublabel="Deployed relay sites"
         state="ok-static"
         href="/live"
@@ -65,7 +46,7 @@ const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'L
       />
       <StatTile
         label="Coverage"
-        value={`${status.coverageCounties} Counties`}
+        value={`${coverageCounties} Counties`}
         sublabel={site.counties.join(' & ').replace(/ County/g, '')}
         state="ok-static"
         href="/live"
@@ -73,31 +54,21 @@ const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'L
       />
       <StatTile
         label="Active Alerts"
-        value={`${status.activeAlertCount} Active`}
+        value="—"
         sublabel="NWS foothill zones"
-        state={alertState}
+        state="muted"
         href="/live"
         key="alerts"
       />
       <StatTile
         label="Fire Weather"
-        value={fireLabel[status.fireWeather]}
+        value="—"
         sublabel="Calaveras & Tuolumne"
-        state={fireState}
-        footnote={fireFootnote}
+        state="muted"
         href="/live"
         key="fire"
       />
     </div>
-
-    {
-      status.fireWeatherPlaceholder && (
-        <p class="ops__note">
-          * Fire-weather classification is unavailable from the feed; showing a conservative
-          “Normal.”
-        </p>
-      )
-    }
   </Container>
 </section>
 
@@ -154,7 +125,10 @@ const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'L
         const ts = weather.lastUpdated ?? alertsData.lastUpdated;
         if (synced && ts) synced.textContent = `Synced ${formatPtTime(ts)}`;
       } catch {
-        /* keep the SSR snapshot — never show an error in the hero region */
+        // Live-only: there's no baked value to fall back to. Mark the sync state honestly;
+        // the Active Alerts / Fire Weather tiles stay on their "—" placeholder (unknown).
+        const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
+        if (synced) synced.textContent = 'Live data unavailable';
       }
     };
 
@@ -182,14 +156,6 @@ const syncedLabel = status.live ? `Synced ${formatPtTime(status.syncedAt)}` : 'L
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--space-4);
-  }
-
-  .ops__note {
-    margin-top: var(--space-4);
-    max-width: 70ch;
-    font-family: var(--font-ui);
-    font-size: var(--fs-small);
-    color: var(--ink-secondary);
   }
 
   @media (max-width: 900px) {

@@ -49,11 +49,7 @@ async function main() {
   ]);
   writeFileSync(
     ERSN_OUT,
-    JSON.stringify(
-      { fetchedAt: new Date().toISOString(), live: true, roads, weather, alerts },
-      null,
-      2
-    ) + '\n'
+    JSON.stringify({ fetchedAt: new Date().toISOString(), roads, weather, alerts }, null, 2) + '\n'
   );
   console.error(`Wrote ${ERSN_OUT}`);
 
@@ -69,7 +65,6 @@ async function main() {
     JSON.stringify(
       {
         fetchedAt: new Date().toISOString(),
-        live: true,
         area: HAZARD_AREA,
         situation,
         layers,

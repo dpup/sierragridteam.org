@@ -7,18 +7,16 @@ import { test, expect } from 'bun:test';
 import {
   deriveStream,
   deriveSituationSummary,
-  deriveBanner,
-  fallbackHazards,
   type HazardsSnapshot,
   type HazardFeature,
 } from './hazards';
+import hazardsFixture from '../data/hazards-snapshot.json';
 
 const SEV = ['INFO', 'LOW', 'MODERATE', 'SEVERE', 'EXTREME'];
 
 function snap(layers: Record<string, unknown>): HazardsSnapshot {
   return {
     fetchedAt: '',
-    live: true,
     area: 'calaveras',
     situation: null,
     layers: layers as HazardsSnapshot['layers'],
@@ -42,33 +40,6 @@ function point(layer: string, rank: number, lng: number, lat: number, extra = {}
       kind: layer,
       severity: SEV[rank],
       severity_rank: rank,
-      headline: 'h',
-      source: { id: 'x', name: 'X' },
-      ...extra,
-    },
-  };
-}
-function banner(layer: string, extra = {}): HazardFeature {
-  return {
-    type: 'Feature',
-    geometry: {
-      type: 'Polygon',
-      coordinates: [
-        [
-          [-120.4, 38.2],
-          [-120.3, 38.2],
-          [-120.3, 38.1],
-          [-120.4, 38.1],
-          [-120.4, 38.2],
-        ],
-      ],
-    },
-    properties: {
-      id: layer,
-      layer,
-      kind: layer === 'wildfire' ? 'Wildfire' : 'Evacuation',
-      severity: 'SEVERE',
-      severity_rank: 3,
       headline: 'h',
       source: { id: 'x', name: 'X' },
       ...extra,
@@ -108,30 +79,6 @@ test('stream sorts most-severe first', () => {
   expect(deriveStream(s)[0].properties.headline).toBe('severe');
 });
 
-test('banner does NOT fire for a road incident even at EXTREME, in-area', () => {
-  // Life-safety bar is evacuation/wildfire only — road/weather severity never banners.
-  const inExtreme = point('road_incident', 4, -120.45, 38.14, { headline: 'Report of Fire' });
-  expect(deriveBanner(snap({ road_incident: fc([inExtreme]) })).active).toBe(false);
-  const inSevere = point('road_incident', 3, -120.45, 38.14, { headline: 'Report of Fire' });
-  expect(deriveBanner(snap({ road_incident: fc([inSevere]) })).active).toBe(false);
-});
-
-test('banner fires for an active wildfire', () => {
-  const b = deriveBanner(
-    snap({ wildfire: fc([banner('wildfire', { headline: 'Salt Springs Fire' })]) })
-  );
-  expect(b.active).toBe(true);
-  expect(b.headline).toBe('Salt Springs Fire');
-});
-
-test('banner fires for an active evacuation and flags it', () => {
-  const b = deriveBanner(
-    snap({ evacuation: fc([banner('evacuation', { headline: 'Evac WARNING' })]) })
-  );
-  expect(b.active).toBe(true);
-  expect(b.hasEvacuation).toBe(true);
-});
-
 test('evacuations are null (unknown) when the Cal OES source is unavailable', () => {
   const sum = deriveSituationSummary(snap({ evacuation: fc([], 'UNAVAILABLE') }));
   expect(sum.evacuations).toBeNull();
@@ -164,12 +111,11 @@ test('fire-weather state normalizes hyphen/case to the canonical enum', () => {
 test('derivations never throw on an empty snapshot', () => {
   const empty = snap({});
   expect(() => deriveStream(empty)).not.toThrow();
-  expect(() => deriveBanner(empty)).not.toThrow();
   expect(() => deriveSituationSummary(empty)).not.toThrow();
-  expect(deriveBanner(empty).active).toBe(false);
+  expect(deriveStream(empty)).toEqual([]);
 });
 
-test('the checked-in fallback hazards snapshot is well-formed', () => {
-  expect(fallbackHazards.area).toBe('calaveras');
-  expect(typeof fallbackHazards.layers).toBe('object');
+test('the checked-in hazards snapshot fixture is well-formed (harness mocks use it)', () => {
+  expect(hazardsFixture.area).toBe('calaveras');
+  expect(typeof hazardsFixture.layers).toBe('object');
 });

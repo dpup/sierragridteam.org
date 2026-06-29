@@ -3,12 +3,13 @@
  * hazard configurations, so the situation page can be reviewed in states that rarely
  * occur live (active wildfire + evacuation, a busy incident day, a quake + winter storm).
  *
- * The fake data is defined here (not committed as feed data); each scenario is written to
- * src/data/hazards-snapshot.json, the site is rebuilt with the baked snapshot, and /live +
- * home are captured to tests/screenshots/scenarios/. The real snapshot is restored at the end.
+ * The fake data is defined here (not committed as feed data) and served to the browser via
+ * a route mock per scenario; /live + home are captured to tests/screenshots/scenarios/.
+ * (The build bakes no feed data, so the per-scenario rebuild is redundant — see the note
+ * in the loop; the route mock is what drives the page.)
  *
- * Requires a running `astro preview` at BASE_URL (it serves the rebuilt dist live):
- *   ERSN_FETCH_AT_BUILD=0 npm run build && npm run preview &
+ * Requires a running `astro preview` at BASE_URL (serves the built dist):
+ *   npm run build && npm run preview &
  *   node scripts/scenario-shots.mjs
  */
 import { chromium } from 'playwright';
@@ -120,7 +121,7 @@ function situationFrom(layers) {
 /** Assemble a full hazards snapshot from layer overrides (keeps calm layers otherwise). */
 function snapshot(overrides) {
   const layers = { ...calm.layers, ...overrides };
-  return { ...calm, live: true, layers, situation: situationFrom(layers) };
+  return { ...calm, layers, situation: situationFrom(layers) };
 }
 
 const scenarios = {
@@ -277,10 +278,9 @@ const browser = await chromium.launch();
 try {
   for (const [name, snap] of Object.entries(scenarios)) {
     writeFileSync(SNAP, JSON.stringify(snap, null, 2) + '\n');
-    execSync('node_modules/.bin/astro build', {
-      env: { ...process.env, ERSN_FETCH_AT_BUILD: '0' },
-      stdio: 'ignore',
-    });
+    // NB: the build no longer bakes feed data — the per-scenario data reaches the page via
+    // the route mock below, so this rebuild is redundant (kept for now; could build once).
+    execSync('node_modules/.bin/astro build', { stdio: 'ignore' });
     const ctx = await browser.newContext({
       viewport: { width: 1200, height: 900 },
       deviceScaleFactor: 1,
@@ -319,10 +319,7 @@ try {
   }
 } finally {
   copyFileSync(BACKUP, SNAP);
-  execSync('node_modules/.bin/astro build', {
-    env: { ...process.env, ERSN_FETCH_AT_BUILD: '0' },
-    stdio: 'ignore',
-  });
+  execSync('node_modules/.bin/astro build', { stdio: 'ignore' });
   await browser.close();
   console.error(`\nRestored ${SNAP}. Scenarios → ${OUT}/`);
 }

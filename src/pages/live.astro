@@ -309,13 +309,12 @@ const schema = {
     STREAM_LAYERS.forEach((l, i) => (layers[l] = layerList[i]));
     const haz = {
       fetchedAt: '',
-      live: true,
       area: HAZARD_AREA,
       situation,
       layers,
       scanners,
     } as unknown as HazardsSnapshot;
-    const ersn = { fetchedAt: '', live: true, roads, weather, alerts } as unknown as ErsnSnapshot;
+    const ersn = { fetchedAt: '', roads, weather, alerts } as unknown as ErsnSnapshot;
     return { haz, ersn };
   }
 

@@ -19,6 +19,7 @@ export const home = {
 
   status: {
     kicker: 'Real-time Operational Status',
+    syncing: 'Updating…',
   },
 
   mission: {

@@ -3,9 +3,8 @@
  *
  * The hazard API (CHANGELOG 2026-06-26/27) normalizes wildfire, evacuation, weather,
  * seismic, road, and scanner data into one RFC 7946 GeoJSON model with a common
- * `properties` envelope + a comparable INFO..EXTREME severity scale. This module is
- * the SERVER/BUILD side: build-time fetch → typed snapshot → SSR; the client island
- * refreshes live. Mirrors src/lib/ersn.ts (never throws; checked-in fallback).
+ * `properties` envelope + a comparable INFO..EXTREME severity scale. These are PURE types
+ * + derivations — no build-time fetch (the browser fetches live and feeds the snapshot in).
  *
  * IMPORTANT (data honesty): the `road_incident` layer is the region-wide Mother Lode
  * CHP feed, and `weather_alert` uses the server's area-zone config (which still
@@ -13,8 +12,7 @@
  * service area / NWS zones and recompute severity locally. We never surface an
  * out-of-area "Report of Fire" as a foothill emergency.
  */
-import fallback from '../data/hazards-snapshot.json';
-import { ERSN_API_BASE, NWS_ZONES, isInServiceArea } from './ersn';
+import { NWS_ZONES, isInServiceArea } from './ersn';
 
 /** Hazard-aggregation area slug (configured server-side in prefab.yaml). */
 export const HAZARD_AREA = 'calaveras';
@@ -128,15 +126,11 @@ export interface Scanner {
 
 export interface HazardsSnapshot {
   fetchedAt: string;
-  /** true if produced from a live fetch; false if the checked-in fallback. */
-  live: boolean;
   area: string;
   situation: Situation | null;
   layers: Record<string, HazardLayer | null>;
   scanners: Scanner[] | null;
 }
-
-export const fallbackHazards = fallback as unknown as HazardsSnapshot;
 
 /** Layers that feed the prioritized alert stream (road_segment is the road table). */
 export const STREAM_LAYERS = [
@@ -148,67 +142,6 @@ export const STREAM_LAYERS = [
   'chain_control',
   'earthquake',
 ] as const;
-
-const ALL_LAYERS = [...STREAM_LAYERS, 'road_segment'] as const;
-
-// ---- Fetching (build-time, server-side) ----
-
-const TIMEOUT_MS = 9000;
-
-async function fetchJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${ERSN_API_BASE}${path}`, {
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-    headers: { accept: 'application/json' },
-  });
-  if (!res.ok) throw new Error(`info.ersn.net ${path} → HTTP ${res.status}`);
-  return (await res.json()) as T;
-}
-
-export const getSituation = (area: string = HAZARD_AREA) =>
-  fetchJson<Situation>(`/situation/${area}`);
-export const getScanners = (area: string = HAZARD_AREA) =>
-  fetchJson<Scanner[]>(`/scanners/${area}`);
-export const getHazardLayer = (layer: string, area: string = HAZARD_AREA) =>
-  fetchJson<HazardLayer>(`/hazards/${area}/${layer}.geojson`);
-
-/**
- * Build-time snapshot of the hazard situation. Tries live fetches; falls back
- * per-section to the checked-in snapshot. Never throws (CI/build resilience).
- */
-export async function buildSituationSnapshot(): Promise<HazardsSnapshot> {
-  if (import.meta.env?.ERSN_FETCH_AT_BUILD === '0') {
-    return { ...fallbackHazards };
-  }
-
-  const [situationR, scannersR, ...layerR] = await Promise.allSettled([
-    getSituation(),
-    getScanners(),
-    ...ALL_LAYERS.map((l) => getHazardLayer(l)),
-  ]);
-
-  const layers: Record<string, HazardLayer | null> = {};
-  ALL_LAYERS.forEach((l, i) => {
-    const r = layerR[i];
-    layers[l] = r.status === 'fulfilled' ? r.value : (fallbackHazards.layers?.[l] ?? null);
-  });
-
-  const situation =
-    situationR.status === 'fulfilled' ? situationR.value : fallbackHazards.situation;
-  const scanners = scannersR.status === 'fulfilled' ? scannersR.value : fallbackHazards.scanners;
-  const live =
-    situationR.status === 'fulfilled' &&
-    ALL_LAYERS.every((_, i) => layerR[i].status === 'fulfilled');
-
-  return { fetchedAt: nowIso(), live, area: HAZARD_AREA, situation, layers, scanners };
-}
-
-function nowIso(): string {
-  try {
-    return new Date().toISOString();
-  } catch {
-    return fallbackHazards.fetchedAt;
-  }
-}
 
 // ---- Severity ----
 
@@ -305,7 +238,6 @@ export interface SituationSummary {
   weatherAlerts: number | null;
   fireWeather: string; // NORMAL | ELEVATED | RED_FLAG | UNKNOWN
   syncedAt: string | null;
-  live: boolean;
 }
 
 /** Locally-recomputed summary (honest counts from filtered features). */
@@ -336,41 +268,5 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
     weatherAlerts: countOrUnknown('weather_alert'),
     fireWeather: fireState,
     syncedAt: snapshot.situation?.generated_at ?? snapshot.fetchedAt ?? null,
-    live: snapshot.live,
-  };
-}
-
-export interface BannerState {
-  active: boolean;
-  tone: Tone;
-  label: string; // e.g. "Active Wildfire", "Evacuation Warning"
-  headline: string;
-  detail?: string;
-  hasEvacuation: boolean;
-}
-
-/**
- * Site-wide emergency banner state. The banner is intrusive (every page), so it has a
- * HIGH, life-safety-only bar: it fires ONLY on an active evacuation or an active
- * wildfire. Both are server-scoped to the area (and we re-filter), so the trigger is
- * trustworthy on BOTH the SSR and client paths. It deliberately does NOT fire on
- * region-wide road incidents, weather advisories, or the rollup's region-wide
- * `highest_severity` (those live on /live) — so an out-of-area "Report of Fire" can
- * never raise a county-wide alarm. Returns { active:false } when calm.
- */
-export function deriveBanner(snapshot: HazardsSnapshot): BannerState {
-  const evac = layerFeatures(snapshot, 'evacuation');
-  const wildfire = layerFeatures(snapshot, 'wildfire');
-  const top = evac[0] ?? wildfire[0];
-  if (!top) {
-    return { active: false, tone: 'ok', label: '', headline: '', hasEvacuation: false };
-  }
-  return {
-    active: true,
-    tone: 'alarm',
-    label: top.properties.kind || 'Active hazard',
-    headline: top.properties.headline,
-    detail: top.properties.area_label,
-    hasEvacuation: evac.length > 0,
   };
 }

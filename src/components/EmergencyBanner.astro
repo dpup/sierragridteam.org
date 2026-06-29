@@ -2,18 +2,16 @@
 /**
  * EmergencyBanner — the site-wide alarm band (in BaseLayout, every page). Renders
  * nothing on calm days; when a life-safety hazard is active (an active evacuation or
- * wildfire, per deriveBanner — both area-scoped) it shows a slim orange band naming the
- * hazard with links to the Live Feed + (if evacuating) the authoritative evacuation map.
- * Orange here is a sanctioned genuine-alert use. SSR from the build-time situation; a
- * client island re-checks /situation every 90s and shows/hides — silently keeping SSR
- * on failure, never trusting the rollup's region-wide severity, and only writing to the
- * role="alert" region when the state actually changes.
+ * wildfire — both area-scoped) it shows a slim orange band naming the hazard, linking to the
+ * Live Feed (which carries the authoritative evacuation map).
+ * Orange here is a sanctioned genuine-alert use. Client-only (no baked data): SSR renders
+ * the band hidden + empty, and a client island checks /situation on load + every 90s and
+ * shows/fills it — never trusting the rollup's region-wide severity, and only writing to the
+ * role="alert" region when the state actually changes (so it doesn't re-announce each poll).
  */
-import { buildSituationSnapshot, deriveBanner, HAZARD_AREA } from '@lib/hazards';
+import { HAZARD_AREA } from '@lib/hazards';
 import { ERSN_API_BASE } from '@lib/ersn';
 import { emergencyBanner as copy } from '@config/content';
-
-const banner = deriveBanner(await buildSituationSnapshot());
 ---
 
 <aside
@@ -23,13 +21,13 @@ const banner = deriveBanner(await buildSituationSnapshot());
   data-api-base={ERSN_API_BASE}
   role="alert"
   aria-label="Emergency alert"
-  hidden={!banner.active}
+  hidden
 >
   <div class="ebanner__inner">
     <span class="ebanner__icon" aria-hidden="true">▲</span>
     <p class="ebanner__text">
-      <strong class="ebanner__label" data-ebanner-label>{banner.label}</strong>
-      <span data-ebanner-headline>{banner.headline}</span>
+      <strong class="ebanner__label" data-ebanner-label></strong>
+      <span data-ebanner-headline></span>
     </p>
     <span class="ebanner__actions">
       <a class="ebanner__link" href="/live">{copy.feedLabel} &rarr;</a>
@@ -68,7 +66,7 @@ const banner = deriveBanner(await buildSituationSnapshot());
 
         // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The rollup's
         // region-wide highest_severity / road / weather headlines are never trusted —
-        // they can describe an out-of-area event (matches the SSR deriveBanner contract).
+        // they can describe an out-of-area event (the life-safety-only banner contract).
         const active = hasEvac || hasWildfire;
         const layer = hasEvac ? 'evacuation' : 'wildfire';
         const headline =
