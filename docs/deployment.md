@@ -15,11 +15,31 @@ configured target is **AWS S3 + CloudFront**, with DNS managed at **Hostinger**.
   enable static website hosting if you prefer.
 - **CloudFront distribution** in front of the bucket:
   - Default root object: `index.html`.
-  - **Custom error response:** map 403/404 → `/404.html` (status 404) so clean
-    URLs and the on-brand 404 page work.
+  - **Clean-URL rewrite (required).** The build emits `live.html` / `about.html`
+    (Astro `build.format: 'file'`), but the site links to extensionless URLs like
+    `/live`. An OAC (S3 REST) origin has no index-document logic, so without a rewrite
+    every sub-page returns **403**. Attach a **CloudFront Function (viewer-request)**
+    that appends `.html` to extensionless paths (and `index.html` to directories):
+
+    ```js
+    function handler(event) {
+      var req = event.request;
+      if (req.uri.endsWith('/')) req.uri += 'index.html';
+      else if (!req.uri.split('/').pop().includes('.')) req.uri += '.html';
+      return req;
+    }
+    ```
+
+    If you already run a viewer-request function (e.g. the apex-canonical redirect),
+    fold this into it.
+
+  - **Custom error response:** map 403/404 → `/404.html` (status 404) for genuinely
+    missing paths. This runs _after_ the rewrite above, so real pages still resolve —
+    it is NOT what makes clean URLs work.
   - Attach an ACM certificate (us-east-1) for `sierragridteam.org` +
     `www.sierragridteam.org`.
   - Compress objects automatically (gzip/brotli).
+
 - **IAM deploy user** — an IAM user with an access key, least-privilege:
   `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on the bucket and
   `cloudfront:CreateInvalidation` on the distribution. Export its access key +
