@@ -24,8 +24,8 @@ import { emergencyBanner as copy } from '@config/content';
   hidden
 >
   <div class="ebanner__inner">
-    <span class="ebanner__icon" aria-hidden="true">▲</span>
     <p class="ebanner__text">
+      <span class="ebanner__icon" aria-hidden="true">▲</span>
       <strong class="ebanner__label" data-ebanner-label></strong>
       <span data-ebanner-headline></span>
     </p>
@@ -115,8 +115,10 @@ import { emergencyBanner as copy } from '@config/content';
     gap: var(--space-3) var(--space-5);
     flex-wrap: wrap;
   }
+  /* Inline within the text so it never wraps onto its own line on narrow screens —
+     it sits as the leading glyph of the message and shrinks/wraps with it. */
   .ebanner__icon {
-    font-size: var(--fs-small);
+    margin-right: var(--space-2);
   }
   .ebanner__text {
     flex: 1 1 auto;

@@ -434,6 +434,12 @@
   color: var(--ink-secondary);
   margin-top: var(--space-1);
 }
+.live-view .map-pop__extra {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-strong);
+  margin-top: var(--space-1);
+}
 .live-view .map-pop__src {
   font-family: var(--font-ui);
   font-size: var(--fs-micro);

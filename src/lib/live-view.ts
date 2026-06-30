@@ -134,15 +134,40 @@ function renderWeather(weather: WeatherResponse | null): string {
 
 // ---- alert stream (was AlertStream) ----
 
+/**
+ * Wildfire stats as a clean detail string ("120 acres · 30% contained"), or null. Shared by
+ * the stream card detail line and the map popup so both surfaces present a point fire alike.
+ */
+export function wildfireStats(w?: { acres?: number; containment?: number }): string | null {
+  if (!w) return null;
+  const bits = [
+    w.acres != null ? `${w.acres.toLocaleString()} acres` : null,
+    w.containment != null ? `${w.containment}% contained` : null,
+  ].filter(Boolean);
+  return bits.length ? bits.join(' · ') : null;
+}
+
+/**
+ * The display title. CAL FIRE bakes stats into wildfire headlines ("Owl Fire — 120 ac, 30%
+ * contained"), which we also render as a clean detail line (wildfireStats). When structured
+ * acres/containment exist to show separately, strip that trailing "— …" clause so the title
+ * is just the fire name and the numbers aren't shown twice. No clause (e.g. "Salt Springs
+ * Fire") → headline unchanged. Shared by the stream card and the map popup.
+ */
+export function wildfireTitle(
+  headline: string,
+  w?: { acres?: number; containment?: number }
+): string {
+  if (w && (w.acres != null || w.containment != null)) {
+    const name = headline.split(/\s+[—–]\s+/)[0].trim();
+    if (name && name !== headline) return name;
+  }
+  return headline;
+}
+
 function streamExtra(f: HazardFeature): string | null {
   const p = f.properties;
-  if (p.wildfire) {
-    const bits = [
-      p.wildfire.acres != null ? `${p.wildfire.acres.toLocaleString()} acres` : null,
-      p.wildfire.containment != null ? `${p.wildfire.containment}% contained` : null,
-    ].filter(Boolean);
-    return bits.length ? bits.join(' · ') : null;
-  }
+  if (p.wildfire) return wildfireStats(p.wildfire);
   if (p.earthquake) {
     const bits = [
       p.earthquake.magnitude != null ? `M${p.earthquake.magnitude}` : null,
@@ -168,7 +193,7 @@ function renderStream(items: HazardFeature[]): string {
         `<span class="stream__head"><span class="stream__kicker">` +
         `<span class="stream__sev">${esc(severityLabel(String(p.severity)))}</span>` +
         `<span class="stream__kind">${esc(p.kind)}</span></span>` +
-        `<span class="stream__title">${esc(p.headline)}</span>` +
+        `<span class="stream__title">${esc(wildfireTitle(p.headline, p.wildfire))}</span>` +
         (p.area_label ? `<span class="stream__where">${esc(p.area_label)}</span>` : '') +
         `</span>`;
       const source = p.source?.name

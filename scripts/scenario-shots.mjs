@@ -176,6 +176,29 @@ const scenarios = {
       }),
     ]),
   }),
+  // A point-geometry fire (no mapped perimeter) with stats baked into the headline — mirrors
+  // a real CAL FIRE feed. Exercises the map point marker and the title-vs-detail de-dup.
+  'wildfire-point': snapshot({
+    wildfire: layer('wildfire', [
+      {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [-120.55, 38.05] },
+        properties: {
+          id: 'fire:owl',
+          layer: 'wildfire',
+          kind: 'Wildfire',
+          category: 'active',
+          severity: 'SEVERE',
+          severity_rank: 3,
+          headline: 'Owl Fire — 120 ac, 30% contained',
+          status: 'active',
+          area_label: 'Highway 108, Green Springs',
+          source: { id: 'calfire', name: 'CAL FIRE' },
+          wildfire: { acres: 120, containment: 30, county: 'Tuolumne', has_perimeter: false },
+        },
+      },
+    ]),
+  }),
   'multi-incident': snapshot({
     road_incident: layer('road_incident', [
       incident(-120.45, 38.13, 2, 'Traffic Collision - Minor Injuries', 'Hwy 4 / Six Mile Rd'),

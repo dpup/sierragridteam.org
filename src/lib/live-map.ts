@@ -14,7 +14,7 @@
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { escapeHtml as esc } from './format';
-import type { LiveMapData } from './live-view';
+import { wildfireTitle, wildfireStats, type LiveMapData } from './live-view';
 
 type GeoFC = GeoJSON.FeatureCollection;
 
@@ -78,20 +78,29 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
   const popup = (e: maplibregl.MapLayerMouseEvent) => {
     const p = (e.features?.[0]?.properties ?? {}) as Record<string, unknown>;
     // MapLibre serializes object properties to JSON strings — parse defensively.
-    let src: { name?: string } | undefined =
-      typeof p.source === 'object' ? (p.source as { name?: string }) : undefined;
-    if (typeof p.source === 'string') {
-      try {
-        src = JSON.parse(p.source);
-      } catch {
-        src = undefined;
+    const parseObj = <T>(v: unknown): T | undefined => {
+      if (v && typeof v === 'object') return v as T;
+      if (typeof v === 'string') {
+        try {
+          return JSON.parse(v) as T;
+        } catch {
+          return undefined;
+        }
       }
-    }
+      return undefined;
+    };
+    const src = parseObj<{ name?: string }>(p.source);
+    const wf = parseObj<{ acres?: number; containment?: number }>(p.wildfire);
+    // Use the same title/stats derivation as the alert stream so a point fire reads
+    // identically on both surfaces ("Owl Fire" + "120 acres · 30% contained").
+    const title = wildfireTitle(String(p.headline || p.kind || p.name || ''), wf);
+    const stats = wildfireStats(wf);
     const html =
       `<div class="map-pop">` +
       (p.severity ? `<span class="map-pop__sev">${esc(p.severity)}</span>` : '') +
-      `<p class="map-pop__title">${esc(p.headline || p.kind || p.name)}</p>` +
+      `<p class="map-pop__title">${esc(title)}</p>` +
       (p.area_label ? `<p class="map-pop__where">${esc(p.area_label)}</p>` : '') +
+      (stats ? `<p class="map-pop__extra">${esc(stats)}</p>` : '') +
       (src?.name ? `<p class="map-pop__src">${esc(src.name)}</p>` : '') +
       `</div>`;
     new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
@@ -184,6 +193,25 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
         },
       });
       interactive('incidents');
+
+      // A wildfire with no mapped perimeter arrives as a Point — the fill/line layers above
+      // draw nothing for it, so it would vanish from the map (it stays in the stream). Add a
+      // solid orange marker for point-geometry fires, on top, so the headline hazard always
+      // shows. Shares the 'wildfire' source, so the 90s refresh updates it too.
+      map.addLayer({
+        id: 'wildfire-point',
+        type: 'circle',
+        source: 'wildfire',
+        filter: ['==', ['geometry-type'], 'Point'] as maplibregl.FilterSpecification,
+        paint: {
+          'circle-radius': 8,
+          'circle-color': C.orange,
+          'circle-opacity': 0.9,
+          'circle-stroke-color': C.surface,
+          'circle-stroke-width': 2,
+        },
+      });
+      interactive('wildfire-point');
 
       // Only hide the fallback once every layer added cleanly.
       const fb = figureEl.querySelector<HTMLElement>('[data-map-fallback]');
