@@ -65,7 +65,7 @@ export const people: readonly Person[] = [
       'enforcement career, and active Search and Rescue service in Calaveras County.',
     shortBio:
       'Jay spent 20+ years as Chief Operating Officer of a computer security consulting firm ' +
-      'in San Francisco, capped a law enforcement career with retirement from the Sonoma ' +
+      'in San Francisco, completed a law enforcement career with retirement from the Sonoma ' +
       'County Sheriff’s Department, and serves actively with the Calaveras County Sheriff’s ' +
       'Department Search and Rescue team. A licensed ham radio operator, he operates the ' +
       'Ebbett’s Pass Radio Safety Network and founded S.I.E.R.R.A to ensure timely, ' +
