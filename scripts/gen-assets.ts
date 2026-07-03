@@ -16,9 +16,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const pub = resolve(root, 'public');
 const SRC = resolve(pub, 'brand/sierra-logo-full.png');
 
-// Brand tokens (mirrors src/styles/tokens.css — keep in sync if the palette changes).
-const PARCHMENT = '#f3efe4';
-
 async function markBuffer(): Promise<Buffer> {
   // The mark occupies the top ~160px of the 294×248 master (gap to wordmark at ~160).
   // Extract and trim in separate passes — sharp rejects extract+trim in one pipeline.
@@ -37,25 +34,21 @@ async function main() {
   // 1) The mark, for the nav compact lockup + hero emblem.
   await sharp(mark).toFile(resolve(pub, 'brand/sierra-mark.png'));
 
-  // 2) Favicons + apple-touch: mark centered on a parchment square.
-  await (await composeSquare(mark, 180, 26)).toFile(resolve(pub, 'apple-touch-icon.png'));
-  await (await composeSquare(mark, 32, 3)).toFile(resolve(pub, 'favicon-32.png'));
-  await (await composeSquare(mark, 16, 1)).toFile(resolve(pub, 'favicon-16.png'));
+  // 2) Favicons + apple-touch: rasterized from the hand-authored favicon.svg (the
+  //    simplified white-peaks-on-green tab mark), so every icon size matches the tab.
+  await faviconPng(180).toFile(resolve(pub, 'apple-touch-icon.png'));
+  await faviconPng(32).toFile(resolve(pub, 'favicon-32.png'));
+  await faviconPng(16).toFile(resolve(pub, 'favicon-16.png'));
 
   // OG cards are generated dynamically per page at build time (src/pages/og/[slug].png.ts).
 
   console.error('Generated brand + SEO raster assets in public/.');
 }
 
-async function composeSquare(mark: Buffer, size: number, pad: number) {
-  const inner = await sharp(mark)
-    .resize({ width: size - pad * 2, fit: 'inside' })
-    .png()
-    .toBuffer();
-  return sharp({
-    create: { width: size, height: size, channels: 4, background: PARCHMENT },
-  })
-    .composite([{ input: inner, gravity: 'center' }])
+/** Render favicon.svg (64-unit viewBox) at an exact pixel size. */
+function faviconPng(size: number) {
+  return sharp(resolve(pub, 'favicon.svg'), { density: (72 * size) / 64 })
+    .resize(size, size)
     .png();
 }
 
