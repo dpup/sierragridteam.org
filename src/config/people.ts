@@ -64,10 +64,9 @@ export const people: readonly Person[] = [
       'Founder & President of S.I.E.R.R.A — 20+ years as a security-firm COO, a law ' +
       'enforcement career, and active Search and Rescue service in Calaveras County.',
     shortBio:
-      'Jay balances a sharp executive mind with a lifelong commitment to community safety — ' +
-      '20+ years as Chief Operating Officer of a computer security consulting firm in San ' +
-      'Francisco, a law enforcement career capped by retirement from the Sonoma County ' +
-      'Sheriff’s Department, and active service with the Calaveras County Sheriff’s ' +
+      'Jay spent 20+ years as Chief Operating Officer of a computer security consulting firm ' +
+      'in San Francisco, capped a law enforcement career with retirement from the Sonoma ' +
+      'County Sheriff’s Department, and serves actively with the Calaveras County Sheriff’s ' +
       'Department Search and Rescue team. A licensed ham radio operator, he operates the ' +
       'Ebbett’s Pass Radio Safety Network and founded S.I.E.R.R.A to ensure timely, ' +
       'meaningful emergency communications between public safety agencies and residents.',
@@ -172,42 +171,62 @@ export const people: readonly Person[] = [
       'leadership to the alliance. Controller for a major IT consulting firm and previously ' +
       'Director of Operations for a medical-legal firm serving San Francisco and Oakland, ' +
       'she oversees S.I.E.R.R.A’s fiscal stewardship and financial integrity.',
+    // Corrinne's full bio is her provided copy — keep it verbatim (naming normalized
+    // to "S.I.E.R.R.A" per the style guide). Confirm any other edit with her.
     intro:
       'Corrinne Goldberg serves as Treasurer for S.I.E.R.R.A, bringing more than 25 years of ' +
-      'financial, operational, and organizational leadership to the role. Her background ' +
-      'spans financial management, operational oversight, database development, and ' +
-      'nonprofit fundraising — the disciplines behind the alliance’s fiscal stewardship and ' +
-      'financial integrity.',
+      'financial, operational, and organizational leadership experience to the organization. ' +
+      'Her extensive professional background combines financial management, operational ' +
+      'oversight, database development, and nonprofit fundraising support, making her ' +
+      'exceptionally well-qualified to oversee the fiscal stewardship and financial integrity ' +
+      'of the organization.',
     bio: [
       {
         paragraphs: [
           {
             text:
               'Corrinne previously served as Director of Operations for a major medical-legal ' +
-              'firm serving the San Francisco and Oakland regions, where she managed complex ' +
-              'operational processes, financial workflows, and administrative functions — ' +
-              'building efficient systems and keeping organizations accountable.',
+              'firm serving the San Francisco and Oakland, California regions, where she ' +
+              'managed complex operational processes, financial workflows, and administrative ' +
+              'functions. Her ability to create efficient systems, maintain accountability, ' +
+              'and ensure organizational effectiveness has been a hallmark of her career.',
           },
           {
             text:
-              'She is also active in the nonprofit sector as Assistant to the Treasurer for a ' +
-              'Northern California sports hall of fame, where she manages the financial ' +
-              'operations of a major annual fundraising event attended by more than 250 ' +
-              'guests — payment processing, silent-auction revenue, and the reconciliation of ' +
-              'every record.',
+              'In addition to her professional experience, Corrinne is actively involved in ' +
+              'the nonprofit sector. She currently serves as Assistant to the Treasurer for a ' +
+              'prominent Northern California Sports Hall of Fame nonprofit organization. In ' +
+              'that role, she manages the financial operations of a major annual fundraising ' +
+              'event attended by more than 250 guests. Her responsibilities include ' +
+              'overseeing payment processing, coordinating financial transactions, managing ' +
+              'silent auction revenue, and ensuring that all financial records are accurately ' +
+              'tracked, documented, and reconciled.',
           },
           {
             text:
               'As Controller for a major IT consulting firm, Corrinne oversees accounts ' +
-              'receivable and a range of other financial functions, and works closely with ' +
-              'software developers to design and improve the business applications and ' +
-              'operational databases behind them.',
+              'receivable and numerous other financial functions while leveraging her ' +
+              'expertise in user interface design, database processes, and business systems. ' +
+              'She works closely with software developers to design, improve, and enhance ' +
+              'critical business applications and operational databases, helping ' +
+              'organizations increase efficiency, accuracy, and accountability.',
           },
           {
             text:
-              'She brings the same attention to detail, commitment to transparency, and ' +
-              'collaborative, optimistic approach to S.I.E.R.R.A — making sure the ' +
-              'alliance’s resources are managed responsibly in support of its mission.',
+              'Corrinne’s unique combination of financial expertise, operational leadership, ' +
+              'technical knowledge, and nonprofit experience makes her an outstanding ' +
+              'Treasurer for S.I.E.R.R.A. She is recognized for her attention to detail, ' +
+              'commitment to transparency, and dedication to responsible financial ' +
+              'management. Equally important, she brings an optimistic outlook, a ' +
+              'collaborative spirit, and a talent for finding creative solutions to complex ' +
+              'challenges. Her positive attitude and innovative approach consistently help ' +
+              'organizations achieve goals that others may not have thought possible.',
+          },
+          {
+            text:
+              'S.I.E.R.R.A benefits greatly from Corrinne’s leadership, professionalism, and ' +
+              'unwavering commitment to ensuring the organization’s financial resources are ' +
+              'managed responsibly in support of its mission and future growth.',
           },
         ],
       },

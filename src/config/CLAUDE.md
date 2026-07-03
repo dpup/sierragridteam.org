@@ -17,8 +17,8 @@ for non-technical edits.
 - **`people.ts`** — board members & advisors: names, roles, short + full bios, and
   profile photos (imported from `src/assets/profile-photos/`). Drives the About-page
   leadership cards and the `/about/<slug>` profile pages. Bios are the person's own
-  factual claims — confirm with them before changing a fact (Jay's full bio is his
-  approved copy; keep it verbatim).
+  factual claims — confirm with them before changing a fact (Jay's and Corrinne's
+  full bios are their provided copy; keep them verbatim).
 
 ## Safe to change freely
 

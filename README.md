@@ -77,8 +77,8 @@ mesh-node status (FR-5/FR-6), which info.ersn.net does not own — see
 - Wire AWS/Hostinger per `docs/deployment.md` and set the deploy secrets.
 - Contact email — confirm `info@sierragridteam.org` is monitored (it's set live;
   override via `PUBLIC_CONTACT_EMAIL` if needed).
-- Leadership bios (`src/config/people.ts`) — have each member confirm their facts
-  before launch. Jay's full bio is his approved copy verbatim; Corrinne's was
-  condensed for site voice — have her (and Jay) review. Corrinne's profile photo
-  is still missing (a monogram stands in — drop a photo into
+- Leadership bios (`src/config/people.ts`) — have each member confirm their bio
+  before launch. Jay's and Corrinne's full profile bios are their provided copy
+  verbatim; the short About-page card bios are condensed versions. Corrinne's
+  profile photo is still missing (a monogram stands in — drop a photo into
   `src/assets/profile-photos/` and wire it in `people.ts`).
