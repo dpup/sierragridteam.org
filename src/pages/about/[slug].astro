@@ -1,0 +1,228 @@
+---
+/**
+ * /about/<slug> — a full profile page for each board member / advisor listed
+ * in src/config/people.ts. The About page cards link here. Copy (bios, roles,
+ * photos) is data — edit people.ts, not this file.
+ */
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import Button from '@components/Button.astro';
+import { Image } from 'astro:assets';
+import { about } from '@config/content';
+import { people } from '@config/people';
+import { site } from '@config/site';
+
+export function getStaticPaths() {
+  return people.map((person) => ({ params: { slug: person.slug }, props: { person } }));
+}
+
+const { person } = Astro.props;
+const path = `/about/${person.slug}`;
+
+const profileSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  name: `${person.name} — ${site.name}`,
+  url: `${site.url}${path}`,
+  mainEntity: {
+    '@type': 'Person',
+    name: person.name,
+    jobTitle: person.role,
+    description: person.summary,
+    memberOf: { '@type': 'NGO', name: site.legalName },
+  },
+};
+---
+
+<BaseLayout title={person.name} description={person.summary} path={path} schema={profileSchema}>
+  <Section surface="page" labelledby="profile-title">
+    <nav class="profile-back" aria-label="Breadcrumb">
+      <a href="/about"><span aria-hidden="true">&larr;</span> {about.profile.backLabel}</a>
+    </nav>
+
+    <div class="profile">
+      <div class="profile__media">
+        {
+          person.photo ? (
+            <Image
+              src={person.photo}
+              alt={person.photoAlt ?? `Portrait of ${person.name}`}
+              widths={[400, 800]}
+              sizes="(max-width: 760px) 90vw, 360px"
+              class="profile__photo"
+              loading="eager"
+            />
+          ) : (
+            <div class="profile__monogram" aria-hidden="true">
+              {person.initials}
+            </div>
+          )
+        }
+      </div>
+
+      <div class="profile__body">
+        <header class="profile__head">
+          <Kicker>{person.role}</Kicker>
+          <h1 id="profile-title" class="profile__name">{person.name}</h1>
+          <p class="profile__intro">{person.intro}</p>
+        </header>
+
+        {
+          person.bio.map((section) => (
+            <section class="profile__section">
+              {section.heading && <h2 class="profile__heading">{section.heading}</h2>}
+              {section.paragraphs.map((para) => (
+                <p class="profile__para">
+                  {para.lead && <strong class="profile__lead">{para.lead}:</strong>}
+                  {para.text}
+                </p>
+              ))}
+            </section>
+          ))
+        }
+      </div>
+    </div>
+  </Section>
+
+  <aside class="profile-cta" aria-label="Get involved">
+    <div class="profile-cta__inner">
+      <p class="profile-cta__note">{about.profile.ctaNote}</p>
+      <div class="profile-cta__actions">
+        <Button variant="secondary" href="/about">{about.profile.ctaTeam}</Button>
+        <Button variant="primary" href="/contact" arrow>{about.profile.ctaVolunteer}</Button>
+      </div>
+    </div>
+  </aside>
+</BaseLayout>
+
+<style>
+  .profile-back a {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--brand-green);
+  }
+  .profile-back a:hover {
+    color: var(--brand-green-hover);
+    text-decoration: underline;
+  }
+
+  .profile {
+    margin-top: var(--space-6);
+    display: grid;
+    grid-template-columns: minmax(260px, 340px) 1fr;
+    gap: var(--space-8);
+    align-items: start;
+  }
+
+  /* The portrait sits in a bordered parchment mat — an archival-print treatment. */
+  .profile__media {
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--space-5));
+    padding: var(--space-2);
+    background: var(--surface-card);
+    border: var(--border);
+  }
+  .profile__photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 28%;
+  }
+  .profile__monogram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    background: var(--surface-banner);
+    font-family: var(--font-display);
+    font-size: var(--fs-hero);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.06em;
+    color: var(--brand-brass-text);
+  }
+
+  .profile__body {
+    max-width: 68ch;
+  }
+
+  .profile__name {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .profile__intro {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .profile__section {
+    margin-top: var(--space-6);
+  }
+  .profile__heading {
+    padding-bottom: var(--space-2);
+    border-bottom: var(--border);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  .profile__para {
+    margin-top: var(--space-4);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .profile__lead {
+    font-weight: var(--fw-semibold);
+    color: var(--ink-strong);
+    margin-right: 0.35em;
+  }
+
+  .profile-cta {
+    background: var(--surface-banner);
+    border-top: var(--border);
+    border-bottom: var(--border);
+    padding-block: var(--space-7);
+    margin-top: var(--section-y);
+  }
+  .profile-cta__inner {
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .profile-cta__note {
+    font-size: var(--fs-lead);
+    color: var(--ink-body);
+  }
+  .profile-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  @media (max-width: 760px) {
+    .profile {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    .profile__media {
+      position: static;
+      max-width: 340px;
+    }
+  }
+</style>

@@ -14,6 +14,11 @@ for non-technical edits.
   voice, terminology, and the data-honesty rules.
 - **`coverage.ts`** — service-area geography: town coordinates + roles (drives the
   homepage map), road corridors, deployment zones, the relay-site count.
+- **`people.ts`** — board members & advisors: names, roles, short + full bios, and
+  profile photos (imported from `src/assets/profile-photos/`). Drives the About-page
+  leadership cards and the `/about/<slug>` profile pages. Bios are the person's own
+  factual claims — confirm with them before changing a fact (Jay's full bio is his
+  approved copy; keep it verbatim).
 
 ## Safe to change freely
 

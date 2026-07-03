@@ -35,6 +35,7 @@
 | `ServiceBanner` | `components/ServiceBanner.astro` | Full-width band, top+bottom tan rules, centered uppercase town list with green/brass accent words.                                                                                                                                           |
 | `Card`          | `components/Card.astro`          | Generic bordered card (1px tan border, `--surface-card` fill, square, no shadow). Slot-based.                                                                                                                                                |
 | `Callout`       | `components/Callout.astro`       | Banner-surface call-out with a left accent rule (`accent: 'green'\|'brass'\|'orange'`). For notes/disclaimers.                                                                                                                               |
+| `PersonCard`    | `components/PersonCard.astro`    | Leadership/advisor card on `/about`: portrait (or brass monogram when no photo yet), serif name, brass role label, short bio, link to the `/about/<slug>` profile. Props: `person` (from `src/config/people.ts`).                            |
 
 ## Homepage hero
 

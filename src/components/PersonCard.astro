@@ -1,0 +1,134 @@
+---
+/**
+ * PersonCard — a leadership/advisor card on the About page: portrait (or a
+ * monogram when no photo has been provided), name, role, short bio, and a
+ * link to the person's full profile at /about/<slug>. Follows the card rules:
+ * 1px tan border, square corners, no shadow.
+ */
+import { Image } from 'astro:assets';
+import type { Person } from '@config/people';
+
+interface Props {
+  person: Person;
+}
+
+const { person } = Astro.props;
+---
+
+<article class="person-card">
+  <div class="person-card__media">
+    {
+      person.photo ? (
+        <Image
+          src={person.photo}
+          alt={person.photoAlt ?? `Portrait of ${person.name}`}
+          widths={[400, 800]}
+          sizes="(max-width: 520px) 90vw, (max-width: 860px) 45vw, 400px"
+          class="person-card__photo"
+        />
+      ) : (
+        <div class="person-card__monogram" aria-hidden="true">
+          {person.initials}
+        </div>
+      )
+    }
+  </div>
+  <div class="person-card__body">
+    <p class="person-card__name">{person.name}</p>
+    <p class="person-card__role">{person.role}</p>
+    <p class="person-card__bio">{person.shortBio}</p>
+    <a class="person-card__link" href={`/about/${person.slug}`}>
+      Read {person.firstName}’s full profile
+      <span aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+</article>
+
+<style>
+  .person-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+
+  .person-card__media {
+    border-bottom: var(--border);
+  }
+
+  .person-card__photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 50% 28%;
+  }
+
+  /* Monogram stand-in when no portrait has been provided yet. */
+  .person-card__monogram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    background: var(--surface-banner);
+    font-family: var(--font-display);
+    font-size: var(--fs-hero);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.06em;
+    color: var(--brand-brass-text);
+  }
+
+  .person-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: var(--space-5) var(--space-5) var(--space-6);
+  }
+
+  .person-card__name {
+    font-family: var(--font-display);
+    font-size: var(--fs-lead);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+
+  .person-card__role {
+    margin-top: var(--space-1);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+  }
+
+  .person-card__bio {
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+
+  .person-card__link {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--brand-green);
+  }
+  .person-card__link:hover {
+    color: var(--brand-green-hover);
+    text-decoration: underline;
+  }
+</style>

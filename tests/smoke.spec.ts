@@ -10,6 +10,10 @@ const pages = [
   { name: 'live', path: '/live', h1: /the live feed/i },
   { name: 'contact', path: '/contact', h1: /contact & volunteer/i },
   { name: 'about', path: '/about', h1: /resilient communications/i },
+  { name: 'about-jay', path: '/about/jay', h1: /jay l\. goldberg/i },
+  { name: 'about-corrinne', path: '/about/corrinne', h1: /corrinne goldberg/i },
+  { name: 'about-allan', path: '/about/allan', h1: /allan claghorn/i },
+  { name: 'about-dan', path: '/about/dan', h1: /dan pupius/i },
   { name: 'donate', path: '/donate', h1: /help keep the foothills connected/i },
 ];
 

@@ -5,7 +5,13 @@
  */
 import type { OgCard } from '@lib/og';
 import { home, mesh, live, contact, about, donate } from './content';
+import { people } from './people';
 import { site } from './site';
+
+/** One card per profile page — /about/<slug> maps to the "about-<slug>" card. */
+const personCards = Object.fromEntries(
+  people.map((p) => [`about-${p.slug}`, { kicker: p.role, title: p.name, subtitle: p.summary }])
+);
 
 export const ogCards: Record<string, OgCard> = {
   home: {
@@ -43,10 +49,14 @@ export const ogCards: Record<string, OgCard> = {
     title: site.legalName,
     subtitle: site.tagline,
   },
+  ...personCards,
 };
 
 /** Map a route path to its OG card slug (unknown paths → the default card). */
 export function ogSlugForPath(path: string): string {
-  const slug = path === '/' ? 'home' : path.replace(/^\//, '').replace(/\/$/, '');
+  // Nested routes flatten to hyphenated slugs ("/about/jay" → "about-jay") since
+  // the /og/[slug].png route takes a single path segment.
+  const slug =
+    path === '/' ? 'home' : path.replace(/^\//, '').replace(/\/$/, '').replaceAll('/', '-');
   return slug in ogCards ? slug : 'default';
 }

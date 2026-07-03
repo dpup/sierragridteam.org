@@ -11,6 +11,10 @@ const pages = [
   { name: 'live', path: '/live' },
   { name: 'contact', path: '/contact' },
   { name: 'about', path: '/about' },
+  { name: 'about-jay', path: '/about/jay' },
+  { name: 'about-corrinne', path: '/about/corrinne' },
+  { name: 'about-allan', path: '/about/allan' },
+  { name: 'about-dan', path: '/about/dan' },
   { name: 'donate', path: '/donate' },
 ];
 

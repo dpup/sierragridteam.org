@@ -3,9 +3,10 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
 import SectionHeader from '@components/SectionHeader.astro';
-import Card from '@components/Card.astro';
 import Button from '@components/Button.astro';
+import PersonCard from '@components/PersonCard.astro';
 import { about } from '@config/content';
+import { board, advisors } from '@config/people';
 import { site, donate } from '@config/site';
 
 const description =
@@ -42,16 +43,13 @@ const aboutSchema = {
   <Section surface="page" labelledby="team-title">
     <SectionHeader kicker={about.team.kicker} title={about.team.title} headingId="team-title" />
     <p class="about-team__note">{about.team.note}</p>
+    <h3 class="about-team__group">{about.team.boardHeading}</h3>
     <div class="about-team">
-      {
-        about.team.members.map((m) => (
-          <Card>
-            <p class="about-member__name">{m.name}</p>
-            <p class="about-member__role">{m.role}</p>
-            <p class="about-member__bio">{m.bio}</p>
-          </Card>
-        ))
-      }
+      {board.map((person) => <PersonCard person={person} />)}
+    </div>
+    <h3 class="about-team__group">{about.team.advisorsHeading}</h3>
+    <div class="about-team">
+      {advisors.map((person) => <PersonCard person={person} />)}
     </div>
   </Section>
 
@@ -106,32 +104,23 @@ const aboutSchema = {
     font-size: var(--fs-small);
     color: var(--ink-secondary);
   }
-  .about-team {
-    margin-top: var(--space-6);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-4);
-  }
-  .about-member__name {
-    font-family: var(--font-display);
-    font-size: var(--fs-body);
-    font-weight: var(--fw-medium);
-    color: var(--ink-strong);
-  }
-  .about-member__role {
-    margin-top: var(--space-1);
+  /* Group label (Board of Directors / Advisors) — a tracked rule-line label. */
+  .about-team__group {
+    margin-top: var(--space-7);
+    padding-bottom: var(--space-3);
+    border-bottom: var(--border);
     font-family: var(--font-ui);
-    font-size: var(--fs-micro);
+    font-size: var(--fs-label-lg);
     font-weight: var(--fw-semibold);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
-    color: var(--brand-brass-text);
-  }
-  .about-member__bio {
-    margin-top: var(--space-3);
-    font-size: var(--fs-small);
-    line-height: var(--lh-body);
     color: var(--ink-secondary);
+  }
+  .about-team {
+    margin-top: var(--space-5);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
   }
 
   .about-cta {

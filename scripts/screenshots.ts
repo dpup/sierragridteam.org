@@ -55,6 +55,10 @@ const allPages = [
   { name: 'live', path: '/live' },
   { name: 'contact', path: '/contact' },
   { name: 'about', path: '/about' },
+  { name: 'about-jay', path: '/about/jay' },
+  { name: 'about-corrinne', path: '/about/corrinne' },
+  { name: 'about-allan', path: '/about/allan' },
+  { name: 'about-dan', path: '/about/dan' },
   { name: 'donate', path: '/donate' },
   { name: 'notfound', path: '/this-route-does-not-exist' },
 ];
@@ -227,6 +231,21 @@ async function main() {
         // capture shows the fetched live values (the page SSRs only placeholders).
         await page.waitForTimeout(3500);
       }
+      // Walk the page so lazy-loaded images (e.g. the About portraits) fetch, and
+      // wait until every image has decoded — a fullPage capture won't do this itself.
+      await page.evaluate(async () => {
+        const step = window.innerHeight;
+        for (let y = 0; y <= document.body.scrollHeight; y += step) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 40));
+        }
+        window.scrollTo(0, 0);
+        await Promise.all(
+          Array.from(document.images).map((img) =>
+            img.complete ? null : new Promise((r) => ((img.onload = r), (img.onerror = r)))
+          )
+        );
+      });
       // Kill any residual motion + the text caret for byte-stability.
       await page.addStyleTag({
         content:

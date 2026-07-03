@@ -168,20 +168,24 @@ export const about = {
       'how the alliance came together and the events that prompted it.]',
   },
   // "What we do" reuses the homepage doctrine (Educate / Build / Operate).
+  // The people themselves (names, roles, bios, photos) live in src/config/people.ts.
   team: {
     kicker: 'Leadership',
     title: 'The volunteers behind the network.',
-    note: 'Board members and lead operators are introduced here. [Placeholder bios — replace with real names, roles, and short bios.]',
-    members: [
-      { name: '[Name]', role: 'Founder & Director', bio: '[Short bio coming soon.]' },
-      { name: '[Name]', role: 'Network Operations Lead', bio: '[Short bio coming soon.]' },
-      { name: '[Name]', role: 'Emergency Management Liaison', bio: '[Short bio coming soon.]' },
-      { name: '[Name]', role: 'Training & Outreach', bio: '[Short bio coming soon.]' },
-    ],
+    note: 'S.I.E.R.R.A is governed by a volunteer board of directors, supported by technical advisors.',
+    boardHeading: 'Board of Directors',
+    advisorsHeading: 'Advisors',
   },
   cta: {
     title: 'Help keep the signal up.',
     body: 'It takes volunteers and funding to keep solar relays on the air and operators trained.',
+  },
+  // Per-person profile pages at /about/<slug> (people live in src/config/people.ts).
+  profile: {
+    backLabel: 'About S.I.E.R.R.A',
+    ctaNote: 'S.I.E.R.R.A is built and run entirely by volunteers.',
+    ctaTeam: 'Meet the Full Team',
+    ctaVolunteer: 'Volunteer',
   },
 } as const;
 
