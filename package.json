@@ -3,6 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "description": "Public website for S.I.E.R.R.A — Signal Integrity & Emergency Radio Response Alliance (sierragridteam.org)",
   "engines": {
     "node": ">=22.12.0"

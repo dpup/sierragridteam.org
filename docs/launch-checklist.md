@@ -23,6 +23,19 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       `donate.href` at it, replace the "Give online — coming soon" card copy in
       `src/config/content.ts`, and confirm the **tax-status language** once the
       501(c)(3) determination / EIN is final. See FR for the donation flow.
+- [ ] **Contact form backend.** Provision the Lambda + SES endpoint per
+      `docs/architecture/contact-form.md` (implemented in the terraform/project-hub
+      repo), then point the form at the resulting Function URL and add the
+      `/contact/thanks` page. Until then the form is mailto-based (works, but
+      silently fails for webmail-only visitors — the direct-email fallback link
+      carries it).
+- [ ] **Leadership bios confirmed.** Have each member sign off on their bio before
+      launch (`src/config/people.ts`). Jay's and Corrinne's full profile bios are
+      their provided copy verbatim; the About-page card bios are condensed versions.
+      The Our Story founding copy derives from Jay's bio — include it in his review.
+- [ ] **Corrinne's profile photo.** A monogram stands in on `/about` and
+      `/about/corrinne` — drop a photo into `src/assets/profile-photos/` and wire it
+      in `people.ts`.
 
 ## Should-do
 
@@ -45,10 +58,10 @@ false`); overridable via `PUBLIC_CONTACT_EMAIL`. Confirm the inbox is monitored.
       (mark, serif title, brass kicker, network motif); tags complete. Validate the live
       unfurl with a sharing debugger once the domain is up.
 
-- [ ] **Fill in the About page placeholders.** `src/config/content.ts` `about.*` has
-      bracketed placeholders for the founding story (`about.story.body`) and the four
-      `about.team.members` (`[Name]` / role / `[Short bio coming soon.]`). Replace with
-      real leadership names/bios and the actual origin story before launch.
+- [x] **About page filled in** (2026-07-03). Real leadership bios + `/about/<slug>`
+      profile pages live in `src/config/people.ts`; the founding story replaced the
+      placeholder in `about.story.body`. Remaining follow-ups are the bio sign-off and
+      Corrinne's photo (see Must-do).
 
 ## Nice-to-have
 
