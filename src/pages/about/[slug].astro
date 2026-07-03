@@ -63,7 +63,14 @@ const profileSchema = {
 
       <div class="profile__body">
         <header class="profile__head">
-          <Kicker>{person.role}</Kicker>
+          <Kicker>{person.role}</Kicker>{
+            person.callsign && (
+              <span class="profile__callsign">
+                {' · '}
+                {person.callsign}
+              </span>
+            )
+          }
           <h1 id="profile-title" class="profile__name">{person.name}</h1>
           <p class="profile__intro">{person.intro}</p>
         </header>
@@ -150,6 +157,14 @@ const profileSchema = {
 
   .profile__body {
     max-width: 68ch;
+  }
+
+  /* Call sign beside the role kicker — data, so mono, one step quieter. */
+  .profile__callsign {
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    letter-spacing: 0.1em;
+    color: var(--ink-secondary);
   }
 
   .profile__name {

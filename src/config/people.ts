@@ -34,6 +34,8 @@ export interface Person {
   /** First name, for link text ("Read Jay's full profile"). */
   firstName: string;
   role: string;
+  /** Amateur radio call sign, shown beside the role (omit if none). */
+  callsign?: string;
   group: 'board' | 'advisor';
   /** Portrait. Omit (with initials as the stand-in) if none has been provided. */
   photo?: ImageMetadata;
@@ -56,6 +58,7 @@ export const people: readonly Person[] = [
     name: 'Jay L. Goldberg, J.D.',
     firstName: 'Jay',
     role: 'Founder & President',
+    callsign: 'KB6ENY',
     group: 'board',
     photo: jayPhoto,
     photoAlt: 'Jay Goldberg smiling in a black winter jacket and cap in a snowy Sierra forest.',
@@ -237,6 +240,7 @@ export const people: readonly Person[] = [
     name: 'Allan Claghorn',
     firstName: 'Allan',
     role: 'Secretary',
+    callsign: 'KJ6ERL',
     group: 'board',
     photo: allanPhoto,
     photoAlt: 'Allan Claghorn in a dark jacket in an autumn forest with early snow.',
@@ -274,6 +278,7 @@ export const people: readonly Person[] = [
     name: 'Dan Pupius',
     firstName: 'Dan',
     role: 'Technology Advisor',
+    callsign: 'K1PUP',
     group: 'advisor',
     photo: danPhoto,
     photoAlt: 'Dan Pupius in a cap and black t-shirt by an alpine lake in the Sierra Nevada.',

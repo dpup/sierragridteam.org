@@ -35,7 +35,16 @@ const { person } = Astro.props;
   </div>
   <div class="person-card__body">
     <p class="person-card__name">{person.name}</p>
-    <p class="person-card__role">{person.role}</p>
+    <p class="person-card__role">
+      {person.role}{
+        person.callsign && (
+          <span class="person-card__callsign">
+            {' · '}
+            {person.callsign}
+          </span>
+        )
+      }
+    </p>
     <p class="person-card__bio">{person.shortBio}</p>
     <a class="person-card__link" href={`/about/${person.slug}`}>
       Read {person.firstName}’s full profile
@@ -103,6 +112,13 @@ const { person } = Astro.props;
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--brand-brass-text);
+  }
+
+  /* Call sign — data, so mono, and a step quieter than the brass role. */
+  .person-card__callsign {
+    font-family: var(--font-mono);
+    font-weight: var(--fw-regular);
+    color: var(--ink-secondary);
   }
 
   .person-card__bio {
