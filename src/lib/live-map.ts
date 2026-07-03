@@ -72,6 +72,17 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     return null; // no WebGL → keep the SSR fallback
   }
   map.on('error', () => {}); // swallow tile/style errors — never surface them
+  // Settled signal for the deterministic screenshot harness: html[data-map-settled]
+  // means the map has nothing left to render (set on idle, cleared by any render —
+  // including resize repaints), so a capture never races a paint. Named to not collide
+  // with the [data-live-map] figure hook in live.astro.
+  const root = document.documentElement;
+  map.on('render', () => {
+    delete root.dataset.mapSettled;
+  });
+  map.on('idle', () => {
+    root.dataset.mapSettled = '1';
+  });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   map.touchZoomRotate?.disableRotation();
 

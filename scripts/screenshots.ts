@@ -212,7 +212,14 @@ async function main() {
             .waitForSelector('[data-map-fallback]', { state: 'hidden', timeout: 12000 })
             .catch(() => {});
         }
-        await page.waitForTimeout(LIVE ? 4000 : 2500);
+        // Wait for the map's own settled signal (live-map.ts sets data-map-settled once
+        // rendering finishes) instead of a fixed sleep — fixed sleeps raced the first
+        // paint and made the live captures churn. Falls through on the static no-WebGL
+        // fallback, where there is no map to wait for. (Re-checked again post-scroll
+        // below — a late ResizeObserver resize repaints the canvas.)
+        await page
+          .waitForSelector('html[data-map-settled]', { timeout: LIVE ? 15000 : 8000 })
+          .catch(() => {});
       } else if (pg.path === '/' && !LIVE) {
         // Home tiles are client-filled: Active Alerts + Fire Weather SSR a "—" placeholder
         // and the OperationalStatus island replaces it from the mocked feed. Wait for that
@@ -246,6 +253,26 @@ async function main() {
           )
         );
       });
+      // The MapLibre canvas can get resized after the initial settled wait (its
+      // ResizeObserver fires on late layout shifts, e.g. the scroll walk above), which
+      // repaints it. Capture only once the canvas backing store matches its CSS box AND
+      // the map reports settled again — this is what actually killed the live-page churn.
+      if (pg.path === '/live') {
+        await page
+          .waitForFunction(
+            () => {
+              const c = document.querySelector<HTMLCanvasElement>('canvas.maplibregl-canvas');
+              if (!c) return true; // static no-WebGL fallback — nothing to settle
+              const dpr = window.devicePixelRatio || 1;
+              const sized =
+                Math.abs(c.width - c.clientWidth * dpr) <= dpr &&
+                Math.abs(c.height - c.clientHeight * dpr) <= dpr;
+              return sized && document.documentElement.dataset.mapSettled === '1';
+            },
+            { timeout: 8000 }
+          )
+          .catch(() => {});
+      }
       // Kill any residual motion + the text caret for byte-stability.
       await page.addStyleTag({
         content:
