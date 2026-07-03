@@ -9,6 +9,7 @@ const pages = [
   { name: 'mesh', path: '/mesh', h1: /mesh network/i },
   { name: 'live', path: '/live', h1: /the live feed/i },
   { name: 'contact', path: '/contact', h1: /contact & volunteer/i },
+  { name: 'contact-thanks', path: '/contact/thanks', h1: /your message is on its way/i },
   { name: 'about', path: '/about', h1: /resilient communications/i },
   { name: 'about-jay', path: '/about/jay', h1: /jay l\. goldberg/i },
   { name: 'about-corrinne', path: '/about/corrinne', h1: /corrinne goldberg/i },

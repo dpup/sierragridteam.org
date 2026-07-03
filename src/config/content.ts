@@ -148,6 +148,17 @@ export const contact = {
   formHeading: 'Get in touch',
   formIntro:
     'Tell us how you would like to help and we will follow up. Fields marked optional can be left blank.',
+  formPrivacyNote:
+    'This form sends your message straight to our inbox. We do not share it with anyone else.',
+  formErrorNote:
+    'Something went wrong sending your message. Please email us directly — the address is below the form.',
+  thanks: {
+    kicker: 'Message Sent',
+    title: 'Thank you — your message is on its way.',
+    body:
+      'A volunteer reads every message, and we will reply to the email address you provided. ' +
+      'If your note is time-sensitive, email us directly at',
+  },
 } as const;
 
 export const about = {

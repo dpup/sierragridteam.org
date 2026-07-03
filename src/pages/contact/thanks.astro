@@ -1,0 +1,58 @@
+---
+/**
+ * /contact/thanks — confirmation page the contact endpoint redirects to after a
+ * successful submission (docs/architecture/contact-form.md). Not in the nav and
+ * noindex — it only makes sense mid-flow.
+ */
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import Button from '@components/Button.astro';
+import { contact } from '@config/content';
+import { site } from '@config/site';
+---
+
+<BaseLayout
+  title="Message Sent"
+  description="Your message to S.I.E.R.R.A has been sent."
+  path="/contact/thanks"
+  noindex
+>
+  <Section surface="page" labelledby="thanks-title">
+    <div class="thanks">
+      <Kicker>{contact.thanks.kicker}</Kicker>
+      <h1 id="thanks-title" class="thanks__title">{contact.thanks.title}</h1>
+      <p class="thanks__body">
+        {contact.thanks.body}{' '}<a href={`mailto:${site.email}`}>{site.email}</a>.
+      </p>
+      <div class="thanks__actions">
+        <Button variant="primary" href="/" arrow>Back to the Homepage</Button>
+        <Button variant="secondary" href="/live">View the Live Feed</Button>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .thanks {
+    max-width: 60ch;
+    /* Keep the short page from feeling empty above the footer. */
+    min-height: 40vh;
+  }
+  .thanks__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .thanks__body {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .thanks__actions {
+    margin-top: var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>

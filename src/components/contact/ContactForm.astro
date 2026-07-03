@@ -1,8 +1,10 @@
 ---
 /**
- * ContactForm — a mailto-based volunteer/contact form (no backend).
- * Works WITHOUT JavaScript (native mailto form submission); JS enhances it to
- * build a structured subject + body. The Ham call-sign field is clearly optional.
+ * ContactForm — posts natively (no JS required) to the serverless contact
+ * endpoint (site.contactFormEndpoint), which forwards the message to the org
+ * inbox and 303-redirects back to /contact/thanks or /contact?error=1. The
+ * contract lives in docs/architecture/contact-form.md. The `_gotcha` field is a
+ * honeypot: visually hidden, humans never fill it, bots that do are dropped.
  */
 import Button from '../Button.astro';
 import { site } from '@config/site';
@@ -11,15 +13,17 @@ import { contact } from '@config/content';
 const roleOptions = contact.roles.map((r) => r.name);
 ---
 
-<form
-  class="cform"
-  data-contact-form
-  action={`mailto:${site.email}`}
-  method="post"
-  enctype="text/plain"
-  data-email={site.email}
->
+<div class="cform__error" data-form-error hidden>
+  <p>{contact.formErrorNote}</p>
+</div>
+
+<form class="cform" action={site.contactFormEndpoint} method="post">
   <p class="cform__intro">{contact.formIntro}</p>
+
+  <p class="cform__gotcha" aria-hidden="true">
+    <label for="cf-gotcha">Leave this field empty</label>
+    <input id="cf-gotcha" name="_gotcha" type="text" tabindex="-1" autocomplete="off" />
+  </p>
 
   <div class="cform__row">
     <div class="cform__field">
@@ -64,7 +68,7 @@ const roleOptions = contact.roles.map((r) => r.name);
   </div>
 
   <div class="cform__actions">
-    <Button variant="primary" type="submit" arrow>Send via email</Button>
+    <Button variant="primary" type="submit" arrow>Send Message</Button>
     <p class="cform__fallback">
       Prefer to write directly? Email
       <a href={`mailto:${site.email}`}>{site.email}</a>.
@@ -78,32 +82,14 @@ const roleOptions = contact.roles.map((r) => r.name);
       )
     }
   </div>
+
+  <p class="cform__privacy">{contact.formPrivacyNote}</p>
 </form>
 
 <script>
-  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
-  if (form) {
-    const email = form.dataset.email ?? '';
-    form.addEventListener('submit', (e) => {
-      // Enhance: build a structured mailto so the email client opens pre-filled.
-      e.preventDefault();
-      const data = new FormData(form);
-      const get = (k: string) => String(data.get(k) ?? '').trim();
-      const name = get('name');
-      const subject = `Volunteer interest — ${name || 'S.I.E.R.R.A website'}`;
-      const bodyLines = [
-        `Name: ${name}`,
-        `Email: ${get('email')}`,
-        `Ham call sign: ${get('callsign') || '—'}`,
-        `Area of interest: ${get('role') || 'No preference'}`,
-        '',
-        get('message'),
-      ];
-      const href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-        bodyLines.join('\n')
-      )}`;
-      window.location.href = href;
-    });
+  // The endpoint bounces a failed send back to /contact?error=1 — reveal the note.
+  if (new URLSearchParams(location.search).has('error')) {
+    document.querySelector('[data-form-error]')?.removeAttribute('hidden');
   }
 </script>
 
@@ -117,6 +103,31 @@ const roleOptions = contact.roles.map((r) => r.name);
   .cform__intro {
     font-size: var(--fs-small);
     color: var(--ink-secondary);
+  }
+
+  /* Failed-send note (revealed by the ?error=1 script above the form). */
+  .cform__error {
+    margin-bottom: var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    background: var(--surface-banner);
+    border: var(--border);
+    border-left: 3px solid var(--brand-brass);
+    font-size: var(--fs-small);
+    color: var(--ink-body);
+  }
+
+  /* Honeypot — off-screen but focusable-by-bots; never display:none (some bots skip it). */
+  .cform__gotcha {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .cform__privacy {
+    font-size: var(--fs-small);
+    color: var(--ink-muted);
   }
 
   .cform__row {

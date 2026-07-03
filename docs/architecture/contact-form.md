@@ -1,8 +1,8 @@
 # Contact-form backend — spec & handoff
 
-**Status:** waiting on infrastructure. This document is the handoff spec for the
-`terraform/project-hub` repo, which owns the AWS side. Once the Function URL below
-exists, this repo wires the form to it (see "What the website does after" at the end).
+**Status: live.** The AWS side is provisioned in the `terraform/project-hub` repo
+(us-east-1) and the form posts to its Function URL (`site.contactFormEndpoint` in
+`src/config/site.ts`). This document remains the contract both sides implement.
 
 ## Goal
 
