@@ -53,13 +53,13 @@ The form does a **native HTML POST** (top-level navigation, works without JS):
 
 Responses are **redirects**, not JSON (the browser is navigating):
 
-| Case | Response |
-| --- | --- |
-| Valid submission | `303` → `{SITE_ORIGIN}/contact/thanks` |
-| Honeypot filled (bot) | `303` → `{SITE_ORIGIN}/contact/thanks` — silent, never tip off the bot |
-| Missing/invalid fields, oversized body | `303` → `{SITE_ORIGIN}/contact?error=1` |
-| Any non-POST method | `405` |
-| SES failure | `303` → `{SITE_ORIGIN}/contact?error=1` (the page keeps the direct-email fallback visible) |
+| Case                                   | Response                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Valid submission                       | `303` → `{SITE_ORIGIN}/contact/thanks`                                                     |
+| Honeypot filled (bot)                  | `303` → `{SITE_ORIGIN}/contact/thanks` — silent, never tip off the bot                     |
+| Missing/invalid fields, oversized body | `303` → `{SITE_ORIGIN}/contact?error=1`                                                    |
+| Any non-POST method                    | `405`                                                                                      |
+| SES failure                            | `303` → `{SITE_ORIGIN}/contact?error=1` (the page keeps the direct-email fallback visible) |
 
 **Why no CORS:** a native form POST is a top-level navigation, which is exempt from
 CORS. Nothing on the site `fetch()`es this endpoint. (If we ever add a JS-enhanced
@@ -92,14 +92,20 @@ const EMAIL = process.env.CONTACT_EMAIL;
 const ORIGIN = process.env.SITE_ORIGIN;
 
 const redirect = (path) => ({ statusCode: 303, headers: { Location: `${ORIGIN}${path}` } });
-const clean = (s, max) => String(s ?? '').replace(/[\x00-\x1f\x7f]/g, ' ').trim().slice(0, max);
+const clean = (s, max) =>
+  String(s ?? '')
+    .replace(/[\x00-\x1f\x7f]/g, ' ')
+    .trim()
+    .slice(0, max);
 // Conservative: no whitespace/commas (header-injection guard), one @, a dot after it.
 const EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
 
 export const handler = async (event) => {
   if (event.requestContext?.http?.method !== 'POST') return { statusCode: 405 };
 
-  const raw = event.isBase64Encoded ? Buffer.from(event.body ?? '', 'base64').toString() : (event.body ?? '');
+  const raw = event.isBase64Encoded
+    ? Buffer.from(event.body ?? '', 'base64').toString()
+    : (event.body ?? '');
   if (raw.length > 10_000) return redirect('/contact?error=1');
   const p = new URLSearchParams(raw);
 
@@ -122,15 +128,17 @@ export const handler = async (event) => {
   ].join('\n');
 
   try {
-    await ses.send(new SendEmailCommand({
-      Source: EMAIL,
-      Destination: { ToAddresses: [EMAIL] },
-      ReplyToAddresses: [email],
-      Message: {
-        Subject: { Data: `Volunteer interest — ${name}` },
-        Body: { Text: { Data: body } },
-      },
-    }));
+    await ses.send(
+      new SendEmailCommand({
+        Source: EMAIL,
+        Destination: { ToAddresses: [EMAIL] },
+        ReplyToAddresses: [email],
+        Message: {
+          Subject: { Data: `Volunteer interest — ${name}` },
+          Body: { Text: { Data: body } },
+        },
+      })
+    );
     console.log('contact form: forwarded 1 submission'); // no PII in logs
     return redirect('/contact/thanks');
   } catch (err) {
