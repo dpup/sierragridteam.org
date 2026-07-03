@@ -64,11 +64,13 @@ export const people: readonly Person[] = [
       'Founder & President of S.I.E.R.R.A — 20+ years as a security-firm COO, a law ' +
       'enforcement career, and active Search and Rescue service in Calaveras County.',
     shortBio:
-      'Jay spent 20+ years as Chief Operating Officer of a San Francisco computer security ' +
-      'consulting firm and retired from the Sonoma County Sheriff’s Department. An active ' +
-      'Calaveras County Search and Rescue member and licensed ham operator, he operates the ' +
-      'Ebbett’s Pass Radio Safety Network and founded S.I.E.R.R.A to keep agencies and ' +
-      'residents connected when the grid is down.',
+      'Jay balances a sharp executive mind with a lifelong commitment to community safety — ' +
+      '20+ years as Chief Operating Officer of a computer security consulting firm in San ' +
+      'Francisco, a law enforcement career capped by retirement from the Sonoma County ' +
+      'Sheriff’s Department, and active service with the Calaveras County Sheriff’s ' +
+      'Department Search and Rescue team. A licensed ham radio operator, he operates the ' +
+      'Ebbett’s Pass Radio Safety Network and founded S.I.E.R.R.A to ensure timely, ' +
+      'meaningful emergency communications between public safety agencies and residents.',
     // Jay's full bio is his approved copy — keep it verbatim (naming normalized to
     // "S.I.E.R.R.A" per the style guide). Confirm any other edit with Jay.
     intro:

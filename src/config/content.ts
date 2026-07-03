@@ -160,12 +160,15 @@ export const about = {
   story: {
     kicker: 'Our Story',
     title: 'Founded for the next emergency.',
-    // PLACEHOLDER: replace with the real founding story (who, when, why).
     body:
-      'Established in 2026 by a group of amateur-radio operators, emergency-management ' +
-      'professionals, and foothill residents who had lived through one too many wildfire ' +
-      'evacuations and multi-day power shut-offs. [Placeholder — expand with the real story of ' +
-      'how the alliance came together and the events that prompted it.]',
+      'S.I.E.R.R.A grew out of the Ebbett’s Pass Radio Safety Network, the volunteer radio ' +
+      'service founder Jay Goldberg operates along the Highway 4 corridor. When a GMRS ' +
+      'repeater he built proved vital to the rescues of multiple people in a major 2026 ' +
+      'snowstorm, the case for something larger was clear — an off-grid hub coordinating ' +
+      'emergency communications between public safety agencies and residents. Established in ' +
+      '2026 as an all-volunteer non-profit, the alliance brings together radio operators, ' +
+      'public-safety veterans, and engineers to build that network for the Calaveras & ' +
+      'Tuolumne foothills — and to train the people who keep it running.',
   },
   // "What we do" reuses the homepage doctrine (Educate / Build / Operate).
   // The people themselves (names, roles, bios, photos) live in src/config/people.ts.
