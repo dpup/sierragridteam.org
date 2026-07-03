@@ -11,6 +11,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import jayPhoto from '../assets/profile-photos/jay-profile.jpg';
+import corrinnePhoto from '../assets/profile-photos/corrinne-profile.jpg';
 import allanPhoto from '../assets/profile-photos/allan-profile.jpg';
 import danPhoto from '../assets/profile-photos/dan-profile.jpg';
 
@@ -164,7 +165,8 @@ export const people: readonly Person[] = [
     firstName: 'Corrinne',
     role: 'Treasurer',
     group: 'board',
-    // No photo provided yet — the monogram stands in until one arrives.
+    photo: corrinnePhoto,
+    photoAlt: 'Corrinne Goldberg smiling in a hooded sweatshirt and beanie in a snowy forest.',
     initials: 'CG',
     summary:
       'Treasurer of S.I.E.R.R.A — more than 25 years of financial, operational, and ' +
