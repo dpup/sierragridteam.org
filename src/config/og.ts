@@ -4,7 +4,7 @@
  * Keep titles short — they render at 64px on the card.
  */
 import type { OgCard } from '@lib/og';
-import { home, mesh, live, contact, about, donate } from './content';
+import { home, mesh, live, contact, about, donate, blog } from './content';
 import { people } from './people';
 import { site } from './site';
 
@@ -43,6 +43,16 @@ export const ogCards: Record<string, OgCard> = {
     kicker: donate.kicker,
     title: donate.title,
     subtitle: 'Fund the relays, radios, and training that keep the foothills connected.',
+  },
+  blog: {
+    kicker: blog.kicker,
+    title: blog.title,
+    subtitle: 'Technology, preparedness, and lessons in emergency communications.',
+  },
+  'blog-archive': {
+    kicker: blog.archive.kicker,
+    title: blog.archive.title,
+    subtitle: 'Every post, by year and month.',
   },
   default: {
     kicker: site.name,

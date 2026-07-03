@@ -1,0 +1,53 @@
+---
+/**
+ * PostMeta — the small "date · tag" line above a blog post title. Dates are
+ * calendar dates (no timezone), so they format in UTC to avoid off-by-one.
+ */
+interface Props {
+  date: Date;
+  tag?: string;
+  class?: string;
+}
+
+const { date, tag, class: className } = Astro.props;
+
+const display = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+const iso = date.toISOString().slice(0, 10);
+---
+
+<p class:list={['post-meta', className]}>
+  <time datetime={iso}>{display}</time>
+  {
+    tag && (
+      <>
+        <span class="post-meta__sep" aria-hidden="true">
+          ·
+        </span>
+        <span class="post-meta__tag">{tag}</span>
+      </>
+    )
+  }
+</p>
+
+<style>
+  .post-meta {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  .post-meta__sep {
+    margin-inline: var(--space-2);
+    color: var(--ink-muted);
+  }
+  .post-meta__tag {
+    color: var(--brand-brass-text);
+  }
+</style>

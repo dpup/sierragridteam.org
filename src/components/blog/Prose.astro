@@ -1,0 +1,106 @@
+---
+/**
+ * Prose — typography for rendered markdown (blog post bodies). Astro-rendered
+ * <Content /> HTML is outside any scoped style, so the rules use :global()
+ * namespaced under .prose. Serif body per the design system; headings never
+ * heavier than 600; links green; tan rules.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={['prose', className]}>
+  <slot />
+</div>
+
+<style>
+  .prose {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+    max-width: 66ch;
+  }
+  .prose :global(p) {
+    margin-block: var(--space-4);
+  }
+  .prose :global(h2) {
+    margin-top: var(--space-6);
+    font-size: var(--fs-lead);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-strong);
+  }
+  .prose :global(h3) {
+    margin-top: var(--space-5);
+    font-size: var(--fs-body);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-strong);
+  }
+  .prose :global(a) {
+    color: var(--brand-green);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose :global(a:hover) {
+    color: var(--brand-green-hover);
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-block: var(--space-4);
+    padding-left: 1.4em;
+  }
+  .prose :global(li) {
+    margin-block: var(--space-2);
+  }
+  .prose :global(li::marker) {
+    color: var(--brand-brass-text);
+  }
+  .prose :global(strong) {
+    font-weight: var(--fw-semibold);
+    color: var(--ink-strong);
+  }
+  .prose :global(blockquote) {
+    margin-block: var(--space-5);
+    padding: var(--space-3) var(--space-5);
+    border-left: 3px solid var(--brand-brass);
+    background: var(--surface-banner);
+    font-style: italic;
+  }
+  .prose :global(blockquote p) {
+    margin-block: var(--space-2);
+  }
+  .prose :global(code) {
+    font-family: var(--font-mono);
+    font-size: var(--fs-small);
+    background: var(--surface-banner);
+    padding: 1px var(--space-1);
+  }
+  .prose :global(pre) {
+    margin-block: var(--space-4);
+    padding: var(--space-4);
+    background: var(--surface-banner);
+    border: var(--border);
+    overflow-x: auto;
+  }
+  .prose :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+  .prose :global(hr) {
+    margin-block: var(--space-6);
+    border: 0;
+    border-top: var(--border);
+  }
+  .prose :global(img) {
+    max-width: 100%;
+    height: auto;
+    border: var(--border);
+  }
+  /* The standing colophon/disclaimer line the desk appends (rendered as the
+     last emphasized paragraph) reads quieter than body copy. */
+  .prose :global(> p:last-child > em:only-child) {
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+/**
+ * /blog/<yyyy-mm-dd-topic> — a single post. The slug is the markdown filename
+ * in src/content/blog/ (date prefix included, so URLs sort naturally).
+ */
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Button from '@components/Button.astro';
+import PostMeta from '@components/blog/PostMeta.astro';
+import Prose from '@components/blog/Prose.astro';
+import { blog } from '@config/content';
+import { site } from '@config/site';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const path = `/blog/${post.id}`;
+
+const postSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString().slice(0, 10),
+  url: `${site.url}${path}`,
+  ...(post.data.author ? { author: { '@type': 'Organization', name: post.data.author } } : {}),
+  publisher: { '@type': 'NGO', name: site.legalName },
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  path={path}
+  schema={postSchema}
+>
+  <Section surface="page" labelledby="post-title">
+    <nav class="post-back" aria-label="Breadcrumb">
+      <a href="/blog"><span aria-hidden="true">&larr;</span> {blog.post.backLink}</a>
+    </nav>
+
+    <article class="post">
+      <header class="post__head">
+        <PostMeta date={post.data.pubDate} tag={post.data.tag} />
+        <h1 id="post-title" class="post__title">{post.data.title}</h1>
+        {post.data.author && <p class="post__byline">By {post.data.author}</p>}
+      </header>
+      <Prose class="post__body">
+        <Content />
+      </Prose>
+      <div class="post__foot">
+        <Button variant="secondary" href="/blog" arrow>{blog.archiveLink}</Button>
+      </div>
+    </article>
+  </Section>
+</BaseLayout>
+
+<style>
+  .post-back a {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--brand-green);
+  }
+  .post-back a:hover {
+    color: var(--brand-green-hover);
+    text-decoration: underline;
+  }
+
+  .post {
+    margin-top: var(--space-6);
+    max-width: 66ch;
+  }
+  .post__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+    line-height: var(--lh-heading);
+  }
+  .post__byline {
+    margin-top: var(--space-3);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+  .post__head {
+    padding-bottom: var(--space-5);
+    border-bottom: var(--border);
+    margin-bottom: var(--space-2);
+  }
+  .post__foot {
+    margin-top: var(--space-7);
+    padding-top: var(--space-6);
+    border-top: var(--border);
+  }
+</style>

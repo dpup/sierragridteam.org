@@ -161,6 +161,28 @@ export const contact = {
   },
 } as const;
 
+export const blog = {
+  kicker: 'News & Notes',
+  title: 'Notes from the foothills.',
+  intro:
+    'Technology, preparedness, and lessons in emergency communications — written slowly, ' +
+    'when there is something worth saying. For anything happening right now, the Live Feed ' +
+    'is the place.',
+  /** How many full posts the main /blog page shows before pointing at the archive. */
+  recentCount: 5,
+  archiveLink: 'Browse the Archive',
+  emptyNote: 'No posts yet — the first ones are on their way.',
+  archive: {
+    kicker: 'News & Notes',
+    title: 'The archive.',
+    intro: 'Every post, by year and month.',
+    backLink: 'Latest Posts',
+  },
+  post: {
+    backLink: 'All Posts',
+  },
+} as const;
+
 export const about = {
   kicker: 'About the Alliance',
   title: 'Resilient communications, built by neighbors.',

@@ -32,6 +32,7 @@ make help        # list all targets
 | `src/layouts/BaseLayout.astro` | HTML shell: head/SEO, nav, footer, fonts.                                                                                                  |
 | `src/styles/tokens.css`        | **The design tokens** — the only file with raw colors/sizes.                                                                               |
 | `src/config/`                  | Editable data: `site.ts`, `content.ts` (copy), `coverage.ts` (map/geo), `people.ts` (leadership bios).                                     |
+| `src/content/blog/`            | Blog posts (markdown, one file per post, named `yyyy-mm-dd-topic.md` → `/blog/yyyy-mm-dd-topic`).                                          |
 | `src/assets/`                  | Build-processed images (leadership profile photos).                                                                                        |
 | `src/lib/`                     | Typed info.ersn.net shapes + pure derivations; the `/live` view renderers and MapLibre map.                                                |
 | `src/data/`                    | **Test fixtures only** (unit tests + the mocked screenshot harness) — never rendered on pages.                                             |

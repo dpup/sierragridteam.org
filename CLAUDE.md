@@ -159,6 +159,14 @@ stable.
   The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
   (an active **evacuation or wildfire** — both area-scoped, so the region-wide rollup is
   never trusted) — its orange is a sanctioned genuine-alert use.
+- **The blog** (`/blog`) is an Astro content collection: markdown posts in
+  `src/content/blog/`, one file per post named `yyyy-mm-dd-topic.md` (the filename is
+  the URL slug; `pubDate` must match the date prefix). Frontmatter: `title`,
+  `description` (one sentence), `pubDate`, `tag` (one pillar), optional `author`.
+  `/blog` shows recent posts in full, `/blog/archive` lists titles by year/month.
+  Post copy follows `docs/content-style-guide.md` AND `docs/news-feed-content-brief.md`
+  (scope, sourcing, and hard rules for what may be published). Keep post headlines
+  under ~46 chars so the page title stays ≤60 with the site suffix.
 - **Package manager:** npm (`bun install` hangs behind some proxies; `bun` is used
   only as a test/script runner). Use `make install`.
 - **Deploy:** AWS S3 + CloudFront, DNS at Hostinger — see `docs/deployment.md`.

@@ -36,6 +36,8 @@
 | `Card`          | `components/Card.astro`          | Generic bordered card (1px tan border, `--surface-card` fill, square, no shadow). Slot-based.                                                                                                                                                |
 | `Callout`       | `components/Callout.astro`       | Banner-surface call-out with a left accent rule (`accent: 'green'\|'brass'\|'orange'`). For notes/disclaimers.                                                                                                                               |
 | `PersonCard`    | `components/PersonCard.astro`    | Leadership/advisor card on `/about`: portrait (or brass monogram when no photo yet), serif name, brass role label, short bio, link to the `/about/<slug>` profile. Props: `person` (from `src/config/people.ts`).                            |
+| `PostMeta`      | `components/blog/PostMeta.astro` | The "date · tag" line above a blog post title (UTC-formatted `<time>`, brass tag). Props: `date`, `tag?`.                                                                                                                                    |
+| `Prose`         | `components/blog/Prose.astro`    | Typography wrapper for rendered markdown (blog bodies): serif body, ≤600 headings, green links, tan rules, `:global()` under `.prose`.                                                                                                       |
 
 ## Homepage hero
 

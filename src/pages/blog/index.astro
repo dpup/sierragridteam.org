@@ -1,0 +1,123 @@
+---
+/**
+ * /blog — the news feed's front page: the most recent posts in full (they run
+ * 300–700 words, so a handful reads comfortably), then a pointer to the
+ * archive. Posts live in src/content/blog/ (see docs/news-feed-content-brief.md).
+ */
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import Button from '@components/Button.astro';
+import PostMeta from '@components/blog/PostMeta.astro';
+import Prose from '@components/blog/Prose.astro';
+import { blog } from '@config/content';
+import { site } from '@config/site';
+
+const description =
+  'News and notes from S.I.E.R.R.A — technology, preparedness, and lessons in emergency ' +
+  'communications for the Calaveras & Tuolumne foothills.';
+
+const all = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const recent = all.slice(0, blog.recentCount);
+const rendered = await Promise.all(recent.map(async (post) => ({ post, ...(await render(post)) })));
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: `Blog — ${site.name}`,
+  url: `${site.url}/blog`,
+};
+---
+
+<BaseLayout title="Blog" description={description} path="/blog" schema={pageSchema}>
+  <Section surface="page" labelledby="blog-title">
+    <header class="blog-head">
+      <Kicker>{blog.kicker}</Kicker>
+      <h1 id="blog-title" class="blog-head__title">{blog.title}</h1>
+      <p class="blog-head__intro">{blog.intro}</p>
+    </header>
+
+    {all.length === 0 && <p class="blog-empty">{blog.emptyNote}</p>}
+
+    <div class="blog-feed">
+      {
+        rendered.map(({ post, Content }) => (
+          <article class="blog-post" aria-labelledby={`post-${post.id}`}>
+            <PostMeta date={post.data.pubDate} tag={post.data.tag} />
+            <h2 id={`post-${post.id}`} class="blog-post__title">
+              <a href={`/blog/${post.id}`}>{post.data.title}</a>
+            </h2>
+            <Prose>
+              <Content />
+            </Prose>
+          </article>
+        ))
+      }
+    </div>
+
+    {
+      all.length > 0 && (
+        <div class="blog-more">
+          <Button variant="secondary" href="/blog/archive" arrow>
+            {blog.archiveLink}
+          </Button>
+        </div>
+      )
+    }
+  </Section>
+</BaseLayout>
+
+<style>
+  .blog-head {
+    max-width: 64ch;
+  }
+  .blog-head__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .blog-head__intro {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .blog-empty {
+    margin-top: var(--space-7);
+    font-size: var(--fs-lead);
+    color: var(--ink-secondary);
+  }
+
+  .blog-feed {
+    max-width: 66ch;
+  }
+  .blog-post {
+    margin-top: var(--space-8);
+    padding-top: var(--space-7);
+    border-top: var(--border);
+  }
+  .blog-post__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h3);
+    line-height: var(--lh-heading);
+  }
+  .blog-post__title a {
+    color: var(--ink-strong);
+    text-decoration: none;
+  }
+  .blog-post__title a:hover {
+    color: var(--brand-green);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .blog-more {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: var(--border);
+    max-width: 66ch;
+  }
+</style>

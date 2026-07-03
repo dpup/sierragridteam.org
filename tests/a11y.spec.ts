@@ -8,6 +8,9 @@ import AxeBuilder from '@axe-core/playwright';
 const pages = [
   { name: 'home', path: '/' },
   { name: 'mesh', path: '/mesh' },
+  { name: 'blog', path: '/blog' },
+  { name: 'blog-archive', path: '/blog/archive' },
+  { name: 'blog-post', path: '/blog/2026-07-03-what-this-blog-is-for' },
   { name: 'live', path: '/live' },
   { name: 'contact', path: '/contact' },
   { name: 'contact-thanks', path: '/contact/thanks' },
