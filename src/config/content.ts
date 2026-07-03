@@ -183,6 +183,48 @@ export const blog = {
   },
 } as const;
 
+/** /colophon — how the automated news desk works (linked from every desk post). */
+export const colophon = {
+  kicker: 'Colophon',
+  title: 'How the Signal Desk works.',
+  deskName: 'Signal Desk',
+  sections: [
+    {
+      heading: 'What it is',
+      body:
+        'Posts on the blog bylined "Signal Desk" are drafted by an automated editorial ' +
+        'system — an AI model with web-search access, operating under a published editorial ' +
+        'brief that sets its scope, sourcing standards, and hard rules. It runs on a ' +
+        'schedule, and most runs publish nothing: silence is the intended output unless ' +
+        'there is something genuinely worth a reader’s time.',
+    },
+    {
+      heading: 'Human review',
+      body:
+        'Every draft is submitted for review and approved by a member of S.I.E.R.R.A before ' +
+        'it appears on the site. Nothing the desk writes publishes on its own.',
+    },
+    {
+      heading: 'Sourcing',
+      body:
+        'Every factual claim in a desk post links to a source — official agencies for ' +
+        'conditions and incidents, project pages and release notes for technology. The desk ' +
+        'never covers unfolding emergencies (that is the Live Feed’s job), never issues ' +
+        'emergency instructions, and never reports on S.I.E.R.R.A’s own network or ' +
+        'operations — members publish that news themselves.',
+    },
+    {
+      heading: 'Corrections',
+      body:
+        'Spotted an error? Email us — the address is on the contact page — and we will ' +
+        'correct the post and note the change.',
+    },
+  ],
+  briefNote: 'The full editorial brief is public in the site’s repository:',
+  briefUrl: 'https://github.com/dpup/sierragridteam.org/blob/main/docs/news-feed-content-brief.md',
+  briefLabel: 'News-feed content brief (GitHub)',
+} as const;
+
 export const about = {
   kicker: 'About the Alliance',
   title: 'Resilient communications, built by neighbors.',

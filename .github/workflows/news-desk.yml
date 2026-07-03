@@ -1,0 +1,149 @@
+# Signal Desk — the automated, member-reviewed news desk for /blog.
+# Daily: a writer agent researches and (rarely) drafts a post per
+# docs/news-feed-content-brief.md; a critic agent adversarially reviews and edits
+# or vetoes it; anything that survives is opened as a PULL REQUEST for member
+# review — the desk never publishes directly (the colophon promises human review).
+# Runbook: docs/architecture/news-desk.md. Requires the ANTHROPIC_API_KEY secret.
+name: News Desk
+
+on:
+  schedule:
+    - cron: '30 16 * * *' # daily, 16:30 UTC ≈ 08:30–09:30 Pacific
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: news-desk
+  cancel-in-progress: false
+
+jobs:
+  desk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cheap mechanical guard before any API spend: the brief requires >=3 days
+      # between posts (and max one per week — the writer enforces that judgment).
+      - name: Cadence guard
+        id: guard
+        run: |
+          latest=$(ls src/content/blog/ 2>/dev/null | sort | tail -1 | cut -c1-10)
+          if [ -n "$latest" ]; then
+            age_days=$(( ( $(date -u +%s) - $(date -u -d "$latest" +%s) ) / 86400 ))
+            echo "Most recent post: $latest (${age_days}d ago)"
+            if [ "$age_days" -lt 3 ]; then
+              echo "Under the 3-day minimum between posts — skipping this run."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip == 'false'
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.guard.outputs.skip == 'false'
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          npm ci --no-audit --no-fund
+          npm install -g @anthropic-ai/claude-code
+          mkdir -p /tmp/news-desk
+
+      - name: Writer — research and draft (or decline)
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude --dangerously-skip-permissions --max-turns 80 \
+            -p "$(cat .github/prompts/news-desk-writer.md)"
+          echo "--- writer notes ---"
+          cat /tmp/news-desk/writer-notes.md || echo "(no writer notes written)"
+
+      - name: Detect draft
+        if: steps.guard.outputs.skip == 'false'
+        id: draft
+        run: |
+          post=$(git status --porcelain src/content/blog/ | awk '$1=="??" {print $2}' | head -1)
+          if [ -z "$post" ]; then
+            echo "No draft this run — the desk declined to publish (a successful outcome)."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Draft: $post"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "post=$post" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Critic — adversarial review and edit (or veto)
+        if: steps.guard.outputs.skip == 'false' && steps.draft.outputs.exists == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude --dangerously-skip-permissions --max-turns 50 \
+            -p "$(cat .github/prompts/news-desk-critic.md)"
+          echo "--- critic notes ---"
+          cat /tmp/news-desk/critic-notes.md || echo "(no critic notes written)"
+
+      - name: Re-detect after review (the critic may veto by deleting)
+        if: steps.guard.outputs.skip == 'false' && steps.draft.outputs.exists == 'true'
+        id: final
+        run: |
+          post=$(git status --porcelain src/content/blog/ | awk '$1=="??" {print $2}' | head -1)
+          if [ -z "$post" ]; then
+            echo "Critic vetoed the draft — nothing to publish."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "post=$post" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Belt-and-suspenders: both agents were told to run these, but the PR only
+      # opens if the tree actually verifies and builds.
+      - name: Verify and build
+        if: steps.guard.outputs.skip == 'false' && steps.final.outputs.exists == 'true'
+        run: |
+          make verify
+          npm run build
+
+      - name: Open pull request for member review
+        if: steps.guard.outputs.skip == 'false' && steps.final.outputs.exists == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          POST: ${{ steps.final.outputs.post }}
+        run: |
+          slug=$(basename "$POST" .md)
+          title=$(awk -F': *' '$1=="title" {sub(/^title: */,""); print; exit}' "$POST")
+          branch="news-desk/$slug"
+          git config user.name "sierra-news-desk[bot]"
+          git config user.email "news-desk@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add "$POST"
+          git commit -m "post: $title" -m "Drafted and reviewed by the Signal Desk (automated). See PR for notes."
+          git push origin "$branch"
+          {
+            echo "Automated draft from the **Signal Desk** — review per docs/news-feed-content-brief.md before merging. Merging publishes it."
+            echo
+            echo "## Writer notes"
+            cat /tmp/news-desk/writer-notes.md 2>/dev/null || echo "(none)"
+            echo
+            echo "## Critic notes"
+            cat /tmp/news-desk/critic-notes.md 2>/dev/null || echo "(none)"
+            echo
+            echo "## Reviewer checklist"
+            echo "- [ ] Every claim's source link holds up"
+            echo "- [ ] Nothing about an unfolding incident; no emergency instructions"
+            echo "- [ ] No claims about S.I.E.R.R.A's own network/operations"
+            echo "- [ ] Voice reads like the site (calm, plain, no hype)"
+          } > /tmp/news-desk/pr-body.md
+          gh pr create --title "News desk: $title" --body-file /tmp/news-desk/pr-body.md

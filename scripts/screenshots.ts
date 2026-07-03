@@ -64,6 +64,7 @@ const allPages = [
   { name: 'about-allan', path: '/about/allan' },
   { name: 'about-dan', path: '/about/dan' },
   { name: 'donate', path: '/donate' },
+  { name: 'colophon', path: '/colophon' },
   { name: 'notfound', path: '/this-route-does-not-exist' },
 ];
 // LIVE mode only cares about the data-driven pages (home tiles/banner + the live feed).

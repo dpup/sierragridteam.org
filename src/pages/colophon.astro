@@ -1,0 +1,83 @@
+---
+/**
+ * /colophon — how the automated news desk works. Every desk-bylined blog post
+ * ends with a standing line pointing here (docs/news-feed-content-brief.md §9).
+ */
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import { colophon } from '@config/content';
+import { site } from '@config/site';
+
+const description =
+  'How the Signal Desk works — the automated, member-reviewed editorial desk behind ' +
+  'S.I.E.R.R.A’s blog.';
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: `Colophon — ${site.name}`,
+  url: `${site.url}/colophon`,
+};
+---
+
+<BaseLayout title="Colophon" description={description} path="/colophon" schema={pageSchema}>
+  <Section surface="page" labelledby="colophon-title">
+    <div class="colophon">
+      <Kicker>{colophon.kicker}</Kicker>
+      <h1 id="colophon-title" class="colophon__title">{colophon.title}</h1>
+
+      {
+        colophon.sections.map((s) => (
+          <section class="colophon__section">
+            <h2 class="colophon__heading">{s.heading}</h2>
+            <p class="colophon__body">{s.body}</p>
+          </section>
+        ))
+      }
+
+      <p class="colophon__brief">
+        {colophon.briefNote}{' '}<a href={colophon.briefUrl}>{colophon.briefLabel}</a>.
+      </p>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .colophon {
+    max-width: 64ch;
+  }
+  .colophon__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .colophon__section {
+    margin-top: var(--space-6);
+  }
+  .colophon__heading {
+    padding-bottom: var(--space-2);
+    border-bottom: var(--border);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+  .colophon__body {
+    margin-top: var(--space-4);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .colophon__brief {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: var(--border);
+    font-size: var(--fs-small);
+    color: var(--ink-secondary);
+  }
+  .colophon__brief a {
+    color: var(--brand-green);
+  }
+</style>

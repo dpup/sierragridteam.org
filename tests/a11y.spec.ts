@@ -20,6 +20,7 @@ const pages = [
   { name: 'about-allan', path: '/about/allan' },
   { name: 'about-dan', path: '/about/dan' },
   { name: 'donate', path: '/donate' },
+  { name: 'colophon', path: '/colophon' },
 ];
 
 for (const pg of pages) {

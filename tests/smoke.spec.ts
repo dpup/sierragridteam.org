@@ -23,6 +23,7 @@ const pages = [
   { name: 'about-allan', path: '/about/allan', h1: /allan claghorn/i },
   { name: 'about-dan', path: '/about/dan', h1: /dan pupius/i },
   { name: 'donate', path: '/donate', h1: /help keep the foothills connected/i },
+  { name: 'colophon', path: '/colophon', h1: /how the signal desk works/i },
 ];
 
 for (const pg of pages) {
