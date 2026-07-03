@@ -32,6 +32,9 @@ for (const pg of pages) {
     }
 
     await expect(page).toHaveTitle(/S\.I\.E\.R\.R\.A/);
+    // SEO: Google truncates titles over ~60 chars, and <title> == og:title (Seo.astro),
+    // so this also guards the social-card title (issue #5).
+    expect((await page.title()).length).toBeLessThanOrEqual(60);
     await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
 
     const h1 = page.locator('h1');
