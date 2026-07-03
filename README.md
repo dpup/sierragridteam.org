@@ -77,6 +77,10 @@ mesh-node status (FR-5/FR-6), which info.ersn.net does not own — see
 - Wire AWS/Hostinger per `docs/deployment.md` and set the deploy secrets.
 - Contact email — confirm `info@sierragridteam.org` is monitored (it's set live;
   override via `PUBLIC_CONTACT_EMAIL` if needed).
+- Contact form backend — provision the Lambda + SES endpoint per
+  `docs/architecture/contact-form.md` (lives in the terraform/project-hub repo),
+  then wire the form to the resulting Function URL. Until then the form is
+  mailto-based.
 - Leadership bios (`src/config/people.ts`) — have each member confirm their bio
   before launch. Jay's and Corrinne's full profile bios are their provided copy
   verbatim; the short About-page card bios are condensed versions. Corrinne's
