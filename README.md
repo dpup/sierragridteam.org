@@ -86,7 +86,7 @@ mesh-node status, which info.ersn.net does not own — see
 ## Project status
 
 Pre-launch. Remaining go-live work (infrastructure, donation provider, content
-confirmations) is tracked in [`docs/launch-checklist.md`](docs/launch-checklist.md).
+confirmations) is tracked outside this repository.
 
 ## License & usage
 

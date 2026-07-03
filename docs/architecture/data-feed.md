@@ -120,5 +120,5 @@ not own:
 | **FR-6** | No structured **mesh node** feed (count/health)         | /mesh sidebar                  | Static deployment-zone list (`live` flags in `coverage.ts`); live counts pending |
 
 FR-5/FR-6 concern the org’s own mesh/relay infrastructure (out of info.ersn.net’s roads/weather
-domain) and are tracked in the launch checklist. Placeholders must be visually honest: a
-muted note, never an invented number.
+domain); they stay open until the org exposes its own feed. Placeholders must be visually
+honest: a muted note, never an invented number.

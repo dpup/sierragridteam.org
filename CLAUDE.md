@@ -162,4 +162,5 @@ stable.
 - **Package manager:** npm (`bun install` hangs behind some proxies; `bun` is used
   only as a test/script runner). Use `make install`.
 - **Deploy:** AWS S3 + CloudFront, DNS at Hostinger — see `docs/deployment.md`.
-- **Open pre-launch items** are listed at the bottom of `README.md`.
+- **Pre-launch tracking** lives outside this repo (the project-hub repo); don't add
+  a checklist here. Repo-local TODOs are inline comments at the relevant code.
