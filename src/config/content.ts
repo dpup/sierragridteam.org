@@ -203,8 +203,9 @@ export const donate = {
   ways: [
     {
       name: 'Give Online',
-      // PLACEHOLDER: wire up a donation provider (Donorbox / Stripe / PayPal Giving / Givebutter).
-      desc: 'Online giving is being set up. [Placeholder — connect your donation platform here.]',
+      // TODO(pre-launch): wire up a donation provider (Donorbox / Stripe / PayPal Giving /
+      // Givebutter), then set status to 'live' and describe it here.
+      desc: 'Online giving is being set up and will appear here soon. In the meantime, gifts by mail and equipment donations are just as welcome.',
       status: 'pending',
     },
     {
@@ -218,8 +219,9 @@ export const donate = {
       status: 'live',
     },
   ],
-  // PLACEHOLDER: confirm before launch.
+  // TODO(pre-launch): once 501(c)(3) status is confirmed, replace with the official
+  // language + EIN. Until then this stays honest: no deductibility is claimed.
   taxNote:
     'S.I.E.R.R.A’s tax-exempt status and the deductibility of gifts are being finalized. ' +
-    '[Placeholder — confirm 501(c)(3) status and add the EIN / official language before launch.]',
+    'Official confirmation and receipt details will be posted here once complete.',
 } as const;
