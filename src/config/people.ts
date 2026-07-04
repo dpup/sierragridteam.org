@@ -5,9 +5,9 @@
  *
  * Copy follows docs/content-style-guide.md (calm, institutional, no hype).
  * The bios state specific factual claims supplied by each member — present them
- * as provided and confirm with the person before changing a fact.
- * NOTE(pre-launch): Jay asked to review his bio wording before it ships — keep
- * his full bio verbatim unless he approves an edit.
+ * as provided and confirm with the person before changing a fact. All bios were
+ * signed off by their members on 2026-07-04 (Jay's and Corrinne's full bios are
+ * their provided copy verbatim — keep them that way unless they approve an edit).
  */
 import type { ImageMetadata } from 'astro';
 import jayPhoto from '../assets/profile-photos/jay-profile.jpg';
