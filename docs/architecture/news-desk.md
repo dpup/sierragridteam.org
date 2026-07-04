@@ -29,11 +29,11 @@ on the PR as usual; the merge triggers the normal deploy.
 
 ## Setup (one-time)
 
-- Add the **`CLAUDE_OAUTH_TOKEN`** repository secret (Settings → Secrets and
+- Add the **`CLAUDE_CODE_OAUTH_TOKEN`** repository secret (Settings → Secrets and
   variables → Actions): run `claude setup-token` locally and paste the resulting
-  token. The workflow maps it to `CLAUDE_CODE_OAUTH_TOKEN`, which the Claude Code
-  CLI reads. Nothing else — `GITHUB_TOKEN` covers branch + PR creation via the
-  workflow's `contents: write` / `pull-requests: write` permissions.
+  token — the Claude Code CLI reads this env var directly. Nothing else —
+  `GITHUB_TOKEN` covers branch + PR creation via the workflow's
+  `contents: write` / `pull-requests: write` permissions.
 - Optional: branch-protect `main` so news-desk PRs genuinely require a human merge.
 
 ## Operating it
