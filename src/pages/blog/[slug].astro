@@ -40,27 +40,41 @@ const postSchema = {
   schema={postSchema}
 >
   <Section surface="page" labelledby="post-title">
-    <nav class="post-back" aria-label="Breadcrumb">
-      <a href="/blog"><span aria-hidden="true">&larr;</span> {blog.post.backLink}</a>
-    </nav>
+    <div class="post-layout">
+      <aside class="post-rail">
+        <nav class="post-back" aria-label="Breadcrumb">
+          <a href="/blog"><span aria-hidden="true">&larr;</span> {blog.post.backLink}</a>
+        </nav>
+        <PostMeta date={post.data.pubDate} tag={post.data.tag} class="post-rail__meta" />
+        {post.data.author && <p class="post-rail__byline">By {post.data.author}</p>}
+      </aside>
 
-    <article class="post">
-      <header class="post__head">
-        <PostMeta date={post.data.pubDate} tag={post.data.tag} />
+      <article class="post">
         <h1 id="post-title" class="post__title">{post.data.title}</h1>
-        {post.data.author && <p class="post__byline">By {post.data.author}</p>}
-      </header>
-      <Prose class="post__body">
-        <Content />
-      </Prose>
-      <div class="post__foot">
-        <Button variant="secondary" href="/blog" arrow>{blog.archiveLink}</Button>
-      </div>
-    </article>
+        <Prose class="post__body">
+          <Content />
+        </Prose>
+        <div class="post__foot">
+          <Button variant="secondary" href="/blog" arrow>{blog.archiveLink}</Button>
+        </div>
+      </article>
+    </div>
   </Section>
 </BaseLayout>
 
 <style>
+  /* Meta in a sticky left rail, the post on the right (stacks below 860px). */
+  .post-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 340px) 1fr;
+    gap: var(--space-9);
+    align-items: start;
+  }
+
+  .post-rail {
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--space-5));
+  }
   .post-back a {
     font-family: var(--font-ui);
     font-size: var(--fs-label-lg);
@@ -74,29 +88,43 @@ const postSchema = {
     color: var(--brand-green-hover);
     text-decoration: underline;
   }
-
-  .post {
+  .post-rail :global(.post-rail__meta) {
     margin-top: var(--space-6);
-    max-width: 66ch;
+    padding-top: var(--space-5);
+    border-top: var(--border);
   }
-  .post__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-    line-height: var(--lh-heading);
-  }
-  .post__byline {
-    margin-top: var(--space-3);
+  .post-rail__byline {
+    margin-top: var(--space-2);
     font-size: var(--fs-small);
     color: var(--ink-secondary);
   }
-  .post__head {
-    padding-bottom: var(--space-5);
-    border-bottom: var(--border);
-    margin-bottom: var(--space-2);
+
+  .post {
+    max-width: 66ch;
+    min-width: 0;
+  }
+  .post__title {
+    font-size: var(--fs-h2);
+    line-height: var(--lh-heading);
   }
   .post__foot {
     margin-top: var(--space-7);
     padding-top: var(--space-6);
     border-top: var(--border);
+  }
+
+  @media (max-width: 860px) {
+    .post-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+    .post-rail {
+      position: static;
+    }
+    .post-rail :global(.post-rail__meta) {
+      margin-top: var(--space-5);
+      padding-top: 0;
+      border-top: 0;
+    }
   }
 </style>

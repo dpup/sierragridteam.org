@@ -3,13 +3,18 @@
 # docs/news-feed-content-brief.md; a critic agent adversarially reviews and edits
 # or vetoes it; anything that survives is opened as a PULL REQUEST for member
 # review — the desk never publishes directly (the colophon promises human review).
-# Runbook: docs/architecture/news-desk.md. Requires the ANTHROPIC_API_KEY secret.
+# Runbook: docs/architecture/news-desk.md. Requires the CLAUDE_OAUTH_TOKEN secret.
 name: News Desk
 
 on:
   schedule:
     - cron: '30 16 * * *' # daily, 16:30 UTC ≈ 08:30–09:30 Pacific
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Bypass the 3-day cadence guard (testing only — the writer still applies the brief)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -31,6 +36,11 @@ jobs:
       - name: Cadence guard
         id: guard
         run: |
+          if [ "${{ inputs.force }}" = "true" ]; then
+            echo "Forced run — bypassing the cadence guard (the writer still applies the brief)."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           latest=$(ls src/content/blog/ 2>/dev/null | sort | tail -1 | cut -c1-10)
           if [ -n "$latest" ]; then
             age_days=$(( ( $(date -u +%s) - $(date -u -d "$latest" +%s) ) / 86400 ))
@@ -64,7 +74,8 @@ jobs:
       - name: Writer — research and draft (or decline)
         if: steps.guard.outputs.skip == 'false'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Claude Code reads CLAUDE_CODE_OAUTH_TOKEN (generate one with `claude setup-token`).
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
         run: |
           claude --dangerously-skip-permissions --max-turns 80 \
             -p "$(cat .github/prompts/news-desk-writer.md)"
@@ -88,7 +99,8 @@ jobs:
       - name: Critic — adversarial review and edit (or veto)
         if: steps.guard.outputs.skip == 'false' && steps.draft.outputs.exists == 'true'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Claude Code reads CLAUDE_CODE_OAUTH_TOKEN (generate one with `claude setup-token`).
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
         run: |
           claude --dangerously-skip-permissions --max-turns 50 \
             -p "$(cat .github/prompts/news-desk-critic.md)"

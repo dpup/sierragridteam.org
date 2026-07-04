@@ -34,45 +34,55 @@ const pageSchema = {
 
 <BaseLayout title="Blog" description={description} path="/blog" schema={pageSchema}>
   <Section surface="page" labelledby="blog-title">
-    <header class="blog-head">
-      <Kicker>{blog.kicker}</Kicker>
-      <h1 id="blog-title" class="blog-head__title">{blog.title}</h1>
-      <p class="blog-head__intro">{blog.intro}</p>
-    </header>
+    <div class="blog-layout">
+      <header class="blog-head">
+        <Kicker>{blog.kicker}</Kicker>
+        <h1 id="blog-title" class="blog-head__title">{blog.title}</h1>
+        <p class="blog-head__intro">{blog.intro}</p>
+        {
+          all.length > 0 && (
+            <div class="blog-head__archive">
+              <Button variant="secondary" href="/blog/archive" arrow>
+                {blog.archiveLink}
+              </Button>
+            </div>
+          )
+        }
+      </header>
 
-    {all.length === 0 && <p class="blog-empty">{blog.emptyNote}</p>}
-
-    <div class="blog-feed">
-      {
-        rendered.map(({ post, Content }) => (
-          <article class="blog-post" aria-labelledby={`post-${post.id}`}>
-            <PostMeta date={post.data.pubDate} tag={post.data.tag} />
-            <h2 id={`post-${post.id}`} class="blog-post__title">
-              <a href={`/blog/${post.id}`}>{post.data.title}</a>
-            </h2>
-            <Prose>
-              <Content />
-            </Prose>
-          </article>
-        ))
-      }
+      <div class="blog-feed">
+        {all.length === 0 && <p class="blog-empty">{blog.emptyNote}</p>}
+        {
+          rendered.map(({ post, Content }) => (
+            <article class="blog-post" aria-labelledby={`post-${post.id}`}>
+              <PostMeta date={post.data.pubDate} tag={post.data.tag} />
+              <h2 id={`post-${post.id}`} class="blog-post__title">
+                <a href={`/blog/${post.id}`}>{post.data.title}</a>
+              </h2>
+              <Prose>
+                <Content />
+              </Prose>
+            </article>
+          ))
+        }
+      </div>
     </div>
-
-    {
-      all.length > 0 && (
-        <div class="blog-more">
-          <Button variant="secondary" href="/blog/archive" arrow>
-            {blog.archiveLink}
-          </Button>
-        </div>
-      )
-    }
   </Section>
 </BaseLayout>
 
 <style>
+  /* Header in a sticky left rail, feed on the right — fills the desktop width
+     the way the profile pages do. Stacks below 860px. */
+  .blog-layout {
+    display: grid;
+    grid-template-columns: minmax(260px, 340px) 1fr;
+    gap: var(--space-9);
+    align-items: start;
+  }
+
   .blog-head {
-    max-width: 64ch;
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--space-5));
   }
   .blog-head__title {
     margin-top: var(--space-3);
@@ -84,17 +94,20 @@ const pageSchema = {
     line-height: var(--lh-body);
     color: var(--ink-body);
   }
+  .blog-head__archive {
+    margin-top: var(--space-6);
+  }
 
   .blog-empty {
-    margin-top: var(--space-7);
     font-size: var(--fs-lead);
     color: var(--ink-secondary);
   }
 
   .blog-feed {
     max-width: 66ch;
+    min-width: 0;
   }
-  .blog-post {
+  .blog-post + .blog-post {
     margin-top: var(--space-8);
     padding-top: var(--space-7);
     border-top: var(--border);
@@ -114,10 +127,13 @@ const pageSchema = {
     text-underline-offset: 3px;
   }
 
-  .blog-more {
-    margin-top: var(--space-8);
-    padding-top: var(--space-6);
-    border-top: var(--border);
-    max-width: 66ch;
+  @media (max-width: 860px) {
+    .blog-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-7);
+    }
+    .blog-head {
+      position: static;
+    }
   }
 </style>
