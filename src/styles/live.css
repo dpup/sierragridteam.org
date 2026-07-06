@@ -263,6 +263,23 @@
   color: var(--ink-body);
   white-space: pre-line;
 }
+/* "More information ↗" — the authoritative source link (CAL FIRE incident, Genasys, …). */
+.live-view .stream__more {
+  margin-top: var(--space-3);
+}
+.live-view .stream__more a {
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.live-view .stream__more a:hover {
+  text-decoration: none;
+}
 
 /* ---- Road conditions ---- */
 .live-view .roads {
@@ -451,6 +468,14 @@
   font-size: var(--fs-micro);
   color: var(--ink-muted);
   margin-top: var(--space-2);
+}
+.live-view .map-pop__src a {
+  color: var(--brand-green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.live-view .map-pop__src a:hover {
+  text-decoration: none;
 }
 .live-view .maplibregl-ctrl-group {
   border: var(--border);

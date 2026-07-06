@@ -141,7 +141,11 @@ const scenarios = {
           headline: 'Salt Springs Fire',
           status: 'active',
           area_label: 'East of Arnold, Hwy 4 corridor',
-          source: { id: 'calfire', name: 'CAL FIRE' },
+          source: {
+            id: 'calfire',
+            name: 'CAL FIRE',
+            url: 'https://www.fire.ca.gov/incidents/2026/9/2/salt-springs-fire/',
+          },
           wildfire: { acres: 1240, containment: 15, county: 'Calaveras', has_perimeter: true },
         },
       },
@@ -160,7 +164,7 @@ const scenarios = {
           headline: 'Evacuation WARNING — Hathaway Pines & Avery — prepare to leave',
           status: 'active',
           area_label: 'Zones CAL-E043 & E044',
-          source: { id: 'caloes', name: 'Cal OES / Genasys' },
+          source: { id: 'caloes', name: 'Cal OES / Genasys', url: 'https://protect.genasys.com/' },
           evacuation: {
             zone_id: 'E043',
             level: 'WARNING',

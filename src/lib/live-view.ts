@@ -176,7 +176,12 @@ function streamExtra(f: HazardFeature): string | null {
     return bits.length ? bits.join(' · ') : null;
   }
   if (p.evacuation) {
-    return [p.evacuation.level, p.evacuation.event_type].filter(Boolean).join(' · ') || null;
+    // Level is already in the headline ("Evacuation Order/Warning — …"); surface the
+    // specific Genasys zone + event type instead (the actionable, non-redundant bits).
+    const e = p.evacuation;
+    return (
+      [e.zone_id ? `Zone ${e.zone_id}` : null, e.event_type].filter(Boolean).join(' · ') || null
+    );
   }
   return null;
 }
@@ -188,7 +193,10 @@ function renderStream(items: HazardFeature[]): string {
       const tone = toneFor(f);
       const p = f.properties;
       const ex = streamExtra(f);
-      const hasBody = !!(ex || p.description);
+      // Authoritative "more info" page for the event (CAL FIRE incident, Genasys evac
+      // viewer, …) when the source provides one — opens the body so the link is reachable.
+      const moreUrl = p.source?.url;
+      const hasBody = !!(ex || p.description || moreUrl);
       const head =
         `<span class="stream__head"><span class="stream__kicker">` +
         `<span class="stream__sev">${esc(severityLabel(String(p.severity)))}</span>` +
@@ -211,6 +219,9 @@ function renderStream(items: HazardFeature[]): string {
           `<div class="stream__body">` +
           (ex ? `<p class="stream__extra">${esc(ex)}</p>` : '') +
           (p.description ? `<p class="stream__desc">${esc(p.description)}</p>` : '') +
+          (moreUrl
+            ? `<p class="stream__more"><a href="${esc(moreUrl)}" target="_blank" rel="noopener external">More information<span aria-hidden="true"> &#8599;</span></a></p>`
+            : '') +
           `</div></details></li>`
         );
       }

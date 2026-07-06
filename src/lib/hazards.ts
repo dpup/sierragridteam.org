@@ -28,6 +28,9 @@ export type Severity = 'INFO' | 'LOW' | 'MODERATE' | 'SEVERE' | 'EXTREME';
 export interface HazardSource {
   id: string;
   name: string;
+  /** Authoritative page for this event (e.g. the CAL FIRE incident page, the Genasys
+   * evacuation viewer) — present on some sources; surfaced as a "More information" link. */
+  url?: string;
   attribution?: string;
 }
 
