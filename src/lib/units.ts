@@ -1,5 +1,5 @@
 /**
- * Unit conversions for display. The info.ersn.net feed reports metric (°C, km,
+ * Unit conversions for display. The data.sierragridteam.org feed reports metric (°C, km,
  * km/h); the audience is US public-safety and residents, so we present imperial.
  * Pure functions — unit-tested in src/lib/ersn.test.ts.
  */

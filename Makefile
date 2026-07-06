@@ -49,7 +49,7 @@ screenshots-live: ## Capture /live + home against the REAL feed → tests/screen
 scenarios: ## Screenshot /live under synthetic hazard configs (needs a running preview)
 	node scripts/scenario-shots.mjs
 
-snapshot: ## Refresh the checked-in info.ersn.net data snapshot
+snapshot: ## Refresh the checked-in data.sierragridteam.org data snapshot
 	npm run snapshot
 
 gen-assets: ## Regenerate favicons / OG image / logo mark from the master logo

@@ -46,7 +46,7 @@ Everything below must be researchable via web search or the sources in §5. Aim 
 
 Ground every post in sources you can link. Primary set:
 
-- **Live data:** the Live Feed / info.ersn.net APIs (current conditions, for the publish decision — not for reporting on the network itself)
+- **Live data:** the Live Feed / data.sierragridteam.org APIs (current conditions, for the publish decision — not for reporting on the network itself)
 - **Weather & hazards:** NWS Sacramento (weather.gov), CAL FIRE incident pages, USGS, PG&E PSPS pages, Cal OES / Genasys (protect.genasys.com) for evacuation zones
 - **Tech:** meshtastic.org and the MeshCore project (blogs, GitHub releases), ARRL news (arrl.org), FCC releases, reputable tech press for emergency-comms stories
 - **Peer networks & teams:** community mesh project sites (e.g., NYC Mesh), ARES/RACES and ARRL activation reports, FEMA/CERT program news, and local news coverage of network activations — corroborate per §4.2 before publishing

@@ -49,12 +49,12 @@
 
 ## Live-data islands (client JS; framework: vanilla `<script>` or Astro island)
 
-| Component           | File                                      | Contract                                                                                                                                   |
-| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `LocalClock`        | `components/LocalClock.astro`             | America/Los_Angeles, 24h, "PT". Hydrates client-side; SSR renders build-time value.                                                        |
-| `OperationalStatus` | `components/home/OperationalStatus.astro` | The 4 stat tiles + "Synced" indicator. SSR from build-time snapshot; client refresh every 5 min from info.ersn.net with graceful fallback. |
-| `EmergencyBanner`   | `components/EmergencyBanner.astro`        | Site-wide alarm band (in BaseLayout); shows only on an active evacuation/wildfire; SSR + client `/situation` poll, silent on failure.      |
-| `MeshMap`           | `components/mesh/MeshMap.astro`           | `<iframe>` embed of livemap.wcmesh.com with loading state + "Open Full Map".                                                               |
+| Component           | File                                      | Contract                                                                                                                                          |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LocalClock`        | `components/LocalClock.astro`             | America/Los_Angeles, 24h, "PT". Hydrates client-side; SSR renders build-time value.                                                               |
+| `OperationalStatus` | `components/home/OperationalStatus.astro` | The 4 stat tiles + "Synced" indicator. SSR an honest placeholder; client refresh every 5 min from data.sierragridteam.org with graceful fallback. |
+| `EmergencyBanner`   | `components/EmergencyBanner.astro`        | Site-wide alarm band (in BaseLayout); shows only on an active evacuation/wildfire; SSR + client `/situation` poll, silent on failure.             |
+| `MeshMap`           | `components/mesh/MeshMap.astro`           | `<iframe>` embed of livemap.wcmesh.com with loading state + "Open Full Map".                                                                      |
 
 > **`/live` is not built from components** — it is client-rendered live. Its data regions
 > (status tiles, weather band, alert stream, road conditions, scanners) come from shared

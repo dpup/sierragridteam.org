@@ -2,7 +2,7 @@
  * live-view.ts — the SINGLE source of truth for /live's data regions, used by BOTH
  * the server (SSR fallback / no-JS / SEO) and the browser (the genuinely-live refresh).
  *
- * /live is client-live: the browser re-fetches info.ersn.net and re-renders these
+ * /live is client-live: the browser re-fetches data.sierragridteam.org and re-renders these
  * regions in place, so the markup must be identical on both paths. That rules out Astro
  * scoped styles here (Astro doesn't add the scope-id to client-injected HTML), so the
  * CSS for everything rendered below lives globally in `src/styles/live.css`, namespaced

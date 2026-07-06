@@ -55,7 +55,7 @@ version of the rules below.
 6. **Accessibility is non-negotiable** (WCAG 2.2 AA). Every interactive element is
    keyboard-operable with a visible focus ring; text contrast ≥4.5:1; never rely on
    color alone; images have alt text. `make ci` runs axe — keep it green.
-7. **Data honesty.** Live data comes from info.ersn.net. If the feed can't provide
+7. **Data honesty.** Live data comes from data.sierragridteam.org (The Grid). If the feed can't provide
    something, show an honest placeholder/note — **never invent a number.** See
    `docs/architecture/data-feed.md`.
 8. **Naming:** always `S.I.E.R.R.A` with periods in visible copy ("SIERRA" only in
@@ -85,7 +85,7 @@ Page rules:
 - **Copy comes from `src/config/content.ts`**, not inline strings — and follows
   `docs/content-style-guide.md` (voice + honesty rules). **Feed data is NEVER fetched at
   build time** — pages render it live in the browser (the client assembles a snapshot from
-  info.ersn.net and passes it through the pure derivations in `src/lib/{ersn,hazards}.ts` →
+  data.sierragridteam.org and passes it through the pure derivations in `src/lib/{ersn,hazards}.ts` →
   `live-view.ts`). The checked-in `src/data/*.json` are test fixtures only. The hazard
   layers are re-filtered to the
   service area / NWS zones in `hazards.ts` (the road_incident layer is region-wide and
@@ -93,7 +93,7 @@ Page rules:
   region-wide hazards as local. A layer whose `source_status` is `UNAVAILABLE` (a sync
   error) must read as "unknown", never all-clear — `deriveSituationSummary` returns `null`
   for wildfire/evacuation/weather-alert counts in that case, and the tiles render "Unknown".
-  A confirmed-empty feed (`OK`/`STALE`) is a real `0` → "None" (info.ersn.net guarantees an
+  A confirmed-empty feed (`OK`/`STALE`) is a real `0` → "None" (data.sierragridteam.org guarantees an
   error never replays a cached `0`).
 - One `<h1>` per page; correct heading order; real landmarks.
 - The homepage sets `hideBrandInNav`; other pages show the compact brand automatically.
@@ -149,7 +149,7 @@ stable.
   fallback if WebGL/tiles are unavailable (the hazards are always in the alert stream).
 - **`/live` is the flagship** situation page (replaced `/alerts`, which now redirects).
   Unlike the rest of the site, it is **client-rendered live**: the static header paints,
-  a loader shows, then the browser fetches info.ersn.net and renders the whole body at
+  a loader shows, then the browser fetches data.sierragridteam.org and renders the whole body at
   once (footer gated until then). Its data regions come from shared render functions in
   `src/lib/live-view.ts` (used by BOTH the SSR fallback and the browser), the map from
   `src/lib/live-map.ts`, CSS from `src/styles/live.css` (global, `.live-view`-namespaced —

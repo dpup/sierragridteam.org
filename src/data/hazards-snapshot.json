@@ -1,9 +1,9 @@
 {
   "fetchedAt": "2026-06-27T00:43:14.650Z",
-  "area": "calaveras",
+  "area": "ebbetts-pass",
   "situation": {
-    "area": "calaveras",
-    "area_name": "Calaveras County",
+    "area": "ebbetts-pass",
+    "area_name": "Ebbetts Pass Corridor",
     "generated_at": "2026-06-27T00:43:14Z",
     "summary": {
       "highest_severity": "SEVERE",
@@ -357,7 +357,7 @@
       ],
       "metadata": {
         "layer": "road_incident",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1
@@ -493,7 +493,7 @@
       ],
       "metadata": {
         "layer": "road_segment",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1
@@ -504,7 +504,7 @@
       "features": [],
       "metadata": {
         "layer": "chain_control",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1
@@ -541,7 +541,7 @@
       ],
       "metadata": {
         "layer": "weather_alert",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1
@@ -573,7 +573,7 @@
       ],
       "metadata": {
         "layer": "fire_weather",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1
@@ -584,7 +584,7 @@
       "features": [],
       "metadata": {
         "layer": "wildfire",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1
@@ -595,7 +595,7 @@
       "features": [],
       "metadata": {
         "layer": "evacuation",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "attribution": "Cal OES / California County Governments — reference only",
@@ -608,7 +608,7 @@
       "features": [],
       "metadata": {
         "layer": "earthquake",
-        "area": "calaveras",
+        "area": "ebbetts-pass",
         "generated_at": "2026-06-27T00:43:14Z",
         "source_status": "OK",
         "schema_version": 1

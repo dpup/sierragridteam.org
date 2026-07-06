@@ -2,7 +2,7 @@
 /**
  * OperationalStatus — the four operational-status tiles (design-system §7). Relay Sites +
  * Coverage are static owned config. Active Alerts + Fire Weather are LIVE-ONLY: they SSR a
- * muted "—" placeholder and a client island fills them from info.ersn.net on load (and every
+ * muted "—" placeholder and a client island fills them from data.sierragridteam.org on load (and every
  * 5 min). On any failure they stay "—" (an honest "unknown") — never a stale baked value,
  * never a spinner. (It doesn't need /live's full loader; the page isn't gated.)
  */
@@ -79,7 +79,7 @@ const { relaySites, coverageCounties } = Astro.props;
   const REFRESH_MS = 5 * 60 * 1000;
   const section = document.querySelector<HTMLElement>('[data-ops]');
   if (section) {
-    const base = section.dataset.apiBase ?? 'https://info.ersn.net/api/v1';
+    const base = section.dataset.apiBase ?? 'https://data.sierragridteam.org/api/v1';
     const zones = section.dataset.zones ?? '';
 
     const setTile = (key: string, value: string, state: string) => {

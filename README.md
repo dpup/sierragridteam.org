@@ -12,7 +12,7 @@ see [License & usage](#license--usage).
 
 Built with **Astro** (fully static output), self-hosted fonts, a strict
 design-token system, and live hazard data rendered client-side from
-[info.ersn.net](https://info.ersn.net).
+[The Grid](https://data.sierragridteam.org).
 
 ```
 make install     # install deps (npm — bun install hangs behind some proxies)
@@ -34,7 +34,7 @@ make help        # list all targets
 | `src/config/`                  | Editable data: `site.ts`, `content.ts` (copy), `coverage.ts` (map/geo), `people.ts` (leadership bios).                                     |
 | `src/content/blog/`            | Blog posts (markdown, one file per post, named `yyyy-mm-dd-topic.md` → `/blog/yyyy-mm-dd-topic`).                                          |
 | `src/assets/`                  | Build-processed images (leadership profile photos).                                                                                        |
-| `src/lib/`                     | Typed info.ersn.net shapes + pure derivations; the `/live` view renderers and MapLibre map.                                                |
+| `src/lib/`                     | Typed data.sierragridteam.org (The Grid) shapes + pure derivations; the `/live` view renderers and MapLibre map.                           |
 | `src/data/`                    | **Test fixtures only** (unit tests + the mocked screenshot harness) — never rendered on pages.                                             |
 | `scripts/`                     | `snapshot` (refresh fixtures), `gen-assets` (favicons/OG), `screenshots` (deterministic visual QA).                                        |
 | `tests/`                       | Playwright a11y + smoke specs; committed deterministic screenshots.                                                                        |
@@ -68,7 +68,7 @@ warm-parchment identity, not a tech-startup aesthetic.
 ## Live data & the Live Feed
 
 The flagship **`/live`** situation page aggregates official wildfire, evacuation,
-weather, fire-weather, seismic, and road feeds from info.ersn.net's hazard API
+weather, fire-weather, seismic, and road feeds from The Grid's (data.sierragridteam.org) hazard API
 (`/hazards/*.geojson`, `/situation`, `/scanners`) onto one **MapLibre GL + CARTO
 Positron** map and a prioritized alert stream, with a site-wide emergency banner on
 a life-safety event. Roads, weather conditions, and NWS zone alerts also feed the
@@ -81,7 +81,7 @@ layers are re-filtered to the actual service area; an unavailable evacuation sou
 reads as "unknown", never all-clear.
 
 The only data gap shown as an honest placeholder is S.I.E.R.R.A's own per-relay /
-mesh-node status, which info.ersn.net does not own — see
+mesh-node status, which The Grid does not own — see
 `docs/architecture/data-feed.md`.
 
 ## Project status
@@ -105,7 +105,7 @@ In particular:
   Do not reuse it.
 - **Hazard data** shown on the site belongs to its originating agencies
   (CAL FIRE, NWS, CHP, Caltrans, USGS, Cal OES) and is served via
-  [info.ersn.net](https://info.ersn.net).
+  [The Grid](https://data.sierragridteam.org).
 - **Third-party dependencies** (Astro, MapLibre GL, fonts, etc.) remain under
   their own licenses.
 

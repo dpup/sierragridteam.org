@@ -93,13 +93,13 @@ Point the domain at CloudFront:
 
 ## Data freshness
 
-`/live` is rendered entirely in the browser from info.ersn.net (re-fetched every 90s);
-nothing stale is baked in, and if the feed is unreachable it shows the official sources —
-so its freshness is independent of deploys.
+`/live` is rendered entirely in the browser from data.sierragridteam.org (re-fetched every
+90s); nothing stale is baked in, and if the feed is unreachable it shows the official
+sources — so its freshness is independent of deploys.
 
-The home operational-status tiles and the site-wide emergency banner are server-rendered
-from a build-time snapshot (`src/data/*.json`) and then upgraded by a client refresh on
-load. Those checked-in JSON files are only the build-time / offline fallback — the CI
-build fetches info.ersn.net live, so each deploy bakes a current one. `make snapshot`
-refreshes the checked-in fallback (needs direct network; it can't run behind the Moat
-proxy).
+The home operational-status tiles and the site-wide emergency banner also fetch no feed
+data at build time: they SSR an honest placeholder/hidden shell and a client island fills
+them live on load (staying on the placeholder if the feed is unreachable). The checked-in
+`src/data/*.json` are **test fixtures only** (the screenshot harness mocks the feed with
+them) — never baked into a page. `make snapshot` refreshes those fixtures from the live
+feed (needs direct network; it can't run behind the Moat proxy).

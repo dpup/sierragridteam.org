@@ -1,9 +1,9 @@
 /**
- * Refreshes the checked-in data snapshots from the live info.ersn.net feed:
+ * Refreshes the checked-in data snapshots from the live data.sierragridteam.org feed:
  *   src/data/ersn-snapshot.json     — roads / weather / alerts / incidents (typed API)
  *   src/data/hazards-snapshot.json  — situation + hazard GeoJSON layers + scanners
- * These are the build-time fallback when the API is unreachable, and the SSR
- * "last-known value" the design requires.
+ * These checked-in JSON are TEST FIXTURES ONLY — the screenshot harness mocks the feed
+ * with them. Nothing is fetched at build time; pages render live in the browser.
  *
  * Run: `npm run snapshot`  (or `bun run scripts/snapshot.ts`)
  */
@@ -11,7 +11,7 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-const API_BASE = process.env.PUBLIC_ERSN_API_BASE ?? 'https://info.ersn.net/api/v1';
+const API_BASE = process.env.PUBLIC_ERSN_API_BASE ?? 'https://data.sierragridteam.org/api/v1';
 const dir = dirname(fileURLToPath(import.meta.url));
 const ERSN_OUT = resolve(dir, '../src/data/ersn-snapshot.json');
 const HAZARDS_OUT = resolve(dir, '../src/data/hazards-snapshot.json');
@@ -26,7 +26,7 @@ async function get(path: string): Promise<unknown> {
 }
 
 const NWS_ZONES = ['CAZ019', 'CAZ067', 'CAZ069', 'CAZ072'];
-const HAZARD_AREA = 'calaveras';
+const HAZARD_AREA = 'ebbetts-pass';
 // All hazard GeoJSON layers (one FeatureCollection each).
 const HAZARD_LAYERS = [
   'road_incident',

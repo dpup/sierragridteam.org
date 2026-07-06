@@ -1,11 +1,18 @@
-# Data Feed — info.ersn.net integration
+# Data Feed — The Grid (data.sierragridteam.org) integration
 
-> **Directive:** `info.ersn.net` is THE live data feed for this site. Any data it does not
-> provide is filed as a **feature request** against `github.com/dpup/info.ersn.net` and shown
-> as a clearly-labeled **placeholder** in the UI (never faked).
+> **Directive:** **The Grid** (`data.sierragridteam.org`, the S.I.E.R.R.A data service) is
+> THE live data feed for this site. Any data it does not provide is filed as a **feature
+> request** against `github.com/dpup/sierra-data` and shown as a clearly-labeled
+> **placeholder** in the UI (never faked).
 
-- Repo: https://github.com/dpup/info.ersn.net · Site: https://ersn.net
-- Base URL: `https://info.ersn.net/api/v1`
+- Repo: https://github.com/dpup/sierra-data
+- Base URL: `https://data.sierragridteam.org/api/v1`
+- **2026-07-06 migration:** the service rebranded `info.ersn.net` → The Grid and moved to
+  `data.sierragridteam.org` (info.ersn.net stays a supported CNAME alias), and its one
+  coverage area was renamed `calaveras` → **`ebbetts-pass`** (breaking for hazard URLs — the
+  old slug now 404s). Endpoint paths, field names, and response shapes are otherwise
+  unchanged. The area slug lives in `HAZARD_AREA` (`src/lib/hazards.ts`); the base URL in
+  `ERSN_API_BASE` (`src/lib/ersn.ts`, overridable via `PUBLIC_ERSN_API_BASE`).
 
 ## Endpoints & real response shapes (captured 2026-06-26)
 
@@ -111,7 +118,7 @@ is US public-safety/residents.
 ## Data gaps → feature requests (FR)
 
 **FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26 and are wired up.** The remaining
-placeholders are the org's own mesh/relay status (FR-5/FR-6), which info.ersn.net does
+placeholders are the org's own mesh/relay status (FR-5/FR-6), which The Grid does
 not own:
 
 | FR       | Gap                                                     | Where it shows                 | UI behavior today                                                                |
@@ -119,6 +126,6 @@ not own:
 | **FR-5** | No **per-relay-site status** (the org's own mesh nodes) | Home "Relay Sites" tile, /mesh | "Relay Sites" uses owned static config; no live up/down until a feed exists      |
 | **FR-6** | No structured **mesh node** feed (count/health)         | /mesh sidebar                  | Static deployment-zone list (`live` flags in `coverage.ts`); live counts pending |
 
-FR-5/FR-6 concern the org’s own mesh/relay infrastructure (out of info.ersn.net’s roads/weather
+FR-5/FR-6 concern the org’s own mesh/relay infrastructure (out of The Grid’s roads/weather
 domain); they stay open until the org exposes its own feed. Placeholders must be visually
 honest: a muted note, never an invented number.

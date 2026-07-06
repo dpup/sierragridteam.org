@@ -1,5 +1,5 @@
 /**
- * info.ersn.net hazard-aggregation client + types + derivations.
+ * The Grid (data.sierragridteam.org) hazard-aggregation client + types + derivations.
  *
  * The hazard API (CHANGELOG 2026-06-26/27) normalizes wildfire, evacuation, weather,
  * seismic, road, and scanner data into one RFC 7946 GeoJSON model with a common
@@ -14,8 +14,12 @@
  */
 import { NWS_ZONES, isInServiceArea } from './ersn';
 
-/** Hazard-aggregation area slug (configured server-side in prefab.yaml). */
-export const HAZARD_AREA = 'calaveras';
+/**
+ * Hazard-aggregation area slug (configured server-side in prefab.yaml). Renamed
+ * `calaveras` → `ebbetts-pass` on 2026-07-06 (the corridor spans Calaveras + Tuolumne,
+ * so the old county-name slug was a misnomer); the old slug now 404s.
+ */
+export const HAZARD_AREA = 'ebbetts-pass';
 
 // ---- GeoJSON types (RFC 7946 + the common properties envelope) ----
 
@@ -229,7 +233,7 @@ export interface SituationSummary {
   /**
    * Counts, or `null` when that layer's source is UNAVAILABLE — so an outage reads as an
    * honest "unknown", never a false `0`/all-clear. A clean empty success (OK, or STALE
-   * served from the last good fetch) is a real `0`. Mirrors info.ersn.net's per-layer
+   * served from the last good fetch) is a real `0`. Mirrors The Grid's per-layer
    * `source_status` and the evacuation no-data-vs-error split (CHANGELOG 2026-06-29).
    */
   wildfires: number | null;
@@ -246,7 +250,7 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
 
   // A layer's relevant-feature count, or null when its source is UNAVAILABLE (a sync
   // error → "unknown", never a false 0). OK/STALE both yield a real count: a clean empty
-  // success is 0; STALE serves the last good fetch. info.ersn.net guarantees an error
+  // success is 0; STALE serves the last good fetch. The Grid guarantees an error
   // never replays a cached 0 (CHANGELOG 2026-06-29).
   const statusOf = (layer: string): string =>
     snapshot.layers?.[layer]?.metadata?.source_status ?? 'UNAVAILABLE';

@@ -1,6 +1,6 @@
 # src/lib — data layer & helpers
 
-`ersn.ts` + `hazards.ts` are the typed info.ersn.net shapes + **pure derivations**
+`ersn.ts` + `hazards.ts` are the typed data.sierragridteam.org shapes + **pure derivations**
 (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, `isInServiceArea`, …) plus
 shared constants (`ERSN_API_BASE`, `NWS_ZONES`, `HAZARD_AREA`, `STREAM_LAYERS`).
 `live-view.ts` turns a fetched snapshot into the `/live` view-model + region HTML;

@@ -26,8 +26,9 @@ const SITE = 'https://sierragridteam.org';
 export default defineConfig({
   site: SITE,
   // Fully static output — no server adapter. Every page is pre-rendered to HTML
-  // at build time (with a baked-in info.ersn.net snapshot); small islands hydrate
-  // client-side for the live clock and data refresh. See docs/architecture/data-feed.md.
+  // at build time; small islands hydrate client-side for the live clock and live data
+  // (fetched from data.sierragridteam.org in the browser — no feed data is baked in).
+  // See docs/architecture/data-feed.md.
   output: 'static',
   trailingSlash: 'never',
   // /alerts was folded into the flagship /live situation page. Astro emits a static

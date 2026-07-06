@@ -27,7 +27,7 @@ const calm = JSON.parse(readFileSync(SNAP, 'utf8'));
 const layer = (name, features, source_status = 'OK') => ({
   type: 'FeatureCollection',
   features,
-  metadata: { layer: name, area: 'calaveras', generated_at: FIXED.toISOString(), source_status },
+  metadata: { layer: name, area: 'ebbetts-pass', generated_at: FIXED.toISOString(), source_status },
 });
 const incident = (lng, lat, rank, headline, where, category = 'incident') => ({
   type: 'Feature',
@@ -96,8 +96,8 @@ function situationFrom(layers) {
       source: f.source?.name ?? '',
     }));
   return {
-    area: 'calaveras',
-    area_name: 'Calaveras County',
+    area: 'ebbetts-pass',
+    area_name: 'Ebbetts Pass Corridor',
     generated_at: FIXED.toISOString(),
     summary: {
       highest_severity: SEV[highest],
@@ -309,7 +309,7 @@ try {
       deviceScaleFactor: 1,
       reducedMotion: 'reduce',
     });
-    await ctx.route(/info\.ersn\.net/, (r) => mockErsn(r, snap));
+    await ctx.route(/data\.sierragridteam\.org/, (r) => mockErsn(r, snap));
     await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
     await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>
       r.fulfill({

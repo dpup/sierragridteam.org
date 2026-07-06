@@ -24,7 +24,7 @@ export interface CoverageTown {
   x: number;
   y: number;
   county: 'Calaveras' | 'Tuolumne';
-  /** Whether the info.ersn.net feed currently covers this town (Hwy 4 corridor). */
+  /** Whether the data.sierragridteam.org feed currently covers this town (Hwy 4 corridor). */
   hasLiveData: boolean;
 }
 

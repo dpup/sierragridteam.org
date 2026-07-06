@@ -10,7 +10,7 @@
  * The fix is a tiny localhost CONNECT relay: Chromium connects to it WITHOUT auth, and the
  * relay re-issues the CONNECT to moat-proxy WITH the `Proxy-Authorization` header, then
  * pipes the tunnel. Point the browser at the relay + `ignoreHTTPSErrors` (to accept the
- * Moat CA cert) and it reaches the real internet — verified against info.ersn.net + CARTO.
+ * Moat CA cert) and it reaches the real internet — verified against data.sierragridteam.org + CARTO.
  *
  * Usage:
  *   const relay = await startMoatRelay();

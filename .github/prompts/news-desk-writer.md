@@ -20,9 +20,10 @@ Follow the brief's §11 checklist. Mechanics for this repository:
 1. Get today's date with `date -u +%F`. Note the season and calendar context.
 2. Read every post in `src/content/blog/` from the last 60 days — topics, headline
    shapes, closers, analogies. Do not repeat any of them.
-3. Check current conditions: `curl -s https://info.ersn.net/situation` and the hazard
-   layers under `https://info.ersn.net/hazards/`. **If a significant incident is active
-   or unresolved in Calaveras or Tuolumne counties, stop — do not publish** (brief §3).
+3. Check current conditions: `curl -s https://data.sierragridteam.org/api/v1/situation/ebbetts-pass`
+   and the hazard layers under `https://data.sierragridteam.org/api/v1/hazards/ebbetts-pass/`. **If a
+   significant incident is active or unresolved in Calaveras or Tuolumne counties, stop — do not
+   publish** (brief §3).
 4. Use web search to look for genuinely publishable material (brief §4–§6).
 5. Apply the publish decision (brief §6) honestly. Declining is a successful run.
 

@@ -2,7 +2,7 @@
  * Deterministic screenshots for visual QA + regression. Captures every page at
  * three viewports with:
  *   - a FROZEN clock (stable LocalClock + "Synced" stamps),
- *   - MOCKED info.ersn.net responses (stable data states),
+ *   - MOCKED data.sierragridteam.org responses (stable data states),
  *   - DISABLED animations + reduced motion,
  * so the PNGs are byte-stable and safe to diff or analyze.
  *
@@ -22,7 +22,7 @@ const BASE = process.env.BASE_URL ?? 'http://localhost:4321';
 const SCENARIO = process.env.SCENARIO ?? 'calm';
 const FIXED = new Date('2026-06-25T13:30:00-07:00'); // 13:30 PT, stable
 
-// LIVE=1 renders against the REAL info.ersn.net feed + CARTO basemap instead of the
+// LIVE=1 renders against the REAL data.sierragridteam.org feed + CARTO basemap instead of the
 // frozen/mocked defaults — for eyeballing the live page, not regression (it's not
 // deterministic). Inside Moat it tunnels through the auth-injecting relay (the headless
 // browser can't use the Moat proxy directly); elsewhere it goes direct. Output lands in a
@@ -32,7 +32,7 @@ const FIXED = new Date('2026-06-25T13:30:00-07:00'); // 13:30 PT, stable
 // (keep-alive, no Content-Length), which makes /live's burst of ~12 parallel fetches flaky
 // — it may stall past the page's 9s timeout and fall to the honest "Last known" fallback,
 // and the keyless CARTO basemap may not finish. The home page (2 fetches) is reliably live.
-// None of this affects production, where browsers hit info.ersn.net directly.
+// None of this affects production, where browsers hit data.sierragridteam.org directly.
 const LIVE = process.env.LIVE === '1';
 const OUT = resolve(root, LIVE ? 'tests/screenshots/_live' : 'tests/screenshots');
 
@@ -83,7 +83,7 @@ const OFFLINE_STYLE = {
 };
 
 // The "redflag" alarm scenario: a realistic fire-season foothill event modeled on the
-// real NWS Sacramento alert shape (see info.ersn.net tests/testdata/weather). A Red Flag
+// real NWS Sacramento alert shape (see data.sierragridteam.org tests/testdata/weather). A Red Flag
 // Warning + a co-occurring High Wind Warning (wind drives red-flag conditions) drive the
 // home "Active Alerts" tile, plus fireWeather.state = RED_FLAG (FR-3) escalates the Fire
 // Weather tile to orange.
@@ -168,7 +168,7 @@ async function main() {
   const relay = LIVE && inMoat() ? await startMoatRelay() : null;
   if (LIVE) {
     console.error(
-      `⚡ LIVE — real info.ersn.net + CARTO (${relay ? 'via Moat relay' : 'direct'}); ` +
+      `⚡ LIVE — real data.sierragridteam.org + CARTO (${relay ? 'via Moat relay' : 'direct'}); ` +
         `non-deterministic, → ${OUT}`
     );
   }
@@ -184,7 +184,7 @@ async function main() {
       ...(relay ? { proxy: relay.proxy, ignoreHTTPSErrors: true } : {}),
     });
     if (!LIVE) {
-      await ctx.route(/info\.ersn\.net/, mockErsn);
+      await ctx.route(/data\.sierragridteam\.org/, mockErsn);
       // Offline basemap (broad abort first, specific style mock last = higher priority).
       await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
       await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>

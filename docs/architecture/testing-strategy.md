@@ -31,7 +31,7 @@ The flagship visual tool. **Determinism is enforced so screenshots are diffable 
 
 - Fixed viewports: `desktop` 1440×900, `tablet` 834×1112, `mobile` 390×844.
 - **Freeze time** — inject a fixed `Date`/clock so the live clock + "Synced" stamp are constant.
-- **Mock the data feed** — Playwright intercepts `info.ersn.net` requests and serves fixed
+- **Mock the data feed** — Playwright intercepts `data.sierragridteam.org` requests and serves fixed
   fixtures (incl. a Red-Flag scenario + an active-alert scenario) so states are reproducible.
 - **Disable animations** — `prefers-reduced-motion` + CSS `* { animation: none !important }`.
 - Capture full-page PNGs per page per viewport into `tests/screenshots/`.

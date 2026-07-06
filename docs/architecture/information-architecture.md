@@ -57,7 +57,7 @@ Order, top to bottom:
    "Synced [time]" indicator on the right; a 4-column row of bordered tiles:
    - **Relay Sites** — `6 Active` — static owned config.
    - **Coverage** — `2 Counties` — static scope (Calaveras & Tuolumne).
-   - **Active Alerts** — live count from info.ersn.net `/weather/alerts?zones=…` (NWS foothill
+   - **Active Alerts** — live count from data.sierragridteam.org `/weather/alerts?zones=…` (NWS foothill
      zones, FR-2). `0 Active` normal; `>0` escalates count + dot to orange.
    - **Fire Weather** — `Normal` → `Elevated` (brass) → `Red Flag` (orange), from the feed's
      authoritative `weather.fireWeather.state` (FR-3). Falls back to a conservative `Normal*`

@@ -17,7 +17,7 @@ const SEV = ['INFO', 'LOW', 'MODERATE', 'SEVERE', 'EXTREME'];
 function snap(layers: Record<string, unknown>): HazardsSnapshot {
   return {
     fetchedAt: '',
-    area: 'calaveras',
+    area: 'ebbetts-pass',
     situation: null,
     layers: layers as HazardsSnapshot['layers'],
     scanners: [],
@@ -27,7 +27,7 @@ function fc(features: HazardFeature[], status = 'OK') {
   return {
     type: 'FeatureCollection' as const,
     features,
-    metadata: { layer: 'x', area: 'calaveras', generated_at: '', source_status: status as 'OK' },
+    metadata: { layer: 'x', area: 'ebbetts-pass', generated_at: '', source_status: status as 'OK' },
   };
 }
 function point(layer: string, rank: number, lng: number, lat: number, extra = {}): HazardFeature {
@@ -116,6 +116,6 @@ test('derivations never throw on an empty snapshot', () => {
 });
 
 test('the checked-in hazards snapshot fixture is well-formed (harness mocks use it)', () => {
-  expect(hazardsFixture.area).toBe('calaveras');
+  expect(hazardsFixture.area).toBe('ebbetts-pass');
   expect(typeof hazardsFixture.layers).toBe('object');
 });

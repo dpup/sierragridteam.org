@@ -38,8 +38,8 @@ import { emergencyBanner as copy } from '@config/content';
 <script>
   const el = document.querySelector<HTMLElement>('[data-ebanner]');
   if (el) {
-    const base = el.dataset.apiBase ?? 'https://info.ersn.net/api/v1';
-    const area = el.dataset.area ?? 'calaveras';
+    const base = el.dataset.apiBase ?? 'https://data.sierragridteam.org/api/v1';
+    const area = el.dataset.area ?? 'ebbetts-pass';
     let lastSig = '';
     const set = (sel: string, text: string) => {
       const t = el.querySelector<HTMLElement>(sel);
