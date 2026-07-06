@@ -85,7 +85,7 @@ Page rules:
 - **Copy comes from `src/config/content.ts`**, not inline strings — and follows
   `docs/content-style-guide.md` (voice + honesty rules). **Feed data is NEVER fetched at
   build time** — pages render it live in the browser (the client assembles a snapshot from
-  data.sierragridteam.org and passes it through the pure derivations in `src/lib/{ersn,hazards}.ts` →
+  data.sierragridteam.org and passes it through the pure derivations in `src/lib/{grid,hazards}.ts` →
   `live-view.ts`). The checked-in `src/data/*.json` are test fixtures only. The hazard
   layers are re-filtered to the
   service area / NWS zones in `hazards.ts` (the road_incident layer is region-wide and

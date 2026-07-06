@@ -19,7 +19,7 @@ import {
   type HazardsSnapshot,
   type Scanner,
 } from './hazards';
-import type { ErsnSnapshot, RoadsResponse, WeatherResponse } from './ersn';
+import type { GridSnapshot, RoadsResponse, WeatherResponse } from './grid';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
 import { escapeHtml as esc, formatPtTime } from './format';
 import { mapSites, serviceAreaBounds } from '../config/coverage';
@@ -317,7 +317,7 @@ const FIRE: Record<string, { label: string; state: TileState }> = {
 };
 
 /** Build the entire /live view-model from the two snapshots (identical SSR + client). */
-export function buildView(haz: HazardsSnapshot, ersn: ErsnSnapshot): LiveView {
+export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
   const summary = deriveSituationSummary(haz);
   const stream = deriveStream(haz);
   const fire = FIRE[summary.fireWeather] ?? FIRE.UNKNOWN;
@@ -365,9 +365,9 @@ export function buildView(haz: HazardsSnapshot, ersn: ErsnSnapshot): LiveView {
     },
     mapData: buildMapData(haz),
     html: {
-      weather: renderWeather(ersn.weather),
+      weather: renderWeather(grid.weather),
       stream: renderStream(stream),
-      roads: renderRoads(ersn.roads),
+      roads: renderRoads(grid.roads),
       scanners: renderScanners(haz.scanners ?? []),
     },
   };

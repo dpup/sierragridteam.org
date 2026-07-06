@@ -1,7 +1,7 @@
 /**
  * Unit conversions for display. The data.sierragridteam.org feed reports metric (°C, km,
  * km/h); the audience is US public-safety and residents, so we present imperial.
- * Pure functions — unit-tested in src/lib/ersn.test.ts.
+ * Pure functions — unit-tested in src/lib/grid.test.ts.
  */
 
 export const cToF = (c: number): number => Math.round((c * 9) / 5 + 32);

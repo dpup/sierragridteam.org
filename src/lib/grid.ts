@@ -1,7 +1,7 @@
 /**
  * The Grid data service (data.sierragridteam.org) — typed API shapes + shared
- * constants/helpers. (Formerly info.ersn.net, still a supported CNAME alias; the
- * ERSN_* symbol names predate the rename and are kept as-is.)
+ * constants/helpers. (data.sierragridteam.org was formerly info.ersn.net, which
+ * remains a supported CNAME alias.)
  *
  * The site fetches NO feed data at build time — every page renders live data in the
  * browser (see docs/architecture/data-feed.md). This module is just the typed API shapes,
@@ -10,8 +10,8 @@
  */
 import { serviceAreaBounds } from '../config/coverage';
 
-export const ERSN_API_BASE =
-  import.meta.env?.PUBLIC_ERSN_API_BASE ?? 'https://data.sierragridteam.org/api/v1';
+export const GRID_API_BASE =
+  import.meta.env?.PUBLIC_GRID_API_BASE ?? 'https://data.sierragridteam.org/api/v1';
 
 /**
  * NWS Sacramento forecast zones covering the service area (the feed filters
@@ -125,7 +125,7 @@ export interface AlertsResponse {
   lastUpdated: string;
 }
 
-export interface ErsnSnapshot {
+export interface GridSnapshot {
   /** ISO timestamp when the browser assembled this snapshot from live fetches. */
   fetchedAt: string;
   roads: RoadsResponse | null;

@@ -231,7 +231,7 @@ const schema = {
   import { buildView } from '../lib/live-view';
   import type { LiveView } from '../lib/live-view';
   import { initHazardMap, type MapHandle } from '../lib/live-map';
-  import { ERSN_API_BASE, NWS_ZONES, type ErsnSnapshot } from '../lib/ersn';
+  import { GRID_API_BASE, NWS_ZONES, type GridSnapshot } from '../lib/grid';
   import { HAZARD_AREA, STREAM_LAYERS, type HazardsSnapshot } from '../lib/hazards';
 
   const REFRESH_MS = 90_000;
@@ -287,10 +287,10 @@ const schema = {
 
   async function fetchSnapshots(signal: AbortSignal): Promise<{
     haz: HazardsSnapshot;
-    ersn: ErsnSnapshot;
+    grid: GridSnapshot;
   }> {
     const get = async (path: string) => {
-      const res = await fetch(`${ERSN_API_BASE}${path}`, {
+      const res = await fetch(`${GRID_API_BASE}${path}`, {
         headers: { accept: 'application/json' },
         signal,
       });
@@ -314,21 +314,21 @@ const schema = {
       layers,
       scanners,
     } as unknown as HazardsSnapshot;
-    const ersn = { fetchedAt: '', roads, weather, alerts } as unknown as ErsnSnapshot;
-    return { haz, ersn };
+    const grid = { fetchedAt: '', roads, weather, alerts } as unknown as GridSnapshot;
+    return { haz, grid };
   }
 
   async function run(initial: boolean) {
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
     try {
-      const { haz, ersn } = await fetchSnapshots(ac.signal);
+      const { haz, grid } = await fetchSnapshots(ac.signal);
       clearTimeout(timer);
       // Re-render every region each poll; the per-region sig cache in setRegion() already
       // no-ops unchanged content (and preserves any open <details>), which is the cheap,
       // correct way to avoid redundant work — a feed-timestamp guard would risk dropping
       // independent weather/roads/scanner updates that share the situation timestamp.
-      const view = buildView(haz, ersn);
+      const view = buildView(haz, grid);
       applyView(view);
       if (initial) {
         setBoot('ready');

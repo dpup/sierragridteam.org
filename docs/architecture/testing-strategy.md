@@ -16,7 +16,7 @@ screenshotted, and deployed by pipeline.
 
 ### 2. Data-layer unit tests (`bun test`)
 
-- `src/lib/ersn.test.ts` — parse/normalize the real captured fixtures
+- `src/lib/grid.test.ts` — parse/normalize the real captured fixtures
   (`src/data/__fixtures__/*.json`); unit conversions (°C→°F etc.); graceful fallback when the
   fetch throws (returns the snapshot, never throws to the page).
 

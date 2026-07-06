@@ -12,7 +12,7 @@
  * service area / NWS zones and recompute severity locally. We never surface an
  * out-of-area "Report of Fire" as a foothill emergency.
  */
-import { NWS_ZONES, isInServiceArea } from './ersn';
+import { NWS_ZONES, isInServiceArea } from './grid';
 
 /**
  * Hazard-aggregation area slug (configured server-side in prefab.yaml). Renamed

@@ -144,7 +144,7 @@ export const townById = (id: string): CoverageTown | undefined => towns.find((t)
 
 /**
  * Geographic bounding box of S.I.E.R.R.A's service area (Calaveras & Tuolumne
- * foothills). Used by `isInServiceArea` (src/lib/ersn.ts) to filter the region-wide
+ * foothills). Used by `isInServiceArea` (src/lib/grid.ts) to filter the region-wide
  * hazard feeds — e.g. the `road_incident` layer spans the whole Mother Lode (Modesto,
  * Lake Tahoe, Merced) — down to what's actually local. Tuned to include the Hwy 4 / 49 /
  * 108 / 120 corridors and exclude the Central Valley, Tahoe basin, and El Dorado/Placer

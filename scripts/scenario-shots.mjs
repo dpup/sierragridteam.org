@@ -262,7 +262,7 @@ const scenarios = {
   }),
 };
 
-function mockErsn(route, snap) {
+function mockGrid(route, snap) {
   const url = route.request().url();
   const json = (b) =>
     route.fulfill({
@@ -284,11 +284,11 @@ function mockErsn(route, snap) {
     );
   if (url.includes('/weather/alerts'))
     return json({ alerts: [], lastUpdated: FIXED.toISOString() });
-  if (url.includes('/weather')) return json(calmErsn.weather);
-  if (url.includes('/roads')) return json(calmErsn.roads);
+  if (url.includes('/weather')) return json(calmGrid.weather);
+  if (url.includes('/roads')) return json(calmGrid.roads);
   return json({});
 }
-const calmErsn = JSON.parse(readFileSync('src/data/ersn-snapshot.json', 'utf8'));
+const calmGrid = JSON.parse(readFileSync('src/data/grid-snapshot.json', 'utf8'));
 const OFFLINE_STYLE = {
   version: 8,
   sources: {},
@@ -309,7 +309,7 @@ try {
       deviceScaleFactor: 1,
       reducedMotion: 'reduce',
     });
-    await ctx.route(/data\.sierragridteam\.org/, (r) => mockErsn(r, snap));
+    await ctx.route(/data\.sierragridteam\.org/, (r) => mockGrid(r, snap));
     await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
     await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>
       r.fulfill({

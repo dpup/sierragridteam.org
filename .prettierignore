@@ -3,7 +3,7 @@ dist
 node_modules
 bun.lockb
 bun.lock
-src/data/ersn-snapshot.json
+src/data/grid-snapshot.json
 tests/screenshots
 docs/design/design-system.html
 CHANGELOG.md

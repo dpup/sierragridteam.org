@@ -70,7 +70,7 @@ const allPages = [
 // LIVE mode only cares about the data-driven pages (home tiles/banner + the live feed).
 const pages = LIVE ? allPages.filter((p) => p.path === '/' || p.path === '/live') : allPages;
 
-const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/ersn-snapshot.json'), 'utf8'));
+const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/grid-snapshot.json'), 'utf8'));
 const hazards = JSON.parse(readFileSync(resolve(root, 'src/data/hazards-snapshot.json'), 'utf8'));
 
 // Minimal offline basemap so the MapLibre map's `load` fires without external tiles
@@ -119,7 +119,7 @@ const redflagAlerts = [
   },
 ];
 
-function mockErsn(route: Route) {
+function mockGrid(route: Route) {
   const url = route.request().url();
   const json = (body: unknown) =>
     route.fulfill({
@@ -184,7 +184,7 @@ async function main() {
       ...(relay ? { proxy: relay.proxy, ignoreHTTPSErrors: true } : {}),
     });
     if (!LIVE) {
-      await ctx.route(/data\.sierragridteam\.org/, mockErsn);
+      await ctx.route(/data\.sierragridteam\.org/, mockGrid);
       // Offline basemap (broad abort first, specific style mock last = higher priority).
       await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
       await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>

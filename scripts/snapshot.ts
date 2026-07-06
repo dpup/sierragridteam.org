@@ -1,6 +1,6 @@
 /**
  * Refreshes the checked-in data snapshots from the live data.sierragridteam.org feed:
- *   src/data/ersn-snapshot.json     — roads / weather / alerts / incidents (typed API)
+ *   src/data/grid-snapshot.json     — roads / weather / alerts / incidents (typed API)
  *   src/data/hazards-snapshot.json  — situation + hazard GeoJSON layers + scanners
  * These checked-in JSON are TEST FIXTURES ONLY — the screenshot harness mocks the feed
  * with them. Nothing is fetched at build time; pages render live in the browser.
@@ -11,9 +11,9 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-const API_BASE = process.env.PUBLIC_ERSN_API_BASE ?? 'https://data.sierragridteam.org/api/v1';
+const API_BASE = process.env.PUBLIC_GRID_API_BASE ?? 'https://data.sierragridteam.org/api/v1';
 const dir = dirname(fileURLToPath(import.meta.url));
-const ERSN_OUT = resolve(dir, '../src/data/ersn-snapshot.json');
+const GRID_OUT = resolve(dir, '../src/data/grid-snapshot.json');
 const HAZARDS_OUT = resolve(dir, '../src/data/hazards-snapshot.json');
 
 async function get(path: string): Promise<unknown> {
@@ -48,10 +48,10 @@ async function main() {
     get(`/weather/alerts?zones=${NWS_ZONES.join(',')}`),
   ]);
   writeFileSync(
-    ERSN_OUT,
+    GRID_OUT,
     JSON.stringify({ fetchedAt: new Date().toISOString(), roads, weather, alerts }, null, 2) + '\n'
   );
-  console.error(`Wrote ${ERSN_OUT}`);
+  console.error(`Wrote ${GRID_OUT}`);
 
   const [situation, scanners, ...layerList] = await Promise.all([
     get(`/situation/${HAZARD_AREA}`),

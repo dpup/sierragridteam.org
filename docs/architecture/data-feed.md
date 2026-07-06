@@ -12,7 +12,7 @@
   coverage area was renamed `calaveras` → **`ebbetts-pass`** (breaking for hazard URLs — the
   old slug now 404s). Endpoint paths, field names, and response shapes are otherwise
   unchanged. The area slug lives in `HAZARD_AREA` (`src/lib/hazards.ts`); the base URL in
-  `ERSN_API_BASE` (`src/lib/ersn.ts`, overridable via `PUBLIC_ERSN_API_BASE`).
+  `GRID_API_BASE` (`src/lib/grid.ts`, overridable via `PUBLIC_GRID_API_BASE`).
 
 ## Endpoints & real response shapes (captured 2026-06-26)
 
@@ -78,7 +78,7 @@ Alert = {
 The typed `/incidents/{area}` endpoint still exists, but the site **no longer consumes
 it** — road incidents now arrive via the hazard `road_incident` GeoJSON layer (see the
 hazard-aggregation section / `src/lib/hazards.ts`), filtered to the foothill service area
-by `isInServiceArea` / `serviceAreaBounds` in `src/lib/ersn.ts`.
+by `isInServiceArea` / `serviceAreaBounds` in `src/lib/grid.ts`.
 
 ## Architecture: client-only live data (no build-time fetch)
 
@@ -88,7 +88,7 @@ the HTML. Every page renders live from the browser (CORS is resolved, FR-1: the 
 The checked-in `src/data/*.json` are **test fixtures only** — the screenshot harness mocks the
 feed with them; no page imports them.
 
-1. **Pure derivations.** `src/lib/{ersn,hazards}.ts` are typed API shapes + pure functions
+1. **Pure derivations.** `src/lib/{grid,hazards}.ts` are typed API shapes + pure functions
    (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, `isInServiceArea`, …). They take
    a snapshot the _browser_ assembled from live fetches — no I/O of their own.
 2. **Client islands fetch + render live.**
@@ -107,7 +107,7 @@ feed with them; no page imports them.
 ```
 build ──> SSR HTML (placeholders, no feed data)
                     │
-browser ──fetch──> ersn.ts/hazards.ts derivations ──> live render ──refresh──┐
+browser ──fetch──> grid.ts/hazards.ts derivations ──> live render ──refresh──┐
                     │                                                          │
                     └─ on fetch fail → honest "—" / "feed unavailable" panel ──┘
 ```

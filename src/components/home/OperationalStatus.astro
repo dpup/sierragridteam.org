@@ -10,7 +10,7 @@ import Container from '../Container.astro';
 import Kicker from '../Kicker.astro';
 import StatTile from '../StatTile.astro';
 import StatusPill from '../StatusPill.astro';
-import { ERSN_API_BASE, NWS_ZONES } from '@lib/ersn';
+import { GRID_API_BASE, NWS_ZONES } from '@lib/grid';
 import { home } from '@config/content';
 import { site } from '@config/site';
 
@@ -26,7 +26,7 @@ const { relaySites, coverageCounties } = Astro.props;
   class="ops"
   aria-label="Real-time operational status"
   data-ops
-  data-api-base={ERSN_API_BASE}
+  data-api-base={GRID_API_BASE}
   data-zones={NWS_ZONES.join(',')}
 >
   <Container wide>

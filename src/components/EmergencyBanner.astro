@@ -10,7 +10,7 @@
  * role="alert" region when the state actually changes (so it doesn't re-announce each poll).
  */
 import { HAZARD_AREA } from '@lib/hazards';
-import { ERSN_API_BASE } from '@lib/ersn';
+import { GRID_API_BASE } from '@lib/grid';
 import { emergencyBanner as copy } from '@config/content';
 ---
 
@@ -18,7 +18,7 @@ import { emergencyBanner as copy } from '@config/content';
   class="ebanner"
   data-ebanner
   data-area={HAZARD_AREA}
-  data-api-base={ERSN_API_BASE}
+  data-api-base={GRID_API_BASE}
   role="alert"
   aria-label="Emergency alert"
   hidden

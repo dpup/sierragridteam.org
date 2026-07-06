@@ -2,9 +2,9 @@
  * Data-layer unit tests (`bun test`). Pure helpers + fixture validation; no network.
  */
 import { test, expect } from 'bun:test';
-import { isInServiceArea } from './ersn';
+import { isInServiceArea } from './grid';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
-import ersnFixture from '../data/ersn-snapshot.json';
+import gridFixture from '../data/grid-snapshot.json';
 
 test('units convert metric → imperial correctly', () => {
   expect(cToF(0)).toBe(32);
@@ -16,10 +16,10 @@ test('units convert metric → imperial correctly', () => {
   expect(degreesToCompass(-45)).toBe('NW'); // negative bearing normalizes
 });
 
-test('the checked-in ersn snapshot fixture is well-formed (harness mocks use it)', () => {
-  expect(ersnFixture.roads.roads.length).toBeGreaterThan(0);
-  expect(ersnFixture.weather.weatherData.length).toBeGreaterThan(0);
-  expect(Array.isArray(ersnFixture.alerts.alerts)).toBe(true);
+test('the checked-in grid snapshot fixture is well-formed (harness mocks use it)', () => {
+  expect(gridFixture.roads.roads.length).toBeGreaterThan(0);
+  expect(gridFixture.weather.weatherData.length).toBeGreaterThan(0);
+  expect(Array.isArray(gridFixture.alerts.alerts)).toBe(true);
 });
 
 test('isInServiceArea bounds the Calaveras/Tuolumne foothills', () => {

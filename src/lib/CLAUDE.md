@@ -1,8 +1,8 @@
 # src/lib — data layer & helpers
 
-`ersn.ts` + `hazards.ts` are the typed data.sierragridteam.org shapes + **pure derivations**
+`grid.ts` + `hazards.ts` are the typed data.sierragridteam.org shapes + **pure derivations**
 (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, `isInServiceArea`, …) plus
-shared constants (`ERSN_API_BASE`, `NWS_ZONES`, `HAZARD_AREA`, `STREAM_LAYERS`).
+shared constants (`GRID_API_BASE`, `NWS_ZONES`, `HAZARD_AREA`, `STREAM_LAYERS`).
 `live-view.ts` turns a fetched snapshot into the `/live` view-model + region HTML;
 `live-map.ts` is the MapLibre map; `units.ts` converts metric→imperial; `format.ts` is
 `escapeHtml` + `formatPtTime`. See `docs/architecture/data-feed.md` for the design.
@@ -25,5 +25,5 @@ them) — never imported into a page.
 ## Changing data behavior
 
 1. Edit the typed derivation, keep it pure.
-2. Update/extend `src/lib/{ersn,hazards}.test.ts` (they run against the fixtures).
+2. Update/extend `src/lib/{grid,hazards}.test.ts` (they run against the fixtures).
 3. `make snapshot` if the live shape changed (refreshes the fixtures); `bun test src/`.

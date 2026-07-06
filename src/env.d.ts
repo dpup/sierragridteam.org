@@ -2,7 +2,7 @@
 
 interface ImportMetaEnv {
   /** Live data feed base URL. Default: https://data.sierragridteam.org/api/v1 */
-  readonly PUBLIC_ERSN_API_BASE?: string;
+  readonly PUBLIC_GRID_API_BASE?: string;
   /** Override the public contact email (default: info@sierragridteam.org). */
   readonly PUBLIC_CONTACT_EMAIL?: string;
 }
