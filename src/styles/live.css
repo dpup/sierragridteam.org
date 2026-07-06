@@ -160,6 +160,12 @@
 .live-view .stream__card--muted {
   border-left-color: var(--brand-green);
 }
+/* Active = this card's map feature is currently highlighted (hover/focus from the stream).
+   Green border echoes the map's green highlight ring; no motion. */
+.live-view .stream__card--active {
+  border-color: var(--brand-green);
+  background: var(--surface-banner);
+}
 .live-view .stream__summary {
   list-style: none;
   cursor: pointer;

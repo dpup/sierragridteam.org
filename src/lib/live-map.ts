@@ -20,6 +20,8 @@ type GeoFC = GeoJSON.FeatureCollection;
 
 export interface MapHandle {
   update(data: LiveMapData): void;
+  /** Highlight the on-map feature for a hazard id (null clears). Returns true if matched. */
+  highlight(id: string | null): boolean;
 }
 
 const asFC = (data: LiveMapData, l: string): GeoFC =>
@@ -52,6 +54,38 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     C.brass,
     C.green,
   ] as unknown as maplibregl.ExpressionSpecification;
+
+  // Hover highlight: the alert stream sets a feature's `hover` state (keyed by its `id`)
+  // when the matching card is hovered/focused; these paint expressions react. Green is the
+  // site's interactive accent (not a risk color). `promoteId: 'id'` on the sources below
+  // makes properties.id the feature id so setFeatureState can address it.
+  const onHover = (off: unknown, on: unknown) =>
+    [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      on,
+      off,
+    ] as unknown as maplibregl.ExpressionSpecification;
+
+  // source id → the hazard layer whose features it holds (for the id index + highlight).
+  const HL_SOURCES: Record<string, string> = {
+    wildfire: 'wildfire',
+    evacuation: 'evacuation',
+    earthquake: 'earthquake',
+    incidents: 'road_incident',
+  };
+  let mappedIds = new Set<string>();
+  const indexIds = (data: LiveMapData) => {
+    const ids = new Set<string>();
+    for (const layer of Object.values(HL_SOURCES)) {
+      for (const f of asFC(data, layer).features) {
+        const id = (f.properties as { id?: unknown } | null)?.id;
+        if (id != null) ids.add(String(id));
+      }
+    }
+    mappedIds = ids;
+  };
+  indexIds(mapData);
 
   let map: maplibregl.Map;
   try {
@@ -151,12 +185,12 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
         { l: 'evacuation', color: C.orangeDeep, width: 2.5, dash: [2, 1.5] },
       ];
       for (const cfg of polys) {
-        map.addSource(cfg.l, { type: 'geojson', data: asFC(mapData, cfg.l) });
+        map.addSource(cfg.l, { type: 'geojson', data: asFC(mapData, cfg.l), promoteId: 'id' });
         map.addLayer({
           id: `${cfg.l}-fill`,
           type: 'fill',
           source: cfg.l,
-          paint: { 'fill-color': cfg.color, 'fill-opacity': 0.16 },
+          paint: { 'fill-color': cfg.color, 'fill-opacity': onHover(0.16, 0.34) },
         });
         map.addLayer({
           id: `${cfg.l}-line`,
@@ -164,7 +198,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
           source: cfg.l,
           paint: {
             'line-color': cfg.color,
-            'line-width': cfg.width,
+            'line-width': onHover(cfg.width, cfg.width * 2),
             ...(cfg.dash ? { 'line-dasharray': cfg.dash } : {}),
           },
         });
@@ -172,7 +206,11 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       }
 
       // Earthquakes — hollow circles sized by magnitude.
-      map.addSource('earthquake', { type: 'geojson', data: asFC(mapData, 'earthquake') });
+      map.addSource('earthquake', {
+        type: 'geojson',
+        data: asFC(mapData, 'earthquake'),
+        promoteId: 'id',
+      });
       map.addLayer({
         id: 'earthquake',
         type: 'circle',
@@ -182,25 +220,30 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
             '+',
             4,
             ['*', 2, ['coalesce', ['get', 'magnitude'], 1]],
+            ['case', ['boolean', ['feature-state', 'hover'], false], 3, 0],
           ] as unknown as maplibregl.ExpressionSpecification,
           'circle-color': 'rgba(0,0,0,0)',
-          'circle-stroke-color': sevColor,
-          'circle-stroke-width': 2,
+          'circle-stroke-color': onHover(sevColor, C.green),
+          'circle-stroke-width': onHover(2, 3.5),
         },
       });
       interactive('earthquake');
 
       // Road incidents — filled severity circles, on top so accidents are most visible.
-      map.addSource('incidents', { type: 'geojson', data: asFC(mapData, 'road_incident') });
+      map.addSource('incidents', {
+        type: 'geojson',
+        data: asFC(mapData, 'road_incident'),
+        promoteId: 'id',
+      });
       map.addLayer({
         id: 'incidents',
         type: 'circle',
         source: 'incidents',
         paint: {
-          'circle-radius': 6,
+          'circle-radius': onHover(6, 9),
           'circle-color': sevColor,
-          'circle-stroke-color': C.surface,
-          'circle-stroke-width': 2,
+          'circle-stroke-color': onHover(C.surface, C.green),
+          'circle-stroke-width': onHover(2, 3.5),
         },
       });
       interactive('incidents');
@@ -215,11 +258,11 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
         source: 'wildfire',
         filter: ['==', ['geometry-type'], 'Point'] as maplibregl.FilterSpecification,
         paint: {
-          'circle-radius': 8,
+          'circle-radius': onHover(8, 11),
           'circle-color': C.orange,
           'circle-opacity': 0.9,
-          'circle-stroke-color': C.surface,
-          'circle-stroke-width': 2,
+          'circle-stroke-color': onHover(C.surface, C.green),
+          'circle-stroke-width': onHover(2, 3.5),
         },
       });
       interactive('wildfire-point');
@@ -243,6 +286,32 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     setData('evacuation', asFC(data, 'evacuation'));
     setData('earthquake', asFC(data, 'earthquake'));
     setData('incidents', asFC(data, 'road_incident'));
+    indexIds(data);
+  };
+
+  // Drive the feature-state `hover` from the alert stream. Only ids actually present on the
+  // map highlight; setFeatureState is applied across the hazard sources (only the one that
+  // holds the id reacts) and guarded for a source that's mid-reload.
+  let hoveredId: string | null = null;
+  const setHover = (next: string | null): boolean => {
+    const id = next && mappedIds.has(next) ? next : null;
+    if (id !== hoveredId) {
+      const flip = (fid: string | null, on: boolean) => {
+        if (fid == null) return;
+        for (const src of Object.keys(HL_SOURCES)) {
+          if (!map.getSource(src)) continue;
+          try {
+            map.setFeatureState({ source: src, id: fid }, { hover: on });
+          } catch {
+            /* source mid-reload — ignore */
+          }
+        }
+      };
+      flip(hoveredId, false);
+      hoveredId = id;
+      flip(hoveredId, true);
+    }
+    return hoveredId != null;
   };
 
   return {
@@ -251,6 +320,11 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       // latest data once the map next goes idle.
       if (map.isStyleLoaded()) applyData(data);
       else map.once('idle', () => applyData(data));
+    },
+    // Highlight the map feature for a hazard id (or clear with null). Returns whether an
+    // on-map feature was matched, so the caller can mirror the active state on the card.
+    highlight(id: string | null) {
+      return setHover(id);
     },
   };
 }

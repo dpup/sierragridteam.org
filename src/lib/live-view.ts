@@ -199,9 +199,13 @@ function renderStream(items: HazardFeature[]): string {
       const source = p.source?.name
         ? `<span class="stream__source">${esc(p.source.name)}</span>`
         : '';
+      // data-hazard-id links the card to its map feature — hovering/focusing it highlights
+      // the feature on the /live map (wired in the page controller). Harmless for stream
+      // items with no map geometry (weather/fire-weather banners): the highlight no-ops.
+      const hid = `data-hazard-id="${esc(p.id)}"`;
       if (hasBody) {
         return (
-          `<li><details class="stream__card stream__card--${tone}">` +
+          `<li><details class="stream__card stream__card--${tone}" ${hid}>` +
           `<summary class="stream__summary">${head}` +
           `<span class="stream__meta">${source}<span class="stream__chevron" aria-hidden="true"></span></span></summary>` +
           `<div class="stream__body">` +
@@ -211,7 +215,7 @@ function renderStream(items: HazardFeature[]): string {
         );
       }
       return (
-        `<li><div class="stream__card stream__card--static stream__card--${tone}">` +
+        `<li><div class="stream__card stream__card--static stream__card--${tone}" ${hid}>` +
         `<div class="stream__summary">${head}<span class="stream__meta">${source}</span></div></div></li>`
       );
     })

@@ -346,6 +346,32 @@ const schema = {
     }
   }
 
+  // Hover/focus an alert card → highlight its feature on the map, and mirror the "active"
+  // state onto the card. Delegated on the persistent stream container so it survives each
+  // poll's innerHTML swap; a no-op when the map is unavailable or the item has no geometry.
+  const streamEl = document.querySelector<HTMLElement>('[data-live-stream]');
+  if (streamEl) {
+    let activeCard: HTMLElement | null = null;
+    const activate = (target: EventTarget | null) => {
+      const card =
+        target instanceof Element
+          ? (target.closest('[data-hazard-id]') as HTMLElement | null)
+          : null;
+      if (card === activeCard) return;
+      if (activeCard) activeCard.classList.remove('stream__card--active');
+      const matched = handle?.highlight(card?.dataset.hazardId ?? null) ?? false;
+      activeCard = matched ? card : null;
+      if (matched && card) card.classList.add('stream__card--active');
+    };
+    streamEl.addEventListener('mouseover', (e) => activate(e.target));
+    streamEl.addEventListener('mouseleave', () => activate(null));
+    streamEl.addEventListener('focusin', (e) => activate(e.target));
+    streamEl.addEventListener('focusout', (e) => {
+      // Clear only when focus leaves the stream entirely (not when moving within a card).
+      if (!streamEl.contains(e.relatedTarget as Node | null)) activate(null);
+    });
+  }
+
   run(true);
   setInterval(() => run(false), REFRESH_MS);
 </script>
