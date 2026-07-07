@@ -28,10 +28,17 @@ export type Severity = 'INFO' | 'LOW' | 'MODERATE' | 'SEVERE' | 'EXTREME';
 export interface HazardSource {
   id: string;
   name: string;
-  /** Authoritative page for this event (e.g. the CAL FIRE incident page, the Genasys
-   * evacuation viewer) — present on some sources; surfaced as a "More information" link. */
-  url?: string;
   attribution?: string;
+}
+
+/**
+ * Per-event provenance. `source_url` is the authoritative page for THIS specific event —
+ * the CAL FIRE incident page for a wildfire, the Genasys zone viewer for an evacuation —
+ * present on some feeds; surfaced as the card's "More information" link. (Distinct from a
+ * layer's `metadata.source_url`, which is the whole feed's home page, not one incident.)
+ */
+export interface HazardProvenance {
+  source_url?: string;
 }
 
 /** Common envelope on every hazard feature + the typed per-kind blocks. */
@@ -50,6 +57,7 @@ export interface HazardProps {
   updated_at?: string | null;
   area_label?: string;
   source: HazardSource;
+  provenance?: HazardProvenance;
   incident?: { log_number?: string };
   weather?: { event?: string; source?: string; zones?: string[] };
   fire_weather?: { state?: string };
@@ -276,4 +284,30 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
     fireWeather: fireState,
     syncedAt: snapshot.situation?.generated_at ?? snapshot.fetchedAt ?? null,
   };
+}
+
+/**
+ * The homepage "Active Alerts" tile: the three alert-grade /live tiles (wildfires +
+ * evacuations + weather alerts) collapsed into one honest at-a-glance count. Built from
+ * the same `deriveSituationSummary` so the homepage can never say "None" while /live shows
+ * active hazards (the whole point — an all-clear that contradicts the live feed is exactly
+ * the data-honesty failure the style guide forbids).
+ *
+ * Honesty rules: a `null` count is a source outage → the tile is "Unknown" (never a false
+ * 0/all-clear) UNLESS a known count already proves an alert is live, in which case we show
+ * that (an undercount is fine when we're already flagging). Orange (alarm) is reserved for
+ * a genuine life-safety hazard — an active wildfire or evacuation; weather-only is elevated.
+ */
+export function deriveActiveAlertsTile(summary: SituationSummary): {
+  value: string;
+  state: Tone;
+} {
+  const parts = [summary.wildfires, summary.evacuations, summary.weatherAlerts];
+  let total = 0;
+  for (const c of parts) total += c ?? 0;
+  const anyUnknown = parts.some((c) => c == null);
+  const lifeSafety = (summary.wildfires ?? 0) > 0 || (summary.evacuations ?? 0) > 0;
+  if (total > 0) return { value: `${total} Active`, state: lifeSafety ? 'alarm' : 'elevated' };
+  if (anyUnknown) return { value: 'Unknown', state: 'muted' };
+  return { value: 'None', state: 'ok' };
 }

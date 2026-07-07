@@ -141,10 +141,9 @@ const scenarios = {
           headline: 'Salt Springs Fire',
           status: 'active',
           area_label: 'East of Arnold, Hwy 4 corridor',
-          source: {
-            id: 'calfire',
-            name: 'CAL FIRE',
-            url: 'https://www.fire.ca.gov/incidents/2026/9/2/salt-springs-fire/',
+          source: { id: 'calfire', name: 'CAL FIRE' },
+          provenance: {
+            source_url: 'https://www.fire.ca.gov/incidents/2026/9/2/salt-springs-fire/',
           },
           wildfire: { acres: 1240, containment: 15, county: 'Calaveras', has_perimeter: true },
         },
@@ -164,7 +163,8 @@ const scenarios = {
           headline: 'Evacuation WARNING — Hathaway Pines & Avery — prepare to leave',
           status: 'active',
           area_label: 'Zones CAL-E043 & E044',
-          source: { id: 'caloes', name: 'Cal OES / Genasys', url: 'https://protect.genasys.com/' },
+          source: { id: 'caloes', name: 'Cal OES / Genasys' },
+          provenance: { source_url: 'https://protect.genasys.com/' },
           evacuation: {
             zone_id: 'E043',
             level: 'WARNING',
@@ -198,6 +198,7 @@ const scenarios = {
           status: 'active',
           area_label: 'Highway 108, Green Springs',
           source: { id: 'calfire', name: 'CAL FIRE' },
+          provenance: { source_url: 'https://www.fire.ca.gov/incidents/2026/7/6/owl-fire/' },
           wildfire: { acres: 120, containment: 30, county: 'Tuolumne', has_perimeter: false },
         },
       },

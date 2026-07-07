@@ -7,6 +7,7 @@ import { test, expect } from 'bun:test';
 import {
   deriveStream,
   deriveSituationSummary,
+  deriveActiveAlertsTile,
   type HazardsSnapshot,
   type HazardFeature,
 } from './hazards';
@@ -106,6 +107,65 @@ test('fire-weather state normalizes hyphen/case to the canonical enum', () => {
   const fw = point('fire_weather', 3, 0, 0, { fire_weather: { state: 'red-flag' } });
   fw.geometry = null;
   expect(deriveSituationSummary(snap({ fire_weather: fc([fw]) })).fireWeather).toBe('RED_FLAG');
+});
+
+test('active-alerts tile aggregates wildfire + evac + weather (homepage ⇄ /live agree)', () => {
+  // The reported bug: 2 wildfires + 2 evac zones active, yet the homepage read "no alerts"
+  // because it only counted weather alerts. The aggregate must reflect all three.
+  const s = snap({
+    wildfire: fc([point('wildfire', 3, -120.4, 38.2), point('wildfire', 3, -120.5, 38.1)]),
+    evacuation: fc([point('evacuation', 3, -120.4, 38.2), point('evacuation', 3, -120.45, 38.15)]),
+    weather_alert: fc([], 'OK'),
+  });
+  const tile = deriveActiveAlertsTile(deriveSituationSummary(s));
+  expect(tile.value).toBe('4 Active');
+  expect(tile.state).toBe('alarm'); // a life-safety hazard is present → sanctioned orange
+});
+
+test('weather-only alerts read as elevated, not the life-safety orange', () => {
+  const wa = point('weather_alert', 2, 0, 0, {
+    headline: 'Wind Advisory',
+    weather: { zones: ['CAZ069'] },
+  });
+  wa.geometry = null;
+  const s = snap({ wildfire: fc([], 'OK'), evacuation: fc([], 'OK'), weather_alert: fc([wa]) });
+  const tile = deriveActiveAlertsTile(deriveSituationSummary(s));
+  expect(tile.value).toBe('1 Active');
+  expect(tile.state).toBe('elevated');
+});
+
+test('a confirmed-empty situation is a real "None", an outage is "Unknown" (never all-clear)', () => {
+  const empty = snap({
+    wildfire: fc([], 'OK'),
+    evacuation: fc([], 'OK'),
+    weather_alert: fc([], 'OK'),
+  });
+  expect(deriveActiveAlertsTile(deriveSituationSummary(empty))).toEqual({
+    value: 'None',
+    state: 'ok',
+  });
+
+  // Cal OES down while the rest are quiet: we can't assert no orders → "Unknown", not "None".
+  const outage = snap({
+    wildfire: fc([], 'OK'),
+    evacuation: fc([], 'UNAVAILABLE'),
+    weather_alert: fc([], 'OK'),
+  });
+  expect(deriveActiveAlertsTile(deriveSituationSummary(outage))).toEqual({
+    value: 'Unknown',
+    state: 'muted',
+  });
+});
+
+test('a known active hazard still shows even when another layer is down', () => {
+  const s = snap({
+    wildfire: fc([point('wildfire', 3, -120.4, 38.2)]),
+    evacuation: fc([], 'OK'),
+    weather_alert: fc([], 'UNAVAILABLE'), // unknown, but we already know a fire is active
+  });
+  const tile = deriveActiveAlertsTile(deriveSituationSummary(s));
+  expect(tile.value).toBe('1 Active');
+  expect(tile.state).toBe('alarm');
 });
 
 test('derivations never throw on an empty snapshot', () => {

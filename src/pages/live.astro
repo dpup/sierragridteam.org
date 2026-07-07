@@ -106,14 +106,28 @@ const schema = {
         <span class="live-status__sync"><span data-live-synced>—</span> · {copy.autoRefresh}</span>
       </p>
 
+      {
+        /* The three count tiles link (same-page) down to their detail in the alert stream —
+          most useful on mobile, where the list sits well below the fold. The client toggles
+          the href off when a tile has nothing to show ("None"/"Unknown"), so it only offers
+          the jump when there's actually something there. */
+      }
       <div class="live-tiles">
-        <StatTile label="Wildfires" value="—" sublabel="CAL FIRE" state="muted" key="wildfires" />
+        <StatTile
+          label="Wildfires"
+          value="—"
+          sublabel="CAL FIRE"
+          state="muted"
+          key="wildfires"
+          href="#stream-title"
+        />
         <StatTile
           label="Evacuations"
           value="—"
           sublabel="Cal OES"
           state="muted"
           key="evacuations"
+          href="#stream-title"
         />
         <StatTile
           label="Weather Alerts"
@@ -121,6 +135,7 @@ const schema = {
           sublabel="NWS foothill zones"
           state="muted"
           key="weatherAlerts"
+          href="#stream-title"
         />
         <StatTile
           label="Fire Weather"
@@ -181,7 +196,8 @@ const schema = {
         </section>
 
         <section class="live-grid__stream" aria-labelledby="stream-title">
-          <h2 id="stream-title" class="live-h2">{copy.streamHeading}</h2>
+          {/* tabindex=-1: the count tiles jump here, so focus lands on the heading too. */}
+          <h2 id="stream-title" class="live-h2" tabindex="-1">{copy.streamHeading}</h2>
           <div data-live-stream></div>
         </section>
       </div>
@@ -253,12 +269,21 @@ const schema = {
     el.innerHTML = html;
   }
 
-  function setTile(key: string, t: { value: string; state: string }) {
+  function setTile(key: string, t: { value: string; state: string; href?: string }) {
     const el = document.querySelector<HTMLElement>(`[data-stat-key="${key}"]`);
     if (!el) return;
     el.dataset.state = t.state;
     const v = el.querySelector<HTMLElement>('[data-stat-value]');
     if (v) v.textContent = t.value;
+    // The tile is an <a>; make it a live link only when there's detail to jump to.
+    // With no href it stays an inert <a> (not focusable, no hover) — no false affordance.
+    if (t.href) {
+      el.setAttribute('href', t.href);
+      el.classList.add('stat--link');
+    } else {
+      el.removeAttribute('href');
+      el.classList.remove('stat--link');
+    }
   }
 
   function applyView(view: LiveView) {
@@ -554,6 +579,13 @@ const schema = {
   .live-h2 {
     font-size: var(--fs-h3);
     margin-bottom: var(--space-5);
+    /* Anchor targets (e.g. the tiles → #stream-title) land clear of the sticky topbar. */
+    scroll-margin-top: calc(var(--topbar-h) + var(--space-5));
+  }
+  /* The stream heading is only a programmatic focus target (tabindex=-1) for the tile jump;
+     don't paint a focus ring on it — the ring is for genuinely interactive elements. */
+  .live-h2:focus {
+    outline: none;
   }
   .live-sub {
     margin-top: calc(var(--space-5) * -1 + var(--space-2));

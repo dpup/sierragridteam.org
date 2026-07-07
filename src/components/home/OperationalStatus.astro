@@ -10,7 +10,8 @@ import Container from '../Container.astro';
 import Kicker from '../Kicker.astro';
 import StatTile from '../StatTile.astro';
 import StatusPill from '../StatusPill.astro';
-import { GRID_API_BASE, NWS_ZONES } from '@lib/grid';
+import { GRID_API_BASE } from '@lib/grid';
+import { HAZARD_AREA } from '@lib/hazards';
 import { home } from '@config/content';
 import { site } from '@config/site';
 
@@ -27,7 +28,7 @@ const { relaySites, coverageCounties } = Astro.props;
   aria-label="Real-time operational status"
   data-ops
   data-api-base={GRID_API_BASE}
-  data-zones={NWS_ZONES.join(',')}
+  data-area={HAZARD_AREA}
 >
   <Container wide>
     <div class="ops__head">
@@ -55,7 +56,7 @@ const { relaySites, coverageCounties } = Astro.props;
       <StatTile
         label="Active Alerts"
         value="—"
-        sublabel="NWS foothill zones"
+        sublabel="Wildfire, evac & weather"
         state="muted"
         href="/live"
         key="alerts"
@@ -74,13 +75,18 @@ const { relaySites, coverageCounties } = Astro.props;
 
 <script>
   import { formatPtTime } from '@lib/format';
+  import {
+    deriveSituationSummary,
+    deriveActiveAlertsTile,
+    type HazardsSnapshot,
+  } from '@lib/hazards';
 
   // Live refresh — upgrades the SSR snapshot when CORS allows; silently keeps it otherwise.
   const REFRESH_MS = 5 * 60 * 1000;
   const section = document.querySelector<HTMLElement>('[data-ops]');
   if (section) {
     const base = section.dataset.apiBase ?? 'https://data.sierragridteam.org/api/v1';
-    const zones = section.dataset.zones ?? '';
+    const area = section.dataset.area ?? 'ebbetts-pass';
 
     const setTile = (key: string, value: string, state: string) => {
       const el = section.querySelector<HTMLElement>(`[data-stat-key="${key}"]`);
@@ -90,26 +96,33 @@ const { relaySites, coverageCounties } = Astro.props;
       if (v) v.textContent = value;
     };
 
-    const alertsUrl = zones ? `${base}/weather/alerts?zones=${zones}` : `${base}/weather/alerts`;
+    const json = async (path: string) => {
+      const res = await fetch(`${base}${path}`, { headers: { accept: 'application/json' } });
+      if (!res.ok) throw new Error(`${path} → ${res.status}`);
+      return res.json();
+    };
 
     const refresh = async () => {
       try {
-        const [weatherRes, alertsRes] = await Promise.all([
-          fetch(`${base}/weather`, { headers: { accept: 'application/json' } }),
-          fetch(alertsUrl, { headers: { accept: 'application/json' } }),
+        // "Active Alerts" must agree with /live, so derive it from the SAME hazard layers via
+        // the shared pure summary (not the weather-alerts endpoint, which misses wildfire &
+        // evacuation — the bug where the homepage read "0" during an active evac).
+        const [weather, wildfire, evacuation, weather_alert] = await Promise.all([
+          json('/weather'),
+          json(`/hazards/${area}/wildfire.geojson`),
+          json(`/hazards/${area}/evacuation.geojson`),
+          json(`/hazards/${area}/weather_alert.geojson`),
         ]);
-        if (!weatherRes.ok || !alertsRes.ok) return;
-        const weather = (await weatherRes.json()) as {
-          fireWeather?: { state?: string };
-          lastUpdated?: string;
-        };
-        const alertsData = (await alertsRes.json()) as {
-          alerts?: unknown[];
-          lastUpdated?: string;
-        };
 
-        const count = (alertsData.alerts ?? []).length;
-        setTile('alerts', `${count} Active`, count > 0 ? 'alarm' : 'ok');
+        const haz = {
+          fetchedAt: '',
+          area,
+          situation: null,
+          layers: { wildfire, evacuation, weather_alert },
+          scanners: [],
+        } as unknown as HazardsSnapshot;
+        const tile = deriveActiveAlertsTile(deriveSituationSummary(haz));
+        setTile('alerts', tile.value, tile.state);
 
         // Authoritative fire-weather state from the feed (FR-3) — never inferred.
         const state = (weather.fireWeather?.state ?? '').toUpperCase();
@@ -122,7 +135,7 @@ const { relaySites, coverageCounties } = Astro.props;
         setTile('fire', fire.label, fire.state);
 
         const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
-        const ts = weather.lastUpdated ?? alertsData.lastUpdated;
+        const ts = weather.lastUpdated as string | undefined;
         if (synced && ts) synced.textContent = `Synced ${formatPtTime(ts)}`;
       } catch {
         // Live-only: there's no baked value to fall back to. Mark the sync state honestly;

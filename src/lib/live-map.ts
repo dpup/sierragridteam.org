@@ -134,7 +134,8 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       }
       return undefined;
     };
-    const src = parseObj<{ name?: string; url?: string }>(p.source);
+    const src = parseObj<{ name?: string }>(p.source);
+    const moreUrl = parseObj<{ source_url?: string }>(p.provenance)?.source_url;
     const wf = parseObj<{ acres?: number; containment?: number }>(p.wildfire);
     // Use the same title/stats derivation as the alert stream so a point fire reads
     // identically on both surfaces ("Owl Fire" + "120 acres · 30% contained").
@@ -147,8 +148,8 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       (p.area_label ? `<p class="map-pop__where">${esc(p.area_label)}</p>` : '') +
       (stats ? `<p class="map-pop__extra">${esc(stats)}</p>` : '') +
       (src?.name
-        ? src.url
-          ? `<p class="map-pop__src"><a href="${esc(src.url)}" target="_blank" rel="noopener external">${esc(src.name)}<span aria-hidden="true"> &#8599;</span></a></p>`
+        ? moreUrl
+          ? `<p class="map-pop__src"><a href="${esc(moreUrl)}" target="_blank" rel="noopener external">${esc(src.name)}<span aria-hidden="true"> &#8599;</span></a></p>`
           : `<p class="map-pop__src">${esc(src.name)}</p>`
         : '') +
       `</div>`;

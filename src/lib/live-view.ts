@@ -42,6 +42,9 @@ export interface LiveView {
     {
       value: string;
       state: TileState;
+      /** When set, the tile links (same-page) to the matching detail — the alert stream.
+       *  Present only when there's actually something there to jump to (count > 0). */
+      href?: string;
     }
   >;
   mapData: LiveMapData;
@@ -193,9 +196,10 @@ function renderStream(items: HazardFeature[]): string {
       const tone = toneFor(f);
       const p = f.properties;
       const ex = streamExtra(f);
-      // Authoritative "more info" page for the event (CAL FIRE incident, Genasys evac
-      // viewer, …) when the source provides one — opens the body so the link is reachable.
-      const moreUrl = p.source?.url;
+      // Authoritative "more info" page for THIS event (CAL FIRE incident, Genasys evac
+      // viewer, …) — from the feed's per-event provenance when present; opens the body so
+      // the link is reachable.
+      const moreUrl = p.provenance?.source_url;
       const hasBody = !!(ex || p.description || moreUrl);
       const head =
         `<span class="stream__head"><span class="stream__kicker">` +
@@ -344,6 +348,11 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
         ? { tone: 'elevated', label: 'Advisory', blink: false }
         : { tone: 'ok', label: 'Operational', blink: false };
 
+  // A count tile jumps down to its detail in the alert stream — but only when there's
+  // actually something to see (count > 0). "None"/"Unknown" stay inert (no false promise
+  // of detail). `n` is number|null: null (unknown) and 0 (none) are both falsy → no link.
+  const streamLink = (n: number | null) => (n ? '#stream-title' : undefined);
+
   return {
     status,
     syncedLabel: `Synced ${formatPtTime(summary.syncedAt)}`,
@@ -356,6 +365,7 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
               ? `${summary.wildfires} Active`
               : 'None',
         state: summary.wildfires == null ? 'muted' : summary.wildfires > 0 ? 'alarm' : 'ok',
+        href: streamLink(summary.wildfires),
       },
       evacuations: {
         value:
@@ -365,6 +375,7 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
               ? `${summary.evacuations} Zones`
               : 'None',
         state: summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok',
+        href: streamLink(summary.evacuations),
       },
       weatherAlerts: {
         value:
@@ -375,6 +386,7 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
               : 'None',
         state:
           summary.weatherAlerts == null ? 'muted' : summary.weatherAlerts > 0 ? 'elevated' : 'ok',
+        href: streamLink(summary.weatherAlerts),
       },
       fireWeather: { value: fire.label, state: fire.state },
     },
