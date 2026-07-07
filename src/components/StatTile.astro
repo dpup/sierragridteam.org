@@ -52,13 +52,19 @@ const Tag = href ? 'a' : 'div';
     border-radius: var(--radius);
   }
 
-  /* Linked tiles (e.g. the home status grid → /live). */
-  a.stat--link {
+  /* A tile is a whole-box target, never underlined text — this must also cover the inert
+     <a class="stat"> state: the /live count tiles drop .stat--link (become plain anchors)
+     when there's nothing to jump to, and without this the global a:hover underline would
+     strike through "None"/"Unknown". */
+  a.stat:hover {
     text-decoration: none;
+  }
+  /* Linked tiles (home status grid → /live; /live counts → the alert list) get the hover
+     affordance only while they're actually a live link. */
+  a.stat--link {
     transition: border-color var(--transition);
   }
   a.stat--link:hover {
-    text-decoration: none;
     border-color: var(--brand-green);
   }
 
