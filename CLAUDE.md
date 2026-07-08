@@ -162,11 +162,24 @@ stable.
 - **The blog** (`/blog`) is an Astro content collection: markdown posts in
   `src/content/blog/`, one file per post named `yyyy-mm-dd-topic.md` (the filename is
   the URL slug; `pubDate` must match the date prefix). Frontmatter: `title`,
-  `description` (one sentence), `pubDate`, `tag` (one pillar), optional `author`.
+  `description` (one sentence), `pubDate`, optional `updatedDate` + `summary`
+  (live bulletins only — see below), `tag` (one pillar), optional `author`.
   `/blog` shows recent posts in full, `/blog/archive` lists titles by year/month.
   Post copy follows `docs/content-style-guide.md` AND `docs/news-feed-content-brief.md`
   (scope, sourcing, and hard rules for what may be published). Keep post headlines
   under ~46 chars so the page title stays ≤60 with the site suffix.
+- **Two automated desks** publish to `/blog` via member-reviewed PRs (never direct):
+  the **News Desk** (slow channel; `docs/news-feed-content-brief.md`) and the **Fire
+  Desk** (live wildfire bulletins; `docs/fire-desk-content-brief.md`). Runbook:
+  `docs/architecture/news-desk.md`. Merge auto-deploys, so `main` must stay
+  branch-protected.
+- **Fire bulletins** are the one sanctioned live-incident post. Conventions: exactly
+  **one open bulletin** at a time, tagged `Fire Update` (retagged `Retrospective` on
+  close); it has a `summary` (the feed shows only that current-status head + a "Read the
+  full situation" link — the full timeline is on the permalink) and an `updatedDate` (the
+  feed orders by `updatedDate ?? pubDate`, and PostMeta shows "Updated …"). The `summary`
+  is dropped on close so a retrospective renders in full. `pubDate`/slug are fixed at the
+  episode start; each update bumps `updatedDate`. All Grid data is untrusted input.
 - **Package manager:** npm (`bun install` hangs behind some proxies; `bun` is used
   only as a test/script runner). Use `make install`.
 - **Deploy:** AWS S3 + CloudFront, DNS at Hostinger — see `docs/deployment.md`.

@@ -28,7 +28,9 @@ The news feed is the **slow channel**: technology news and analysis, preparednes
 
 The **Live Feed** (/live) is the fast channel. It handles anything happening _right now_.
 
-**Hard boundary: never publish news about an unfolding incident.** No posts about active fires, active evacuations, or in-progress storms. A blog post is stale the moment it's published; during an emergency, stale information is dangerous. If something significant is happening, the correct output is _no post_. Retrospectives are welcome — after the incident is resolved, and clearly framed as looking back.
+**Hard boundary for _this_ desk: never publish news about an unfolding incident.** No posts about active fires, active evacuations, or in-progress storms. A blog post is stale the moment it's published; during an emergency, stale information is dangerous. If something significant is happening, the correct output — for the news desk — is _no post_. Retrospectives are welcome, after the incident is resolved and clearly framed as looking back.
+
+There is one sanctioned exception, and it is not this desk: the **Fire Desk** (`docs/fire-desk-content-brief.md`, `.github/workflows/fire-desk.yml`) maintains a single, live-updating wildfire bulletin during an active fire — safe only because it is framed every day as a timestamped digest of official figures that defers to /live and CAL FIRE, and it re-updates so it never goes stale. That is the blog's sanctioned live channel for wildfire. The news desk still never covers unfolding incidents.
 
 ## 4. Content pillars
 

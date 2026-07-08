@@ -208,10 +208,12 @@ export const colophon = {
       heading: 'Sourcing',
       body:
         'Every factual claim in a desk post links to a source — official agencies for ' +
-        'conditions and incidents, project pages and release notes for technology. The desk ' +
-        'never covers unfolding emergencies (that is the Live Feed’s job), never issues ' +
-        'emergency instructions, and never reports on S.I.E.R.R.A’s own network or ' +
-        'operations — members publish that news themselves.',
+        'conditions and incidents, project pages and release notes for technology. Most posts ' +
+        'never cover unfolding emergencies — that is the Live Feed’s job — with one exception: ' +
+        'during an active wildfire the desk keeps a single live-updating bulletin, framed each ' +
+        'day as a timestamped digest of official figures that points to the Live Feed and ' +
+        'CAL FIRE for real-time status. The desk never issues emergency instructions, and never ' +
+        'reports on S.I.E.R.R.A’s own network or operations — members publish that news themselves.',
     },
     {
       heading: 'Corrections',
