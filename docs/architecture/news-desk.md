@@ -1,15 +1,27 @@
-# The Signal Desk — automated news-desk runbook
+# The automated news desks — runbook
 
-The blog's automated editorial desk. Editorial policy lives in
-**`docs/news-feed-content-brief.md`** (the brief); this document covers the machinery.
+The blog has **two** automated editorial desks, both member-reviewed via PR, never
+pushing to main:
 
-## How it works
+- **News Desk** (the slow channel) — `.github/workflows/news-desk.yml`, policy in
+  `docs/news-feed-content-brief.md`. Tech/preparedness/retrospectives; never covers
+  unfolding incidents.
+- **Fire Desk** (the live channel) — `.github/workflows/fire-desk.yml`, policy in
+  `docs/fire-desk-content-brief.md`. Maintains one live wildfire bulletin during an
+  active fire (see "The Fire Desk" below).
 
-`.github/workflows/news-desk.yml` runs daily (16:30 UTC) and on manual dispatch:
+This document covers the machinery; the briefs own editorial policy.
 
-1. **Cadence guard** — pure shell, before any API spend. If the newest post in
-   `src/content/blog/` is under 3 days old, the run exits (the brief's minimum
-   spacing; the writer itself enforces the softer max-one-a-week judgment).
+## How the News Desk works
+
+`.github/workflows/news-desk.yml` runs daily (21:12 UTC ≈ afternoon Pacific — the Fire
+Desk has the morning) and on manual dispatch:
+
+1. **Guards** — pure shell, before any API spend. First a **major-fire pause**: if the
+   Grid shows an active evacuation ORDER in the service area, the run exits (the Fire
+   Desk covers it; a cheerful tech post then reads as tone-deaf). Then the **cadence
+   guard**: if the newest **non-fire** post is under 3 days old, the run exits (a live
+   `Fire Update` bulletin is excluded so its daily updates don't suppress tech posts).
 2. **Writer** (`claude -p` with `.github/prompts/news-desk-writer.md`) — reads the
    brief, the archive, and current conditions (data.sierragridteam.org), searches the web, and
    applies the brief's publish decision. Most runs it declines and writes only a
@@ -27,14 +39,41 @@ The blog's automated editorial desk. Editorial policy lives in
 promises member review before publication — merging the PR is that review. CI runs
 on the PR as usual; the merge triggers the normal deploy.
 
+## The Fire Desk
+
+`.github/workflows/fire-desk.yml` runs each morning (15:35 UTC ≈ 08:35 Pacific) and on
+manual dispatch. It maintains **one** live "current wildfire situation" bulletin:
+
+1. **Precheck** — act only if a fire is active (Grid) or a `Fire Update` bulletin is
+   open; otherwise exit before any spend.
+2. **Writer** (`.github/prompts/fire-desk-writer.md`) — reads The Grid via the
+   `sierra-grid` MCP and **creates / updates / closes** the one bulletin (found by its
+   `tag: Fire Update`), computing the day's delta from a machine-readable `grid-state`
+   stamp it re-reads each run.
+3. **Critic** (`.github/prompts/fire-desk-critic.md`) — verifies every figure against
+   the **independent** CAL FIRE incident page (not the Grid's own value), enforces the
+   source-link allowlist and the honesty hard rules, and **vetoes by reverting** a
+   modified bulletin or deleting a new one.
+4. **Verify + build**, then a PR on a per-run branch (`fire-desk/<slug>-<run_id>`).
+
+**Trust model.** All Grid-derived text is untrusted input — data, never instructions.
+The agents are gated with `--allowedTools` (not blanket skip-permissions), only publish
+links on the official allowlist (`fire.ca.gov`, `caloes.ca.gov`, `protect.genasys.com`),
+and the critic cross-checks against the official source. The member-review gate + branch
+protection are the final control. Run the workflow's **smoke-test dispatch** once to
+confirm the runner can reach the MCP before relying on the `grid_*` tools.
+
 ## Setup (one-time)
 
 - Add the **`CLAUDE_CODE_OAUTH_TOKEN`** repository secret (Settings → Secrets and
   variables → Actions): run `claude setup-token` locally and paste the resulting
-  token — the Claude Code CLI reads this env var directly. Nothing else —
-  `GITHUB_TOKEN` covers branch + PR creation via the workflow's
+  token — both desks' Claude Code CLI reads this env var directly. Nothing else —
+  `GITHUB_TOKEN` covers branch + PR creation via each workflow's
   `contents: write` / `pull-requests: write` permissions.
-- Optional: branch-protect `main` so news-desk PRs genuinely require a human merge.
+- **Prerequisite (not optional): branch-protect `main`** so both desks' PRs require a
+  human merge. Merge auto-deploys to the live site (`deploy.yml`), so the review gate is
+  the whole safety model — without branch protection an automated bad bulletin could
+  reach residents unreviewed.
 
 ## Operating it
 

@@ -8,11 +8,11 @@ name: News Desk
 
 on:
   schedule:
-    - cron: '30 16 * * *' # daily, 16:30 UTC ≈ 08:30–09:30 Pacific
+    - cron: '12 21 * * *' # daily, 21:12 UTC ≈ 14:12 Pacific (afternoon; the Fire Desk has the morning)
   workflow_dispatch:
     inputs:
       force:
-        description: 'Bypass the 3-day cadence guard (testing only — the writer still applies the brief)'
+        description: 'Bypass the pause + 3-day cadence guards (testing only — the writer still applies the brief)'
         type: boolean
         default: false
 
@@ -31,20 +31,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cheap mechanical guard before any API spend: the brief requires >=3 days
-      # between posts (and max one per week — the writer enforces that judgment).
-      - name: Cadence guard
+      # Cheap mechanical guards before any API spend: pause during a MAJOR fire, then
+      # enforce the brief's >=3-days-between-posts rule (max one per week — writer's judgment).
+      - name: Guards — major-fire pause, then cadence
         id: guard
         run: |
           if [ "${{ inputs.force }}" = "true" ]; then
-            echo "Forced run — bypassing the cadence guard (the writer still applies the brief)."
+            echo "Forced run — bypassing guards (the writer still applies the brief)."
             echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          latest=$(ls src/content/blog/ 2>/dev/null | sort | tail -1 | cut -c1-10)
+          # Pause regular posts during a major fire: an active evacuation ORDER in the
+          # service area. The Fire Desk covers the fire; a cheerful tech post now reads as
+          # tone-deaf. (Minor fires — no order — do not pause; the desk just never writes
+          # ABOUT the fire, per brief §3.)
+          orders=$(curl -sS -m 20 "https://data.sierragridteam.org/api/v1/hazards/ebbetts-pass/evacuation.geojson" \
+            | jq '[.features[]? | select(((.properties.evacuation.level // "") | ascii_upcase) == "ORDER")] | length' 2>/dev/null || echo 0)
+          if [ "${orders:-0}" != "0" ]; then
+            echo "Active evacuation order in the service area — pausing regular posts."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # 3-day cadence, measured against the newest NON-fire post: a live "Fire Update"
+          # bulletin (which updates daily) must not trip the guard and suppress tech posts.
+          latest=""
+          for f in $(ls src/content/blog/*.md 2>/dev/null | sort -r); do
+            grep -qE '^tag:[[:space:]]*Fire Update[[:space:]]*$' "$f" && continue
+            latest=$(basename "$f" | cut -c1-10)
+            break
+          done
           if [ -n "$latest" ]; then
             age_days=$(( ( $(date -u +%s) - $(date -u -d "$latest" +%s) ) / 86400 ))
-            echo "Most recent post: $latest (${age_days}d ago)"
+            echo "Most recent non-fire post: $latest (${age_days}d ago)"
             if [ "$age_days" -lt 3 ]; then
               echo "Under the 3-day minimum between posts — skipping this run."
               echo "skip=true" >> "$GITHUB_OUTPUT"

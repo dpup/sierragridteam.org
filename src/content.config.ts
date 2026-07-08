@@ -16,7 +16,16 @@ const blog = defineCollection({
     description: z.string(),
     /** Publication date — must match the yyyy-mm-dd prefix of the filename. */
     pubDate: z.coerce.date(),
-    /** One pillar tag, e.g. "Explainer", "Tech", "Preparedness", "Field Report", "Retrospective". */
+    /** Last-updated date for a live-updating post (a fire bulletin). When set and later
+     *  than pubDate, the feed orders by it and PostMeta shows an "Updated" line. Must be
+     *  >= pubDate. Normal posts omit it. */
+    updatedDate: z.coerce.date().optional(),
+    /** Feed "fold" head for a live bulletin: the current-status text the /blog feed shows
+     *  in place of the full body (the permalink still renders the whole timeline). Plain
+     *  text. Posts without it render in full in the feed as before. */
+    summary: z.string().optional(),
+    /** One pillar tag, e.g. "Explainer", "Tech", "Preparedness", "Field Report",
+     *  "Retrospective", or "Fire Update" (an open, live wildfire bulletin). */
     tag: z.string().optional(),
     /** Byline. Omit for organizational posts; the automated desk sets its own. */
     author: z.string().optional(),

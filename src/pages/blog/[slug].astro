@@ -27,6 +27,9 @@ const postSchema = {
   headline: post.data.title,
   description: post.data.description,
   datePublished: post.data.pubDate.toISOString().slice(0, 10),
+  ...(post.data.updatedDate
+    ? { dateModified: post.data.updatedDate.toISOString().slice(0, 10) }
+    : {}),
   url: `${site.url}${path}`,
   ...(post.data.author ? { author: { '@type': 'Organization', name: post.data.author } } : {}),
   publisher: { '@type': 'NGO', name: site.legalName },
@@ -45,11 +48,20 @@ const postSchema = {
         <nav class="post-back" aria-label="Breadcrumb">
           <a href="/blog"><span aria-hidden="true">&larr;</span> {blog.post.backLink}</a>
         </nav>
-        <PostMeta date={post.data.pubDate} tag={post.data.tag} class="post-rail__meta" />
+        <PostMeta
+          date={post.data.pubDate}
+          updatedDate={post.data.updatedDate}
+          tag={post.data.tag}
+          class="post-rail__meta"
+        />
         {post.data.author && <p class="post-rail__byline">By {post.data.author}</p>}
       </aside>
 
-      <article class="post">
+      {
+        /* #timeline is the fold link's landing target from the feed (a live bulletin's
+        "Read the full situation →"). Harmless on normal posts. */
+      }
+      <article class="post" id="timeline">
         <h1 id="post-title" class="post__title">{post.data.title}</h1>
         <Prose class="post__body">
           <Content />
@@ -102,6 +114,8 @@ const postSchema = {
   .post {
     max-width: 66ch;
     min-width: 0;
+    /* Land clear of the sticky topbar when arrived at via #timeline. */
+    scroll-margin-top: calc(var(--topbar-h) + var(--space-5));
   }
   .post__title {
     font-size: var(--fs-h2);
