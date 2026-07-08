@@ -18,9 +18,11 @@ const description =
   'News and notes from S.I.E.R.R.A — technology, preparedness, and lessons in emergency ' +
   'communications for the Calaveras & Tuolumne foothills.';
 
-const all = (await getCollection('blog')).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+const allPosts = await getCollection('blog');
+// Order by most-recent activity: a live bulletin's updatedDate bumps it to the top;
+// normal posts (no updatedDate) sort by pubDate exactly as before.
+const activity = (p: (typeof allPosts)[number]) => (p.data.updatedDate ?? p.data.pubDate).valueOf();
+const all = allPosts.sort((a, b) => activity(b) - activity(a));
 const recent = all.slice(0, blog.recentCount);
 const rendered = await Promise.all(recent.map(async (post) => ({ post, ...(await render(post)) })));
 
@@ -55,13 +57,33 @@ const pageSchema = {
         {
           rendered.map(({ post, Content }) => (
             <article class="blog-post" aria-labelledby={`post-${post.id}`}>
-              <PostMeta date={post.data.pubDate} tag={post.data.tag} />
+              <PostMeta
+                date={post.data.pubDate}
+                updatedDate={post.data.updatedDate}
+                tag={post.data.tag}
+              />
               <h2 id={`post-${post.id}`} class="blog-post__title">
                 <a href={`/blog/${post.id}`}>{post.data.title}</a>
               </h2>
-              <Prose>
-                <Content />
-              </Prose>
+              {/* A live bulletin shows only its current-status head in the feed; the full
+                timeline is on the permalink. Every other post renders in full as before. */}
+              {post.data.summary ? (
+                <div class="blog-post__fold">
+                  <Prose>
+                    <p>{post.data.summary}</p>
+                  </Prose>
+                  <p class="blog-post__more">
+                    <a href={`/blog/${post.id}#timeline`}>
+                      Read the full situation
+                      <span aria-hidden="true"> →</span>
+                    </a>
+                  </p>
+                </div>
+              ) : (
+                <Prose>
+                  <Content />
+                </Prose>
+              )}
             </article>
           ))
         }
@@ -125,6 +147,23 @@ const pageSchema = {
     color: var(--brand-green);
     text-decoration: underline;
     text-underline-offset: 3px;
+  }
+
+  /* "Read the full situation →" — the feed fold's link into a live bulletin's timeline. */
+  .blog-post__more {
+    margin-top: var(--space-4);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+  .blog-post__more a {
+    color: var(--brand-green);
+  }
+  .blog-post__more a:hover {
+    color: var(--brand-green-hover);
+    text-decoration: none;
   }
 
   @media (max-width: 860px) {

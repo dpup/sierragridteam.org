@@ -5,23 +5,42 @@
  */
 interface Props {
   date: Date;
+  /** Last-updated date for a live bulletin. Shown as a distinct "Updated …" time when
+   *  later than `date`; omitted otherwise (a normal post reads exactly as before). */
+  updatedDate?: Date;
   tag?: string;
   class?: string;
 }
 
-const { date, tag, class: className } = Astro.props;
+const { date, updatedDate, tag, class: className } = Astro.props;
 
-const display = date.toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
-const iso = date.toISOString().slice(0, 10);
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const showUpdated = updatedDate && updatedDate.valueOf() > date.valueOf();
 ---
 
 <p class:list={['post-meta', className]}>
-  <time datetime={iso}>{display}</time>
+  <time datetime={iso(date)}>{fmt(date)}</time>
+  {
+    showUpdated && (
+      <>
+        <span class="post-meta__sep" aria-hidden="true">
+          ·
+        </span>
+        {/* "Updated" is real text (not aria-hidden) so the published-vs-updated
+          distinction is announced, and the value is its own <time>. */}
+        <time class="post-meta__updated" datetime={iso(updatedDate!)}>
+          Updated {fmt(updatedDate!)}
+        </time>
+      </>
+    )
+  }
   {
     tag && (
       <>
