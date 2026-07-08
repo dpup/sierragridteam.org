@@ -16,12 +16,16 @@ const { desk, class: className } = Astro.props;
 ---
 
 {
+  /* A <div>, not <footer>: the page's single <footer> landmark is SiteFooter; a second
+    footer element would break the "one footer" structure the smoke test asserts. */
+}
+{
   desk && (
-    <footer class:list={['post-notes', className]}>
+    <div class:list={['post-notes', className]}>
       <p class="post-notes__line">
         {colophon.deskName} {blog.notes.deskDisclosure} <a href="/colophon">/colophon</a>.
       </p>
-    </footer>
+    </div>
   )
 }
 
