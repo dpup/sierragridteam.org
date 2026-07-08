@@ -104,7 +104,10 @@ Body, in order:
 2. A short current-status lead (mirrors the `summary`).
 3. The timeline: newest update first, each under a `### <Month D> update` heading, so a
    reader scans discrete entries rather than a wall of prose. Older updates stay below.
-4. The standing hazards disclaimer (brief §10 below) and the colophon line.
+
+Do **not** author the emergency disclaimer or the colophon line into the body — the site
+renders both once per page (the caveat in the global footer; the colophon from your
+`author` byline). Adding either inline duplicates it.
 
 Each fire links its **CAL FIRE incident page** (the Grid event's allowlisted source link);
 the post links `/live` and Cal OES / Genasys for evacuation zones.
@@ -130,13 +133,11 @@ the post links `/live` and Cal OES / Genasys for evacuation zones.
    plainly that CAL FIRE has not called it resolved.
 3. **Never imply an all-clear.** A source that is `UNAVAILABLE` or absent reads "Unknown"
    (and link the authority), never "0", "none", or safe. Evacuations especially.
-4. **Every bulletin carries the disclaimer**, verbatim: _S.I.E.R.R.A is a volunteer
-   organization, not an emergency dispatch service. In a life-threatening emergency, call 911._
+4. **The emergency disclaimer and the colophon are page chrome** — the site renders both
+   once per page (the caveat in the global footer; the colophon from your `author` byline).
+   Set `author: Signal Desk`; do not author either line into the body (it would double).
 5. **Never characterize S.I.E.R.R.A's own response** or operations — you cannot verify it.
 6. **Every figure is sourced and timestamped**; every claim traces to an official page.
-7. End with the standing colophon line, exactly:
-   _Signal Desk is S.I.E.R.R.A's automated news desk. Drafts are reviewed by a member before
-   publication. How it works: [/colophon](/colophon)._
 
 ## 11. Each run: your checklist
 

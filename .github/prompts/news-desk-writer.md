@@ -54,12 +54,10 @@ Follow the brief's §11 checklist. Mechanics for this repository:
 
 - Body: 300–700 words, per the brief's §7–§9 (voice, structure, links on every
   sourced claim). Markdown headings start at `##` if used at all.
-- If the post touches hazards, include the standing disclaimer line from brief §10.2.
-- End with the standing colophon line, exactly:
-
-  ```
-  *Signal Desk is S.I.E.R.R.A's automated news desk. Drafts are reviewed by a member before publication. How it works: [/colophon](/colophon).*
-  ```
+- Do **not** author the colophon line or the emergency disclaimer into the body — the
+  site renders them once per page automatically: the colophon whenever `author` is set to
+  the desk name (which you set in frontmatter), and the emergency caveat in the global site
+  footer. Adding either inline duplicates it.
 
 - Run `make verify` and `npm run build`; fix anything they flag (prettier formats
   markdown — run `npx prettier --write` on your file).

@@ -11,7 +11,8 @@ import Kicker from '@components/Kicker.astro';
 import Button from '@components/Button.astro';
 import PostMeta from '@components/blog/PostMeta.astro';
 import Prose from '@components/blog/Prose.astro';
-import { blog } from '@config/content';
+import PostNotes from '@components/blog/PostNotes.astro';
+import { blog, colophon } from '@config/content';
 import { site } from '@config/site';
 
 const description =
@@ -25,6 +26,10 @@ const activity = (p: (typeof allPosts)[number]) => (p.data.updatedDate ?? p.data
 const all = allPosts.sort((a, b) => activity(b) - activity(a));
 const recent = all.slice(0, blog.recentCount);
 const rendered = await Promise.all(recent.map(async (post) => ({ post, ...(await render(post)) })));
+
+// The desk disclosure renders once at the feed footer (not per stacked post) when any shown
+// post is an automated-desk post. (The emergency caveat is global chrome in SiteFooter.)
+const feedHasDesk = recent.some((p) => p.data.author === colophon.deskName);
 
 const pageSchema = {
   '@context': 'https://schema.org',
@@ -87,6 +92,7 @@ const pageSchema = {
             </article>
           ))
         }
+        <PostNotes desk={feedHasDesk} class="blog-feed__notes" />
       </div>
     </div>
   </Section>

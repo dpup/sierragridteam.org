@@ -27,7 +27,8 @@ const blog = defineCollection({
     /** One pillar tag, e.g. "Explainer", "Tech", "Preparedness", "Field Report",
      *  "Retrospective", or "Fire Update" (an open, live wildfire bulletin). */
     tag: z.string().optional(),
-    /** Byline. Omit for organizational posts; the automated desk sets its own. */
+    /** Byline. Omit for organizational posts; the automated desk sets its own. Also gates
+     *  the standing colophon footnote (shown once per page for automated-desk posts). */
     author: z.string().optional(),
   }),
 });

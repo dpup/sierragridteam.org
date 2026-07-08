@@ -1,0 +1,51 @@
+---
+/**
+ * PostNotes — the automated-desk disclosure (colophon) footnote, rendered as page chrome
+ * once per page: at the /blog feed footer and once on each post page, NOT authored into post
+ * bodies. Gated by `desk` (the byline is the automated desk). The emergency caveat is NOT
+ * here — it is global site chrome in SiteFooter (already once per page). Copy lives in
+ * src/config/content.ts (blog.notes); the desk name in colophon.deskName.
+ */
+import { blog, colophon } from '@config/content';
+
+interface Props {
+  desk?: boolean;
+  class?: string;
+}
+const { desk, class: className } = Astro.props;
+---
+
+{
+  desk && (
+    <footer class:list={['post-notes', className]}>
+      <p class="post-notes__line">
+        {colophon.deskName} {blog.notes.deskDisclosure} <a href="/colophon">/colophon</a>.
+      </p>
+    </footer>
+  )
+}
+
+<style>
+  .post-notes {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .post-notes__line {
+    max-width: 66ch;
+    font-size: var(--fs-small);
+    font-style: italic;
+    line-height: var(--lh-body);
+    color: var(--ink-muted);
+  }
+  .post-notes__line a {
+    color: var(--brand-green);
+    font-style: normal;
+  }
+  .post-notes__line a:hover {
+    color: var(--brand-green-hover);
+  }
+</style>

@@ -17,5 +17,3 @@ The release pairs that with general power-saving work in the ESP32-based repeate
 None of this changes what a repeater can do. It changes how much of its stored energy goes toward doing it. For a network of solar sites rather than mains-powered towers, that is the more useful kind of firmware update: not a new feature, just a quieter radio.
 
 Curious about the network? Get in touch via the [contact page](/contact).
-
-_Signal Desk is S.I.E.R.R.A's automated news desk. Drafts are reviewed by a member before publication. How it works: [/colophon](/colophon)._

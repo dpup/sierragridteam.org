@@ -29,8 +29,10 @@ rationale are in `/tmp/fire-desk/writer-notes.md`.
   allowlist — even one that resolves — is a veto, not a pass.
 - **Honesty pass (hard rules §10).** No emergency instructions. No `ACTIVE` fire described
   as over, at any containment. No implied all-clear — `UNAVAILABLE`/absent data must read
-  "Unknown" with the authority linked, never "0"/"none"/safe. The hazards disclaimer and the
-  exact colophon line are present. No claims about S.I.E.R.R.A's own operations.
+  "Unknown" with the authority linked, never "0"/"none"/safe. No claims about S.I.E.R.R.A's
+  own operations. The disclaimer and colophon are page chrome — `author: Signal Desk` must be
+  set (the site renders the colophon from it), and neither line may be authored into the body
+  (strip it if present — it would double).
 - **Structure pass.** `tag: Fire Update` while active (or `Retrospective` with the `summary`
   removed on a close); `summary` present and matches the current status while open; the
   `grid-state` stamp present and consistent with the stated figures; title matches the

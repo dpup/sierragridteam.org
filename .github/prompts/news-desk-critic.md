@@ -30,8 +30,9 @@ src/content/blog/`). The writer's rationale and source list are in
   headline, no shrug closer, no fear-as-motivator, jargon defined on first use, no
   first-person singular, no claims about S.I.E.R.R.A's own operations.
 - **Format pass.** 300–700 words; frontmatter complete and consistent with the
-  filename; hazard disclaimer present if the post touches hazards; the standing
-  colophon line is the final paragraph, verbatim.
+  filename; `author` set to the desk name (the site renders the colophon once per page from
+  it). The colophon line and the emergency disclaimer must **not** be authored into the body
+  — they are page chrome now; if the draft includes either inline, strip it (it would double).
 
 ## Outcomes
 

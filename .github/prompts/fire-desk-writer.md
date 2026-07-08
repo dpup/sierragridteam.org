@@ -42,8 +42,9 @@ the brief's allowlist (`fire.ca.gov`, `caloes.ca.gov`, `protect.genasys.com`).
 
 Follow the brief's §8 post structure exactly: frontmatter (`title` per §7, `description`,
 fixed `pubDate`, today's `updatedDate`, plain-text `summary`, `tag: Fire Update`,
-`author: Signal Desk`), then the `grid-state` stamp, the current-status lead, the
-newest-first `### <Month D> update` timeline, the hazards disclaimer, and the colophon line.
+`author: Signal Desk`), then the `grid-state` stamp, the current-status lead, and the
+newest-first `### <Month D> update` timeline. Do NOT author the emergency disclaimer or the
+colophon line — the site renders both once per page (the colophon from your `author` byline).
 Each fire links its allowlisted CAL FIRE incident page; the post links `/live` and
 Cal OES / Genasys.
 

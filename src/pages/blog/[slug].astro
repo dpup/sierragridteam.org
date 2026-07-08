@@ -9,7 +9,8 @@ import Section from '@components/Section.astro';
 import Button from '@components/Button.astro';
 import PostMeta from '@components/blog/PostMeta.astro';
 import Prose from '@components/blog/Prose.astro';
-import { blog } from '@config/content';
+import PostNotes from '@components/blog/PostNotes.astro';
+import { blog, colophon } from '@config/content';
 import { site } from '@config/site';
 
 export async function getStaticPaths() {
@@ -66,6 +67,7 @@ const postSchema = {
         <Prose class="post__body">
           <Content />
         </Prose>
+        <PostNotes desk={post.data.author === colophon.deskName} />
         <div class="post__foot">
           <Button variant="secondary" href="/blog" arrow>{blog.archiveLink}</Button>
         </div>

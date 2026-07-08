@@ -181,6 +181,15 @@ export const blog = {
   post: {
     backLink: 'All Posts',
   },
+  /** Standing automated-desk disclosure, rendered as page chrome — once at the feed footer
+   *  and once per post page (not authored into each post body), for automated-desk posts
+   *  (byline = deskName). Rendered with deskName leading and a trailing link to /colophon.
+   *  (The emergency caveat is separate global chrome in SiteFooter.) */
+  notes: {
+    deskDisclosure:
+      'is S.I.E.R.R.A’s automated news desk. Drafts are reviewed by a member before ' +
+      'publication. How it works:',
+  },
 } as const;
 
 /** /colophon — how the automated news desk works (linked from every desk post). */
