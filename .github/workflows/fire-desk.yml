@@ -1,0 +1,187 @@
+# Fire Desk — the automated, member-reviewed live wildfire bulletin for /blog.
+# Each morning: if a fire is active (or a bulletin is open), a writer agent reads The Grid
+# and creates/updates/closes the one "current wildfire situation" post per
+# docs/fire-desk-content-brief.md; a critic agent verifies every figure against the official
+# CAL FIRE page and vetoes on any honesty/allowlist violation; anything that survives opens a
+# PULL REQUEST for member review. The desk never publishes directly — merge auto-deploys, so
+# main must stay branch-protected. Runbook: docs/architecture/news-desk.md.
+# Requires the CLAUDE_CODE_OAUTH_TOKEN secret.
+name: Fire Desk
+
+on:
+  schedule:
+    - cron: '35 15 * * *' # daily, 15:35 UTC ≈ 08:35 Pacific (morning, before the news desk)
+  workflow_dispatch:
+    inputs:
+      smoke:
+        description: 'Smoke test only — register the MCP and print tools/list from the runner, then stop'
+        type: boolean
+        default: false
+
+# Least privilege: open PRs, nothing more. Merge (a human) is what publishes + deploys.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: fire-desk
+  cancel-in-progress: false
+
+env:
+  GRID_API: https://data.sierragridteam.org/api/v1
+  GRID_MCP: https://data.sierragridteam.org/mcp
+  # The grid_* tools the agents may call; nothing else network-facing is granted (the writer
+  # reaches the Grid only through these + Bash curl; the critic additionally gets WebFetch to
+  # verify official pages). Grid data is untrusted input — see the prompts' trust rules.
+  WRITER_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,mcp__sierra-grid__grid_conditions,Bash,Read,Write,Edit,Glob,Grep'
+  CRITIC_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,Bash,Read,Write,Edit,Glob,Grep,WebFetch'
+
+jobs:
+  desk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write MCP config
+        run: |
+          cat > /tmp/fire-mcp.json <<JSON
+          { "mcpServers": { "sierra-grid": { "type": "http", "url": "${GRID_MCP}" } } }
+          JSON
+          mkdir -p /tmp/fire-desk
+
+      # One-time validation lever: confirm the runner can reach the MCP and list tools.
+      - name: MCP smoke test
+        if: inputs.smoke == true
+        run: |
+          echo "tools/list from this runner:"
+          curl -sS -m 20 -X POST "${GRID_MCP}" \
+            -H 'content-type: application/json' \
+            -H 'accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | head -c 2000
+          echo
+
+      # Cheap precheck before any API spend: act only if a fire is active OR a bulletin is
+      # open. Otherwise there is nothing for the desk to do today.
+      - name: Precheck
+        id: guard
+        if: inputs.smoke != true
+        run: |
+          open=$(grep -rl '^tag: Fire Update' src/content/blog/ 2>/dev/null | head -1 || true)
+          active=$(curl -sS -m 20 "${GRID_API}/hazards/ebbetts-pass/wildfire.geojson" \
+            | jq '([.features[]? | select((.properties.status // "ACTIVE") | ascii_upcase != "RESOLVED")] | length)' 2>/dev/null || echo 0)
+          echo "Open bulletin: ${open:-none}; active wildfire features: ${active:-0}"
+          if [ -z "$open" ] && [ "${active:-0}" = "0" ]; then
+            echo "No active fire and no open bulletin — nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip == 'false'
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.guard.outputs.skip == 'false'
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          npm ci --no-audit --no-fund
+          npm install -g @anthropic-ai/claude-code
+
+      - name: Writer — read the Grid and create/update/close (or decline)
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          claude --mcp-config /tmp/fire-mcp.json --allowedTools "$WRITER_TOOLS" --max-turns 80 \
+            -p "$(cat .github/prompts/fire-desk-writer.md)"
+          echo "--- writer notes ---"
+          cat /tmp/fire-desk/writer-notes.md || echo "(no writer notes written)"
+
+      # A draft is any NEW or MODIFIED file under src/content/blog/ (an in-place bulletin
+      # update is modified, not untracked — awk collapses the leading space so " M" -> "M").
+      - name: Detect draft
+        if: steps.guard.outputs.skip == 'false'
+        id: draft
+        run: |
+          post=$(git status --porcelain src/content/blog/ | awk '$1=="??" || $1=="M" {print $2}' | head -1)
+          if [ -z "$post" ]; then
+            echo "No change this run — the desk declined to publish (a successful outcome)."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Draft: $post"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "post=$post" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Critic — verify against official sources and edit (or veto)
+        if: steps.guard.outputs.skip == 'false' && steps.draft.outputs.exists == 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          claude --mcp-config /tmp/fire-mcp.json --allowedTools "$CRITIC_TOOLS" --max-turns 50 \
+            -p "$(cat .github/prompts/fire-desk-critic.md)"
+          echo "--- critic notes ---"
+          cat /tmp/fire-desk/critic-notes.md || echo "(no critic notes written)"
+
+      # The critic vetoes by reverting a modified bulletin or deleting a new one, so re-check.
+      - name: Re-detect after review
+        if: steps.guard.outputs.skip == 'false' && steps.draft.outputs.exists == 'true'
+        id: final
+        run: |
+          post=$(git status --porcelain src/content/blog/ | awk '$1=="??" || $1=="M" {print $2}' | head -1)
+          if [ -z "$post" ]; then
+            echo "Critic vetoed the draft — nothing to publish."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "post=$post" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Belt-and-suspenders: the PR only opens if the tree actually verifies and builds.
+      - name: Verify and build
+        if: steps.guard.outputs.skip == 'false' && steps.final.outputs.exists == 'true'
+        run: |
+          make verify
+          npm run build
+
+      - name: Open pull request for member review
+        if: steps.guard.outputs.skip == 'false' && steps.final.outputs.exists == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          POST: ${{ steps.final.outputs.post }}
+        run: |
+          slug=$(basename "$POST" .md)
+          title=$(awk -F': *' '$1=="title" {sub(/^title: */,""); print; exit}' "$POST")
+          # Per-run branch — the same bulletin updates day after day, so the branch must be unique.
+          branch="fire-desk/${slug}-${GITHUB_RUN_ID}"
+          git config user.name "sierra-news-desk[bot]"
+          git config user.email "news-desk@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add "$POST"
+          git commit -m "fire: $title" -m "Drafted and reviewed by the Fire Desk (automated). See PR for notes."
+          git push origin "$branch"
+          {
+            echo "Automated **live wildfire bulletin** from the Fire Desk — review per docs/fire-desk-content-brief.md before merging. Merging publishes it (and auto-deploys)."
+            echo
+            echo "## Writer notes"
+            cat /tmp/fire-desk/writer-notes.md 2>/dev/null || echo "(none)"
+            echo
+            echo "## Critic notes"
+            cat /tmp/fire-desk/critic-notes.md 2>/dev/null || echo "(none)"
+            echo
+            echo "## Reviewer checklist"
+            echo "- [ ] Every figure matches the linked CAL FIRE incident page (not just the Grid)"
+            echo "- [ ] No emergency instructions; no ACTIVE fire called over; Unknown (not 0) for missing data"
+            echo "- [ ] Every source link is on the official allowlist and resolves"
+            echo "- [ ] Title matches the active-fire count; disclaimer + colophon present"
+            echo "- [ ] Defers to /live + CAL FIRE for real-time; reads as a digest, not a live source"
+          } > /tmp/fire-desk/pr-body.md
+          gh pr create --title "Fire desk: $title" --body-file /tmp/fire-desk/pr-body.md
