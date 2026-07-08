@@ -22,7 +22,7 @@ the brief's allowlist (`fire.ca.gov`, `caloes.ca.gov`, `protect.genasys.com`).
 1. Get today's date: `date -u +%F`.
 2. **Read the situation.** Use the `sierra-grid` MCP tools — `grid_situation` for the area
    mode and per-domain counts, `grid_events` (layer `wildfire`, status `ACTIVE`) scoped to
-   Calaveras / Tuolumne for the active fires, and `grid_event` for each fire's typed detail
+   the service area (the Grid’s `ebbetts-pass` area) for the active fires, and `grid_event` for each fire's typed detail
    (acres, containment, severity, status) and its canonical CAL FIRE source link;
    `grid_conditions` for fire-weather state. If the MCP is unreachable, fall back to the
    REST endpoints under `https://data.sierragridteam.org/api/v1/` (the `situation` and
