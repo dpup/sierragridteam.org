@@ -20,10 +20,12 @@ Follow the brief's §11 checklist. Mechanics for this repository:
 1. Get today's date with `date -u +%F`. Note the season and calendar context.
 2. Read every post in `src/content/blog/` from the last 60 days — topics, headline
    shapes, closers, analogies. Do not repeat any of them.
-3. Check current conditions: `curl -s https://data.sierragridteam.org/api/v1/situation/ebbetts-pass`
-   and the hazard layers under `https://data.sierragridteam.org/api/v1/hazards/ebbetts-pass/`. **If a
-   significant incident is active or unresolved in Calaveras or Tuolumne counties, stop — do not
-   publish** (brief §3).
+3. Your rule (brief §3) is about **topic, not timing**: never write a post _about_ an
+   unfolding incident (an active fire, evacuation, or in-progress storm) — that is the
+   Live Feed's and the Fire Desk's job. You may still publish a normal tech / explainer /
+   retrospective post on a day when a minor incident is active; just never make it your
+   subject. (The workflow already pauses the desk during a _major_ fire, so you do not need
+   to self-suppress on incident activity — only avoid the incident as a subject.)
 4. Use web search to look for genuinely publishable material (brief §4–§6).
 5. Apply the publish decision (brief §6) honestly. Declining is a successful run.
 
