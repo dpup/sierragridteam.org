@@ -33,8 +33,8 @@ env:
   # The grid_* tools the agents may call; nothing else network-facing is granted (the writer
   # reaches the Grid only through these + Bash curl; the critic additionally gets WebFetch to
   # verify official pages). Grid data is untrusted input — see the prompts' trust rules.
-  WRITER_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,mcp__sierra-grid__grid_conditions,Bash,Read,Write,Edit,Glob,Grep'
-  CRITIC_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,Bash,Read,Write,Edit,Glob,Grep,WebFetch'
+  WRITER_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,mcp__sierra-grid__grid_conditions,Bash,Read,Write,Edit,Glob,Grep,TodoWrite'
+  CRITIC_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,Bash,Read,Write,Edit,Glob,Grep,WebFetch,TodoWrite'
 
 jobs:
   desk:
@@ -105,13 +105,14 @@ jobs:
           echo "--- writer notes ---"
           cat /tmp/fire-desk/writer-notes.md || echo "(no writer notes written)"
 
-      # A draft is any NEW or MODIFIED file under src/content/blog/ (an in-place bulletin
-      # update is modified, not untracked — awk collapses the leading space so " M" -> "M").
+      # A draft is any changed file under src/content/blog/ — a new bulletin is untracked,
+      # an in-place update is modified (possibly staged). `awk 'NF {print $NF}'` takes the
+      # path from any porcelain status line, robust to ?? / " M" / MM / AM states.
       - name: Detect draft
         if: steps.guard.outputs.skip == 'false'
         id: draft
         run: |
-          post=$(git status --porcelain src/content/blog/ | awk '$1=="??" || $1=="M" {print $2}' | head -1)
+          post=$(git status --porcelain src/content/blog/ | awk 'NF {print $NF}' | head -1)
           if [ -z "$post" ]; then
             echo "No change this run — the desk declined to publish (a successful outcome)."
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -136,7 +137,7 @@ jobs:
         if: steps.guard.outputs.skip == 'false' && steps.draft.outputs.exists == 'true'
         id: final
         run: |
-          post=$(git status --porcelain src/content/blog/ | awk '$1=="??" || $1=="M" {print $2}' | head -1)
+          post=$(git status --porcelain src/content/blog/ | awk 'NF {print $NF}' | head -1)
           if [ -z "$post" ]; then
             echo "Critic vetoed the draft — nothing to publish."
             echo "exists=false" >> "$GITHUB_OUTPUT"
