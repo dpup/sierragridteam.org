@@ -76,3 +76,56 @@ test('count tiles link to the alert stream only when there is something to jump 
   // Fire Weather is a status, not a countable list — never a jump target.
   expect(active.tiles.fireWeather.href).toBeUndefined();
 });
+
+test('a restricted road segment shows its reason; an open one adds no incident line', () => {
+  const seg = (
+    id: string,
+    status: string,
+    road: Record<string, unknown>,
+    extra: Record<string, unknown> = {}
+  ): HazardFeature => ({
+    type: 'Feature',
+    geometry: null,
+    properties: {
+      id,
+      layer: 'road_segment',
+      kind: 'Road segment',
+      severity: status === 'open' ? 'INFO' : 'MODERATE',
+      severity_rank: status === 'open' ? 0 : 2,
+      headline: `Hwy 4 — ${id}`,
+      status,
+      source: { id: 'google', name: 'Google Routes + Caltrans' },
+      road,
+      ...extra,
+    },
+  });
+  const view = buildView(
+    snap({
+      road_segment: fc([
+        seg(
+          'murphys-arnold',
+          'restricted',
+          {
+            road_id: 'r1',
+            congestion: 'LIGHT',
+            delay_minutes: 4,
+            duration_minutes: 21,
+            distance_km: 20,
+          },
+          { description: 'left lane closed for pavement work' }
+        ),
+        seg('angels-murphys', 'open', {
+          road_id: 'r2',
+          congestion: 'CLEAR',
+          delay_minutes: 0,
+          duration_minutes: 12,
+          distance_km: 13,
+        }),
+      ]),
+    }),
+    emptyGrid
+  );
+  expect(view.html.roads).toContain('left lane closed for pavement work');
+  // Exactly one segment (the restricted one) renders the reason line.
+  expect((view.html.roads.match(/class="road__incident"/g) ?? []).length).toBe(1);
+});

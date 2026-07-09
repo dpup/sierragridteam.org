@@ -288,6 +288,12 @@ function renderRoads(segments: HazardFeature[], chains: HazardFeature[]): string
         `<div><dt>Delay</dt><dd>${delay > 0 ? `+${delay} min` : 'None'}</dd></div>` +
         `<div><dt>Chains</dt><dd>${esc(chain)}</dd></div>` +
         `</dl>` +
+        // The reason a segment is restricted/closed lives in its `description` (the new
+        // road_segment layer carries it here — the old /roads bundled it as per-road
+        // `alerts`). Open segments have none. Reuses the incident styling.
+        (p.description
+          ? `<ul class="road__incidents"><li class="road__incident">${esc(p.description)}</li></ul>`
+          : '') +
         `</article>`
       );
     })
