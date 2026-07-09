@@ -10,75 +10,83 @@
 - **2026-07-06 migration:** the service rebranded `info.ersn.net` → The Grid and moved to
   `data.sierragridteam.org` (info.ersn.net stays a supported CNAME alias), and its one
   coverage area was renamed `calaveras` → **`ebbetts-pass`** (breaking for hazard URLs — the
-  old slug now 404s). Endpoint paths, field names, and response shapes are otherwise
-  unchanged. The area slug lives in `HAZARD_AREA` (`src/lib/hazards.ts`); the base URL in
-  `GRID_API_BASE` (`src/lib/grid.ts`, overridable via `PUBLIC_GRID_API_BASE`).
+  old slug now 404s). The area slug lives in `HAZARD_AREA` (`src/lib/hazards.ts`); the base
+  URL in `GRID_API_BASE` (`src/lib/grid.ts`, overridable via `PUBLIC_GRID_API_BASE`).
+- **2026-07 API consolidation (breaking):** The Grid moved to one **place-scoped** surface
+  and **removed** the old per-domain endpoints — `/situation/{area}`, `/hazards/{area}/…`,
+  `/weather`, `/weather/alerts`, `/roads`, and `/scanners/{area}` all now 404. The site
+  fetches the new `/places/{area}/…`, `/conditions`, and `/scanners?place=` endpoints (below).
+  The place feed is polygon-scoped server-side, so the client-side service-area / NWS-zone
+  filter (`isInServiceArea`, `NWS_ZONES`) was deleted.
 
-## Endpoints & real response shapes (captured 2026-06-26)
+## Endpoints & real response shapes (captured 2026-07-09)
 
-> All five feature requests that gate live data (FR-1/2/3/4/7) shipped on
-> 2026-06-26 and are now wired up. The shapes below are
-> the current ones.
+> The Grid consolidated onto one place-scoped surface in 2026-07. All paths are under
+> `GRID_API_BASE` (`https://data.sierragridteam.org/api/v1`). **Casing is mixed by design:**
+> the GeoJSON map layers and the place summary are **snake_case**; `/scanners`, `/conditions`,
+> and the `/events` API are **camelCase**.
 
-### `GET /roads` → `{ roads: Road[], lastUpdated: string }`
-
-4 road segments — the Hwy 4 corridor (`hwy4-angels-murphys`, `hwy4-murphys-arnold`,
-`hwy4-arnold-bearvalley`) plus `hwy49-angels-sonora` (FR-4) — **inside the service
-area**.
+### `GET /places/{area}/summary` (replaced `/situation/{area}`)
 
 ```jsonc
-Road = {
-  id, name, section, status: "OPEN"|"CLOSED"|...,
-  statusExplanation, durationMinutes, distanceKm,
-  congestionLevel: "CLEAR"|...,  delayMinutes, chainControl: "NONE"|...,
-  alerts: RoadAlert[],           // Caltrans/CHP incidents — usable on /alerts
-  chainControlInfo
-}
-RoadAlert = {
-  type:"CLOSURE", severity:"WARNING", classification:"NEARBY"|"ON_ROUTE",
-  title, description, condensedSummary, startTime, endTime, lastUpdated,
-  location:{latitude,longitude}, locationDescription, impact, metadata:{…}
+{
+  place, place_id, place_name, generated_at, mode,
+  summary: {
+    highest_severity, highest_severity_rank, severity_counts,
+    total_active,
+    active_evacuations: int | null,     // fail-loud: null = unknown, never a false 0
+    evacuation_status: "OK"|"STALE"|"UNAVAILABLE",
+    top_events: [{ id, layer, severity, severity_rank, headline, source }]
+  },
+  domains: [{ domain, status, highest_severity, active_count, headlines }],
+  sources: [...]
 }
 ```
 
-### `GET /weather` → `{ weatherData: Weather[], lastUpdated, fireWeather }`
+> ⚠️ `domains[].domain === "fire"` counts the always-present "fire weather: normal" banner
+> (`active_count` is 1 with **zero** wildfires) — it is NOT a wildfire signal. Count the
+> `wildfire` map layer for that (EmergencyBanner does).
 
-7 locations (FR-4): Murphys, Arnold, Bear Valley, Sonora, Columbia, Twain Harte,
-Dorrington (units: °C, km, km/h). Powers the **Current conditions** strip on /alerts.
+### `GET /places/{area}/map/{layer}.geojson` (replaced `/hazards/{area}/…`)
+
+RFC 7946 FeatureCollection; `properties` snake_case + `metadata.source_status`. Now
+**polygon-scoped server-side** — `road_incident` and `weather_alert` are clipped to the
+ebbetts-pass polygon at ingest (same point-in-polygon test as `/places:resolve`), so the
+client no longer re-filters. Layers: `wildfire`, `evacuation`, `weather_alert`, `earthquake`,
+`road_incident`, `road_segment`, `chain_control`, `fire_weather`.
+
+- Per-feature `provenance.sourceUrl` is the event's canonical page (CAL FIRE incident /
+  Genasys zone) — **optional per source** (CHP road incidents have none). The `/live` stream
+  renders a "More information" link only when it's present.
+- `road_segment` features carry the road-conditions table in `properties.road`
+  (`road_id`, `congestion`, `delay_minutes`, `duration_minutes`, `distance_km`) plus
+  `status`/`headline`/`area_label` on the envelope. Chain controls are the separate
+  `chain_control` layer; road incidents the `road_incident` layer.
+
+### `GET /conditions` (replaced `/weather`)
+
+`{ weather: Weather[], fireWeather, lastUpdated }` (camelCase). The town array is `weather`
+(was `weatherData`); weather ALERTS moved to the `weather_alert` map layer, so there is no
+`alerts` field. Powers the /live weather band + the home Fire Weather tile
+(`fireWeather.state`: `NORMAL`|`ELEVATED`|`RED_FLAG`).
 
 ```jsonc
 Weather = {
   locationId, locationName, weatherMain, weatherDescription, weatherIcon,
   temperatureCelsius, feelsLikeCelsius, humidityPercent,
-  windSpeedKmh, windDirectionDegrees, visibilityKm, alerts: []
-}
-// Top-level fireWeather (FR-3) — the authoritative Red Flag classification:
-fireWeather = {
-  state: "FIRE_WEATHER_STATE_UNSPECIFIED"|"NORMAL"|"ELEVATED"|"RED_FLAG",
-  sourceEvent, headline, senderName, effective, expires, zones: []
+  windSpeedKmh, windDirectionDegrees, visibilityKm
 }
 ```
 
-### `GET /weather/alerts?zones=CAZ019,CAZ067,CAZ069,CAZ072` (FR-2)
+### `GET /scanners?place={area}` (replaced `/scanners/{area}`)
 
-`{ alerts: Alert[], lastUpdated }`. NWS / OpenWeatherMap zone alerts for the service-area
-forecast zones (Tuolumne + Mother Lode foothills 067/069, lower Calaveras 019, Alpine/
-high-Sierra 072 — see `NWS_ZONES`). Powers the /live alert stream + the home "Active Alerts" tile.
+`{ scanners: [{ feedId, channelLabel, agency, broadcastifyUrl }] }` (camelCase, link-out only).
 
-```jsonc
-Alert = {
-  id, senderName, event, description, headline, summary, details,
-  source: "NWS"|"OPENWEATHERMAP", severity: "INFO"|"WARNING"|"CRITICAL",
-  zones: string[], startTime, endTime, tags: []
-}
-```
+### Available but unused: `/events`, `/events/{id}`, `/events/{id}/history`, `/history`
 
-### `GET /incidents/{area}` (region-wide CHP/Caltrans incidents)
-
-The typed `/incidents/{area}` endpoint still exists, but the site **no longer consumes
-it** — road incidents now arrive via the hazard `road_incident` GeoJSON layer (see the
-hazard-aggregation section / `src/lib/hazards.ts`), filtered to the foothill service area
-by `isInServiceArea` / `serviceAreaBounds` in `src/lib/grid.ts`.
+The unified events feed (camelCase, UPPERCASE enums, base64 geometry, cursor pagination) is
+for future work (Fire Desk history, archive). `/live` uses the per-layer map geojson instead,
+which preserves the `HazardFeature` shape our derivations expect.
 
 ## Architecture: client-only live data (no build-time fetch)
 
@@ -89,18 +97,20 @@ The checked-in `src/data/*.json` are **test fixtures only** — the screenshot h
 feed with them; no page imports them.
 
 1. **Pure derivations.** `src/lib/{grid,hazards}.ts` are typed API shapes + pure functions
-   (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, `isInServiceArea`, …). They take
+   (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, …). They take
    a snapshot the _browser_ assembled from live fetches — no I/O of their own.
 2. **Client islands fetch + render live.**
-   - **`/live`** is fully client-rendered: a loader, then a fetch of the full situation
-     (`/situation`, the `/hazards/*.geojson` layers, `/roads`, `/weather`, `/scanners`), rendered
-     via `src/lib/live-view.ts`, refreshed every 90 s. On failure it shows an honest "feed
-     unavailable" panel with the official sources — never stale data.
+   - **`/live`** is fully client-rendered: a loader, then a fetch of the place summary, the
+     `/places/{area}/map/*.geojson` layers (STREAM_LAYERS + `road_segment`), `/conditions`, and
+     `/scanners?place=`, rendered via `src/lib/live-view.ts`, refreshed every 90 s. On failure
+     it shows an honest "feed unavailable" panel with the official sources — never stale data.
    - **Home `OperationalStatus`**: Active Alerts + Fire Weather start on a "—" placeholder and a
-     client island fills them from `/weather` + zone-filtered `/weather/alerts` (every 5 min);
-     on failure they stay "—". Relay Sites + Coverage are static owned config.
-   - **`EmergencyBanner`** (every page): SSR-hidden; a client island polls `/situation` and
-     shows it only on an active evacuation/wildfire.
+     client island fills them from the `wildfire`/`evacuation`/`weather_alert` map layers +
+     `/conditions` (every 5 min); on failure they stay "—". Relay Sites + Coverage are static
+     owned config.
+   - **`EmergencyBanner`** (every page): SSR-hidden; a client island polls
+     `/places/{area}/summary` + the `wildfire` map layer and shows it only on an active
+     evacuation/wildfire.
 3. **No fallback to baked data** anywhere — the honest degraded state is a placeholder /
    "unavailable", never a possibly-stale value.
 

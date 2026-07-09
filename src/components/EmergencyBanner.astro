@@ -5,8 +5,8 @@
  * wildfire — both area-scoped) it shows a slim orange band naming the hazard, linking to the
  * Live Feed (which carries the authoritative evacuation map).
  * Orange here is a sanctioned genuine-alert use. Client-only (no baked data): SSR renders
- * the band hidden + empty, and a client island checks /situation on load + every 90s and
- * shows/fills it — never trusting the rollup's region-wide severity, and only writing to the
+ * the band hidden + empty, and a client island checks the place summary + wildfire layer on
+ * load + every 90s and shows/fills it — never trusting the region-wide rollup severity, and only writing to the
  * role="alert" region when the state actually changes (so it doesn't re-announce each poll).
  */
 import { HAZARD_AREA } from '@lib/hazards';
@@ -47,30 +47,38 @@ import { emergencyBanner as copy } from '@config/content';
     };
     const refresh = async () => {
       try {
-        const res = await fetch(`${base}/situation/${area}`, {
-          headers: { accept: 'application/json' },
-        });
-        if (!res.ok) return;
-        const s = (await res.json()) as {
+        const [sumRes, fireRes] = await Promise.all([
+          fetch(`${base}/places/${area}/summary`, { headers: { accept: 'application/json' } }),
+          fetch(`${base}/places/${area}/map/wildfire.geojson`, {
+            headers: { accept: 'application/json' },
+          }),
+        ]);
+        if (!sumRes.ok || !fireRes.ok) return;
+        const s = (await sumRes.json()) as {
           summary?: {
             active_evacuations?: number | null;
-            top_headlines?: { layer: string; headline: string }[];
+            top_events?: { layer: string; headline: string }[];
           };
-          layers?: { layer: string; feature_count: number }[];
+        };
+        const fire = (await fireRes.json()) as {
+          features?: { properties?: { headline?: string } }[];
         };
         const sum = s.summary ?? {};
-        const heads = sum.top_headlines ?? [];
+        const events = sum.top_events ?? [];
+        const fireFeatures = fire.features ?? [];
         const hasEvac = (sum.active_evacuations ?? 0) > 0;
-        const hasWildfire =
-          ((s.layers ?? []).find((l) => l.layer === 'wildfire')?.feature_count ?? 0) > 0;
+        // Count the wildfire MAP layer — NOT domains.fire.active_count, which includes the
+        // always-present "fire weather: normal" banner and would false-arm the band.
+        const hasWildfire = fireFeatures.length > 0;
 
-        // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The rollup's
+        // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The summary's
         // region-wide highest_severity / road / weather headlines are never trusted —
         // they can describe an out-of-area event (the life-safety-only banner contract).
         const active = hasEvac || hasWildfire;
-        const layer = hasEvac ? 'evacuation' : 'wildfire';
         const headline =
-          heads.find((h) => h.layer === layer)?.headline ??
+          (hasEvac
+            ? events.find((h) => h.layer === 'evacuation')?.headline
+            : fireFeatures[0]?.properties?.headline) ??
           (hasEvac
             ? 'Active evacuation in the service area'
             : 'Active wildfire near the foothills');

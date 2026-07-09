@@ -107,17 +107,17 @@ const { relaySites, coverageCounties } = Astro.props;
         // "Active Alerts" must agree with /live, so derive it from the SAME hazard layers via
         // the shared pure summary (not the weather-alerts endpoint, which misses wildfire &
         // evacuation — the bug where the homepage read "0" during an active evac).
-        const [weather, wildfire, evacuation, weather_alert] = await Promise.all([
-          json('/weather'),
-          json(`/hazards/${area}/wildfire.geojson`),
-          json(`/hazards/${area}/evacuation.geojson`),
-          json(`/hazards/${area}/weather_alert.geojson`),
+        const [conditions, wildfire, evacuation, weather_alert] = await Promise.all([
+          json('/conditions'),
+          json(`/places/${area}/map/wildfire.geojson`),
+          json(`/places/${area}/map/evacuation.geojson`),
+          json(`/places/${area}/map/weather_alert.geojson`),
         ]);
 
         const haz = {
           fetchedAt: '',
           area,
-          situation: null,
+          summary: null,
           layers: { wildfire, evacuation, weather_alert },
           scanners: [],
         } as unknown as HazardsSnapshot;
@@ -125,7 +125,7 @@ const { relaySites, coverageCounties } = Astro.props;
         setTile('alerts', tile.value, tile.state);
 
         // Authoritative fire-weather state from the feed (FR-3) — never inferred.
-        const state = (weather.fireWeather?.state ?? '').toUpperCase();
+        const state = (conditions.fireWeather?.state ?? '').toUpperCase();
         const fire =
           state === 'RED_FLAG'
             ? { label: 'Red Flag', state: 'alarm' }
@@ -135,7 +135,7 @@ const { relaySites, coverageCounties } = Astro.props;
         setTile('fire', fire.label, fire.state);
 
         const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
-        const ts = weather.lastUpdated as string | undefined;
+        const ts = conditions.lastUpdated as string | undefined;
         if (synced && ts) synced.textContent = `Synced ${formatPtTime(ts)}`;
       } catch {
         // Live-only: there's no baked value to fall back to. Mark the sync state honestly;

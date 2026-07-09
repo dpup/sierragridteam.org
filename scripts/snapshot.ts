@@ -1,7 +1,7 @@
 /**
  * Refreshes the checked-in data snapshots from the live data.sierragridteam.org feed:
- *   src/data/grid-snapshot.json     — roads / weather / alerts / incidents (typed API)
- *   src/data/hazards-snapshot.json  — situation + hazard GeoJSON layers + scanners
+ *   src/data/grid-snapshot.json     — /conditions (current weather + fire-weather state)
+ *   src/data/hazards-snapshot.json  — place summary + hazard GeoJSON map layers + scanners
  * These checked-in JSON are TEST FIXTURES ONLY — the screenshot harness mocks the feed
  * with them. Nothing is fetched at build time; pages render live in the browser.
  *
@@ -25,9 +25,8 @@ async function get(path: string): Promise<unknown> {
   return res.json();
 }
 
-const NWS_ZONES = ['CAZ019', 'CAZ067', 'CAZ069', 'CAZ072'];
 const HAZARD_AREA = 'ebbetts-pass';
-// All hazard GeoJSON layers (one FeatureCollection each).
+// All hazard GeoJSON map layers (one FeatureCollection each).
 const HAZARD_LAYERS = [
   'road_incident',
   'road_segment',
@@ -42,31 +41,28 @@ const HAZARD_LAYERS = [
 async function main() {
   console.error(`Fetching snapshots from ${API_BASE} ...`);
 
-  const [roads, weather, alerts] = await Promise.all([
-    get('/roads'),
-    get('/weather'),
-    get(`/weather/alerts?zones=${NWS_ZONES.join(',')}`),
-  ]);
+  const conditions = await get('/conditions');
   writeFileSync(
     GRID_OUT,
-    JSON.stringify({ fetchedAt: new Date().toISOString(), roads, weather, alerts }, null, 2) + '\n'
+    JSON.stringify({ fetchedAt: new Date().toISOString(), conditions }, null, 2) + '\n'
   );
   console.error(`Wrote ${GRID_OUT}`);
 
-  const [situation, scanners, ...layerList] = await Promise.all([
-    get(`/situation/${HAZARD_AREA}`),
-    get(`/scanners/${HAZARD_AREA}`),
-    ...HAZARD_LAYERS.map((l) => get(`/hazards/${HAZARD_AREA}/${l}.geojson`)),
+  const [summary, scannersRes, ...layerList] = await Promise.all([
+    get(`/places/${HAZARD_AREA}/summary`),
+    get(`/scanners?place=${HAZARD_AREA}`),
+    ...HAZARD_LAYERS.map((l) => get(`/places/${HAZARD_AREA}/map/${l}.geojson`)),
   ]);
   const layers: Record<string, unknown> = {};
   HAZARD_LAYERS.forEach((l, i) => (layers[l] = layerList[i]));
+  const scanners = (scannersRes as { scanners?: unknown[] })?.scanners ?? [];
   writeFileSync(
     HAZARDS_OUT,
     JSON.stringify(
       {
         fetchedAt: new Date().toISOString(),
         area: HAZARD_AREA,
-        situation,
+        summary,
         layers,
         scanners,
       },

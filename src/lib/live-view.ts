@@ -19,7 +19,7 @@ import {
   type HazardsSnapshot,
   type Scanner,
 } from './hazards';
-import type { GridSnapshot, RoadsResponse, WeatherResponse } from './grid';
+import type { GridSnapshot, ConditionsResponse } from './grid';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
 import { escapeHtml as esc, formatPtTime } from './format';
 import { mapSites, serviceAreaBounds } from '../config/coverage';
@@ -110,8 +110,8 @@ function wind(kmh: number, deg: number): string {
   return kmhToMph(kmh) <= 1 ? 'Calm' : `${kmhToMph(kmh)} mph ${degreesToCompass(deg)}`;
 }
 
-function renderWeather(weather: WeatherResponse | null): string {
-  const towns = weather?.weatherData ?? [];
+function renderWeather(conditions: ConditionsResponse | null): string {
+  const towns = conditions?.weather ?? [];
   if (towns.length === 0) return '';
   const items = towns
     .map((w) => {
@@ -199,7 +199,7 @@ function renderStream(items: HazardFeature[]): string {
       // Authoritative "more info" page for THIS event (CAL FIRE incident, Genasys evac
       // viewer, …) — from the feed's per-event provenance when present; opens the body so
       // the link is reachable.
-      const moreUrl = p.provenance?.source_url;
+      const moreUrl = p.provenance?.sourceUrl ?? p.provenance?.source_url;
       const hasBody = !!(ex || p.description || moreUrl);
       const head =
         `<span class="stream__head"><span class="stream__kicker">` +
@@ -247,36 +247,47 @@ function roadTone(status: string, chain: string): 'ok' | 'alarm' | 'elevated' {
   return 'ok';
 }
 
-function renderRoads(roads: RoadsResponse | null): string {
-  const list = roads?.roads ?? [];
-  if (list.length === 0) return '';
-  const cards = list
-    .map((r) => {
-      const t = roadTone(r.status, r.chainControl);
-      const incidents = r.alerts ?? [];
+/**
+ * Chain-control status for a segment. The Grid splits chain controls into their own
+ * `chain_control` layer; we match one to a road by `road.road_id` and show its severity, or
+ * "None" when nothing references the road (honest — no active chain control). Best-effort:
+ * if chain_control features don't carry `road_id`, this degrades to "None" until verified.
+ */
+function chainFor(roadId: string | undefined, chains: HazardFeature[]): string {
+  if (!roadId) return 'None';
+  const m = chains.find((c) => c.properties.road?.road_id === roadId);
+  return m ? severityLabel(String(m.properties.severity)) : 'None';
+}
+
+/**
+ * Road-conditions table, built from the `road_segment` hazard layer (each corridor is one
+ * LineString feature; travel/congestion/delay live in `properties.road`). Road *incidents*
+ * are a separate layer surfaced in the alert stream, so the table no longer repeats them.
+ */
+function renderRoads(segments: HazardFeature[], chains: HazardFeature[]): string {
+  if (segments.length === 0) return '';
+  const cards = segments
+    .map((f) => {
+      const p = f.properties;
+      const road = p.road ?? {};
+      const status = p.status ?? 'open';
+      const chain = chainFor(road.road_id, chains);
+      const t = roadTone(status, chain === 'None' ? '' : chain);
+      const delay = road.delay_minutes ?? 0;
       return (
         `<article class="road road--${t}">` +
         `<header class="road__head"><div>` +
-        `<span class="road__name">${esc(r.name)}</span>` +
-        `<span class="road__section">${esc(r.section)}</span></div>` +
+        `<span class="road__name">${esc(p.headline)}</span>` +
+        (p.area_label ? `<span class="road__section">${esc(p.area_label)}</span>` : '') +
+        `</div>` +
         `<span class="road__status road__status--${t}"><span class="road__dot" aria-hidden="true"></span>` +
-        `${esc(titleCaseRoad(r.status))}</span></header>` +
+        `${esc(titleCaseRoad(status))}</span></header>` +
         `<dl class="road__metrics">` +
-        `<div><dt>Travel</dt><dd>${r.durationMinutes} min</dd></div>` +
-        `<div><dt>Distance</dt><dd>${kmToMi(r.distanceKm)} mi</dd></div>` +
-        `<div><dt>Delay</dt><dd>${r.delayMinutes > 0 ? `+${r.delayMinutes} min` : 'None'}</dd></div>` +
-        `<div><dt>Chains</dt><dd>${esc(titleCaseRoad(r.chainControl || 'None'))}</dd></div>` +
+        `<div><dt>Travel</dt><dd>${road.duration_minutes != null ? `${road.duration_minutes} min` : '—'}</dd></div>` +
+        `<div><dt>Distance</dt><dd>${road.distance_km != null ? `${kmToMi(road.distance_km)} mi` : '—'}</dd></div>` +
+        `<div><dt>Delay</dt><dd>${delay > 0 ? `+${delay} min` : 'None'}</dd></div>` +
+        `<div><dt>Chains</dt><dd>${esc(chain)}</dd></div>` +
         `</dl>` +
-        (incidents.length > 0
-          ? `<ul class="road__incidents">${incidents
-              .map(
-                (a) =>
-                  `<li class="road__incident">${esc(
-                    a.condensedSummary || a.description || titleCaseRoad(a.type)
-                  )}</li>`
-              )
-              .join('')}</ul>`
-          : '') +
         `</article>`
       );
     })
@@ -291,8 +302,8 @@ function renderScanners(scanners: Scanner[]): string {
   const lis = scanners
     .map(
       (s) =>
-        `<li><a class="scanner" href="${esc(s.broadcastify_url)}" target="_blank" rel="noopener external">` +
-        `<span class="scanner__label">${esc(s.channel_label)}` +
+        `<li><a class="scanner" href="${esc(s.broadcastifyUrl)}" target="_blank" rel="noopener external">` +
+        `<span class="scanner__label">${esc(s.channelLabel)}` +
         `<span class="scanner__arrow" aria-hidden="true">&#8599;</span></span>` +
         `<span class="scanner__agency">${esc(s.agency)}</span></a></li>`
     )
@@ -392,9 +403,9 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
     },
     mapData: buildMapData(haz),
     html: {
-      weather: renderWeather(grid.weather),
+      weather: renderWeather(grid.conditions),
       stream: renderStream(stream),
-      roads: renderRoads(grid.roads),
+      roads: renderRoads(layerFeatures(haz, 'road_segment'), layerFeatures(haz, 'chain_control')),
       scanners: renderScanners(haz.scanners ?? []),
     },
   };

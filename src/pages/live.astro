@@ -247,11 +247,13 @@ const schema = {
   import { buildView } from '../lib/live-view';
   import type { LiveView } from '../lib/live-view';
   import { initHazardMap, type MapHandle } from '../lib/live-map';
-  import { GRID_API_BASE, NWS_ZONES, type GridSnapshot } from '../lib/grid';
+  import { GRID_API_BASE, type GridSnapshot } from '../lib/grid';
   import { HAZARD_AREA, STREAM_LAYERS, type HazardsSnapshot } from '../lib/hazards';
 
   const REFRESH_MS = 90_000;
   const TIMEOUT_MS = 9_000;
+  // Every map layer we fetch: the alert-stream layers plus road_segment (the road table).
+  const MAP_LAYERS = [...STREAM_LAYERS, 'road_segment'];
 
   const root = document.documentElement;
   const figure = document.querySelector<HTMLElement>('[data-live-map]');
@@ -322,24 +324,22 @@ const schema = {
       if (!res.ok) throw new Error(`${path} → ${res.status}`);
       return res.json();
     };
-    const [situation, scanners, roads, weather, alerts, ...layerList] = await Promise.all([
-      get(`/situation/${HAZARD_AREA}`),
-      get(`/scanners/${HAZARD_AREA}`),
-      get('/roads'),
-      get('/weather'),
-      get(`/weather/alerts?zones=${NWS_ZONES.join(',')}`),
-      ...STREAM_LAYERS.map((l) => get(`/hazards/${HAZARD_AREA}/${l}.geojson`)),
+    const [summary, scannersRes, conditions, ...layerList] = await Promise.all([
+      get(`/places/${HAZARD_AREA}/summary`),
+      get(`/scanners?place=${HAZARD_AREA}`),
+      get('/conditions'),
+      ...MAP_LAYERS.map((l) => get(`/places/${HAZARD_AREA}/map/${l}.geojson`)),
     ]);
     const layers: Record<string, unknown> = {};
-    STREAM_LAYERS.forEach((l, i) => (layers[l] = layerList[i]));
+    MAP_LAYERS.forEach((l, i) => (layers[l] = layerList[i]));
     const haz = {
       fetchedAt: '',
       area: HAZARD_AREA,
-      situation,
+      summary,
       layers,
-      scanners,
+      scanners: scannersRes?.scanners ?? [],
     } as unknown as HazardsSnapshot;
-    const grid = { fetchedAt: '', roads, weather, alerts } as unknown as GridSnapshot;
+    const grid = { fetchedAt: '', conditions } as unknown as GridSnapshot;
     return { haz, grid };
   }
 

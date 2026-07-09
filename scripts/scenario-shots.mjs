@@ -73,8 +73,8 @@ const banner = (lyr, kind, rank, headline, props) => ({
   },
 });
 
-/** Build a plausible /situation rollup from the injected layers (consistent counts). */
-function situationFrom(layers) {
+/** Build a plausible place summary from the injected layers (consistent counts). */
+function summaryFrom(layers) {
   const all = [];
   for (const [k, v] of Object.entries(layers))
     for (const f of v.features ?? []) all.push({ layer: k, ...f.properties });
@@ -89,39 +89,36 @@ function situationFrom(layers) {
     .sort((a, b) => (b.severity_rank ?? 0) - (a.severity_rank ?? 0))
     .slice(0, 5)
     .map((f) => ({
+      id: f.id,
       layer: f.layer,
       severity: SEV[f.severity_rank ?? 0],
       severity_rank: f.severity_rank ?? 0,
       headline: f.headline,
-      source: f.source?.name ?? '',
+      source: f.source?.id ?? '',
     }));
   return {
-    area: 'ebbetts-pass',
-    area_name: 'Ebbetts Pass Corridor',
+    place: 'ebbetts-pass',
+    place_id: 'area:ebbetts-pass',
+    place_name: 'Ebbetts Pass Corridor',
     generated_at: FIXED.toISOString(),
+    mode: highest >= 3 ? 'ALERT' : 'QUIET',
     summary: {
       highest_severity: SEV[highest],
       highest_severity_rank: highest,
       severity_counts: counts,
-      total_features: all.length,
+      total_active: all.length,
       active_evacuations: evacStatus === 'UNAVAILABLE' ? null : (evacLayer?.features?.length ?? 0),
       evacuation_status: evacStatus,
-      top_headlines: top,
+      top_events: top,
     },
-    layers: Object.entries(layers).map(([k, v]) => ({
-      layer: k,
-      source_status: v.metadata?.source_status ?? 'OK',
-      feature_count: (v.features ?? []).length,
-      highest_severity:
-        SEV[Math.max(0, ...(v.features ?? []).map((f) => f.properties.severity_rank ?? 0))],
-    })),
+    domains: [],
   };
 }
 
 /** Assemble a full hazards snapshot from layer overrides (keeps calm layers otherwise). */
 function snapshot(overrides) {
   const layers = { ...calm.layers, ...overrides };
-  return { ...calm, layers, situation: situationFrom(layers) };
+  return { ...calm, layers, summary: summaryFrom(layers) };
 }
 
 const scenarios = {
@@ -143,7 +140,7 @@ const scenarios = {
           area_label: 'East of Arnold, Hwy 4 corridor',
           source: { id: 'calfire', name: 'CAL FIRE' },
           provenance: {
-            source_url: 'https://www.fire.ca.gov/incidents/2026/9/2/salt-springs-fire/',
+            sourceUrl: 'https://www.fire.ca.gov/incidents/2026/9/2/salt-springs-fire/',
           },
           wildfire: { acres: 1240, containment: 15, county: 'Calaveras', has_perimeter: true },
         },
@@ -164,7 +161,7 @@ const scenarios = {
           status: 'active',
           area_label: 'Zones CAL-E043 & E044',
           source: { id: 'caloes', name: 'Cal OES / Genasys' },
-          provenance: { source_url: 'https://protect.genasys.com/' },
+          provenance: { sourceUrl: 'https://protect.genasys.com/' },
           evacuation: {
             zone_id: 'E043',
             level: 'WARNING',
@@ -198,7 +195,7 @@ const scenarios = {
           status: 'active',
           area_label: 'Highway 108, Green Springs',
           source: { id: 'calfire', name: 'CAL FIRE' },
-          provenance: { source_url: 'https://www.fire.ca.gov/incidents/2026/7/6/owl-fire/' },
+          provenance: { sourceUrl: 'https://www.fire.ca.gov/incidents/2026/7/6/owl-fire/' },
           wildfire: { acres: 120, containment: 30, county: 'Tuolumne', has_perimeter: false },
         },
       },
@@ -276,9 +273,7 @@ function mockGrid(route, snap) {
       headers: { 'access-control-allow-origin': '*' },
       body: JSON.stringify(b),
     });
-  if (url.includes('/situation/')) return json(snap.situation);
-  if (url.includes('/scanners/')) return json(snap.scanners);
-  const g = url.match(/\/hazards\/[^/]+\/([^/?]+)\.geojson/);
+  const g = url.match(/\/map\/([^/?]+)\.geojson/);
   if (g)
     return json(
       snap.layers[g[1]] ?? {
@@ -287,10 +282,9 @@ function mockGrid(route, snap) {
         metadata: { source_status: 'OK' },
       }
     );
-  if (url.includes('/weather/alerts'))
-    return json({ alerts: [], lastUpdated: FIXED.toISOString() });
-  if (url.includes('/weather')) return json(calmGrid.weather);
-  if (url.includes('/roads')) return json(calmGrid.roads);
+  if (url.includes('/summary')) return json(snap.summary);
+  if (url.includes('/scanners')) return json({ scanners: snap.scanners });
+  if (url.includes('/conditions')) return json(calmGrid.conditions);
   return json({});
 }
 const calmGrid = JSON.parse(readFileSync('src/data/grid-snapshot.json', 'utf8'));

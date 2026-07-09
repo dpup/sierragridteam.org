@@ -82,40 +82,48 @@ const OFFLINE_STYLE = {
   layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#efe7d6' } }],
 };
 
-// The "redflag" alarm scenario: a realistic fire-season foothill event modeled on the
-// real NWS Sacramento alert shape (see data.sierragridteam.org tests/testdata/weather). A Red Flag
-// Warning + a co-occurring High Wind Warning (wind drives red-flag conditions) drive the
-// home "Active Alerts" tile, plus fireWeather.state = RED_FLAG (FR-3) escalates the Fire
-// Weather tile to orange.
-const redflagAlerts = [
+// The "redflag" alarm scenario: a realistic fire-season foothill event. Weather alerts now
+// flow through the `weather_alert` hazard map layer (GeoJSON), so we inject a Red Flag
+// Warning + a co-occurring High Wind Warning as features; that drives the home/live "Active
+// Alerts" tile, plus fireWeather.state = RED_FLAG (FR-3) escalates the Fire Weather tile to
+// orange.
+const redflagWeatherAlerts = [
   {
-    id: 'urn:test:redflag',
-    senderName: 'NWS Sacramento CA',
-    event: 'Red Flag Warning',
-    description:
-      'Gusty north winds and single-digit humidity will create critical fire weather ' +
-      'conditions across the Mother Lode and Sierra foothills. Any fire that develops will ' +
-      'likely spread rapidly.',
-    headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
-    source: 'NWS',
-    severity: 'CRITICAL',
-    zones: ['CAZ069'],
-    startTime: '2026-06-25T18:00:00Z',
-    endTime: '2026-06-26T03:00:00Z',
+    type: 'Feature',
+    geometry: null,
+    properties: {
+      id: 'urn:test:redflag',
+      layer: 'weather_alert',
+      kind: 'Weather alert',
+      severity: 'SEVERE',
+      severity_rank: 3,
+      headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
+      description:
+        'Gusty north winds and single-digit humidity will create critical fire weather ' +
+        'conditions across the Mother Lode and Sierra foothills. Any fire that develops will ' +
+        'likely spread rapidly.',
+      status: 'active',
+      source: { id: 'nws', name: 'National Weather Service' },
+      weather: { event: 'Red Flag Warning', source: 'NWS', zones: ['CAZ069'] },
+    },
   },
   {
-    id: 'urn:test:wind',
-    senderName: 'NWS Sacramento CA',
-    event: 'High Wind Warning',
-    description:
-      'North winds 25 to 35 mph with gusts up to 60 mph expected across the Motherlode and ' +
-      'Northeast Foothills. Strong winds could blow down trees and power lines.',
-    headline: 'High Wind Warning in effect until 8 PM PDT',
-    source: 'NWS',
-    severity: 'WARNING',
-    zones: ['CAZ067'],
-    startTime: '2026-06-25T17:00:00Z',
-    endTime: '2026-06-26T03:00:00Z',
+    type: 'Feature',
+    geometry: null,
+    properties: {
+      id: 'urn:test:wind',
+      layer: 'weather_alert',
+      kind: 'Weather alert',
+      severity: 'MODERATE',
+      severity_rank: 2,
+      headline: 'High Wind Warning in effect until 8 PM PDT',
+      description:
+        'North winds 25 to 35 mph with gusts up to 60 mph expected across the Motherlode and ' +
+        'Northeast Foothills. Strong winds could blow down trees and power lines.',
+      status: 'active',
+      source: { id: 'nws', name: 'National Weather Service' },
+      weather: { event: 'High Wind Warning', source: 'NWS', zones: ['CAZ067'] },
+    },
   },
 ];
 
@@ -128,35 +136,27 @@ function mockGrid(route: Route) {
       headers: { 'access-control-allow-origin': '*' },
       body: JSON.stringify(body),
     });
-  // Hazard routes first — a '…/weather_alert.geojson' URL contains '/weather'.
-  if (url.includes('/situation/')) return json(hazards.situation);
-  if (url.includes('/scanners/')) return json(hazards.scanners);
-  const geo = url.match(/\/hazards\/[^/]+\/([^/?]+)\.geojson/);
+  // Map-layer GeoJSON, e.g. /places/{area}/map/wildfire.geojson — match first.
+  const geo = url.match(/\/map\/([^/?]+)\.geojson/);
   if (geo) {
+    const layer = hazards.layers[geo[1]] ?? {
+      type: 'FeatureCollection',
+      features: [],
+      metadata: { source_status: 'OK' },
+    };
+    if (SCENARIO === 'redflag' && geo[1] === 'weather_alert') {
+      return json({ ...layer, features: redflagWeatherAlerts });
+    }
+    return json(layer);
+  }
+  if (url.includes('/summary')) return json(hazards.summary);
+  if (url.includes('/scanners')) return json({ scanners: hazards.scanners });
+  if (url.includes('/conditions')) {
+    const c = snapshot.conditions;
     return json(
-      hazards.layers[geo[1]] ?? {
-        type: 'FeatureCollection',
-        features: [],
-        metadata: { source_status: 'OK' },
-      }
+      SCENARIO === 'redflag' ? { ...c, fireWeather: { ...c.fireWeather, state: 'RED_FLAG' } } : c
     );
   }
-  // Order matters: '/weather/alerts' and '/incidents' before the bare '/weather'.
-  if (url.includes('/weather/alerts')) {
-    // 'calm' = the common quiet state (no active alerts); 'redflag' = the alarm.
-    return json(
-      SCENARIO === 'redflag'
-        ? { alerts: redflagAlerts, lastUpdated: FIXED.toISOString() }
-        : { alerts: [], lastUpdated: FIXED.toISOString() }
-    );
-  }
-  if (url.includes('/weather')) {
-    const w = snapshot.weather;
-    return json(
-      SCENARIO === 'redflag' ? { ...w, fireWeather: { ...w.fireWeather, state: 'RED_FLAG' } } : w
-    );
-  }
-  if (url.includes('/roads')) return json(snapshot.roads);
   return json({});
 }
 

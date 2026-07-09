@@ -1,8 +1,8 @@
 # src/lib — data layer & helpers
 
 `grid.ts` + `hazards.ts` are the typed data.sierragridteam.org shapes + **pure derivations**
-(`deriveStream`, `deriveSituationSummary`, `layerFeatures`, `isInServiceArea`, …) plus
-shared constants (`GRID_API_BASE`, `NWS_ZONES`, `HAZARD_AREA`, `STREAM_LAYERS`).
+(`deriveStream`, `deriveSituationSummary`, `layerFeatures`, …) plus shared constants
+(`GRID_API_BASE`, `HAZARD_AREA`, `STREAM_LAYERS`).
 `live-view.ts` turns a fetched snapshot into the `/live` view-model + region HTML;
 `live-map.ts` is the MapLibre map; `units.ts` converts metric→imperial; `format.ts` is
 `escapeHtml` + `formatPtTime`. See `docs/architecture/data-feed.md` for the design.

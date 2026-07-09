@@ -9,13 +9,13 @@ import { buildView } from './live-view';
 import type { HazardsSnapshot, HazardFeature } from './hazards';
 import type { GridSnapshot } from './grid';
 
-const emptyGrid: GridSnapshot = { fetchedAt: '', roads: null, weather: null, alerts: null };
+const emptyGrid: GridSnapshot = { fetchedAt: '', conditions: null };
 
 function snap(layers: Record<string, unknown>): HazardsSnapshot {
   return {
     fetchedAt: '2026-07-07T00:00:00Z',
     area: 'ebbetts-pass',
-    situation: null,
+    summary: null,
     layers: layers as HazardsSnapshot['layers'],
     scanners: [],
   };
@@ -47,9 +47,9 @@ function fire(extra: Record<string, unknown> = {}): HazardFeature {
 
 const INCIDENT_URL = 'https://www.fire.ca.gov/incidents/2026/7/6/priest-fire';
 
-test('a wildfire card links its CAL FIRE incident page from provenance.source_url', () => {
+test('a wildfire card links its CAL FIRE incident page from provenance.sourceUrl', () => {
   const view = buildView(
-    snap({ wildfire: fc([fire({ provenance: { source_url: INCIDENT_URL } })]) }),
+    snap({ wildfire: fc([fire({ provenance: { sourceUrl: INCIDENT_URL } })]) }),
     emptyGrid
   );
   expect(view.html.stream).toContain(INCIDENT_URL);

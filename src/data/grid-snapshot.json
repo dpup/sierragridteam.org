@@ -1,245 +1,45 @@
 {
-  "fetchedAt": "2026-06-27T00:43:13.387Z",
-  "roads": {
-    "roads": [
-      {
-        "id": "hwy4-angels-murphys",
-        "name": "Hwy 4",
-        "section": "Angels Camp to Murphys",
-        "status": "OPEN",
-        "statusExplanation": "",
-        "durationMinutes": 11,
-        "distanceKm": 13,
-        "congestionLevel": "CLEAR",
-        "delayMinutes": 0,
-        "chainControl": "NONE",
-        "alerts": [
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 4 Road Condition",
-            "description": "1-way controlled traffic at the Contra Costa/San Joaquin Co Line /at Old River Bridge/ 24 hrs a day 7 days a week thru 1900 hrs on 7/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          }
-        ],
-        "chainControlInfo": null
-      },
-      {
-        "id": "hwy4-murphys-arnold",
-        "name": "Hwy 4",
-        "section": "Murphys to Arnold",
-        "status": "OPEN",
-        "statusExplanation": "",
-        "durationMinutes": 16,
-        "distanceKm": 20,
-        "congestionLevel": "CLEAR",
-        "delayMinutes": 0,
-        "chainControl": "NONE",
-        "alerts": [
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 4 Road Condition",
-            "description": "1-way controlled traffic at the Contra Costa/San Joaquin Co Line /at Old River Bridge/ 24 hrs a day 7 days a week thru 1900 hrs on 7/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          }
-        ],
-        "chainControlInfo": null
-      },
-      {
-        "id": "hwy4-arnold-bearvalley",
-        "name": "Hwy 4",
-        "section": "Arnold to Bear Valley",
-        "status": "OPEN",
-        "statusExplanation": "",
-        "durationMinutes": 28,
-        "distanceKm": 38,
-        "congestionLevel": "CLEAR",
-        "delayMinutes": 0,
-        "chainControl": "NONE",
-        "alerts": [
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 4 Road Condition",
-            "description": "1-way controlled traffic at the Contra Costa/San Joaquin Co Line /at Old River Bridge/ 24 hrs a day 7 days a week thru 1900 hrs on 7/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          }
-        ],
-        "chainControlInfo": null
-      },
-      {
-        "id": "hwy49-angels-sonora",
-        "name": "Hwy 49",
-        "section": "Angels Camp to Sonora",
-        "status": "OPEN",
-        "statusExplanation": "",
-        "durationMinutes": 23,
-        "distanceKm": 25,
-        "congestionLevel": "CLEAR",
-        "delayMinutes": 0,
-        "chainControl": "NONE",
-        "alerts": [
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 49 Road Condition",
-            "description": "1-way controlled traffic at various locations from 0.2 mi north of the Jct of SR 41 /at Junction Dr/ to 0.4 mi north of the Jct of SR 41 /at Meadow Vista Dr/ (Madera Co) 24 hrs a day 7 days a week - Due to emergency work",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 49 Road Condition",
-            "description": "1-way controlled traffic at various locations from 5 mi north of Bagby /at Shilling Rd/ to 13 mi north of Bagby /at Penon Blanco Rd/ (Mariposa Co) from 0600 hrs to 1600 hrs Monday thru Friday thru 6/26/26 - Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          },
-          {
-            "type": "CLOSURE",
-            "severity": "WARNING",
-            "classification": "NEARBY",
-            "title": "SR 49 Road Condition",
-            "description": "1-way controlled traffic at various locations from 19.6 mi north to 20 mi north of the Yuba/Sierra Co Line 24 hrs a day 7 days a week thru 1900 hrs on Friday 6/26/26 -Due to construction",
-            "condensedSummary": "",
-            "startTime": null,
-            "endTime": null,
-            "lastUpdated": null,
-            "location": null,
-            "locationDescription": "",
-            "impact": "ALERT_IMPACT_UNSPECIFIED",
-            "duration": "ALERT_DURATION_UNSPECIFIED",
-            "timeReported": null,
-            "metadata": {
-              "reason": "construction",
-              "source": "roads.dot.ca.gov"
-            },
-            "distanceToRouteMeters": 0,
-            "id": ""
-          }
-        ],
-        "chainControlInfo": null
-      }
-    ],
-    "lastUpdated": "2026-06-27T00:29:23.151816340Z"
-  },
-  "weather": {
-    "weatherData": [
+  "fetchedAt": "2026-07-09T18:06:48.926Z",
+  "conditions": {
+    "weather": [
       {
         "locationId": "murphys",
         "locationName": "Murphys, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "few clouds",
-        "weatherIcon": "02d",
-        "temperatureCelsius": 23,
-        "feelsLikeCelsius": 23,
-        "humidityPercent": 49,
-        "windSpeedKmh": 13,
-        "windDirectionDegrees": 240,
-        "visibilityKm": 10,
-        "alerts": []
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 30,
+        "feelsLikeCelsius": 29,
+        "humidityPercent": 34,
+        "windSpeedKmh": 10,
+        "windDirectionDegrees": 244,
+        "visibilityKm": 10
       },
       {
         "locationId": "arnold",
         "locationName": "Arnold, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "broken clouds",
-        "weatherIcon": "04d",
-        "temperatureCelsius": 18,
-        "feelsLikeCelsius": 18,
-        "humidityPercent": 58,
-        "windSpeedKmh": 1,
-        "windDirectionDegrees": 118,
-        "visibilityKm": 10,
-        "alerts": []
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 27,
+        "feelsLikeCelsius": 27,
+        "humidityPercent": 32,
+        "windSpeedKmh": 11,
+        "windDirectionDegrees": 236,
+        "visibilityKm": 10
       },
       {
         "locationId": "bearvalley",
         "locationName": "Bear Valley, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
-        "weatherIcon": "04d",
-        "temperatureCelsius": 13,
-        "feelsLikeCelsius": 12,
-        "humidityPercent": 69,
-        "windSpeedKmh": 17,
-        "windDirectionDegrees": 221,
-        "visibilityKm": 10,
-        "alerts": []
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 24,
+        "feelsLikeCelsius": 24,
+        "humidityPercent": 23,
+        "windSpeedKmh": 13,
+        "windDirectionDegrees": 236,
+        "visibilityKm": 10
       },
       {
         "locationId": "sonora",
@@ -247,13 +47,12 @@
         "weatherMain": "Clear",
         "weatherDescription": "clear sky",
         "weatherIcon": "01d",
-        "temperatureCelsius": 25,
-        "feelsLikeCelsius": 25,
-        "humidityPercent": 46,
-        "windSpeedKmh": 13,
-        "windDirectionDegrees": 252,
-        "visibilityKm": 10,
-        "alerts": []
+        "temperatureCelsius": 31,
+        "feelsLikeCelsius": 30,
+        "humidityPercent": 33,
+        "windSpeedKmh": 3,
+        "windDirectionDegrees": 121,
+        "visibilityKm": 10
       },
       {
         "locationId": "columbia",
@@ -261,56 +60,45 @@
         "weatherMain": "Clear",
         "weatherDescription": "clear sky",
         "weatherIcon": "01d",
-        "temperatureCelsius": 24,
-        "feelsLikeCelsius": 24,
-        "humidityPercent": 46,
-        "windSpeedKmh": 13,
-        "windDirectionDegrees": 247,
-        "visibilityKm": 10,
-        "alerts": []
+        "temperatureCelsius": 30,
+        "feelsLikeCelsius": 29,
+        "humidityPercent": 33,
+        "windSpeedKmh": 3,
+        "windDirectionDegrees": 121,
+        "visibilityKm": 10
       },
       {
         "locationId": "twainharte",
         "locationName": "Twain Harte, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "few clouds",
-        "weatherIcon": "02d",
-        "temperatureCelsius": 21,
-        "feelsLikeCelsius": 21,
-        "humidityPercent": 46,
-        "windSpeedKmh": 13,
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 27,
+        "feelsLikeCelsius": 26,
+        "humidityPercent": 31,
+        "windSpeedKmh": 11,
         "windDirectionDegrees": 245,
-        "visibilityKm": 10,
-        "alerts": []
+        "visibilityKm": 10
       },
       {
         "locationId": "dorrington",
         "locationName": "Dorrington, CA",
-        "weatherMain": "Clouds",
-        "weatherDescription": "overcast clouds",
-        "weatherIcon": "04d",
-        "temperatureCelsius": 15,
-        "feelsLikeCelsius": 15,
-        "humidityPercent": 60,
-        "windSpeedKmh": 14,
-        "windDirectionDegrees": 225,
-        "visibilityKm": 10,
-        "alerts": []
+        "weatherMain": "Clear",
+        "weatherDescription": "clear sky",
+        "weatherIcon": "01d",
+        "temperatureCelsius": 25,
+        "feelsLikeCelsius": 24,
+        "humidityPercent": 30,
+        "windSpeedKmh": 11,
+        "windDirectionDegrees": 238,
+        "visibilityKm": 10
       }
     ],
-    "lastUpdated": "2026-06-27T00:43:12.483728743Z",
     "fireWeather": {
-      "state": "NORMAL",
-      "sourceEvent": "",
+      "state": "normal",
       "headline": "",
-      "senderName": "",
-      "effective": null,
-      "expires": null,
       "zones": []
-    }
-  },
-  "alerts": {
-    "alerts": [],
-    "lastUpdated": "2026-06-27T00:43:12.558827188Z"
+    },
+    "lastUpdated": "2026-07-09T18:03:51.280460363Z"
   }
 }

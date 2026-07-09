@@ -135,7 +135,8 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       return undefined;
     };
     const src = parseObj<{ name?: string }>(p.source);
-    const moreUrl = parseObj<{ source_url?: string }>(p.provenance)?.source_url;
+    const prov = parseObj<{ sourceUrl?: string; source_url?: string }>(p.provenance);
+    const moreUrl = prov?.sourceUrl ?? prov?.source_url;
     const wf = parseObj<{ acres?: number; containment?: number }>(p.wildfire);
     // Use the same title/stats derivation as the alert stream so a point fire reads
     // identically on both surfaces ("Owl Fire" + "120 acres · 30% contained").

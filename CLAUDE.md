@@ -86,11 +86,11 @@ Page rules:
   `docs/content-style-guide.md` (voice + honesty rules). **Feed data is NEVER fetched at
   build time** — pages render it live in the browser (the client assembles a snapshot from
   data.sierragridteam.org and passes it through the pure derivations in `src/lib/{grid,hazards}.ts` →
-  `live-view.ts`). The checked-in `src/data/*.json` are test fixtures only. The hazard
-  layers are re-filtered to the
-  service area / NWS zones in `hazards.ts` (the road_incident layer is region-wide and
-  the server weather_alert zones include an out-of-area zone) — never surface raw
-  region-wide hazards as local. A layer whose `source_status` is `UNAVAILABLE` (a sync
+  `live-view.ts`). The checked-in `src/data/*.json` are test fixtures only. The Grid's place
+  feed is now authoritative and **polygon-scoped server-side** — every
+  `/places/ebbetts-pass/map/*` layer (road_incident and weather_alert included) is clipped to
+  the corridor at ingest, so the client no longer re-filters by service area / NWS zones; it
+  renders what the place feed returns. A layer whose `source_status` is `UNAVAILABLE` (a sync
   error) must read as "unknown", never all-clear — `deriveSituationSummary` returns `null`
   for wildfire/evacuation/weather-alert counts in that case, and the tiles render "Unknown".
   A confirmed-empty feed (`OK`/`STALE`) is a real `0` → "None" (data.sierragridteam.org guarantees an

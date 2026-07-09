@@ -6,13 +6,12 @@
  * `properties` envelope + a comparable INFO..EXTREME severity scale. These are PURE types
  * + derivations — no build-time fetch (the browser fetches live and feeds the snapshot in).
  *
- * IMPORTANT (data honesty): the `road_incident` layer is the region-wide Mother Lode
- * CHP feed, and `weather_alert` uses the server's area-zone config (which still
- * includes an out-of-area zone) — so we re-filter both to S.I.E.R.R.A's actual
- * service area / NWS zones and recompute severity locally. We never surface an
- * out-of-area "Report of Fire" as a foothill emergency.
+ * The Grid is now authoritative and place-scoped server-side: every `/places/{area}/map/*`
+ * layer is clipped to the ebbetts-pass polygon at ingest (road_incident and weather_alert
+ * included, using the same point-in-polygon test as `/places:resolve`), so the client no
+ * longer re-filters by service-area bounds or NWS zones — it renders what the place feed
+ * returns. We still recompute the honest per-layer counts locally (source_status → null).
  */
-import { NWS_ZONES, isInServiceArea } from './grid';
 
 /**
  * Hazard-aggregation area slug (configured server-side in prefab.yaml). Renamed
@@ -32,12 +31,17 @@ export interface HazardSource {
 }
 
 /**
- * Per-event provenance. `source_url` is the authoritative page for THIS specific event —
- * the CAL FIRE incident page for a wildfire, the Genasys zone viewer for an evacuation —
- * present on some feeds; surfaced as the card's "More information" link. (Distinct from a
- * layer's `metadata.source_url`, which is the whole feed's home page, not one incident.)
+ * Per-event provenance. `sourceUrl` is the authoritative page for THIS specific event —
+ * the CAL FIRE incident page for a wildfire, the Genasys zone viewer for an evacuation.
+ * It is **optional per source** (CAL FIRE / Genasys emit it; CHP road incidents don't), so
+ * only render the "More information" link when it's present. (Distinct from a layer's
+ * `metadata.source_url`, which is the whole feed's home page, not one incident.)
  */
 export interface HazardProvenance {
+  /** camelCase in the new API (events + place feed). `source_url` accepted defensively:
+   *  the map-geojson provenance field couldn't be observed live (wildfire/evac layers empty),
+   *  and the rest of the geojson envelope is snake_case, so we tolerate either casing. */
+  sourceUrl?: string;
   source_url?: string;
 }
 
@@ -100,49 +104,62 @@ export interface HazardLayer {
   };
 }
 
-export interface SituationLayer {
+/** One event line in a place summary's `top_events`. */
+export interface SummaryEvent {
+  id: string;
   layer: string;
-  source_status: 'OK' | 'STALE' | 'UNAVAILABLE';
-  feature_count: number;
-  highest_severity?: Severity | string;
-  attribution?: string;
-  source_url?: string;
-  last_source_update?: string;
+  severity: string;
+  severity_rank: number;
+  headline: string;
+  source: string;
 }
 
-export interface Situation {
-  area: string;
-  area_name: string;
+/** One hazard-domain rollup in a place summary (fire, evacuation, weather, roads, seismic). */
+export interface SummaryDomain {
+  domain: string;
+  status: 'OK' | 'STALE' | 'UNAVAILABLE' | string;
+  highest_severity: Severity | string;
+  active_count: number;
+  headlines: Array<{ id: string; severity: string; headline: string }>;
+}
+
+/**
+ * `/places/{area}/summary` — the authoritative place rollup. We use it for the "Synced …"
+ * timestamp and the fail-loud `active_evacuations` (int | null); the per-layer counts we
+ * still recompute locally from the map layers (deriveSituationSummary) so the tiles and the
+ * stream stay in lockstep. NOTE: `domains[].domain === 'fire'` counts the always-present
+ * "fire weather: normal" banner (active_count is 1 with zero wildfires), so it is NOT a
+ * wildfire signal — count the `wildfire` map layer for that.
+ */
+export interface PlaceSummary {
+  place: string;
+  place_id: string;
+  place_name: string;
   generated_at: string;
+  mode: string;
   summary: {
     highest_severity: Severity | string;
     highest_severity_rank: number;
     severity_counts: Record<string, number>;
-    total_features: number;
+    total_active: number;
     active_evacuations: number | null;
     evacuation_status: 'OK' | 'STALE' | 'UNAVAILABLE' | string;
-    top_headlines: Array<{
-      layer: string;
-      severity: string;
-      severity_rank: number;
-      headline: string;
-      source: string;
-    }>;
+    top_events: SummaryEvent[];
   };
-  layers: SituationLayer[];
+  domains: SummaryDomain[];
 }
 
 export interface Scanner {
-  feed_id: string;
-  channel_label: string;
+  feedId: string;
+  channelLabel: string;
   agency: string;
-  broadcastify_url: string;
+  broadcastifyUrl: string;
 }
 
 export interface HazardsSnapshot {
   fetchedAt: string;
   area: string;
-  situation: Situation | null;
+  summary: PlaceSummary | null;
   layers: Record<string, HazardLayer | null>;
   scanners: Scanner[] | null;
 }
@@ -187,31 +204,15 @@ export const toneFor = (f: HazardFeature): Tone => toneForRank(rankOf(f));
 export const severityLabel = (s: string): string =>
   s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
 
-// ---- Service-area / zone filtering (data honesty) ----
+// ---- Layer access ----
 
-function pointInServiceArea(f: HazardFeature): boolean {
-  const g = f.geometry;
-  if (!g || g.type !== 'Point') return true; // non-points are server-area-scoped already
-  const c = g.coordinates as number[];
-  return isInServiceArea({ longitude: c[0], latitude: c[1] });
-}
-
-function weatherAlertInZones(f: HazardFeature): boolean {
-  const zones = f.properties.weather?.zones;
-  if (!zones || zones.length === 0) return true; // no zone info → keep (don't over-filter)
-  return zones.some((z) => (NWS_ZONES as readonly string[]).includes(z));
-}
-
-/** True if a feature is genuinely relevant to the foothill service area. */
-export function isRelevant(f: HazardFeature): boolean {
-  if (f.properties.layer === 'road_incident') return pointInServiceArea(f);
-  if (f.properties.layer === 'weather_alert') return weatherAlertInZones(f);
-  return true;
-}
-
-/** Filtered features for a single layer (relevance + region scoping applied). */
+/**
+ * Features for a single layer. The Grid place feed is already clipped to the ebbetts-pass
+ * polygon server-side (road_incident and weather_alert included), so there is no client
+ * re-filtering — we render exactly what the place feed returns.
+ */
 export function layerFeatures(snapshot: HazardsSnapshot, layer: string): HazardFeature[] {
-  return (snapshot.layers?.[layer]?.features ?? []).filter(isRelevant);
+  return snapshot.layers?.[layer]?.features ?? [];
 }
 
 // ---- Derivations ----
@@ -282,7 +283,7 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
     evacuationStatus: statusOf('evacuation'),
     weatherAlerts: countOrUnknown('weather_alert'),
     fireWeather: fireState,
-    syncedAt: snapshot.situation?.generated_at ?? snapshot.fetchedAt ?? null,
+    syncedAt: snapshot.summary?.generated_at ?? snapshot.fetchedAt ?? null,
   };
 }
 

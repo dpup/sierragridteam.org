@@ -1,7 +1,8 @@
 /**
  * Hazard-layer derivation tests (`bun test`). Pure functions, no network. Focused on
- * the data-honesty rules: out-of-area filtering, the life-safety-only banner, and
- * honest "unknown" when a source is unavailable.
+ * the data-honesty rules: the life-safety-only banner and honest "unknown" when a source is
+ * unavailable. (Service-area / zone filtering is now the Grid's job — the place feed is
+ * polygon-scoped server-side — so there is no client-side filter left to test.)
  */
 import { test, expect } from 'bun:test';
 import {
@@ -19,7 +20,7 @@ function snap(layers: Record<string, unknown>): HazardsSnapshot {
   return {
     fetchedAt: '',
     area: 'ebbetts-pass',
-    situation: null,
+    summary: null,
     layers: layers as HazardsSnapshot['layers'],
     scanners: [],
   };
@@ -47,28 +48,6 @@ function point(layer: string, rank: number, lng: number, lat: number, extra = {}
     },
   };
 }
-
-test('region-wide road incidents are filtered to the service area', () => {
-  const inArea = point('road_incident', 2, -120.45, 38.14, { headline: 'In area' });
-  const outArea = point('road_incident', 3, -120.95, 37.5, { headline: 'Turlock fire' });
-  const stream = deriveStream(snap({ road_incident: fc([inArea, outArea]) }));
-  expect(stream.map((f) => f.properties.headline)).toEqual(['In area']);
-});
-
-test('weather alerts outside the configured NWS zones are filtered out', () => {
-  const inZone = point('weather_alert', 2, 0, 0, {
-    headline: 'foothill',
-    weather: { zones: ['CAZ069'] },
-  });
-  inZone.geometry = null;
-  const outZone = point('weather_alert', 2, 0, 0, {
-    headline: 'san diego',
-    weather: { zones: ['CAZ065'] },
-  });
-  outZone.geometry = null;
-  const stream = deriveStream(snap({ weather_alert: fc([inZone, outZone]) }));
-  expect(stream.map((f) => f.properties.headline)).toEqual(['foothill']);
-});
 
 test('stream sorts most-severe first', () => {
   const s = snap({
