@@ -1,34 +1,39 @@
 {
-  "fetchedAt": "2026-07-09T22:52:43.433Z",
+  "fetchedAt": "2026-07-09T23:41:52.467Z",
   "area": "ebbetts-pass",
   "summary": {
     "place": "ebbetts-pass",
     "placeId": "area:ebbetts-pass",
     "placeName": "Ebbetts Pass Corridor",
-    "generatedAt": "2026-07-09T22:52:43.409694646Z",
+    "generatedAt": "2026-07-09T23:41:52.311847400Z",
     "mode": "QUIET",
     "summary": {
-      "highestSeverity": "INFO",
-      "highestSeverityRank": 0,
-      "severityCounts": {},
-      "totalActive": 0,
+      "highestSeverity": "MODERATE",
+      "highestSeverityRank": 2,
+      "severityCounts": {
+        "MODERATE": 1
+      },
+      "totalActive": 1,
       "activeEvacuations": 0,
       "evacuationStatus": "OK",
-      "topEvents": []
+      "topEvents": [
+        {
+          "id": "chp:260709MR0433",
+          "layer": "ROAD_INCIDENT",
+          "severity": "MODERATE",
+          "severityRank": 2,
+          "headline": "3-vehicle collision, no injuries reported; tow requested, expect delays.",
+          "source": "chp"
+        }
+      ]
     },
     "domains": [
       {
         "domain": "fire",
-        "status": "OK",
+        "status": "STALE",
         "highestSeverity": "INFO",
-        "activeCount": 1,
-        "headlines": [
-          {
-            "id": "fw:region",
-            "severity": "INFO",
-            "headline": "Fire weather: normal"
-          }
-        ]
+        "activeCount": 0,
+        "headlines": []
       },
       {
         "domain": "evacuation",
@@ -47,23 +52,13 @@
       {
         "domain": "roads",
         "status": "OK",
-        "highestSeverity": "INFO",
-        "activeCount": 4,
+        "highestSeverity": "MODERATE",
+        "activeCount": 1,
         "headlines": [
           {
-            "id": "road:hwy4-angels-murphys",
-            "severity": "INFO",
-            "headline": "Hwy 4 — Angels Camp to Murphys"
-          },
-          {
-            "id": "road:hwy4-murphys-arnold",
-            "severity": "INFO",
-            "headline": "Hwy 4 — Murphys to Arnold"
-          },
-          {
-            "id": "road:hwy4-arnold-bearvalley",
-            "severity": "INFO",
-            "headline": "Hwy 4 — Arnold to Bear Valley"
+            "id": "chp:260709MR0433",
+            "severity": "MODERATE",
+            "headline": "3-vehicle collision, no injuries reported; tow requested, expect delays."
           }
         ]
       },
@@ -79,48 +74,78 @@
       {
         "id": "calfire",
         "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:48:44Z"
+        "lastSuccessAt": "2026-07-09T23:39:18Z"
       },
       {
         "id": "caloes",
         "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:52:40Z"
+        "lastSuccessAt": "2026-07-09T23:41:26Z"
       },
       {
         "id": "caltrans",
         "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:49:29Z"
+        "lastSuccessAt": "2026-07-09T23:40:15Z"
       },
       {
         "id": "chp",
         "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:49:29Z"
+        "lastSuccessAt": "2026-07-09T23:40:14Z"
       },
       {
         "id": "nws",
         "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:48:28Z"
+        "lastSuccessAt": "2026-07-09T23:39:12Z"
       },
       {
         "id": "usgs",
         "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:48:37Z"
+        "lastSuccessAt": "2026-07-09T23:39:19Z"
       },
       {
         "id": "wfigs",
-        "status": "OK",
-        "lastSuccessAt": "2026-07-09T22:48:44Z"
+        "status": "STALE",
+        "lastSuccessAt": "2026-07-09T23:33:44Z"
       }
     ]
   },
   "layers": {
     "road_incident": {
       "type": "FeatureCollection",
-      "features": [],
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [-120.41823, 37.95833]
+          },
+          "properties": {
+            "id": "chp:260709MR0433",
+            "layer": "ROAD_INCIDENT",
+            "kind": "Road incident",
+            "category": "incident",
+            "severity": "MODERATE",
+            "severityRank": 2,
+            "headline": "3-vehicle collision, no injuries reported; tow requested, expect delays.",
+            "description": "Three-vehicle traffic collision at the intersection. No injuries reported. Tow service (Affordable Tow) requested and en route. Emergency responders were notified; incident is being cleared. Expect lane obstructions and slow-moving traffic through the intersection while vehicles are removed.",
+            "status": "ACTIVE",
+            "effective": "2026-07-09T23:27:00Z",
+            "updatedAt": "2026-07-09T23:38:00Z",
+            "areaLabel": "SR 108 at 5th Avenue",
+            "source": {
+              "id": "chp",
+              "name": "CHP / Caltrans",
+              "attribution": "quickmap.dot.ca.gov"
+            },
+            "incident": {
+              "logNumber": "260709MR0433"
+            }
+          }
+        }
+      ],
       "metadata": {
         "layer": "road_incident",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:43Z",
+        "generatedAt": "2026-07-09T23:41:52Z",
         "sourceStatus": "OK",
         "schemaVersion": 1
       }
@@ -289,7 +314,7 @@
               "roadId": "hwy4-angels-murphys",
               "congestion": "CLEAR",
               "delayMinutes": 0,
-              "durationMinutes": 12,
+              "durationMinutes": 11,
               "distanceKm": 13
             }
           }
@@ -599,7 +624,7 @@
               "roadId": "hwy4-murphys-arnold",
               "congestion": "CLEAR",
               "delayMinutes": 0,
-              "durationMinutes": 16,
+              "durationMinutes": 17,
               "distanceKm": 20
             }
           }
@@ -1173,7 +1198,7 @@
               "roadId": "hwy4-arnold-bearvalley",
               "congestion": "CLEAR",
               "delayMinutes": 0,
-              "durationMinutes": 27,
+              "durationMinutes": 28,
               "distanceKm": 38
             }
           }
@@ -1539,8 +1564,8 @@
             "road": {
               "roadId": "hwy49-angels-sonora",
               "congestion": "CLEAR",
-              "delayMinutes": 1,
-              "durationMinutes": 25,
+              "delayMinutes": 0,
+              "durationMinutes": 24,
               "distanceKm": 25
             }
           }
@@ -1549,7 +1574,7 @@
       "metadata": {
         "layer": "road_segment",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:42Z",
+        "generatedAt": "2026-07-09T23:41:51Z",
         "sourceStatus": "OK",
         "schemaVersion": 1
       }
@@ -1560,7 +1585,7 @@
       "metadata": {
         "layer": "chain_control",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:43Z",
+        "generatedAt": "2026-07-09T23:41:52Z",
         "sourceStatus": "OK",
         "schemaVersion": 1
       }
@@ -1571,7 +1596,7 @@
       "metadata": {
         "layer": "weather_alert",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:43Z",
+        "generatedAt": "2026-07-09T23:41:52Z",
         "sourceStatus": "OK",
         "schemaVersion": 1
       }
@@ -1603,7 +1628,7 @@
       "metadata": {
         "layer": "fire_weather",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:42Z",
+        "generatedAt": "2026-07-09T23:41:51Z",
         "sourceStatus": "OK",
         "schemaVersion": 1
       }
@@ -1614,8 +1639,9 @@
       "metadata": {
         "layer": "wildfire",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:42Z",
-        "sourceStatus": "OK",
+        "generatedAt": "2026-07-09T23:41:52Z",
+        "sourceStatus": "STALE",
+        "lastSourceUpdate": "2026-07-09T23:39:18Z",
         "schemaVersion": 1
       }
     },
@@ -1625,7 +1651,7 @@
       "metadata": {
         "layer": "evacuation",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:43Z",
+        "generatedAt": "2026-07-09T23:41:51Z",
         "sourceStatus": "OK",
         "attribution": "Cal OES / California County Governments — reference only",
         "sourceUrl": "https://protect.genasys.com/",
@@ -1638,7 +1664,7 @@
       "metadata": {
         "layer": "earthquake",
         "area": "ebbetts-pass",
-        "generatedAt": "2026-07-09T22:52:42Z",
+        "generatedAt": "2026-07-09T23:41:52Z",
         "sourceStatus": "OK",
         "schemaVersion": 1
       }

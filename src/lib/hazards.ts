@@ -123,9 +123,9 @@ export interface SummaryDomain {
  * `/places/{area}/summary` — the authoritative place rollup. We use it for the "Synced …"
  * timestamp and the fail-loud `activeEvacuations` (int | null); the per-layer counts we
  * still recompute locally from the map layers (deriveSituationSummary) so the tiles and the
- * stream stay in lockstep. NOTE: `domains[].domain === 'fire'` counts the always-present
- * "fire weather: normal" banner (activeCount is 1 with zero wildfires), so it is NOT a
- * wildfire signal — count the `wildfire` map layer for that.
+ * stream stay in lockstep. For the life-safety wildfire signal, EmergencyBanner reads the
+ * `wildfire` map layer directly (authoritative + place-scoped) rather than the `domains`
+ * rollup.
  */
 export interface PlaceSummary {
   place: string;

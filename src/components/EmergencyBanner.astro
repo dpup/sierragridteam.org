@@ -67,8 +67,8 @@ import { emergencyBanner as copy } from '@config/content';
         const events = sum.topEvents ?? [];
         const fireFeatures = fire.features ?? [];
         const hasEvac = (sum.activeEvacuations ?? 0) > 0;
-        // Count the wildfire MAP layer — NOT domains.fire.activeCount, which includes the
-        // always-present "fire weather: normal" banner and would false-arm the band.
+        // Read the authoritative, place-scoped wildfire MAP layer for this life-safety band,
+        // rather than a summary rollup count.
         const hasWildfire = fireFeatures.length > 0;
 
         // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The summary's

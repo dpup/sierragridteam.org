@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-07-09T22:52:42.271Z",
+  "fetchedAt": "2026-07-09T23:41:51.083Z",
   "conditions": {
     "weather": [
       {
@@ -10,9 +10,9 @@
         "weatherIcon": "01d",
         "temperatureCelsius": 34,
         "feelsLikeCelsius": 33,
-        "humidityPercent": 25,
+        "humidityPercent": 24,
         "windSpeedKmh": 14,
-        "windDirectionDegrees": 276,
+        "windDirectionDegrees": 278,
         "visibilityKm": 10
       },
       {
@@ -21,11 +21,11 @@
         "weatherMain": "Clear",
         "weatherDescription": "clear sky",
         "weatherIcon": "01d",
-        "temperatureCelsius": 30,
-        "feelsLikeCelsius": 29,
+        "temperatureCelsius": 29,
+        "feelsLikeCelsius": 28,
         "humidityPercent": 29,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 124,
+        "windSpeedKmh": 1,
+        "windDirectionDegrees": 127,
         "visibilityKm": 10
       },
       {
@@ -36,9 +36,9 @@
         "weatherIcon": "01d",
         "temperatureCelsius": 25,
         "feelsLikeCelsius": 24,
-        "humidityPercent": 34,
-        "windSpeedKmh": 17,
-        "windDirectionDegrees": 247,
+        "humidityPercent": 32,
+        "windSpeedKmh": 16,
+        "windDirectionDegrees": 246,
         "visibilityKm": 10
       },
       {
@@ -48,10 +48,10 @@
         "weatherDescription": "clear sky",
         "weatherIcon": "01d",
         "temperatureCelsius": 35,
-        "feelsLikeCelsius": 34,
-        "humidityPercent": 26,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 314,
+        "feelsLikeCelsius": 33,
+        "humidityPercent": 22,
+        "windSpeedKmh": 4,
+        "windDirectionDegrees": 355,
         "visibilityKm": 10
       },
       {
@@ -62,9 +62,9 @@
         "weatherIcon": "01d",
         "temperatureCelsius": 34,
         "feelsLikeCelsius": 33,
-        "humidityPercent": 25,
-        "windSpeedKmh": 3,
-        "windDirectionDegrees": 314,
+        "humidityPercent": 22,
+        "windSpeedKmh": 4,
+        "windDirectionDegrees": 355,
         "visibilityKm": 10
       },
       {
@@ -75,9 +75,9 @@
         "weatherIcon": "01d",
         "temperatureCelsius": 31,
         "feelsLikeCelsius": 29,
-        "humidityPercent": 25,
+        "humidityPercent": 22,
         "windSpeedKmh": 15,
-        "windDirectionDegrees": 258,
+        "windDirectionDegrees": 263,
         "visibilityKm": 10
       },
       {
@@ -86,11 +86,11 @@
         "weatherMain": "Clear",
         "weatherDescription": "clear sky",
         "weatherIcon": "01d",
-        "temperatureCelsius": 28,
-        "feelsLikeCelsius": 27,
-        "humidityPercent": 29,
+        "temperatureCelsius": 27,
+        "feelsLikeCelsius": 26,
+        "humidityPercent": 30,
         "windSpeedKmh": 15,
-        "windDirectionDegrees": 253,
+        "windDirectionDegrees": 254,
         "visibilityKm": 10
       }
     ],
@@ -99,6 +99,6 @@
       "headline": "",
       "zones": []
     },
-    "lastUpdated": "2026-07-09T22:43:42.450251969Z"
+    "lastUpdated": "2026-07-09T23:39:28.655043184Z"
   }
 }

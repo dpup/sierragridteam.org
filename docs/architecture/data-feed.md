@@ -53,9 +53,10 @@
 }
 ```
 
-> ⚠️ `domains[].domain === "fire"` counts the always-present "fire weather: normal" banner
-> (`activeCount` is 1 with **zero** wildfires) — it is NOT a wildfire signal. Count the
-> `wildfire` map layer for that (EmergencyBanner does).
+> For the life-safety wildfire signal, EmergencyBanner reads the `wildfire` map layer
+> directly (authoritative + place-scoped) rather than the `domains` rollup. (Earlier the
+> `fire` domain's `activeCount` also counted the "fire weather: normal" banner; The Grid
+> fixed that on 2026-07-09 so it now reflects active wildfires only.)
 
 ### `GET /places/{area}/map/{layer}.geojson` (replaced `/hazards/{area}/…`)
 
