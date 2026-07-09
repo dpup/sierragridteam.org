@@ -22,6 +22,21 @@ export const site = {
   foundingYear: 2026,
 
   /**
+   * Official California Secretary of State registration — a public trust signal shown in
+   * the footer (the entity number is searchable on the CA SoS business registry).
+   *
+   * IMPORTANT: this is STATE registration, NOT federal 501(c)(3) tax-exempt status. Do not
+   * imply that gifts are tax-deductible from this — deductibility needs an IRS determination
+   * + EIN, which the Donate `taxNote` (src/config/content.ts) still marks as being finalized.
+   * The filing's certificate number is an internal record and is intentionally not published.
+   */
+  registration: {
+    jurisdiction: 'California',
+    type: 'nonprofit public benefit corporation',
+    entityNumber: 'B2026028525',
+  },
+
+  /**
    * Contact email — the single source of truth. Override at deploy time with the
    * PUBLIC_CONTACT_EMAIL env var, or just edit the default below. Set
    * emailIsPlaceholder back to true if the inbox is ever taken offline (it adds an

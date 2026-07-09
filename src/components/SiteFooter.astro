@@ -9,6 +9,8 @@ import Container from './Container.astro';
 import { site, nav, externalLinks, donate } from '@config/site';
 
 const year = site.foundingYear;
+const reg = site.registration;
+const registrationLine = `Registered ${reg.jurisdiction} ${reg.type} · Entity No. ${reg.entityNumber}`;
 ---
 
 {
@@ -24,6 +26,7 @@ const year = site.foundingYear;
         <address class="footer__address">
           {site.address.line}
         </address>
+        <p class="footer__registration">{registrationLine}</p>
       </div>
 
       <nav class="footer__nav" aria-label="Footer">
@@ -96,6 +99,15 @@ const year = site.foundingYear;
     font-family: var(--font-ui);
     font-size: var(--fs-small);
     color: var(--ink-secondary);
+  }
+
+  .footer__registration {
+    margin-top: var(--space-3);
+    max-width: 42ch;
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    line-height: var(--lh-body);
+    color: var(--ink-muted);
   }
 
   .footer__navhead {
