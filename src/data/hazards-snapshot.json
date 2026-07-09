@@ -1,70 +1,27 @@
 {
-  "fetchedAt": "2026-07-09T18:06:49.956Z",
+  "fetchedAt": "2026-07-09T22:52:43.433Z",
   "area": "ebbetts-pass",
   "summary": {
     "place": "ebbetts-pass",
-    "place_id": "area:ebbetts-pass",
-    "place_name": "Ebbetts Pass Corridor",
-    "generated_at": "2026-07-09T18:06:49Z",
+    "placeId": "area:ebbetts-pass",
+    "placeName": "Ebbetts Pass Corridor",
+    "generatedAt": "2026-07-09T22:52:43.409694646Z",
     "mode": "QUIET",
     "summary": {
-      "highest_severity": "MODERATE",
-      "highest_severity_rank": 2,
-      "severity_counts": {
-        "MODERATE": 5
-      },
-      "total_active": 5,
-      "active_evacuations": 0,
-      "evacuation_status": "OK",
-      "top_events": [
-        {
-          "id": "chp:260709MR0163",
-          "layer": "road_incident",
-          "severity": "MODERATE",
-          "severity_rank": 2,
-          "headline": "Big‑rig tanker blocking road with coolant spill; tanker pulled out and being towed, cones in place.",
-          "source": "chp"
-        },
-        {
-          "id": "chp:M4LA",
-          "layer": "road_incident",
-          "severity": "MODERATE",
-          "severity_rank": 2,
-          "headline": "One-way alternating traffic for pavement work; left-side lane(s) closed, expect delays.",
-          "source": "caltrans"
-        },
-        {
-          "id": "chp:260709MR0175",
-          "layer": "road_incident",
-          "severity": "MODERATE",
-          "severity_rank": 2,
-          "headline": "Disabled vehicle created traffic hazard; caller stuck in driveway and cannot re-enter roadway.",
-          "source": "chp"
-        },
-        {
-          "id": "chp:T108GA",
-          "layer": "road_incident",
-          "severity": "MODERATE",
-          "severity_rank": 2,
-          "headline": "One-way alternating traffic for drainage cleaning; lanes reduced and delays possible",
-          "source": "caltrans"
-        },
-        {
-          "id": "chp:C49CA",
-          "layer": "road_incident",
-          "severity": "MODERATE",
-          "severity_rank": 2,
-          "headline": "Shoulder closures for roadway excavation; travel lanes remain open.",
-          "source": "caltrans"
-        }
-      ]
+      "highestSeverity": "INFO",
+      "highestSeverityRank": 0,
+      "severityCounts": {},
+      "totalActive": 0,
+      "activeEvacuations": 0,
+      "evacuationStatus": "OK",
+      "topEvents": []
     },
     "domains": [
       {
         "domain": "fire",
         "status": "OK",
-        "highest_severity": "INFO",
-        "active_count": 1,
+        "highestSeverity": "INFO",
+        "activeCount": 1,
         "headlines": [
           {
             "id": "fw:region",
@@ -76,45 +33,45 @@
       {
         "domain": "evacuation",
         "status": "OK",
-        "highest_severity": "INFO",
-        "active_count": 0,
+        "highestSeverity": "INFO",
+        "activeCount": 0,
         "headlines": []
       },
       {
         "domain": "weather",
         "status": "OK",
-        "highest_severity": "INFO",
-        "active_count": 0,
+        "highestSeverity": "INFO",
+        "activeCount": 0,
         "headlines": []
       },
       {
         "domain": "roads",
         "status": "OK",
-        "highest_severity": "MODERATE",
-        "active_count": 9,
+        "highestSeverity": "INFO",
+        "activeCount": 4,
         "headlines": [
           {
-            "id": "chp:260709MR0163",
-            "severity": "MODERATE",
-            "headline": "Big‑rig tanker blocking road with coolant spill; tanker pulled out and being towed, cones in place."
+            "id": "road:hwy4-angels-murphys",
+            "severity": "INFO",
+            "headline": "Hwy 4 — Angels Camp to Murphys"
           },
           {
-            "id": "chp:M4LA",
-            "severity": "MODERATE",
-            "headline": "One-way alternating traffic for pavement work; left-side lane(s) closed, expect delays."
+            "id": "road:hwy4-murphys-arnold",
+            "severity": "INFO",
+            "headline": "Hwy 4 — Murphys to Arnold"
           },
           {
-            "id": "chp:260709MR0175",
-            "severity": "MODERATE",
-            "headline": "Disabled vehicle created traffic hazard; caller stuck in driveway and cannot re-enter roadway."
+            "id": "road:hwy4-arnold-bearvalley",
+            "severity": "INFO",
+            "headline": "Hwy 4 — Arnold to Bear Valley"
           }
         ]
       },
       {
         "domain": "seismic",
         "status": "OK",
-        "highest_severity": "INFO",
-        "active_count": 0,
+        "highestSeverity": "INFO",
+        "activeCount": 0,
         "headlines": []
       }
     ],
@@ -122,193 +79,50 @@
       {
         "id": "calfire",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:04:41Z"
+        "lastSuccessAt": "2026-07-09T22:48:44Z"
       },
       {
         "id": "caloes",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:06:44Z"
+        "lastSuccessAt": "2026-07-09T22:52:40Z"
       },
       {
         "id": "caltrans",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:05:45Z"
+        "lastSuccessAt": "2026-07-09T22:49:29Z"
       },
       {
         "id": "chp",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:05:45Z"
+        "lastSuccessAt": "2026-07-09T22:49:29Z"
       },
       {
         "id": "nws",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:04:47Z"
+        "lastSuccessAt": "2026-07-09T22:48:28Z"
       },
       {
         "id": "usgs",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:04:43Z"
+        "lastSuccessAt": "2026-07-09T22:48:37Z"
       },
       {
         "id": "wfigs",
         "status": "OK",
-        "last_success_at": "2026-07-09T18:04:41Z"
+        "lastSuccessAt": "2026-07-09T22:48:44Z"
       }
     ]
   },
   "layers": {
     "road_incident": {
       "type": "FeatureCollection",
-      "features": [
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [-120.37014, 37.98942]
-          },
-          "properties": {
-            "id": "chp:260709MR0163",
-            "layer": "road_incident",
-            "kind": "Road incident",
-            "category": "incident",
-            "severity": "MODERATE",
-            "severity_rank": 2,
-            "headline": "Big‑rig tanker blocking road with coolant spill; tanker pulled out and being towed, cones in place.",
-            "description": "A big‑rig tanker was blocking the roadway on a curve. Responders placed cones and reported coolant on the road. The tanker was pulled out and is being towed; towing and cleanup are in progress. CHP/roadside responders have been notified and are handling the situation.",
-            "status": "active",
-            "effective": "2026-07-09T16:51:00Z",
-            "updated_at": "2026-07-09T18:00:00Z",
-            "area_label": "Lyons Bald Mountain Rd at Greenley Rd",
-            "source": {
-              "id": "chp",
-              "name": "CHP / Caltrans",
-              "attribution": "quickmap.dot.ca.gov"
-            },
-            "incident": {
-              "log_number": "260709MR0163"
-            }
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [-120.36918, 38.20579]
-          },
-          "properties": {
-            "id": "chp:M4LA",
-            "layer": "road_incident",
-            "kind": "Road incident",
-            "category": "closure",
-            "severity": "MODERATE",
-            "severity_rank": 2,
-            "headline": "One-way alternating traffic for pavement work; left-side lane(s) closed, expect delays.",
-            "description": "One-way traffic control in place on the left side from Avery Hotel Road to Lakemont Drive for pavement work. Left-side lanes are closed and traffic is being directed through alternating/one-way operation. Work is expected to end at 3:01 PM on July 9, 2026. Closure ID M4LA; log number 3.",
-            "status": "active",
-            "updated_at": "2026-07-09T18:00:00Z",
-            "area_label": "From Avery Hotel Road to Lakemont Drive (left side)",
-            "source": {
-              "id": "chp",
-              "name": "CHP / Caltrans",
-              "attribution": "quickmap.dot.ca.gov"
-            },
-            "incident": {
-              "log_number": "M4LA"
-            }
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [-120.18105, 38.07103]
-          },
-          "properties": {
-            "id": "chp:260709MR0175",
-            "layer": "road_incident",
-            "kind": "Road incident",
-            "category": "incident",
-            "severity": "MODERATE",
-            "severity_rank": 2,
-            "headline": "Disabled vehicle created traffic hazard; caller stuck in driveway and cannot re-enter roadway.",
-            "description": "Report of a traffic hazard at the intersection of State Route 108 and Ridge Trail Court. A vehicle pulled out of the travel lane into a driveway but is unable to re-enter the roadway, creating a traffic hazard. Motorists should expect slowed traffic and possible partial lane/shoulder obstruction while the vehicle remains unable to return to the roadway. No injuries reported in the messages; no emergency response explicitly noted.",
-            "status": "active",
-            "effective": "2026-07-09T16:59:00Z",
-            "updated_at": "2026-07-09T17:33:00Z",
-            "area_label": "intersection of State Route 108 and Ridge Trail Court",
-            "source": {
-              "id": "chp",
-              "name": "CHP / Caltrans",
-              "attribution": "quickmap.dot.ca.gov"
-            },
-            "incident": {
-              "log_number": "260709MR0175"
-            }
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [-120.0538, 38.1634]
-          },
-          "properties": {
-            "id": "chp:T108GA",
-            "layer": "road_incident",
-            "kind": "Road incident",
-            "category": "closure",
-            "severity": "MODERATE",
-            "severity_rank": 2,
-            "headline": "One-way alternating traffic for drainage cleaning; lanes reduced and delays possible",
-            "description": "One-way (alternating) traffic control in place between Mono Road (right) and Camp Blue Road (right) for drainage cleaning and inspection. Lanes are reduced and traffic is being directed to alternate through the work area; expect delays. Work is expected to end at 2026-07-09T15:01:00-07:00. Closure ID: T108GA. Log Number: 2.",
-            "status": "active",
-            "updated_at": "2026-07-09T16:01:00Z",
-            "area_label": "From Mono Road (Right) to Camp Blue Road (Right)",
-            "source": {
-              "id": "chp",
-              "name": "CHP / Caltrans",
-              "attribution": "quickmap.dot.ca.gov"
-            },
-            "incident": {
-              "log_number": "T108GA"
-            }
-          }
-        },
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [-120.54191, 38.07173]
-          },
-          "properties": {
-            "id": "chp:C49CA",
-            "layer": "road_incident",
-            "kind": "Road incident",
-            "category": "closure",
-            "severity": "MODERATE",
-            "severity_rank": 2,
-            "headline": "Shoulder closures for roadway excavation; travel lanes remain open.",
-            "description": "Shoulder closures northbound and southbound for roadway excavation. The left shoulder and right shoulder are closed between South Bret Harte / Sam's Way and Copello Drive. Main travel lanes remain open; work is expected to end at 4:59 PM on July 9, 2026.",
-            "status": "active",
-            "updated_at": "2026-07-09T15:21:00Z",
-            "area_label": "From South Bret Harte (Right)/Sam's Way (Left) to Copello Drive (Left)",
-            "source": {
-              "id": "chp",
-              "name": "CHP / Caltrans",
-              "attribution": "quickmap.dot.ca.gov"
-            },
-            "incident": {
-              "log_number": "C49CA"
-            }
-          }
-        }
-      ],
+      "features": [],
       "metadata": {
         "layer": "road_incident",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:43Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     },
     "road_segment": {
@@ -460,23 +274,23 @@
           },
           "properties": {
             "id": "road:hwy4-angels-murphys",
-            "layer": "road_segment",
+            "layer": "ROAD_SEGMENT",
             "kind": "Road segment",
             "severity": "INFO",
-            "severity_rank": 0,
+            "severityRank": 0,
             "headline": "Hwy 4 — Angels Camp to Murphys",
-            "status": "open",
-            "area_label": "Angels Camp to Murphys",
+            "status": "OPEN",
+            "areaLabel": "Angels Camp to Murphys",
             "source": {
               "id": "google",
               "name": "Google Routes + Caltrans"
             },
             "road": {
-              "road_id": "hwy4-angels-murphys",
+              "roadId": "hwy4-angels-murphys",
               "congestion": "CLEAR",
-              "delay_minutes": 0,
-              "duration_minutes": 12,
-              "distance_km": 13
+              "delayMinutes": 0,
+              "durationMinutes": 12,
+              "distanceKm": 13
             }
           }
         },
@@ -770,24 +584,23 @@
           },
           "properties": {
             "id": "road:hwy4-murphys-arnold",
-            "layer": "road_segment",
+            "layer": "ROAD_SEGMENT",
             "kind": "Road segment",
-            "severity": "MODERATE",
-            "severity_rank": 2,
+            "severity": "INFO",
+            "severityRank": 0,
             "headline": "Hwy 4 — Murphys to Arnold",
-            "description": "left lane closed; one-way alternating traffic control between Avery Hotel Road and Lakemont Drive for pavement work",
-            "status": "restricted",
-            "area_label": "Murphys to Arnold",
+            "status": "OPEN",
+            "areaLabel": "Murphys to Arnold",
             "source": {
               "id": "google",
               "name": "Google Routes + Caltrans"
             },
             "road": {
-              "road_id": "hwy4-murphys-arnold",
-              "congestion": "LIGHT",
-              "delay_minutes": 4,
-              "duration_minutes": 21,
-              "distance_km": 20
+              "roadId": "hwy4-murphys-arnold",
+              "congestion": "CLEAR",
+              "delayMinutes": 0,
+              "durationMinutes": 16,
+              "distanceKm": 20
             }
           }
         },
@@ -1345,23 +1158,23 @@
           },
           "properties": {
             "id": "road:hwy4-arnold-bearvalley",
-            "layer": "road_segment",
+            "layer": "ROAD_SEGMENT",
             "kind": "Road segment",
             "severity": "INFO",
-            "severity_rank": 0,
+            "severityRank": 0,
             "headline": "Hwy 4 — Arnold to Bear Valley",
-            "status": "open",
-            "area_label": "Arnold to Bear Valley",
+            "status": "OPEN",
+            "areaLabel": "Arnold to Bear Valley",
             "source": {
               "id": "google",
               "name": "Google Routes + Caltrans"
             },
             "road": {
-              "road_id": "hwy4-arnold-bearvalley",
+              "roadId": "hwy4-arnold-bearvalley",
               "congestion": "CLEAR",
-              "delay_minutes": 0,
-              "duration_minutes": 28,
-              "distance_km": 38
+              "delayMinutes": 0,
+              "durationMinutes": 27,
+              "distanceKm": 38
             }
           }
         },
@@ -1712,23 +1525,23 @@
           },
           "properties": {
             "id": "road:hwy49-angels-sonora",
-            "layer": "road_segment",
+            "layer": "ROAD_SEGMENT",
             "kind": "Road segment",
             "severity": "INFO",
-            "severity_rank": 0,
+            "severityRank": 0,
             "headline": "Hwy 49 — Angels Camp to Sonora",
-            "status": "open",
-            "area_label": "Angels Camp to Sonora",
+            "status": "OPEN",
+            "areaLabel": "Angels Camp to Sonora",
             "source": {
               "id": "google",
               "name": "Google Routes + Caltrans"
             },
             "road": {
-              "road_id": "hwy49-angels-sonora",
+              "roadId": "hwy49-angels-sonora",
               "congestion": "CLEAR",
-              "delay_minutes": 1,
-              "duration_minutes": 25,
-              "distance_km": 25
+              "delayMinutes": 1,
+              "durationMinutes": 25,
+              "distanceKm": 25
             }
           }
         }
@@ -1736,9 +1549,9 @@
       "metadata": {
         "layer": "road_segment",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:42Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     },
     "chain_control": {
@@ -1747,9 +1560,9 @@
       "metadata": {
         "layer": "chain_control",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:43Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     },
     "weather_alert": {
@@ -1758,9 +1571,9 @@
       "metadata": {
         "layer": "weather_alert",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:43Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     },
     "fire_weather": {
@@ -1771,17 +1584,17 @@
           "geometry": null,
           "properties": {
             "id": "fw:region",
-            "layer": "fire_weather",
+            "layer": "FIRE_WEATHER",
             "kind": "Fire weather",
             "category": "normal",
             "severity": "INFO",
-            "severity_rank": 0,
+            "severityRank": 0,
             "headline": "Fire weather: normal",
             "source": {
               "id": "nws",
               "name": "National Weather Service"
             },
-            "fire_weather": {
+            "fireWeather": {
               "state": "normal"
             }
           }
@@ -1790,9 +1603,9 @@
       "metadata": {
         "layer": "fire_weather",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:42Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     },
     "wildfire": {
@@ -1801,9 +1614,9 @@
       "metadata": {
         "layer": "wildfire",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:42Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     },
     "evacuation": {
@@ -1812,11 +1625,11 @@
       "metadata": {
         "layer": "evacuation",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
+        "generatedAt": "2026-07-09T22:52:43Z",
+        "sourceStatus": "OK",
         "attribution": "Cal OES / California County Governments — reference only",
-        "source_url": "https://protect.genasys.com/",
-        "schema_version": 1
+        "sourceUrl": "https://protect.genasys.com/",
+        "schemaVersion": 1
       }
     },
     "earthquake": {
@@ -1825,9 +1638,9 @@
       "metadata": {
         "layer": "earthquake",
         "area": "ebbetts-pass",
-        "generated_at": "2026-07-09T18:06:49Z",
-        "source_status": "OK",
-        "schema_version": 1
+        "generatedAt": "2026-07-09T22:52:42Z",
+        "sourceStatus": "OK",
+        "schemaVersion": 1
       }
     }
   },

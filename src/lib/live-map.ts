@@ -45,12 +45,12 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     muted: tok('--ink-muted', '#6f6750'),
     orangeDeep: tok('--signal-orange-hover', '#9a330a'),
   };
-  // severity_rank → color (orange reserved for SEVERE/EXTREME).
+  // severityRank → color (orange reserved for SEVERE/EXTREME).
   const sevColor = [
     'case',
-    ['>=', ['get', 'severity_rank'], 3],
+    ['>=', ['get', 'severityRank'], 3],
     C.orange,
-    ['==', ['get', 'severity_rank'], 2],
+    ['==', ['get', 'severityRank'], 2],
     C.brass,
     C.green,
   ] as unknown as maplibregl.ExpressionSpecification;
@@ -136,21 +136,20 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       return undefined;
     };
     const src = parseObj<{ name?: string }>(p.source);
-    const prov = parseObj<{ sourceUrl?: string; source_url?: string }>(p.provenance);
-    const moreUrl = prov?.sourceUrl ?? prov?.source_url;
+    const moreUrl = parseObj<{ sourceUrl?: string }>(p.provenance)?.sourceUrl;
 
     // Road corridor popup: a status kicker + travel/delay/congestion and the reason
     // (description), rather than the severity/stats a hazard shows.
     const road = parseObj<{
       congestion?: string;
-      delay_minutes?: number;
-      duration_minutes?: number;
+      delayMinutes?: number;
+      durationMinutes?: number;
     }>(p.road);
-    if (road && String(p.layer) === 'road_segment') {
+    if (road && String(p.layer) === 'ROAD_SEGMENT') {
       const cong = road.congestion && road.congestion !== 'CLEAR' ? road.congestion : '';
       const bits = [
-        road.duration_minutes != null ? `${road.duration_minutes} min` : null,
-        (road.delay_minutes ?? 0) > 0 ? `+${road.delay_minutes} min delay` : null,
+        road.durationMinutes != null ? `${road.durationMinutes} min` : null,
+        (road.delayMinutes ?? 0) > 0 ? `+${road.delayMinutes} min delay` : null,
         cong ? `${cong.charAt(0)}${cong.slice(1).toLowerCase()} traffic` : null,
       ]
         .filter(Boolean)
@@ -159,7 +158,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
         `<div class="map-pop">` +
         `<span class="map-pop__sev">${esc(String(p.status || 'open'))}</span>` +
         `<p class="map-pop__title">${esc(String(p.headline || ''))}</p>` +
-        (p.area_label ? `<p class="map-pop__where">${esc(String(p.area_label))}</p>` : '') +
+        (p.areaLabel ? `<p class="map-pop__where">${esc(String(p.areaLabel))}</p>` : '') +
         (bits ? `<p class="map-pop__extra">${esc(bits)}</p>` : '') +
         (p.description ? `<p class="map-pop__where">${esc(String(p.description))}</p>` : '') +
         (src?.name ? `<p class="map-pop__src">${esc(src.name)}</p>` : '') +
@@ -180,7 +179,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
       `<div class="map-pop">` +
       (p.severity ? `<span class="map-pop__sev">${esc(p.severity)}</span>` : '') +
       `<p class="map-pop__title">${esc(title)}</p>` +
-      (p.area_label ? `<p class="map-pop__where">${esc(p.area_label)}</p>` : '') +
+      (p.areaLabel ? `<p class="map-pop__where">${esc(p.areaLabel)}</p>` : '') +
       (stats ? `<p class="map-pop__extra">${esc(stats)}</p>` : '') +
       (src?.name
         ? moreUrl

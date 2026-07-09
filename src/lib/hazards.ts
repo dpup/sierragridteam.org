@@ -10,7 +10,7 @@
  * layer is clipped to the ebbetts-pass polygon at ingest (road_incident and weather_alert
  * included, using the same point-in-polygon test as `/places:resolve`), so the client no
  * longer re-filters by service-area bounds or NWS zones — it renders what the place feed
- * returns. We still recompute the honest per-layer counts locally (source_status → null).
+ * returns. We still recompute the honest per-layer counts locally (sourceStatus → null).
  */
 
 /**
@@ -22,7 +22,7 @@ export const HAZARD_AREA = 'ebbetts-pass';
 
 // ---- GeoJSON types (RFC 7946 + the common properties envelope) ----
 
-export type Severity = 'INFO' | 'LOW' | 'MODERATE' | 'SEVERE' | 'EXTREME';
+export type Severity = 'INFO' | 'MINOR' | 'MODERATE' | 'SEVERE' | 'EXTREME';
 
 export interface HazardSource {
   id: string;
@@ -35,14 +35,10 @@ export interface HazardSource {
  * the CAL FIRE incident page for a wildfire, the Genasys zone viewer for an evacuation.
  * It is **optional per source** (CAL FIRE / Genasys emit it; CHP road incidents don't), so
  * only render the "More information" link when it's present. (Distinct from a layer's
- * `metadata.source_url`, which is the whole feed's home page, not one incident.)
+ * `metadata.sourceUrl`, which is the whole feed's home page, not one incident.)
  */
 export interface HazardProvenance {
-  /** camelCase in the new API (events + place feed). `source_url` accepted defensively:
-   *  the map-geojson provenance field couldn't be observed live (wildfire/evac layers empty),
-   *  and the rest of the geojson envelope is snake_case, so we tolerate either casing. */
   sourceUrl?: string;
-  source_url?: string;
 }
 
 /** Common envelope on every hazard feature + the typed per-kind blocks. */
@@ -52,29 +48,29 @@ export interface HazardProps {
   kind: string;
   category?: string;
   severity: Severity | string;
-  severity_rank: number;
+  severityRank: number;
   headline: string;
   status?: string;
   description?: string;
   effective?: string | null;
   expires?: string | null;
-  updated_at?: string | null;
-  area_label?: string;
+  updatedAt?: string | null;
+  areaLabel?: string;
   source: HazardSource;
   provenance?: HazardProvenance;
-  incident?: { log_number?: string };
+  incident?: { logNumber?: string };
   weather?: { event?: string; source?: string; zones?: string[] };
-  fire_weather?: { state?: string };
+  fireWeather?: { state?: string };
   road?: {
-    road_id?: string;
+    roadId?: string;
     congestion?: string;
-    delay_minutes?: number;
-    duration_minutes?: number;
-    distance_km?: number;
+    delayMinutes?: number;
+    durationMinutes?: number;
+    distanceKm?: number;
   };
-  earthquake?: { magnitude?: number; depth_km?: number; felt?: number | null };
-  wildfire?: { acres?: number; containment?: number; county?: string; has_perimeter?: boolean };
-  evacuation?: { zone_id?: string; level?: string; event_type?: string; county?: string };
+  earthquake?: { magnitude?: number; depthKm?: number; felt?: number | null };
+  wildfire?: { acres?: number; containment?: number; county?: string; hasPerimeter?: boolean };
+  evacuation?: { zoneId?: string; level?: string; eventType?: string; county?: string };
   [key: string]: unknown;
 }
 
@@ -95,21 +91,21 @@ export interface HazardLayer {
   metadata: {
     layer: string;
     area: string;
-    generated_at: string;
-    source_status: 'OK' | 'STALE' | 'UNAVAILABLE';
-    schema_version?: number;
+    generatedAt: string;
+    sourceStatus: 'OK' | 'STALE' | 'UNAVAILABLE';
+    schemaVersion?: number;
     attribution?: string;
-    source_url?: string;
-    last_source_update?: string;
+    sourceUrl?: string;
+    lastSourceUpdate?: string;
   };
 }
 
-/** One event line in a place summary's `top_events`. */
+/** One event line in a place summary's `topEvents`. */
 export interface SummaryEvent {
   id: string;
   layer: string;
   severity: string;
-  severity_rank: number;
+  severityRank: number;
   headline: string;
   source: string;
 }
@@ -118,33 +114,33 @@ export interface SummaryEvent {
 export interface SummaryDomain {
   domain: string;
   status: 'OK' | 'STALE' | 'UNAVAILABLE' | string;
-  highest_severity: Severity | string;
-  active_count: number;
+  highestSeverity: Severity | string;
+  activeCount: number;
   headlines: Array<{ id: string; severity: string; headline: string }>;
 }
 
 /**
  * `/places/{area}/summary` — the authoritative place rollup. We use it for the "Synced …"
- * timestamp and the fail-loud `active_evacuations` (int | null); the per-layer counts we
+ * timestamp and the fail-loud `activeEvacuations` (int | null); the per-layer counts we
  * still recompute locally from the map layers (deriveSituationSummary) so the tiles and the
  * stream stay in lockstep. NOTE: `domains[].domain === 'fire'` counts the always-present
- * "fire weather: normal" banner (active_count is 1 with zero wildfires), so it is NOT a
+ * "fire weather: normal" banner (activeCount is 1 with zero wildfires), so it is NOT a
  * wildfire signal — count the `wildfire` map layer for that.
  */
 export interface PlaceSummary {
   place: string;
-  place_id: string;
-  place_name: string;
-  generated_at: string;
+  placeId: string;
+  placeName: string;
+  generatedAt: string;
   mode: string;
   summary: {
-    highest_severity: Severity | string;
-    highest_severity_rank: number;
-    severity_counts: Record<string, number>;
-    total_active: number;
-    active_evacuations: number | null;
-    evacuation_status: 'OK' | 'STALE' | 'UNAVAILABLE' | string;
-    top_events: SummaryEvent[];
+    highestSeverity: Severity | string;
+    highestSeverityRank: number;
+    severityCounts: Record<string, number>;
+    totalActive: number;
+    activeEvacuations: number | null;
+    evacuationStatus: 'OK' | 'STALE' | 'UNAVAILABLE' | string;
+    topEvents: SummaryEvent[];
   };
   domains: SummaryDomain[];
 }
@@ -179,14 +175,14 @@ export const STREAM_LAYERS = [
 
 export const SEVERITY_RANK: Record<string, number> = {
   INFO: 0,
-  LOW: 1,
+  MINOR: 1,
   MODERATE: 2,
   SEVERE: 3,
   EXTREME: 4,
 };
 
 export function rankOf(f: HazardFeature): number {
-  if (typeof f.properties.severity_rank === 'number') return f.properties.severity_rank;
+  if (typeof f.properties.severityRank === 'number') return f.properties.severityRank;
   return SEVERITY_RANK[String(f.properties.severity).toUpperCase()] ?? 0;
 }
 
@@ -233,8 +229,8 @@ export function deriveStream(snapshot: HazardsSnapshot): HazardFeature[] {
   return out.sort((a, b) => {
     const dr = rankOf(b) - rankOf(a);
     if (dr !== 0) return dr;
-    return String(b.properties.updated_at ?? b.properties.effective ?? '').localeCompare(
-      String(a.properties.updated_at ?? a.properties.effective ?? '')
+    return String(b.properties.updatedAt ?? b.properties.effective ?? '').localeCompare(
+      String(a.properties.updatedAt ?? a.properties.effective ?? '')
     );
   });
 }
@@ -246,7 +242,7 @@ export interface SituationSummary {
    * Counts, or `null` when that layer's source is UNAVAILABLE — so an outage reads as an
    * honest "unknown", never a false `0`/all-clear. A clean empty success (OK, or STALE
    * served from the last good fetch) is a real `0`. Mirrors The Grid's per-layer
-   * `source_status` and the evacuation no-data-vs-error split (CHANGELOG 2026-06-29).
+   * `sourceStatus` and the evacuation no-data-vs-error split (CHANGELOG 2026-06-29).
    */
   wildfires: number | null;
   evacuations: number | null;
@@ -265,14 +261,14 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
   // success is 0; STALE serves the last good fetch. The Grid guarantees an error
   // never replays a cached 0 (CHANGELOG 2026-06-29).
   const statusOf = (layer: string): string =>
-    snapshot.layers?.[layer]?.metadata?.source_status ?? 'UNAVAILABLE';
+    snapshot.layers?.[layer]?.metadata?.sourceStatus ?? 'UNAVAILABLE';
   const countOrUnknown = (layer: string): number | null =>
     statusOf(layer) === 'UNAVAILABLE' ? null : layerFeatures(snapshot, layer).length;
 
   const fwFeature = (snapshot.layers?.fire_weather?.features ?? [])[0];
   // The hazard fire_weather layer reports state as e.g. "normal"/"red-flag" (lowercase,
   // hyphenated) — normalize to the canonical NORMAL/ELEVATED/RED_FLAG enum.
-  const fireState = (fwFeature?.properties.fire_weather?.state ?? 'unknown')
+  const fireState = (fwFeature?.properties.fireWeather?.state ?? 'unknown')
     .toUpperCase()
     .replace(/-/g, '_');
 
@@ -283,7 +279,7 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
     evacuationStatus: statusOf('evacuation'),
     weatherAlerts: countOrUnknown('weather_alert'),
     fireWeather: fireState,
-    syncedAt: snapshot.summary?.generated_at ?? snapshot.fetchedAt ?? null,
+    syncedAt: snapshot.summary?.generatedAt ?? snapshot.fetchedAt ?? null,
   };
 }
 

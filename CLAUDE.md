@@ -90,7 +90,9 @@ Page rules:
   feed is now authoritative and **polygon-scoped server-side** — every
   `/places/ebbetts-pass/map/*` layer (road_incident and weather_alert included) is clipped to
   the corridor at ingest, so the client no longer re-filters by service area / NWS zones; it
-  renders what the place feed returns. A layer whose `source_status` is `UNAVAILABLE` (a sync
+  renders what the place feed returns. (Every endpoint is camelCase; enum constants —
+  `layer`/`status`/`severity` — are UPPER_CASE, layer URL slugs stay snake_case.) A layer
+  whose `sourceStatus` is `UNAVAILABLE` (a sync
   error) must read as "unknown", never all-clear — `deriveSituationSummary` returns `null`
   for wildfire/evacuation/weather-alert counts in that case, and the tiles render "Unknown".
   A confirmed-empty feed (`OK`/`STALE`) is a real `0` → "None" (data.sierragridteam.org guarantees an

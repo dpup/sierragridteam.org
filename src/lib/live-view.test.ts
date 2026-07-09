@@ -24,7 +24,7 @@ function fc(features: HazardFeature[], status = 'OK') {
   return {
     type: 'FeatureCollection' as const,
     features,
-    metadata: { layer: 'x', area: 'ebbetts-pass', generated_at: '', source_status: status as 'OK' },
+    metadata: { layer: 'x', area: 'ebbetts-pass', generatedAt: '', sourceStatus: status as 'OK' },
   };
 }
 function fire(extra: Record<string, unknown> = {}): HazardFeature {
@@ -36,7 +36,7 @@ function fire(extra: Record<string, unknown> = {}): HazardFeature {
       layer: 'wildfire',
       kind: 'Wildfire',
       severity: 'SEVERE',
-      severity_rank: 3,
+      severityRank: 3,
       headline: 'Priest Fire',
       source: { id: 'calfire', name: 'CAL FIRE' },
       wildfire: { acres: 200, containment: 10 },
@@ -91,7 +91,7 @@ test('a restricted road segment shows its reason; an open one adds no incident l
       layer: 'road_segment',
       kind: 'Road segment',
       severity: status === 'open' ? 'INFO' : 'MODERATE',
-      severity_rank: status === 'open' ? 0 : 2,
+      severityRank: status === 'open' ? 0 : 2,
       headline: `Hwy 4 — ${id}`,
       status,
       source: { id: 'google', name: 'Google Routes + Caltrans' },
@@ -106,20 +106,20 @@ test('a restricted road segment shows its reason; an open one adds no incident l
           'murphys-arnold',
           'restricted',
           {
-            road_id: 'r1',
+            roadId: 'r1',
             congestion: 'LIGHT',
-            delay_minutes: 4,
-            duration_minutes: 21,
-            distance_km: 20,
+            delayMinutes: 4,
+            durationMinutes: 21,
+            distanceKm: 20,
           },
           { description: 'left lane closed for pavement work' }
         ),
         seg('angels-murphys', 'open', {
-          road_id: 'r2',
+          roadId: 'r2',
           congestion: 'CLEAR',
-          delay_minutes: 0,
-          duration_minutes: 12,
-          distance_km: 13,
+          delayMinutes: 0,
+          durationMinutes: 12,
+          distanceKm: 13,
         }),
       ]),
     }),

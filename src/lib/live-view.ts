@@ -174,7 +174,7 @@ function streamExtra(f: HazardFeature): string | null {
   if (p.earthquake) {
     const bits = [
       p.earthquake.magnitude != null ? `M${p.earthquake.magnitude}` : null,
-      p.earthquake.depth_km != null ? `depth ${p.earthquake.depth_km} km` : null,
+      p.earthquake.depthKm != null ? `depth ${p.earthquake.depthKm} km` : null,
     ].filter(Boolean);
     return bits.length ? bits.join(' · ') : null;
   }
@@ -182,9 +182,7 @@ function streamExtra(f: HazardFeature): string | null {
     // Level is already in the headline ("Evacuation Order/Warning — …"); surface the
     // specific Genasys zone + event type instead (the actionable, non-redundant bits).
     const e = p.evacuation;
-    return (
-      [e.zone_id ? `Zone ${e.zone_id}` : null, e.event_type].filter(Boolean).join(' · ') || null
-    );
+    return [e.zoneId ? `Zone ${e.zoneId}` : null, e.eventType].filter(Boolean).join(' · ') || null;
   }
   return null;
 }
@@ -199,14 +197,14 @@ function renderStream(items: HazardFeature[]): string {
       // Authoritative "more info" page for THIS event (CAL FIRE incident, Genasys evac
       // viewer, …) — from the feed's per-event provenance when present; opens the body so
       // the link is reachable.
-      const moreUrl = p.provenance?.sourceUrl ?? p.provenance?.source_url;
+      const moreUrl = p.provenance?.sourceUrl;
       const hasBody = !!(ex || p.description || moreUrl);
       const head =
         `<span class="stream__head"><span class="stream__kicker">` +
         `<span class="stream__sev">${esc(severityLabel(String(p.severity)))}</span>` +
         `<span class="stream__kind">${esc(p.kind)}</span></span>` +
         `<span class="stream__title">${esc(wildfireTitle(p.headline, p.wildfire))}</span>` +
-        (p.area_label ? `<span class="stream__where">${esc(p.area_label)}</span>` : '') +
+        (p.areaLabel ? `<span class="stream__where">${esc(p.areaLabel)}</span>` : '') +
         `</span>`;
       const source = p.source?.name
         ? `<span class="stream__source">${esc(p.source.name)}</span>`
@@ -249,13 +247,13 @@ function roadTone(status: string, chain: string): 'ok' | 'alarm' | 'elevated' {
 
 /**
  * Chain-control status for a segment. The Grid splits chain controls into their own
- * `chain_control` layer; we match one to a road by `road.road_id` and show its severity, or
+ * `chain_control` layer; we match one to a road by `road.roadId` and show its severity, or
  * "None" when nothing references the road (honest — no active chain control). Best-effort:
- * if chain_control features don't carry `road_id`, this degrades to "None" until verified.
+ * if chain_control features don't carry `roadId`, this degrades to "None" until verified.
  */
 function chainFor(roadId: string | undefined, chains: HazardFeature[]): string {
   if (!roadId) return 'None';
-  const m = chains.find((c) => c.properties.road?.road_id === roadId);
+  const m = chains.find((c) => c.properties.road?.roadId === roadId);
   return m ? severityLabel(String(m.properties.severity)) : 'None';
 }
 
@@ -271,9 +269,9 @@ function renderRoads(segments: HazardFeature[], chains: HazardFeature[]): string
       const p = f.properties;
       const road = p.road ?? {};
       const status = p.status ?? 'open';
-      const chain = chainFor(road.road_id, chains);
+      const chain = chainFor(road.roadId, chains);
       const t = roadTone(status, chain === 'None' ? '' : chain);
-      const delay = road.delay_minutes ?? 0;
+      const delay = road.delayMinutes ?? 0;
       return (
         // data-hazard-id links the card to its map corridor — hovering it highlights the
         // road_segment line on the /live map (wired in the page controller), mirroring the
@@ -281,13 +279,13 @@ function renderRoads(segments: HazardFeature[], chains: HazardFeature[]): string
         `<article class="road road--${t}" data-hazard-id="${esc(p.id)}">` +
         `<header class="road__head"><div>` +
         `<span class="road__name">${esc(p.headline)}</span>` +
-        (p.area_label ? `<span class="road__section">${esc(p.area_label)}</span>` : '') +
+        (p.areaLabel ? `<span class="road__section">${esc(p.areaLabel)}</span>` : '') +
         `</div>` +
         `<span class="road__status road__status--${t}"><span class="road__dot" aria-hidden="true"></span>` +
         `${esc(titleCaseRoad(status))}</span></header>` +
         `<dl class="road__metrics">` +
-        `<div><dt>Travel</dt><dd>${road.duration_minutes != null ? `${road.duration_minutes} min` : '—'}</dd></div>` +
-        `<div><dt>Distance</dt><dd>${road.distance_km != null ? `${kmToMi(road.distance_km)} mi` : '—'}</dd></div>` +
+        `<div><dt>Travel</dt><dd>${road.durationMinutes != null ? `${road.durationMinutes} min` : '—'}</dd></div>` +
+        `<div><dt>Distance</dt><dd>${road.distanceKm != null ? `${kmToMi(road.distanceKm)} mi` : '—'}</dd></div>` +
         `<div><dt>Delay</dt><dd>${delay > 0 ? `+${delay} min` : 'None'}</dd></div>` +
         `<div><dt>Chains</dt><dd>${esc(chain)}</dd></div>` +
         `</dl>` +
@@ -347,7 +345,7 @@ function buildMapData(haz: HazardsSnapshot): LiveMapData {
     // escalates to brass. Orange is never used for a road (life-safety only).
     if (l === 'road_segment') {
       feats = feats.map((f) => {
-        const chain = chainFor(f.properties.road?.road_id, chains);
+        const chain = chainFor(f.properties.road?.roadId, chains);
         const tone = roadTone(f.properties.status ?? 'open', chain === 'None' ? '' : chain);
         return { ...f, properties: { ...f.properties, tone } };
       });

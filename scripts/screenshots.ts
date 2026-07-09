@@ -96,7 +96,7 @@ const redflagWeatherAlerts = [
       layer: 'weather_alert',
       kind: 'Weather alert',
       severity: 'SEVERE',
-      severity_rank: 3,
+      severityRank: 3,
       headline: 'Red Flag Warning in effect from 11 AM to 8 PM PDT',
       description:
         'Gusty north winds and single-digit humidity will create critical fire weather ' +
@@ -115,7 +115,7 @@ const redflagWeatherAlerts = [
       layer: 'weather_alert',
       kind: 'Weather alert',
       severity: 'MODERATE',
-      severity_rank: 2,
+      severityRank: 2,
       headline: 'High Wind Warning in effect until 8 PM PDT',
       description:
         'North winds 25 to 35 mph with gusts up to 60 mph expected across the Motherlode and ' +
@@ -142,7 +142,7 @@ function mockGrid(route: Route) {
     const layer = hazards.layers[geo[1]] ?? {
       type: 'FeatureCollection',
       features: [],
-      metadata: { source_status: 'OK' },
+      metadata: { sourceStatus: 'OK' },
     };
     if (SCENARIO === 'redflag' && geo[1] === 'weather_alert') {
       return json({ ...layer, features: redflagWeatherAlerts });

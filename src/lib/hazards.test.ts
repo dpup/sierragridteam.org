@@ -14,7 +14,7 @@ import {
 } from './hazards';
 import hazardsFixture from '../data/hazards-snapshot.json';
 
-const SEV = ['INFO', 'LOW', 'MODERATE', 'SEVERE', 'EXTREME'];
+const SEV = ['INFO', 'MINOR', 'MODERATE', 'SEVERE', 'EXTREME'];
 
 function snap(layers: Record<string, unknown>): HazardsSnapshot {
   return {
@@ -29,7 +29,7 @@ function fc(features: HazardFeature[], status = 'OK') {
   return {
     type: 'FeatureCollection' as const,
     features,
-    metadata: { layer: 'x', area: 'ebbetts-pass', generated_at: '', source_status: status as 'OK' },
+    metadata: { layer: 'x', area: 'ebbetts-pass', generatedAt: '', sourceStatus: status as 'OK' },
   };
 }
 function point(layer: string, rank: number, lng: number, lat: number, extra = {}): HazardFeature {
@@ -41,7 +41,7 @@ function point(layer: string, rank: number, lng: number, lat: number, extra = {}
       layer,
       kind: layer,
       severity: SEV[rank],
-      severity_rank: rank,
+      severityRank: rank,
       headline: 'h',
       source: { id: 'x', name: 'X' },
       ...extra,
@@ -83,7 +83,7 @@ test('wildfire & weather counts are null (unknown) when their source is unavaila
 });
 
 test('fire-weather state normalizes hyphen/case to the canonical enum', () => {
-  const fw = point('fire_weather', 3, 0, 0, { fire_weather: { state: 'red-flag' } });
+  const fw = point('fire_weather', 3, 0, 0, { fireWeather: { state: 'red-flag' } });
   fw.geometry = null;
   expect(deriveSituationSummary(snap({ fire_weather: fc([fw]) })).fireWeather).toBe('RED_FLAG');
 });

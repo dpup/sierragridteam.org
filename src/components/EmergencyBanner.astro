@@ -56,28 +56,28 @@ import { emergencyBanner as copy } from '@config/content';
         if (!sumRes.ok || !fireRes.ok) return;
         const s = (await sumRes.json()) as {
           summary?: {
-            active_evacuations?: number | null;
-            top_events?: { layer: string; headline: string }[];
+            activeEvacuations?: number | null;
+            topEvents?: { layer: string; headline: string }[];
           };
         };
         const fire = (await fireRes.json()) as {
           features?: { properties?: { headline?: string } }[];
         };
         const sum = s.summary ?? {};
-        const events = sum.top_events ?? [];
+        const events = sum.topEvents ?? [];
         const fireFeatures = fire.features ?? [];
-        const hasEvac = (sum.active_evacuations ?? 0) > 0;
-        // Count the wildfire MAP layer — NOT domains.fire.active_count, which includes the
+        const hasEvac = (sum.activeEvacuations ?? 0) > 0;
+        // Count the wildfire MAP layer — NOT domains.fire.activeCount, which includes the
         // always-present "fire weather: normal" banner and would false-arm the band.
         const hasWildfire = fireFeatures.length > 0;
 
         // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The summary's
-        // region-wide highest_severity / road / weather headlines are never trusted —
+        // region-wide highestSeverity / road / weather headlines are never trusted —
         // they can describe an out-of-area event (the life-safety-only banner contract).
         const active = hasEvac || hasWildfire;
         const headline =
           (hasEvac
-            ? events.find((h) => h.layer === 'evacuation')?.headline
+            ? events.find((h) => h.layer === 'EVACUATION')?.headline
             : fireFeatures[0]?.properties?.headline) ??
           (hasEvac
             ? 'Active evacuation in the service area'

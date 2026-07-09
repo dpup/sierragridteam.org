@@ -21,13 +21,13 @@ const BACKUP = '/tmp/hazards-snapshot.backup.json';
 const OUT = 'tests/screenshots/scenarios';
 const BASE = process.env.BASE_URL ?? 'http://localhost:4321';
 const FIXED = new Date('2026-06-25T17:33:00-07:00');
-const SEV = ['INFO', 'LOW', 'MODERATE', 'SEVERE', 'EXTREME'];
+const SEV = ['INFO', 'MINOR', 'MODERATE', 'SEVERE', 'EXTREME'];
 
 const calm = JSON.parse(readFileSync(SNAP, 'utf8'));
-const layer = (name, features, source_status = 'OK') => ({
+const layer = (name, features, sourceStatus = 'OK') => ({
   type: 'FeatureCollection',
   features,
-  metadata: { layer: name, area: 'ebbetts-pass', generated_at: FIXED.toISOString(), source_status },
+  metadata: { layer: name, area: 'ebbetts-pass', generatedAt: FIXED.toISOString(), sourceStatus },
 });
 const incident = (lng, lat, rank, headline, where, category = 'incident') => ({
   type: 'Feature',
@@ -38,11 +38,11 @@ const incident = (lng, lat, rank, headline, where, category = 'incident') => ({
     kind: 'Road incident',
     category,
     severity: SEV[rank],
-    severity_rank: rank,
+    severityRank: rank,
     headline,
     status: 'active',
-    updated_at: FIXED.toISOString(),
-    area_label: where,
+    updatedAt: FIXED.toISOString(),
+    areaLabel: where,
     source: { id: 'chp', name: 'CHP / Caltrans', attribution: 'quickmap.dot.ca.gov' },
   },
 });
@@ -66,7 +66,7 @@ const banner = (lyr, kind, rank, headline, props) => ({
     layer: lyr,
     kind,
     severity: SEV[rank],
-    severity_rank: rank,
+    severityRank: rank,
     headline,
     source: { id: 'nws', name: 'NWS Sacramento CA' },
     ...props,
@@ -78,38 +78,38 @@ function summaryFrom(layers) {
   const all = [];
   for (const [k, v] of Object.entries(layers))
     for (const f of v.features ?? []) all.push({ layer: k, ...f.properties });
-  const ranks = all.map((f) => f.severity_rank ?? 0);
+  const ranks = all.map((f) => f.severityRank ?? 0);
   const highest = Math.max(0, ...ranks);
   const counts = {};
   for (const r of ranks) counts[SEV[r]] = (counts[SEV[r]] ?? 0) + 1;
   const evacLayer = layers.evacuation;
-  const evacStatus = evacLayer?.metadata?.source_status ?? 'UNAVAILABLE';
+  const evacStatus = evacLayer?.metadata?.sourceStatus ?? 'UNAVAILABLE';
   const top = all
     .slice()
-    .sort((a, b) => (b.severity_rank ?? 0) - (a.severity_rank ?? 0))
+    .sort((a, b) => (b.severityRank ?? 0) - (a.severityRank ?? 0))
     .slice(0, 5)
     .map((f) => ({
       id: f.id,
-      layer: f.layer,
-      severity: SEV[f.severity_rank ?? 0],
-      severity_rank: f.severity_rank ?? 0,
+      layer: (f.layer ?? '').toUpperCase(), // topEvents layer is the UPPER_CASE enum
+      severity: SEV[f.severityRank ?? 0],
+      severityRank: f.severityRank ?? 0,
       headline: f.headline,
       source: f.source?.id ?? '',
     }));
   return {
     place: 'ebbetts-pass',
-    place_id: 'area:ebbetts-pass',
-    place_name: 'Ebbetts Pass Corridor',
-    generated_at: FIXED.toISOString(),
+    placeId: 'area:ebbetts-pass',
+    placeName: 'Ebbetts Pass Corridor',
+    generatedAt: FIXED.toISOString(),
     mode: highest >= 3 ? 'ALERT' : 'QUIET',
     summary: {
-      highest_severity: SEV[highest],
-      highest_severity_rank: highest,
-      severity_counts: counts,
-      total_active: all.length,
-      active_evacuations: evacStatus === 'UNAVAILABLE' ? null : (evacLayer?.features?.length ?? 0),
-      evacuation_status: evacStatus,
-      top_events: top,
+      highestSeverity: SEV[highest],
+      highestSeverityRank: highest,
+      severityCounts: counts,
+      totalActive: all.length,
+      activeEvacuations: evacStatus === 'UNAVAILABLE' ? null : (evacLayer?.features?.length ?? 0),
+      evacuationStatus: evacStatus,
+      topEvents: top,
     },
     domains: [],
   };
@@ -134,15 +134,15 @@ const scenarios = {
           kind: 'Wildfire',
           category: 'active',
           severity: 'SEVERE',
-          severity_rank: 3,
+          severityRank: 3,
           headline: 'Salt Springs Fire',
           status: 'active',
-          area_label: 'East of Arnold, Hwy 4 corridor',
+          areaLabel: 'East of Arnold, Hwy 4 corridor',
           source: { id: 'calfire', name: 'CAL FIRE' },
           provenance: {
             sourceUrl: 'https://www.fire.ca.gov/incidents/2026/9/2/salt-springs-fire/',
           },
-          wildfire: { acres: 1240, containment: 15, county: 'Calaveras', has_perimeter: true },
+          wildfire: { acres: 1240, containment: 15, county: 'Calaveras', hasPerimeter: true },
         },
       },
     ]),
@@ -156,16 +156,16 @@ const scenarios = {
           kind: 'Evacuation',
           category: 'warning',
           severity: 'SEVERE',
-          severity_rank: 3,
+          severityRank: 3,
           headline: 'Evacuation WARNING — Hathaway Pines & Avery — prepare to leave',
           status: 'active',
-          area_label: 'Zones CAL-E043 & E044',
+          areaLabel: 'Zones CAL-E043 & E044',
           source: { id: 'caloes', name: 'Cal OES / Genasys' },
           provenance: { sourceUrl: 'https://protect.genasys.com/' },
           evacuation: {
-            zone_id: 'E043',
+            zoneId: 'E043',
             level: 'WARNING',
-            event_type: 'Fire',
+            eventType: 'Fire',
             county: 'Calaveras',
           },
         },
@@ -173,7 +173,7 @@ const scenarios = {
     ]),
     fire_weather: layer('fire_weather', [
       banner('fire_weather', 'Fire weather', 3, 'Red Flag Warning in effect until 8 PM PT', {
-        fire_weather: { state: 'red-flag' },
+        fireWeather: { state: 'red-flag' },
       }),
     ]),
   }),
@@ -190,13 +190,13 @@ const scenarios = {
           kind: 'Wildfire',
           category: 'active',
           severity: 'SEVERE',
-          severity_rank: 3,
+          severityRank: 3,
           headline: 'Owl Fire — 120 ac, 30% contained',
           status: 'active',
-          area_label: 'Highway 108, Green Springs',
+          areaLabel: 'Highway 108, Green Springs',
           source: { id: 'calfire', name: 'CAL FIRE' },
           provenance: { sourceUrl: 'https://www.fire.ca.gov/incidents/2026/7/6/owl-fire/' },
-          wildfire: { acres: 120, containment: 30, county: 'Tuolumne', has_perimeter: false },
+          wildfire: { acres: 120, containment: 30, county: 'Tuolumne', hasPerimeter: false },
         },
       },
     ]),
@@ -234,12 +234,12 @@ const scenarios = {
           layer: 'earthquake',
           kind: 'Earthquake',
           severity: 'MODERATE',
-          severity_rank: 2,
+          severityRank: 2,
           headline: 'M3.4 — 8 mi SW of Murphys',
-          area_label: '8 km SW of Murphys',
-          updated_at: FIXED.toISOString(),
+          areaLabel: '8 km SW of Murphys',
+          updatedAt: FIXED.toISOString(),
           source: { id: 'usgs', name: 'USGS' },
-          earthquake: { magnitude: 3.4, depth_km: 7.2, felt: 14 },
+          earthquake: { magnitude: 3.4, depthKm: 7.2, felt: 14 },
         },
       },
     ]),
@@ -258,7 +258,7 @@ const scenarios = {
     ]),
     fire_weather: layer('fire_weather', [
       banner('fire_weather', 'Fire weather', 0, 'Fire weather: normal', {
-        fire_weather: { state: 'normal' },
+        fireWeather: { state: 'normal' },
       }),
     ]),
   }),
@@ -279,7 +279,7 @@ function mockGrid(route, snap) {
       snap.layers[g[1]] ?? {
         type: 'FeatureCollection',
         features: [],
-        metadata: { source_status: 'OK' },
+        metadata: { sourceStatus: 'OK' },
       }
     );
   if (url.includes('/summary')) return json(snap.summary);
