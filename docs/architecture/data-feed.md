@@ -59,10 +59,10 @@
 
 ### `GET /places/{area}/map/{layer}.geojson` (replaced `/hazards/{area}/…`)
 
-RFC 7946 FeatureCollection; `properties` camelCase (`severityRank`, `areaLabel`, `updatedAt`)
-+ `metadata.sourceStatus`. Now **polygon-scoped server-side** — `road_incident` and
-`weather_alert` are clipped to the ebbetts-pass polygon at ingest (same point-in-polygon test
-as `/places:resolve`), so the client no longer re-filters. Layer slugs (URL): `wildfire`,
+RFC 7946 FeatureCollection with camelCase `properties` (`severityRank`, `areaLabel`,
+`updatedAt`) and `metadata.sourceStatus`. Now **polygon-scoped server-side** — `road_incident`
+and `weather_alert` are clipped to the ebbetts-pass polygon at ingest (same point-in-polygon
+test as `/places:resolve`), so the client no longer re-filters. Layer slugs (URL): `wildfire`,
 `evacuation`, `weather_alert`, `earthquake`, `road_incident`, `road_segment`, `chain_control`,
 `fire_weather`.
 
