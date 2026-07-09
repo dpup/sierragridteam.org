@@ -128,4 +128,10 @@ test('a restricted road segment shows its reason; an open one adds no incident l
   expect(view.html.roads).toContain('left lane closed for pavement work');
   // Exactly one segment (the restricted one) renders the reason line.
   expect((view.html.roads.match(/class="road__incident"/g) ?? []).length).toBe(1);
+
+  // The map layer carries a promoted `tone` matching the table (open → ok, restricted →
+  // elevated) so the corridor line colors consistently. Orange is never used for a road.
+  const segs = view.mapData.layers.road_segment.features;
+  expect(segs.find((f) => f.properties.status === 'restricted')?.properties.tone).toBe('elevated');
+  expect(segs.find((f) => f.properties.status === 'open')?.properties.tone).toBe('ok');
 });

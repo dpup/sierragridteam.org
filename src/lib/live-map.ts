@@ -73,6 +73,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     evacuation: 'evacuation',
     earthquake: 'earthquake',
     incidents: 'road_incident',
+    road_segment: 'road_segment',
   };
   let mappedIds = new Set<string>();
   const indexIds = (data: LiveMapData) => {
@@ -137,6 +138,39 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     const src = parseObj<{ name?: string }>(p.source);
     const prov = parseObj<{ sourceUrl?: string; source_url?: string }>(p.provenance);
     const moreUrl = prov?.sourceUrl ?? prov?.source_url;
+
+    // Road corridor popup: a status kicker + travel/delay/congestion and the reason
+    // (description), rather than the severity/stats a hazard shows.
+    const road = parseObj<{
+      congestion?: string;
+      delay_minutes?: number;
+      duration_minutes?: number;
+    }>(p.road);
+    if (road && String(p.layer) === 'road_segment') {
+      const cong = road.congestion && road.congestion !== 'CLEAR' ? road.congestion : '';
+      const bits = [
+        road.duration_minutes != null ? `${road.duration_minutes} min` : null,
+        (road.delay_minutes ?? 0) > 0 ? `+${road.delay_minutes} min delay` : null,
+        cong ? `${cong.charAt(0)}${cong.slice(1).toLowerCase()} traffic` : null,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      const rhtml =
+        `<div class="map-pop">` +
+        `<span class="map-pop__sev">${esc(String(p.status || 'open'))}</span>` +
+        `<p class="map-pop__title">${esc(String(p.headline || ''))}</p>` +
+        (p.area_label ? `<p class="map-pop__where">${esc(String(p.area_label))}</p>` : '') +
+        (bits ? `<p class="map-pop__extra">${esc(bits)}</p>` : '') +
+        (p.description ? `<p class="map-pop__where">${esc(String(p.description))}</p>` : '') +
+        (src?.name ? `<p class="map-pop__src">${esc(src.name)}</p>` : '') +
+        `</div>`;
+      new maplibregl.Popup({ closeButton: true, maxWidth: '260px' })
+        .setLngLat(e.lngLat)
+        .setHTML(rhtml)
+        .addTo(map);
+      return;
+    }
+
     const wf = parseObj<{ acres?: number; containment?: number }>(p.wildfire);
     // Use the same title/stats derivation as the alert stream so a point fire reads
     // identically on both surfaces ("Owl Fire" + "120 acres · 30% contained").
@@ -183,6 +217,51 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
           'circle-stroke-opacity': 0.6,
         },
       });
+
+      // Road-conditions corridors (road_segment lines), UNDER the hazards so incidents and
+      // fires stay on top. Colored by the SAME tone as the roads table (promoted as `tone`):
+      // open/clear is a quiet neutral hairline, a restricted/congested/chain-controlled
+      // stretch escalates to brass and thickens. Orange is never used here — it stays
+      // reserved for life-safety (fire/evac). Green appears only on hover (interactive
+      // accent), mirroring the alert stream ↔ map highlight.
+      const roadColor = [
+        'match',
+        ['get', 'tone'],
+        'ok',
+        C.muted,
+        C.brass,
+      ] as unknown as maplibregl.ExpressionSpecification;
+      const roadWidth = [
+        'match',
+        ['get', 'tone'],
+        'alarm',
+        4,
+        'elevated',
+        3,
+        2,
+      ] as unknown as maplibregl.ExpressionSpecification;
+      map.addSource('road_segment', {
+        type: 'geojson',
+        data: asFC(mapData, 'road_segment'),
+        promoteId: 'id',
+      });
+      map.addLayer({
+        id: 'road_segment',
+        type: 'line',
+        source: 'road_segment',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': onHover(roadColor, C.green),
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            5,
+            roadWidth,
+          ] as unknown as maplibregl.ExpressionSpecification,
+          'line-opacity': 0.9,
+        },
+      });
+      interactive('road_segment');
 
       // Wildfire (orange, solid) vs evacuation (deep red, dashed zone boundary) — distinct
       // so a fire perimeter and a "must-leave" zone never read as one thing.
@@ -288,6 +367,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
 
   const applyData = (data: LiveMapData) => {
     // Towns are static; refresh only the hazard sources (the 90s live poll).
+    setData('road_segment', asFC(data, 'road_segment'));
     setData('wildfire', asFC(data, 'wildfire'));
     setData('evacuation', asFC(data, 'evacuation'));
     setData('earthquake', asFC(data, 'earthquake'));

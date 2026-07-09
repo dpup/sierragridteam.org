@@ -17,6 +17,7 @@ const legend = [
   { key: 'town', label: 'Town' },
   { key: 'wildfire', label: 'Wildfire' },
   { key: 'evacuation', label: 'Evacuation' },
+  { key: 'road', label: 'Road conditions' },
   { key: 'incident', label: 'Road incident' },
   { key: 'quake', label: 'Earthquake' },
 ];
@@ -371,31 +372,32 @@ const schema = {
     }
   }
 
-  // Hover/focus an alert card → highlight its feature on the map, and mirror the "active"
-  // state onto the card. Delegated on the persistent stream container so it survives each
-  // poll's innerHTML swap; a no-op when the map is unavailable or the item has no geometry.
-  const streamEl = document.querySelector<HTMLElement>('[data-live-stream]');
-  if (streamEl) {
-    let activeCard: HTMLElement | null = null;
-    const activate = (target: EventTarget | null) => {
-      const card =
-        target instanceof Element
-          ? (target.closest('[data-hazard-id]') as HTMLElement | null)
-          : null;
-      if (card === activeCard) return;
-      if (activeCard) activeCard.classList.remove('stream__card--active');
-      const matched = handle?.highlight(card?.dataset.hazardId ?? null) ?? false;
-      activeCard = matched ? card : null;
-      if (matched && card) card.classList.add('stream__card--active');
-    };
-    streamEl.addEventListener('mouseover', (e) => activate(e.target));
-    streamEl.addEventListener('mouseleave', () => activate(null));
-    streamEl.addEventListener('focusin', (e) => activate(e.target));
-    streamEl.addEventListener('focusout', (e) => {
-      // Clear only when focus leaves the stream entirely (not when moving within a card).
-      if (!streamEl.contains(e.relatedTarget as Node | null)) activate(null);
+  // Hover/focus an alert card OR a road-conditions card → highlight its feature on the map,
+  // and mirror the "active" state onto the card. Delegated on the persistent containers so it
+  // survives each poll's innerHTML swap; a no-op when the map is unavailable or the item has
+  // no geometry. Both the stream and the roads table drive the same single highlight.
+  let activeCard: HTMLElement | null = null;
+  const activate = (target: EventTarget | null) => {
+    const card =
+      target instanceof Element ? (target.closest('[data-hazard-id]') as HTMLElement | null) : null;
+    if (card === activeCard) return;
+    if (activeCard) activeCard.classList.remove('stream__card--active');
+    const matched = handle?.highlight(card?.dataset.hazardId ?? null) ?? false;
+    activeCard = matched ? card : null;
+    if (matched && card) card.classList.add('stream__card--active');
+  };
+  const wireHover = (el: HTMLElement | null) => {
+    if (!el) return;
+    el.addEventListener('mouseover', (e) => activate(e.target));
+    el.addEventListener('mouseleave', () => activate(null));
+    el.addEventListener('focusin', (e) => activate(e.target));
+    el.addEventListener('focusout', (e) => {
+      // Clear only when focus leaves this container entirely (not moving within a card).
+      if (!el.contains(e.relatedTarget as Node | null)) activate(null);
     });
-  }
+  };
+  wireHover(document.querySelector<HTMLElement>('[data-live-stream]'));
+  wireHover(document.querySelector<HTMLElement>('[data-live-roads]'));
 
   run(true);
   setInterval(() => run(false), REFRESH_MS);
@@ -670,6 +672,12 @@ const schema = {
     background: color-mix(in srgb, var(--signal-orange-hover) 16%, transparent);
     border-style: dashed;
     border-color: var(--signal-orange-hover);
+  }
+  .hazard-map__swatch--road {
+    height: 3px;
+    align-self: center;
+    background: var(--brand-brass);
+    border-color: var(--brand-brass);
   }
   .hazard-map__swatch--incident {
     background: var(--brand-brass);

@@ -275,7 +275,10 @@ function renderRoads(segments: HazardFeature[], chains: HazardFeature[]): string
       const t = roadTone(status, chain === 'None' ? '' : chain);
       const delay = road.delay_minutes ?? 0;
       return (
-        `<article class="road road--${t}">` +
+        // data-hazard-id links the card to its map corridor — hovering it highlights the
+        // road_segment line on the /live map (wired in the page controller), mirroring the
+        // alert-stream ↔ map hover.
+        `<article class="road road--${t}" data-hazard-id="${esc(p.id)}">` +
         `<header class="road__head"><div>` +
         `<span class="road__name">${esc(p.headline)}</span>` +
         (p.area_label ? `<span class="road__section">${esc(p.area_label)}</span>` : '') +
@@ -328,15 +331,26 @@ function buildMapData(haz: HazardsSnapshot): LiveMapData {
       properties: { name: s.name },
     })),
   };
+  const chains = layerFeatures(haz, 'chain_control');
   const layers: Record<string, { type: 'FeatureCollection'; features: HazardFeature[] }> = {};
-  for (const l of ['road_incident', 'wildfire', 'evacuation', 'earthquake']) {
+  for (const l of ['road_segment', 'road_incident', 'wildfire', 'evacuation', 'earthquake']) {
     let feats = layerFeatures(haz, l);
-    // MapLibre paint can't index nested props — promote earthquake magnitude to top level.
+    // MapLibre paint can't index nested props / call our helpers — promote what it needs.
     if (l === 'earthquake') {
       feats = feats.map((f) => ({
         ...f,
         properties: { ...f.properties, magnitude: f.properties.earthquake?.magnitude ?? 1 },
       }));
+    }
+    // Promote each corridor's display tone (the SAME roadTone as the table) so the map's
+    // line paint can color it — open/clear stays neutral, restricted/congested/chained
+    // escalates to brass. Orange is never used for a road (life-safety only).
+    if (l === 'road_segment') {
+      feats = feats.map((f) => {
+        const chain = chainFor(f.properties.road?.road_id, chains);
+        const tone = roadTone(f.properties.status ?? 'open', chain === 'None' ? '' : chain);
+        return { ...f, properties: { ...f.properties, tone } };
+      });
     }
     layers[l] = { type: 'FeatureCollection', features: feats };
   }
