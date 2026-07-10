@@ -53,6 +53,14 @@ const pageSchema = {
                 {blog.archiveLink}
               </Button>
               <a class="blog-head__feed" href="/rss.xml">
+                <svg
+                  class="blog-head__feed-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20A2.18 2.18 0 0 1 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66A9.9 9.9 0 0 1 13.9 20h-2.84A7.06 7.06 0 0 0 4 12.94V10.1Z" />
+                </svg>
                 {blog.feedLink}
               </a>
             </div>
@@ -130,21 +138,33 @@ const pageSchema = {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-4);
+    gap: var(--space-5);
   }
+  /* A quiet utility link, not a second CTA: smaller + muted than the archive button,
+     anchored by the standard feed glyph so it reads unmistakably as RSS. */
   .blog-head__feed {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
     font-family: var(--font-ui);
-    font-size: var(--fs-label-lg);
+    font-size: var(--fs-label);
     font-weight: var(--fw-semibold);
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
-    color: var(--brand-green);
+    color: var(--ink-secondary);
     text-decoration: none;
   }
+  .blog-head__feed-icon {
+    width: 1em;
+    height: 1em;
+    color: var(--brand-brass-text);
+    flex-shrink: 0;
+  }
   .blog-head__feed:hover {
-    color: var(--brand-green-hover);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    color: var(--brand-green);
+  }
+  .blog-head__feed:hover .blog-head__feed-icon {
+    color: var(--brand-green);
   }
 
   .blog-empty {
