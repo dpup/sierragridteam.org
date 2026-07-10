@@ -60,6 +60,18 @@ for (const pg of pages) {
   });
 }
 
+test('rss feed is valid and lists posts', async ({ request }) => {
+  const res = await request.get('/rss.xml');
+  expect(res.ok()).toBeTruthy();
+  expect(res.headers()['content-type']).toContain('xml');
+  const body = await res.text();
+  expect(body).toContain('<rss');
+  expect(body).toContain('<channel>');
+  // A known post surfaces with an absolute permalink (item links are absolutized).
+  expect(body).toContain('<title>What this blog is for</title>');
+  expect(body).toContain('https://sierragridteam.org/blog/2026-07-03-what-this-blog-is-for');
+});
+
 test('404 page returns on-brand not-found content', async ({ page }) => {
   const res = await page.goto('/this-route-does-not-exist', { waitUntil: 'domcontentloaded' });
   // Static hosts serve 404.html; status may be 404 or 200 depending on host.

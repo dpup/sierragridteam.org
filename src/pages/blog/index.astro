@@ -52,6 +52,9 @@ const pageSchema = {
               <Button variant="secondary" href="/blog/archive" arrow>
                 {blog.archiveLink}
               </Button>
+              <a class="blog-head__feed" href="/rss.xml">
+                {blog.feedLink}
+              </a>
             </div>
           )
         }
@@ -124,6 +127,24 @@ const pageSchema = {
   }
   .blog-head__archive {
     margin-top: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+  .blog-head__feed {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-green);
+    text-decoration: none;
+  }
+  .blog-head__feed:hover {
+    color: var(--brand-green-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .blog-empty {

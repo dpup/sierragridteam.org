@@ -167,6 +167,12 @@ stable.
   `description` (one sentence), `pubDate`, optional `updatedDate` + `summary`
   (live bulletins only — see below), `tag` (one pillar), optional `author`.
   `/blog` shows recent posts in full, `/blog/archive` lists titles by year/month.
+  The blog also has an RSS feed at **`/rss.xml`** (`src/pages/rss.xml.ts`, `@astrojs/rss`
+  — a prerendered static endpoint, not baked live data). It mirrors the `/blog` ordering
+  (`updatedDate ?? pubDate`) and honesty model: a live bulletin uses its `summary` fold
+  head with a stable permalink `guid`, so an update re-surfaces the same entry in readers
+  rather than duplicating it. `<link rel="alternate">` autodiscovery is in `Seo.astro`
+  (every page); the visible "Subscribe via RSS" link is on `/blog`.
   Post copy follows `docs/content-style-guide.md` AND `docs/news-feed-content-brief.md`
   (scope, sourcing, and hard rules for what may be published). Keep post headlines
   under ~46 chars so the page title stays ≤60 with the site suffix.

@@ -171,6 +171,8 @@ export const blog = {
   /** How many full posts the main /blog page shows before pointing at the archive. */
   recentCount: 5,
   archiveLink: 'Browse the Archive',
+  /** Label for the RSS feed link in the /blog header (feed lives at /rss.xml). */
+  feedLink: 'Subscribe via RSS',
   emptyNote: 'No posts yet — the first ones are on their way.',
   archive: {
     kicker: 'News & Notes',
