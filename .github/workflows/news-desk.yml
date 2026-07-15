@@ -174,4 +174,4 @@ jobs:
             echo "- [ ] No claims about S.I.E.R.R.A's own network/operations"
             echo "- [ ] Voice reads like the site (calm, plain, no hype)"
           } > /tmp/news-desk/pr-body.md
-          gh pr create --title "News desk: $title" --body-file /tmp/news-desk/pr-body.md
+          gh pr create --title "News desk: $title" --body-file /tmp/news-desk/pr-body.md --reviewer dpup
