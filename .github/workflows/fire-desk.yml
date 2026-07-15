@@ -185,4 +185,4 @@ jobs:
             echo "- [ ] Title matches the active-fire count; disclaimer + colophon present"
             echo "- [ ] Defers to /live + CAL FIRE for real-time; reads as a digest, not a live source"
           } > /tmp/fire-desk/pr-body.md
-          gh pr create --title "Fire desk: $title" --body-file /tmp/fire-desk/pr-body.md
+          gh pr create --title "Fire desk: $title" --body-file /tmp/fire-desk/pr-body.md --reviewer dpup
