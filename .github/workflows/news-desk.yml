@@ -11,8 +11,16 @@ on:
     - cron: '12 21 * * *' # daily, 21:12 UTC ≈ 14:12 Pacific (afternoon; the Fire Desk has the morning)
   workflow_dispatch:
     inputs:
+      topic:
+        description: "Optional: a suggested topic/angle to steer the writer's research (blank = normal run)"
+        type: string
+        default: ''
+      force_post:
+        description: 'Require a post this run: bypass the cadence guard and instruct the writer to publish (hard rules still apply)'
+        type: boolean
+        default: false
       force:
-        description: 'Bypass the pause + 3-day cadence guards (testing only — the writer still applies the brief)'
+        description: 'Bypass ALL guards incl. the major-fire pause (testing only — the writer still applies the brief)'
         type: boolean
         default: false
 
@@ -37,19 +45,26 @@ jobs:
         id: guard
         run: |
           if [ "${{ inputs.force }}" = "true" ]; then
-            echo "Forced run — bypassing guards (the writer still applies the brief)."
+            echo "Forced run — bypassing all guards (the writer still applies the brief)."
             echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # Pause regular posts during a major fire: an active evacuation ORDER in the
           # service area. The Fire Desk covers the fire; a cheerful tech post now reads as
           # tone-deaf. (Minor fires — no order — do not pause; the desk just never writes
-          # ABOUT the fire, per brief §3.)
+          # ABOUT the fire, per brief §3.) Honored even for a forced post — the tone-deafness
+          # is the point; use `force` to override this pause too.
           orders=$(curl -sS -m 20 "https://data.sierragridteam.org/api/v1/hazards/ebbetts-pass/evacuation.geojson" \
             | jq '[.features[]? | select(((.properties.evacuation.level // "") | ascii_upcase) == "ORDER")] | length' 2>/dev/null || echo 0)
           if [ "${orders:-0}" != "0" ]; then
-            echo "Active evacuation order in the service area — pausing regular posts."
+            echo "Active evacuation order in the service area — pausing regular posts (use 'force' to override)."
             echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A forced post bypasses the cadence guard below (only) — the writer is told to publish.
+          if [ "${{ inputs.force_post }}" = "true" ]; then
+            echo "Forced post — bypassing the cadence guard; the writer is instructed to publish."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           # 3-day cadence, measured against the newest NON-fire post: a live "Fire Update"
@@ -89,13 +104,50 @@ jobs:
           npm install -g @anthropic-ai/claude-code
           mkdir -p /tmp/news-desk
 
+      # Runtime context appended to the writer's brief: any operator-suggested topic, the
+      # forced-post directive, and — crucially — the list of topics already declined
+      # (closed, unmerged news-desk PRs), so the desk stops re-proposing rejected ideas.
+      - name: Gather editorial context (declined topics + run inputs)
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOPIC: ${{ inputs.topic }}
+          FORCE_POST: ${{ inputs.force_post }}
+        run: |
+          {
+            echo "## This run's context"
+            echo
+            echo "_Appended to your brief at runtime. It never overrides the brief's hard rules._"
+            echo
+            if [ -n "$TOPIC" ]; then
+              echo "### Suggested topic (from the operator)"
+              printf '%s\n\n' "$TOPIC"
+              echo "Prioritise this angle in your research. If it cannot be done honestly under the brief (an unfolding incident as the subject, a claim you cannot source, the §10.4 comparison rule, any hard rule), do not force it — pick the strongest defensible topic instead and explain the swap in your notes."
+              echo
+            fi
+            if [ "$FORCE_POST" = "true" ]; then
+              echo "### Forced post"
+              echo "The operator has requested a post THIS run, so the usual cadence/pacing and \"silence is a valid outcome\" guidance is set aside — produce one publishable draft. Every hard rule still binds. Decline ONLY if nothing can clear the hard rules honestly; if so, write DECISION: NO POST naming the specific rule that blocked it."
+              echo
+            fi
+            echo "### Previously declined — already considered and rejected"
+            echo "These drafts were opened and then closed without merging. Treat them as covered ground: do not re-propose the same topic unless you have a materially new, sourced angle that answers why it was set aside before."
+            echo
+            gh pr list --repo "$GITHUB_REPOSITORY" --state closed --limit 60 \
+              --json title,mergedAt,headRefName \
+              --jq '.[] | select(.mergedAt == null and (.headRefName | startswith("news-desk/"))) | "- \(.title)"' \
+              2>/dev/null || echo "- (lookup unavailable this run)"
+          } > /tmp/news-desk/run-context.md
+          echo "--- run context ---"
+          cat /tmp/news-desk/run-context.md
+
       - name: Writer — research and draft (or decline)
         if: steps.guard.outputs.skip == 'false'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           claude --dangerously-skip-permissions --max-turns 80 \
-            -p "$(cat .github/prompts/news-desk-writer.md)"
+            -p "$(cat .github/prompts/news-desk-writer.md; echo; cat /tmp/news-desk/run-context.md)"
           echo "--- writer notes ---"
           cat /tmp/news-desk/writer-notes.md || echo "(no writer notes written)"
 
