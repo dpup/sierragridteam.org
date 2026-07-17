@@ -22,18 +22,27 @@ Desk has the morning) and on manual dispatch:
    Desk covers it; a cheerful tech post then reads as tone-deaf). Then the **cadence
    guard**: if the newest **non-fire** post is under 3 days old, the run exits (a live
    `Fire Update` bulletin is excluded so its daily updates don't suppress tech posts).
-2. **Writer** (`claude -p` with `.github/prompts/news-desk-writer.md`) — reads the
-   brief, the archive, and current conditions (data.sierragridteam.org), searches the web, and
-   applies the brief's publish decision. Most runs it declines and writes only a
-   rationale to `/tmp/news-desk/writer-notes.md`. When it publishes, it creates one
-   markdown file in `src/content/blog/` and runs `make verify` + `npm run build`.
-3. **Critic** (`claude -p` with `.github/prompts/news-desk-critic.md`) — adversarial
+2. **Editorial context** — a cheap `gh` step assembles the run's context: any
+   operator-suggested topic, a forced-post directive, and the **previously declined**
+   list (closed, unmerged `news-desk/*` PRs) so the desk stops re-proposing rejected
+   ideas. It's appended to the writer's prompt.
+3. **Writer** (`claude -p` with `.github/prompts/news-desk-writer.md`) — reads the
+   brief, the archive, the declined list, and current conditions (data.sierragridteam.org),
+   searches the web, and applies the brief's publish decision. Most runs it declines and
+   writes only a rationale to `/tmp/news-desk/writer-notes.md`. When it publishes, it
+   creates one markdown file in `src/content/blog/` and runs `make verify` + `npm run build`.
+4. **Critic** (`claude -p` with `.github/prompts/news-desk-critic.md`) — adversarial
    second pass: fetches and verifies every cited source, re-checks the hard rules
    and voice, edits the file directly, and **vetoes by deleting it**.
-4. **Verify + build** — the workflow re-runs `make verify` and the build itself; a
+5. **Verify + build** — the workflow re-runs `make verify` and the build itself; a
    PR only opens from a green tree.
-5. **Pull request** — the surviving draft goes up as a PR (branch
+6. **Pull request** — the surviving draft goes up as a PR (branch
    `news-desk/<slug>`) with both agents' notes and a reviewer checklist in the body.
+
+**Manual dispatch inputs.** `topic` steers the writer's research toward a suggested
+angle; `force_post` requires a draft this run (bypasses the cadence guard but not the
+hard rules or the major-fire pause); `force` bypasses every guard including the pause
+(testing only). All three are optional; a normal scheduled run sets none of them.
 
 **The desk never pushes to main.** The colophon (and every post's closing line)
 promises member review before publication — merging the PR is that review. CI runs

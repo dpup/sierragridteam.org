@@ -19,15 +19,21 @@ Follow the brief's §11 checklist. Mechanics for this repository:
 
 1. Get today's date with `date -u +%F`. Note the season and calendar context.
 2. Read every post in `src/content/blog/` from the last 60 days — topics, headline
-   shapes, closers, analogies. Do not repeat any of them.
+   shapes, closers, analogies. Do not repeat any of them. Also read the **Previously
+   declined** list in the "This run's context" block appended at the very end of these
+   instructions: those topics were drafted and rejected — treat them as covered ground,
+   and do not re-propose one without a materially new, sourced angle.
 3. Your rule (brief §3) is about **topic, not timing**: never write a post _about_ an
    unfolding incident (an active fire, evacuation, or in-progress storm) — that is the
    Live Feed's and the Fire Desk's job. You may still publish a normal tech / explainer /
    retrospective post on a day when a minor incident is active; just never make it your
    subject. (The workflow already pauses the desk during a _major_ fire, so you do not need
    to self-suppress on incident activity — only avoid the incident as a subject.)
-4. Use web search to look for genuinely publishable material (brief §4–§6).
-5. Apply the publish decision (brief §6) honestly. Declining is a successful run.
+4. Use web search to look for genuinely publishable material (brief §4–§6). If the
+   run's context block names a **suggested topic**, research that angle first.
+5. Apply the publish decision (brief §6) honestly. Declining is a successful run —
+   _unless_ the context block carries a **forced-post** directive, in which case you
+   produce a draft this run and may decline only for a hard-rule reason, named plainly.
 
 ## If you do NOT publish (the common case)
 
