@@ -31,3 +31,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
+
+# News-desk auto-tune output (review, never commit)
+.github/prompts/*.candidate.md
