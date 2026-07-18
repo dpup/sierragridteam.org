@@ -14,8 +14,8 @@
     },
     {
       "file": "src/content/blog/2026-07-14-find-your-evacuation-zone.md",
-      "expected": "REVISE",
-      "note": "Genuinely useful and actionable, BUT v1.5 reclassifies it: the 'next one might not stay that small' fear-hook opener (§8) and the 'Why this belongs on a radio-and-mesh site' meta-section (§8) are now both banned. Strong topic, fixable execution. (Label was PUBLISH pre-v1.5.)"
+      "expected": "PUBLISH",
+      "note": "Best resident post: actionable, models the honesty ethos. The v1.5 violations the eval caught (fear-hook opener, 'why this belongs here' meta-section) were fixed in the post, so it clears the bar again."
     },
     {
       "file": "evals/cases/rejected/2026-07-11-satellite-texting-canyon-terrain.md",
