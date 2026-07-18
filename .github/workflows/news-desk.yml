@@ -28,6 +28,15 @@ permissions:
   contents: write
   pull-requests: write
 
+# Models are pinned so runs are reproducible and quality is intentional — not whatever
+# the CLI default happens to be on a given day. Writer and critic run on DIFFERENT models
+# ON PURPOSE: a critic that shares the writer's blind spots catches fewer of its errors
+# (a hallucinated spec, a laundered claim). Accuracy is trust-critical and volume is tiny,
+# so this pipeline buys capability, not cost. Tune here; keep them different.
+env:
+  WRITER_MODEL: claude-opus-4-8
+  CRITIC_MODEL: claude-sonnet-4-6
+
 concurrency:
   group: news-desk
   cancel-in-progress: false
@@ -146,7 +155,8 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
-          claude --dangerously-skip-permissions --max-turns 80 \
+          echo "Writer model: $WRITER_MODEL"
+          claude --model "$WRITER_MODEL" --dangerously-skip-permissions --max-turns 80 \
             -p "$(cat .github/prompts/news-desk-writer.md; echo; cat /tmp/news-desk/run-context.md)"
           echo "--- writer notes ---"
           cat /tmp/news-desk/writer-notes.md || echo "(no writer notes written)"
@@ -170,7 +180,8 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
-          claude --dangerously-skip-permissions --max-turns 50 \
+          echo "Critic model: $CRITIC_MODEL (different from the writer on purpose)"
+          claude --model "$CRITIC_MODEL" --dangerously-skip-permissions --max-turns 50 \
             -p "$(cat .github/prompts/news-desk-critic.md)"
           echo "--- critic notes ---"
           cat /tmp/news-desk/critic-notes.md || echo "(no critic notes written)"
@@ -213,6 +224,8 @@ jobs:
           git push origin "$branch"
           {
             echo "Automated draft from the **Signal Desk** — review per docs/news-feed-content-brief.md before merging. Merging publishes it."
+            echo
+            echo "_Written by \`$WRITER_MODEL\` · reviewed by \`$CRITIC_MODEL\`._"
             echo
             echo "## Writer notes"
             cat /tmp/news-desk/writer-notes.md 2>/dev/null || echo "(none)"
