@@ -6,7 +6,7 @@ tag: Explainer
 author: Signal Desk
 ---
 
-Two small fires burned near the Highway 4 / 49 corridor earlier this month, and both stayed contained. The next one might not stay that small — and when a Sheriff's Office issues an evacuation order, it references a zone name, not a street address or a town. If that name is unfamiliar, an active fire is the wrong moment to learn it.
+An evacuation order names a zone, not a street or a town. When a Sheriff's Office issues one, it points to a zone code drawn on a map ahead of time — and if that code is unfamiliar, the middle of an incident is the wrong moment to work out whether it means you. It costs nothing to know it early.
 
 ## What a zone is
 
@@ -21,8 +21,8 @@ An evacuation zone is a geographic boundary drawn in advance by local emergency 
 
 The [Tuolumne County Sheriff's Office uses the identical two-tier language](https://www.mymotherlode.com/news/local/4267016/tuolumne-county-sheriff-reminds-community-about-types-of-evacuations.html), word for word. This is statewide terminology, not a Calaveras-specific system, which is why the same two words apply on both sides of the corridor even where the local zone tools differ.
 
-## Why this belongs on a radio-and-mesh site
+## Where the authority lives
 
-None of this is S.I.E.R.R.A's information to issue. The alliance does not draw zones and does not decide when a warning becomes an order — Sheriffs' offices and Cal OES do. The [Live Feed](/live) points to Genasys for evacuation status for the same reason: the authoritative record belongs with the agency that issues it, not with anything that mirrors it.
+S.I.E.R.R.A does not draw these zones or decide when a warning becomes an order — Sheriffs' offices and Cal OES do, and only they can issue or lift one. The [Live Feed](/live) points to Genasys for evacuation status for the same reason: the authoritative record belongs with the agency that issues it, not with anything that mirrors it. When an order comes, it comes from them, and it is the one to act on.
 
-The lookup itself takes under a minute at [Genasys Protect](https://protect.genasys.com/). Doing it now, rather than during the next red flag day, is the entire reason a zone system gets built years ahead of the fire it is drawn for.
+Looking up your zone at [Genasys Protect](https://protect.genasys.com/) takes under a minute. Doing it now, rather than during the next red flag day, is the entire reason a zone system gets drawn years ahead of the fire it is built for.
