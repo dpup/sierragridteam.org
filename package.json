@@ -23,7 +23,8 @@
     "fmt:check": "prettier --check .",
     "test": "bun test src/",
     "test:visual": "playwright test",
-    "scenarios": "node scripts/scenario-shots.mjs"
+    "scenarios": "node scripts/scenario-shots.mjs",
+    "eval:desk": "node evals/judge.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
