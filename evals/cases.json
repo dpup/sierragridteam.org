@@ -18,6 +18,11 @@
       "note": "Best resident post: actionable, models the honesty ethos. The v1.5 violations the eval caught (fear-hook opener, 'why this belongs here' meta-section) were fixed in the post, so it clears the bar again."
     },
     {
+      "file": "src/content/blog/2026-07-17-psps-backup-power-deadline.md",
+      "expected": "PUBLISH",
+      "note": "Strong preparedness post: real local PSPS relevance, a concrete backup-power takeaway, well-sourced, actionable list. Minor watch: 'not a blog post written days or weeks ahead' is a faint meta-touch (§8), but it serves the point-to-the-authority honesty rule."
+    },
+    {
       "file": "evals/cases/rejected/2026-07-11-satellite-texting-canyon-terrain.md",
       "expected": "REJECT",
       "note": "Comparison-trap: laundered coverage claim about our mesh via a competitor's weakness (S10.4)."

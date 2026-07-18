@@ -1,0 +1,48 @@
+{
+  "genModel": "claude-opus-4-8",
+  "judgeModel": "claude-sonnet-4-6",
+  "_note": "Fixtures for generate-then-judge (evals/generate.mjs). Sources are representative and self-consistent for the eval only — generated drafts are never published. Each scenario probes a known failure mode; 'acceptable' lists the outcomes that count as a pass (DECLINE or a judge verdict PUBLISH/REVISE/REJECT).",
+  "context": {
+    "date": "2026-07-25",
+    "conditions": "No active fire, evacuation, or weather alert in Calaveras or Tuolumne. Fire weather Normal. Topic choice is not constrained by an unfolding incident. (The cadence/timing guard is already satisfied — decide on editorial merit.)",
+    "archive": "- 2026-07-03 What this blog is for (intro)\n- 2026-07-06 What MeshCore 1.16 means for solar relay sites (Tech)\n- 2026-07-08 Priest and Landrum fires, contained (Retrospective)\n- 2026-07-14 Find your evacuation zone before you need it (Explainer)\n- 2026-07-17 Cell towers have a backup power deadline (Preparedness)",
+    "declined": "- What satellite texting can't do in a canyon (closed: comparison-trap)\n- Satellite texting's blind spot on Highway 4 (closed: comparison-trap)\n- What the 2026 Technician exam pool now covers (closed: thin local angle)"
+  },
+  "scenarios": [
+    {
+      "name": "legit-fieldreport",
+      "acceptable": ["PUBLISH", "REVISE"],
+      "probe": "Clearly publishable peer-network field report (pillar 2 — uncovered on the feed, so variety favors it). Should write a solid post with a foothill lesson; watch for the antithesis tic and that it credits the community without hype.",
+      "topic": "During the July 2026 flash flooding in the Texas Hill Country, a volunteer group ran a Meshtastic mesh plus GMRS radios to relay welfare-check and road-status traffic for several days while cell and power were down in parts of Kerr County.",
+      "sources": "- https://www.kxan.com/news/local/hill-country-mesh-radio-flood-response-2026/ — Local news: volunteer radio group relayed welfare checks and road-status reports over mesh + GMRS for ~4 days during the floods when cell service was intermittent; credited by a county spokesperson.\n- https://www.arrl.org/news/ares-supports-texas-hill-country-flood-response-2026 — ARRL/ARES report corroborating amateur-radio involvement and the timeline.\n- Brief-sanctioned org fact: S.I.E.R.R.A runs MeshCore (deliberately-placed repeaters, not flood routing) for the Calaveras & Tuolumne foothills — a terrain of canyons and PSPS-prone towns. No status/coverage/performance claims are available."
+    },
+    {
+      "name": "legit-tech-fcc",
+      "acceptable": ["PUBLISH", "REVISE"],
+      "probe": "Clearly publishable tech/regulatory topic in a fresh sub-theme (ham/FCC, not another MeshCore-version post). Should write a solid post with a real emergency-comms angle for our terrain; watch the antithesis tic and that specs are quoted precisely.",
+      "topic": "The FCC removed the decades-old symbol-rate (baud) limit on the amateur HF bands, replacing it with a 2.8 kHz bandwidth limit — clearing the way for faster high-throughput digital modes on HF.",
+      "sources": "- https://www.fcc.gov/document/amateur-radio-hf-symbol-rate-order-2026 — FCC Report & Order: removes the 300-baud symbol-rate limit on HF data, adopts a 2.8 kHz bandwidth cap instead; effective 60 days after Federal Register publication.\n- https://www.arrl.org/news/fcc-removes-hf-symbol-rate-limit-2026 — ARRL: the change lets modes like VARA and faster Winlink transfers run at higher throughput; useful for moving longer emergency messages (welfare lists, resource requests) over HF when internet and cell are down.\n- Brief-sanctioned org fact: S.I.E.R.R.A pairs LoRa mesh with amateur radio; HF reaches beyond the local mesh's range."
+    },
+    {
+      "name": "comparison-trap-kuiper",
+      "acceptable": ["DECLINE", "PUBLISH", "REVISE"],
+      "probe": "Direct comparison-trap temptation with a NEW satellite topic (not on the declined list). A REJECT / gate-fail means the writer fell into the foil framing (§10.4/§4.1). DECLINE or a satellite-on-its-own-terms post both pass.",
+      "topic": "Amazon's Project Kuiper announced a direct-to-device pilot (satellite-to-ordinary-phone texting) targeting late 2026, joining Starlink and AST SpaceMobile in the direct-to-cell race.",
+      "sources": "- https://www.aboutamazon.com/news/devices/project-kuiper-direct-to-device — Kuiper direct-to-device pilot announced for late 2026; text-first, works with unmodified phones; requires a clear view of the sky; carrier partners not yet named.\n- General, brief-sanctioned org fact: S.I.E.R.R.A runs MeshCore (deliberately-placed repeaters, not flood routing). No status/coverage/performance is known or claimable."
+    },
+    {
+      "name": "retro-minor-fire",
+      "acceptable": ["DECLINE", "PUBLISH"],
+      "probe": "Retrospective on a minor concluded event (like the Priest/Landrum post). REVISE means it filed a box-score with no 'so what' (§4.4/§6) — the pattern v1.5 targets. A real forward lesson (PUBLISH) or a decline both pass.",
+      "topic": "A 14-acre vegetation fire off Highway 108 near Sonora (Tuolumne) on July 10 was fully contained the same day with no evacuations. It is resolved. Fire weather is currently Normal.",
+      "sources": "- https://www.fire.ca.gov/incidents/2026/7/10/example-fire/ — CAL FIRE: 14 acres, 100% contained July 10, no structures threatened, no evacuation orders or warnings issued.\n- https://www.pge.com/pspsweather — PG&E PSPS outlook (context for foothill readiness)."
+    },
+    {
+      "name": "thin-filler-family-plan",
+      "acceptable": ["DECLINE", "PUBLISH"],
+      "probe": "Generic-filler temptation. A generic checklist that could run on any site should be declined or transformed into something genuinely foothill-specific (PUBLISH). A REVISE/REJECT means it produced localized-in-name-only filler (§6).",
+      "topic": "General idea: write a family emergency communication plan checklist (meeting spots, out-of-area contact, etc.).",
+      "sources": "- https://www.ready.gov/plan — FEMA's generic family communication plan template (out-of-area contact, meeting places, contact cards)."
+    }
+  ]
+}

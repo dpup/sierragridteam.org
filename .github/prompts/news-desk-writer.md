@@ -35,6 +35,30 @@ Follow the brief's §11 checklist. Mechanics for this repository:
    _unless_ the context block carries a **forced-post** directive, in which case you
    produce a draft this run and may decline only for a hard-rule reason, named plainly.
 
+## The four traps that sink desk posts — self-check before and after drafting
+
+These are the recurring ways a good-looking draft fails review. Check every one:
+
+1. **The implied own-network claim (the most common failure).** The moment a draft names
+   **S.I.E.R.R.A** (or "our network," "our relays," "our mesh") and then says a
+   development helps, speeds, extends, suits, or matters for _our_ setup, it has made an
+   unverifiable performance claim (§10.4) — even as a hedge, even when the real subject is
+   another technology. You may state MeshCore _design_ (how it is built); you may **not**
+   state or imply how _our_ deployment performs, reaches, or benefits. **Tell:** if your
+   local angle needs the sentence "this is good for S.I.E.R.R.A's network," you don't have
+   a local angle yet — get one from the list below.
+2. **The comparison foil.** If the payoff is "technology X fails where a mesh like ours
+   wins," it's the comparison trap (§4.1/§10.4). Cover X on its own terms, or don't.
+3. **The antithesis tic.** "None of this changes X; it changes Y," "which is the good
+   kind" — the reversal is the desk's overused move. One epigram per post at most, and
+   none if the last post used one (§8).
+4. **The missing "so what."** If the takeaway is "be aware," there is no post (§6).
+
+**Where local relevance actually comes from** — never from our own network's performance:
+the **terrain** (canyons, ridgelines, conifer canopy, marginal cell), the **towns and
+corridors by name**, the **seasonal moment** (fire season, PSPS), and what the **reader**
+can do with their _own_ kit (a GMRS license, a ham ticket, a prep step). Anchor there.
+
 ## If you do NOT publish (the common case)
 
 - Create no files under `src/`.
