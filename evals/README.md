@@ -2,15 +2,18 @@
 
 An **LLM-as-judge** harness for tuning the automated News Desk (the "Signal Desk"), so a
 change to the mandate, the writer prompt, or the rubric can be **measured** instead of
-argued. Two loops:
+argued. Three loops, in increasing autonomy:
 
 - **`judge.mjs` — score fixed posts.** Judges a labeled corpus (real published posts +
   rejected drafts) against a rubric derived from the mandate, and flags where the judge's
   verdict differs from a human label. Use it to tune the **rubric/mandate** and as a
   regression gate.
 - **`generate.mjs` — generate then judge.** Runs the **writer prompt** on scenarios,
-  drafts a post (or declines), then judges the output. Use it to tune the **writer** —
-  edit the prompt, re-run, watch the scorecard move.
+  drafts a post (or declines), then judges the output. Use it to tune the **writer** by
+  hand — edit the prompt, re-run, watch the scorecard move.
+- **`autotune.mjs` — auto-learn.** Closes the loop: generate → judge → an optimiser model
+  rewrites the writer prompt from the judge's feedback → re-generate → keep the best,
+  discard the rest, repeat. Produces a reviewed **candidate** prompt, never an auto-merge.
 
 ## What's here
 
@@ -22,8 +25,9 @@ argued. Two loops:
 - `scenarios.json` — the scenarios for `generate.mjs`: a shared context (date, conditions,
   archive, declined list) plus topics + inline source material. Each probes a known
   failure mode and lists the `acceptable` outcomes.
-- `judge.mjs`, `generate.mjs` — the two harnesses. `lib.mjs` — shared plumbing (calling
-  `claude`, extracting the verdict JSON, majority voting, scoring).
+- `judge.mjs`, `generate.mjs`, `autotune.mjs` — the three harnesses. `lib.mjs` — shared
+  plumbing (calling `claude`, generate-then-judge, extracting the verdict JSON, majority
+  voting, scoring + the fitness function).
 
 ## Running
 
@@ -33,6 +37,8 @@ node evals/judge.mjs --votes=3       # majority of 3 — stabilises borderline c
 npm run eval:generate                # generate-then-judge (Opus writer, Sonnet judge)
 node evals/generate.mjs --prompt=/abs/path/variant-writer.md   # A/B a writer-prompt variant
 node evals/generate.mjs --json       # machine-readable (includes the generated drafts)
+npm run eval:autotune                # auto-learn (3 rounds); writes a candidate prompt
+node evals/autotune.mjs --rounds=5   # more rounds = more attempts (run in the background)
 ```
 
 Requires the `claude` CLI on PATH (it is, in CI and the sandbox). `judge.mjs` is ~1 call
@@ -106,6 +112,47 @@ reader's own kit). Re-running showed the delta:
 | before | REJECT · gate:FAIL  | 4/5 acceptable · mean 3.80 · 1 gate-fail  |
 | after  | PUBLISH · gate:pass | 5/5 acceptable · mean 4.00 · 0 gate-fails |
 
+That edit was made by hand. `autotune.mjs` does the same loop automatically.
+
+## Auto-tune (auto-learn)
+
+`autotune.mjs` runs the improve loop without a human at the wheel:
+
+1. Evaluate the current writer prompt (baseline fitness).
+2. An **optimiser** model reads the prompt + the judge's feedback on the latest drafts and
+   proposes a sharper writer prompt.
+3. Re-generate and re-judge. **Keep** the candidate only if it beats the best on the train
+   scenarios _and_ doesn't regress on a **held-out** set the optimiser never sees.
+4. Repeat for N rounds. Dozens of drafts are generated and thrown away; only the scores and
+   the winning prompt survive.
+
+**Fitness** is a single scalar (`lib.mjs` `scorecard`): `10·mean − 50·gate-fails −
+20·misses`. It rewards good _published_ posts and punishes honesty-gate failures and
+out-of-bounds outcomes.
+
+Auto-tuning against an LLM judge is easy to break, so the loop is fenced:
+
+- **Reward-hacking** — the fitness makes "just decline everything" score badly (it misses
+  the must-publish scenarios), and the optimiser is explicitly forbidden to weaken the
+  mandate, change the output format, or tell the writer to decline/hedge to dodge scores.
+  Candidates that drop required structure (the frontmatter, `make verify`, the
+  `src/content/blog/` mechanics, the `DECISION: NO POST` path) or balloon/shrink in size
+  are discarded before they're scored.
+- **Overfitting** — the held-out scenarios gate acceptance, so a prompt that only games the
+  training topics is rejected.
+- **Human-in-the-loop** — the winner is written to
+  `.github/prompts/news-desk-writer.candidate.md` (git-ignored) for you to **diff and
+  review**. It is never applied to the live prompt or merged automatically.
+
+```sh
+npm run eval:autotune              # 3 rounds
+node evals/autotune.mjs --rounds=5 # more attempts
+EVAL_OPT_MODEL=claude-opus-4-8 EVAL_VOTES=3 node evals/autotune.mjs   # steadier signal
+```
+
+Then: `diff .github/prompts/news-desk-writer.md .github/prompts/news-desk-writer.candidate.md`,
+and if you like it, apply it and open a PR like any other prompt change.
+
 ## How to tune
 
 - **Writer:** run `eval:generate`, read the per-scenario issues + the saved drafts, edit
@@ -124,3 +171,8 @@ reader's own kit). Re-running showed the delta:
   not live research/sourcing (that stays a human-review job on the real PR).
 - **Small sets.** Both are seeds — add cases and scenarios as the desk produces new good
   and bad examples, especially real edge cases a human had to think about.
+- **Auto-tune is bounded by its scenarios.** With only a handful of them, the held-out
+  gate reduces but does not eliminate overfitting — the more scenarios (and votes) you run,
+  the more the winning prompt generalises. Treat the candidate as a proposal to review, not
+  a verified improvement. And it can plateau: if no candidate beats the baseline, that's a
+  real result (the current prompt is near a local optimum for these scenarios), not a bug.

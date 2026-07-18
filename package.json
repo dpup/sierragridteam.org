@@ -25,7 +25,8 @@
     "test:visual": "playwright test",
     "scenarios": "node scripts/scenario-shots.mjs",
     "eval:desk": "node evals/judge.mjs",
-    "eval:generate": "node evals/generate.mjs"
+    "eval:generate": "node evals/generate.mjs",
+    "eval:autotune": "node evals/autotune.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
