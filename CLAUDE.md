@@ -180,7 +180,10 @@ stable.
   the **News Desk** (slow channel; `docs/news-feed-content-brief.md`) and the **Fire
   Desk** (live wildfire bulletins; `docs/fire-desk-content-brief.md`). Runbook:
   `docs/architecture/news-desk.md`. Merge auto-deploys, so `main` must stay
-  branch-protected.
+  branch-protected. A trusted member can also **comment on a desk PR** to have the
+  **Desk Editor** (`.github/workflows/desk-editor.yml`) apply light edits/corrections on
+  the branch — same edit-then-critic honesty pipeline; it won't fabricate data to satisfy
+  a request.
 - **Fire bulletins** are the one sanctioned live-incident post. Conventions: exactly
   **one open bulletin** at a time, tagged `Fire Update` (retagged `Retrospective` on
   close); it has a `summary` (the feed shows only that current-status head + a "Read the

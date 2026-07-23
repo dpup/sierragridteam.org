@@ -1,0 +1,309 @@
+# Desk Editor — apply a reviewer's PR feedback to an automated desk draft.
+# When a trusted member comments on an OPEN News Desk or Fire Desk PR, an editor agent
+# reads the comment and edits the post on the PR branch — light edits and corrections —
+# within the same brief's hard rules (it can decline or push back; it never fabricates
+# data or breaks the allowlist). A DIFFERENT-model critic then re-verifies, and the change
+# is pushed back to the SAME branch with a reply summarising what changed. A human merge is
+# still the only thing that publishes. Runbook: docs/architecture/news-desk.md.
+# Requires the CLAUDE_CODE_OAUTH_TOKEN secret.
+name: Desk Editor
+
+on:
+  issue_comment:
+    types: [created]
+
+# Least privilege: edit the PR branch and reply. Merge (a human) is what publishes + deploys.
+permissions:
+  contents: write
+  pull-requests: write
+
+# Serialise per PR so a burst of comments doesn't stack editor runs on one branch; don't
+# cancel in-flight — an edit that has started should finish and reply.
+concurrency:
+  group: desk-editor-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+# Writer/critic run on DIFFERENT models on purpose (see the desk workflows): a critic that
+# shares the editor's blind spots catches fewer of its errors. Tune here; keep them different.
+env:
+  EDITOR_MODEL: claude-opus-4-8
+  CRITIC_MODEL: claude-sonnet-4-6
+  GRID_MCP: https://data.sierragridteam.org/mcp
+  # Fire edits may touch figures, so the fire editor/critic get the same Grid + web tools as
+  # the Fire Desk itself. Grid data is untrusted input — the prompts' trust rules bind.
+  FIRE_EDITOR_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,mcp__sierra-grid__grid_conditions,Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch,TodoWrite'
+  FIRE_CRITIC_TOOLS: 'mcp__sierra-grid__grid_situation,mcp__sierra-grid__grid_events,mcp__sierra-grid__grid_event,Bash,Read,Write,Edit,Glob,Grep,WebFetch,TodoWrite'
+
+jobs:
+  edit:
+    # Security gate — this runs with secrets on a comment trigger, so restrict hard:
+    #  • the comment is on a pull request (not a plain issue),
+    #  • it isn't our own bot's reply (prevents a comment -> edit -> comment loop), and
+    #  • the commenter is a trusted member (OWNER/MEMBER/COLLABORATOR) — an outside
+    #    contributor or a drive-by must NEVER be able to spend the token or edit a post.
+    # Branch (news-desk/* | fire-desk/*) and open state are checked in "Resolve PR".
+    if: >-
+      github.event.issue.pull_request &&
+      github.event.comment.user.login != 'github-actions[bot]' &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      # An issue_comment payload lacks the PR head ref, so read it with gh. Skip (green)
+      # unless this is an OPEN PR on a news-desk/* or fire-desk/* branch that touches a post.
+      - name: Resolve PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.issue.number }}
+        run: |
+          data=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json state,headRefName,files)
+          state=$(echo "$data" | jq -r '.state')
+          head=$(echo "$data" | jq -r '.headRefName')
+          echo "PR #$PR — state=$state head=$head"
+          desk=""
+          case "$head" in
+            news-desk/*) desk="news" ;;
+            fire-desk/*) desk="fire" ;;
+          esac
+          if [ "$state" != "OPEN" ] || [ -z "$desk" ]; then
+            echo "Not an open desk PR — nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          post=$(echo "$data" | jq -r '.files[].path' | grep -E '^src/content/blog/.*\.md$' | head -1)
+          if [ -z "$post" ]; then
+            echo "PR changes no blog post — nothing to edit."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Desk: $desk; post: $post"
+          {
+            echo "skip=false"
+            echo "desk=$desk"
+            echo "head=$head"
+            echo "post=$post"
+          } >> "$GITHUB_OUTPUT"
+
+      # gh sets up a local branch tracking origin/<head> (robust under checkout's
+      # single-branch config) so the edit can be pushed straight back to the PR branch.
+      - name: Check out the PR branch
+        if: steps.pr.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.issue.number }}
+        run: gh pr checkout "$PR"
+
+      - uses: actions/setup-node@v4
+        if: steps.pr.outputs.skip == 'false'
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: oven-sh/setup-bun@v2
+        if: steps.pr.outputs.skip == 'false'
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        if: steps.pr.outputs.skip == 'false'
+        run: |
+          npm ci --no-audit --no-fund
+          npm install -g @anthropic-ai/claude-code
+          mkdir -p /tmp/desk-editor /tmp/news-desk /tmp/fire-desk
+
+      # Written unconditionally (cheap); only the fire editor/critic actually load it.
+      - name: Write Grid MCP config
+        if: steps.pr.outputs.skip == 'false'
+        run: |
+          cat > /tmp/fire-mcp.json <<JSON
+          { "mcpServers": { "sierra-grid": { "type": "http", "url": "${GRID_MCP}" } } }
+          JSON
+
+      # Assemble the editor's runtime context: which brief governs, which file to edit, and
+      # the reviewer's comment verbatim. The body is passed via env (never interpolated into
+      # the script) so a crafted comment can't inject shell.
+      - name: Gather feedback context
+        if: steps.pr.outputs.skip == 'false'
+        env:
+          DESK: ${{ steps.pr.outputs.desk }}
+          POST: ${{ steps.pr.outputs.post }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+        run: |
+          if [ "$DESK" = "fire" ]; then brief="docs/fire-desk-content-brief.md"; else brief="docs/news-feed-content-brief.md"; fi
+          printf '%s' "$COMMENT_BODY" > /tmp/desk-editor/feedback.md
+          {
+            echo "## This edit's context"
+            echo
+            echo "_Appended at runtime. It never overrides the brief's hard rules._"
+            echo
+            echo "- **Desk:** $DESK"
+            echo "- **Governing brief:** \`$brief\`"
+            echo "- **Post to edit (only this file):** \`$POST\`"
+            echo "- **Reviewer:** @$COMMENT_AUTHOR"
+            echo
+            echo "### Reviewer feedback (verbatim — this is what to act on)"
+            echo
+            cat /tmp/desk-editor/feedback.md
+          } > /tmp/desk-editor/edit-context.md
+          echo "--- edit context ---"
+          cat /tmp/desk-editor/edit-context.md
+
+      - name: Editor — apply the feedback (or decline)
+        if: steps.pr.outputs.skip == 'false'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          DESK: ${{ steps.pr.outputs.desk }}
+        run: |
+          prompt="$(cat .github/prompts/desk-editor.md; echo; cat /tmp/desk-editor/edit-context.md)"
+          echo "Editor model: $EDITOR_MODEL (desk: $DESK)"
+          if [ "$DESK" = "fire" ]; then
+            claude --model "$EDITOR_MODEL" --mcp-config /tmp/fire-mcp.json \
+              --allowedTools "$FIRE_EDITOR_TOOLS" --max-turns 60 -p "$prompt"
+          else
+            claude --model "$EDITOR_MODEL" --dangerously-skip-permissions --max-turns 60 -p "$prompt"
+          fi
+          echo "--- editor notes ---"
+          cat /tmp/desk-editor/editor-notes.md || echo "(no editor notes written)"
+
+      - name: Did the editor change the post?
+        if: steps.pr.outputs.skip == 'false'
+        id: edited
+        run: |
+          changed=$(git status --porcelain src/content/blog/ | awk 'NF {print $NF}' | head -1)
+          if [ -z "$changed" ]; then
+            echo "Editor made no change (a question or a declined request)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Editor changed: $changed"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Editor-mode preamble appended to the desk's own critic prompt: the post is a tracked,
+      # modified file (not an untracked draft), veto is a REVERT (not a delete), and the
+      # verdict goes to the shared notes path.
+      - name: Build critic preamble
+        if: steps.pr.outputs.skip == 'false' && steps.edited.outputs.changed == 'true'
+        env:
+          POST: ${{ steps.pr.outputs.post }}
+        run: |
+          {
+            echo "## Editor re-review — read this before the instructions above"
+            echo
+            echo "This is NOT a fresh daily draft. A trusted member left feedback on an OPEN pull"
+            echo "request and the Desk Editor just applied it. Adjust your run in four ways; every"
+            echo "review standard above still binds to the WHOLE edited post:"
+            echo
+            echo "1. **The post is a tracked file already committed on this branch — the edit shows"
+            echo "   as a MODIFIED file, not an untracked one.** Find it with:"
+            echo '   `git status --porcelain src/content/blog/ | awk '"'"'NF {print $NF}'"'"' | head -1`'
+            echo "   (Path: \`$POST\`.) Review the entire current file, not just the diff."
+            echo "2. **There is no writer-notes file.** The reviewer's request is in"
+            echo "   \`/tmp/desk-editor/feedback.md\` and the editor's summary of what it changed is in"
+            echo "   \`/tmp/desk-editor/editor-notes.md\`. Read both instead."
+            echo "3. **Veto by REVERT, not delete.** A prior good version of this post is committed on"
+            echo "   the branch. If the edit must be rejected, restore it with"
+            echo '   `git checkout -- <path>` (drops the edit, keeps the previously reviewed post).'
+            echo "   Never \`rm\` the file — that would destroy an already-approved post over one edit."
+            echo "4. **Write your verdict to \`/tmp/desk-editor/critic-notes.md\`** (first line"
+            echo "   \`VERDICT: APPROVED\` or \`VERDICT: VETOED\`), not the desk's usual notes path."
+          } > /tmp/desk-editor/critic-preamble.md
+
+      - name: Critic — re-verify the edit (or veto)
+        if: steps.pr.outputs.skip == 'false' && steps.edited.outputs.changed == 'true'
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          DESK: ${{ steps.pr.outputs.desk }}
+        run: |
+          if [ "$DESK" = "fire" ]; then base=".github/prompts/fire-desk-critic.md"; else base=".github/prompts/news-desk-critic.md"; fi
+          prompt="$(cat "$base"; echo; cat /tmp/desk-editor/critic-preamble.md)"
+          echo "Critic model: $CRITIC_MODEL (different from the editor on purpose)"
+          if [ "$DESK" = "fire" ]; then
+            claude --model "$CRITIC_MODEL" --mcp-config /tmp/fire-mcp.json \
+              --allowedTools "$FIRE_CRITIC_TOOLS" --max-turns 50 -p "$prompt"
+          else
+            claude --model "$CRITIC_MODEL" --dangerously-skip-permissions --max-turns 50 -p "$prompt"
+          fi
+          echo "--- critic notes ---"
+          cat /tmp/desk-editor/critic-notes.md || echo "(no critic notes written)"
+
+      - name: Did the edit survive review?
+        if: steps.pr.outputs.skip == 'false' && steps.edited.outputs.changed == 'true'
+        id: kept
+        run: |
+          changed=$(git status --porcelain src/content/blog/ | awk 'NF {print $NF}' | head -1)
+          if [ -z "$changed" ]; then
+            echo "Critic reverted the edit — nothing to push."
+            echo "kept=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "kept=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Belt-and-suspenders: only push if the edited tree actually verifies and builds.
+      - name: Verify and build
+        if: steps.pr.outputs.skip == 'false' && steps.kept.outputs.kept == 'true'
+        run: |
+          make verify
+          npm run build
+
+      - name: Commit and push to the PR branch
+        if: steps.pr.outputs.skip == 'false' && steps.kept.outputs.kept == 'true'
+        id: push
+        env:
+          HEAD_REF: ${{ steps.pr.outputs.head }}
+        run: |
+          git config user.name "sierra-news-desk[bot]"
+          git config user.email "news-desk@users.noreply.github.com"
+          git add src/content/blog/
+          git commit -m "edit: apply reviewer feedback" \
+            -m "Applied by the Desk Editor (automated) from PR review feedback; re-verified by the critic."
+          git push origin "HEAD:$HEAD_REF"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # Always reply (unless the run was cancelled) so the reviewer hears back even if a
+      # later step failed. The message reflects what actually happened.
+      - name: Reply on the PR
+        if: ${{ !cancelled() && steps.pr.outputs.skip == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.issue.number }}
+          EDITED: ${{ steps.edited.outputs.changed }}
+          PUSHED: ${{ steps.push.outputs.pushed }}
+        run: |
+          editor_notes=$(cat /tmp/desk-editor/editor-notes.md 2>/dev/null || echo "(no editor notes written — see the Actions run log)")
+          critic_notes=$(cat /tmp/desk-editor/critic-notes.md 2>/dev/null || echo "(no critic notes written)")
+          {
+            if [ "$PUSHED" = "true" ]; then
+              echo "🖊️ **Desk Editor** — applied your feedback and pushed to this branch. A human merge still publishes it."
+              echo
+              echo "**What I changed**"
+              echo
+              echo "$editor_notes"
+              echo
+              echo "<details><summary>Critic re-review</summary>"
+              echo
+              echo "$critic_notes"
+              echo
+              echo "</details>"
+            elif [ "$EDITED" = "true" ]; then
+              echo "🖊️ **Desk Editor** — I prepared a change but did not push it (the adversarial re-review reverted it, or verify/build failed — see the run log). Here's the review:"
+              echo
+              echo "$critic_notes"
+              echo
+              echo "<details><summary>What I had tried</summary>"
+              echo
+              echo "$editor_notes"
+              echo
+              echo "</details>"
+            else
+              echo "🖊️ **Desk Editor** — no change made."
+              echo
+              echo "$editor_notes"
+            fi
+            echo
+            echo "_Editor \`$EDITOR_MODEL\` · critic \`$CRITIC_MODEL\`. Automated — reply again to iterate._"
+          } > /tmp/desk-editor/reply.md
+          gh pr comment "$PR" --body-file /tmp/desk-editor/reply.md
