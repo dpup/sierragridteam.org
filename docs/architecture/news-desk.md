@@ -44,6 +44,28 @@ angle; `force_post` requires a draft this run (bypasses the cadence guard but no
 hard rules or the major-fire pause); `force` bypasses every guard including the pause
 (testing only). All three are optional; a normal scheduled run sets none of them.
 
+### Proposing topics (issues)
+
+Members steer the desk with **GitHub issues** — file one (paste a link, an angle, or a
+member's rough draft) and label it:
+
+- **`desk:topic`** — a candidate for the **backlog**. The daily run reads every open
+  `desk:news`/`desk:topic` issue and weighs it alongside its own ideas; it drafts from one
+  when cadence and quality allow. No immediate run.
+- **`desk:news`** — "consider this **now**." Labelling fires an immediate run steered by
+  that issue, on top of leaving it in the backlog. Labelling is the trust gate: only members
+  (who can apply labels) trigger it.
+
+An immediate run is **not** a force — it still obeys the guards and the publish decision, so
+pacing holds. Whatever the outcome, the issue hears back: a draft opens a PR that
+`Closes #N` (merging publishes and closes the issue), comments the PR link, and drops the
+`desk:*` labels so the daily run won't redraft an in-flight proposal (re-label to re-queue
+if you close the PR unmerged); a skip (too soon / major-fire pause) or an editorial decline
+comments the reason and leaves the issue open as a standing candidate. A **member's draft is source material, not final copy** —
+the writer verifies every claim, re-voices it, and applies the hard rules; it never
+publishes the submission verbatim, and declines (with a reason) if it can't clear the bar.
+One-time setup: the `desk:news` and `desk:topic` labels must exist (created on the repo).
+
 **The desk never pushes to main.** The colophon (and every post's closing line)
 promises member review before publication — merging the PR is that review. CI runs
 on the PR as usual; the merge triggers the normal deploy.

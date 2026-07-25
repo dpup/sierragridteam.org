@@ -183,7 +183,9 @@ stable.
   branch-protected. A trusted member can also **comment on a desk PR** to have the
   **Desk Editor** (`.github/workflows/desk-editor.yml`) apply light edits/corrections on
   the branch — same edit-then-critic honesty pipeline; it won't fabricate data to satisfy
-  a request.
+  a request. To **propose a topic**, file an issue and label it `desk:news` (draft now) or
+  `desk:topic` (backlog for the daily run); a member's draft is treated as source material,
+  not final copy. See the runbook's "Proposing topics".
 - **Fire bulletins** are the one sanctioned live-incident post. Conventions: exactly
   **one open bulletin** at a time, tagged `Fire Update` (retagged `Retrospective` on
   close); it has a `summary` (the feed shows only that current-status head + a "Read the

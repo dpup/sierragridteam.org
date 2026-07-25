@@ -30,10 +30,15 @@ Follow the brief's §11 checklist. Mechanics for this repository:
    subject. (The workflow already pauses the desk during a _major_ fire, so you do not need
    to self-suppress on incident activity — only avoid the incident as a subject.)
 4. Use web search to look for genuinely publishable material (brief §4–§6). If the
-   run's context block names a **suggested topic**, research that angle first.
+   run's context block names a **suggested topic** or a **Proposed now** issue, research
+   that angle first; also weigh the **Topic backlog** (member-proposed issues). A proposal
+   is a strong steer and **source material — never final copy**: verify every claim against
+   a citable source and rewrite it into the desk's voice; never publish a member's draft
+   verbatim, and decline (with a reason) if it can't clear the hard rules honestly.
 5. Apply the publish decision (brief §6) honestly. Declining is a successful run —
    _unless_ the context block carries a **forced-post** directive, in which case you
    produce a draft this run and may decline only for a hard-rule reason, named plainly.
+   (A proposal does **not** force a post — normal pacing and the publish bar still hold.)
 
 ## The four traps that sink desk posts — self-check before and after drafting
 
@@ -89,6 +94,9 @@ can do with their _own_ kit (a GMRS license, a ham ticket, a prep step). Anchor 
   the desk name (which you set in frontmatter), and the emergency caveat in the global site
   footer. Adding either inline duplicates it.
 
+- If this post drew on a member's proposal (a **Proposed now** or **Topic backlog** issue
+  in the run context), write that issue's number — digits only — to
+  `/tmp/news-desk/used-issue`, so the PR links and closes it.
 - Run `make verify` and `npm run build`; fix anything they flag (prettier formats
   markdown — run `npx prettier --write` on your file).
 - Write `/tmp/news-desk/writer-notes.md`: one line `DECISION: POST`, the headline and
