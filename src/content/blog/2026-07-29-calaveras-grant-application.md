@@ -1,14 +1,14 @@
 ---
-title: 'Connecting the Corridor: S.I.E.R.R.A Applies for Calaveras Grant to Expand MeshCORE Infrastructure'
+title: 'S.I.E.R.R.A applies for a Calaveras grant'
 description: The alliance has applied to the Calaveras Community Foundation for funding to add solar-powered mesh repeaters along the Highway 4 corridor and run free public workshops on off-grid communication.
 pubDate: 2026-07-29
-tag: Member Submission
-author: Jay Goldberg, founder
+tag: Announcement
+author: News Desk
 ---
 
-In foothill and mountain communities like Calaveras County, staying connected isn't just a matter of convenience—it can be a vital lifeline. Between winding mountain terrain, seasonal wildfires, winter storms, and Public Safety Power Shutoffs (PSPS), traditional cellular and internet infrastructure can easily drop out right when residents need it most.
+In Calaveras County's foothill communities, winding terrain, seasonal wildfires, winter storms, and Public Safety Power Shutoffs (PSPS) can take conventional cellular and internet service offline for hours or days.
 
-To help solve this challenge, **S.I.E.R.R.A** has officially applied for competitive grant funding through the **Calaveras Community Foundation**. If awarded, it will fund the expansion of our off-grid **MeshCORE network along the critical Highway 4 Corridor**, bringing 10 brand-new repeaters and educational workshops to local residents.
+**S.I.E.R.R.A** has applied for competitive grant funding through the **Calaveras Community Foundation**. If awarded, the grant would fund the deployment of ten off-grid **MeshCore** repeaters along the Highway 4 corridor and a series of free public workshops on off-grid radio communication.
 
 ## Who is the Calaveras Community Foundation?
 
@@ -18,31 +18,26 @@ For those unfamiliar with local philanthropic efforts, the [Calaveras Community 
 
 The Highway 4 Corridor stretches through diverse elevation changes—from Angels Camp up through Murphys, Arnold, and beyond into Bear Valley. The region's rolling hills and dense timber frequently create cellular dead zones where standard mobile service fails.
 
-If awarded, this grant will fund the purchase and deployment of **10 strategic MeshCORE repeaters**.
+If awarded, this grant will fund the purchase and deployment of **10 strategic MeshCore repeaters**.
 
-### What Are MeshCORE Repeaters?
+### What Are MeshCore Repeaters?
 
-- **Decentralized & Off-Grid:** MeshCORE uses low-power LoRa (Long Range) radio frequencies. Nodes communicate directly with each other without relying on cell towers, satellite links, or grid power.
+- **Decentralized & Off-Grid:** MeshCore uses low-power LoRa (Long Range) radio frequencies. Nodes communicate directly with each other without relying on cell towers, satellite links, or grid power.
 - **Solar & Battery Powered:** Repeaters can be mounted on rooftops, towers, or elevated property and run on solar and battery power rather than the grid.
-- **Deliberately Placed & Maintained:** MeshCORE is not a self-healing swarm. It relies on a small number of deliberately placed, maintained repeaters that hold known routes between them. If a repeater goes down, its route is restored by the team that keeps it running, not by nodes re-routing on their own.
+- **Deliberately Placed & Maintained:** MeshCore is not a self-healing swarm. It relies on a small number of deliberately placed, maintained repeaters that hold known routes between them. If a repeater goes down, its route is restored by the team that keeps it running, not by nodes re-routing on their own.
 
-## Empowering the Public: Educational Seminars
+## Public education workshops
 
-Technology is only as effective as the community using it. A core pillar of our grant proposal is hosting a series of **free educational seminars** across Calaveras County.
-**Our Goal:** Demystify off-grid radio communications and put accessible messaging tools directly into the hands of everyday residents.
+Technology is only as effective as the community using it. The grant application also proposes hosting a series of **free educational seminars** across Calaveras County to demystify off-grid radio communications and put accessible messaging tools into residents' hands.
+
 These public workshops will cover:
 
-1. **MeshCORE 101:** What mesh networking is, how it differs from Wi-Fi or cellular service, and how it operates during major utility power shutoffs or disasters.
-2. **Getting Started on a Budget:** Demonstrating how affordable, pocket-sized LoRa radio devices—commonly in the $60–$100 range, such as the [RAK WisMesh Pocket v2](https://store.rokland.com/products/wismesh-pocket), which runs MeshCORE and listed for $84.97 at Rokland as of July 2026—connect via Bluetooth to your smartphone to send off-grid text messages.
+1. **MeshCore 101:** What mesh networking is, how it differs from Wi-Fi or cellular service, and how it operates during major utility power shutoffs or disasters.
+2. **Getting Started on a Budget:** Demonstrating how affordable, pocket-sized LoRa radio devices—commonly in the $60–$100 range, such as the [RAK WisMesh Pocket v2](https://store.rokland.com/products/wismesh-pocket), which runs MeshCore—connect via Bluetooth to your smartphone to send off-grid text messages.
 3. **Emergency Preparedness Workflows:** How families, neighborhood watch groups, and local volunteers can set up private channels for neighborhood check-ins during storms or evacuations.
 
 ## What Does This Mean for You?
 
-For the general public, the goal of an expanded MeshCORE network along Highway 4 is a way to send short text messages that does not run through a cell carrier or depend on grid power—if the grant lands and the network is built out.
+For the general public, the goal of an expanded MeshCore network along Highway 4 is a way to send short text messages that does not run through a cell carrier or depend on grid power—if the grant lands and the network is built out.
 
-## Looking Ahead
-
-As climate shifts and extreme weather events continue to challenge conventional utilities, building grassroots infrastructure is no longer optional—it's essential. S.I.E.R.R.A is proud to take this next step.
-We hope to receive grant notification later this year. In the meantime, keep an eye on our community announcements for upcoming meeting dates, node placement updates, and seminar schedules!
-Best Safe and Stay Connected  
-Jay Goldberg, Founder
+Grant notifications from the Calaveras Community Foundation are expected later this year. Curious about the network? Get in touch via the contact page.
