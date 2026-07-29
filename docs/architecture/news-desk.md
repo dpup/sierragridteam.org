@@ -22,6 +22,9 @@ Desk has the morning) and on manual dispatch:
    Desk covers it; a cheerful tech post then reads as tone-deaf). Then the **cadence
    guard**: if the newest **non-fire** post is under 3 days old, the run exits (a live
    `Fire Update` bulletin is excluded so its daily updates don't suppress tech posts).
+   The cadence guard is skipped for `force_post` and for a `desk:news` issue trigger —
+   pacing is the desk's rule for the ideas it originates, and a member labelling an issue
+   has already made that call. The major-fire pause applies to both.
 2. **Editorial context** — a cheap `gh` step assembles the run's context: any
    operator-suggested topic, a forced-post directive, and the **previously declined**
    list (closed, unmerged `news-desk/*` PRs) so the desk stops re-proposing rejected
@@ -31,9 +34,10 @@ Desk has the morning) and on manual dispatch:
    searches the web, and applies the brief's publish decision. Most runs it declines and
    writes only a rationale to `/tmp/news-desk/writer-notes.md`. When it publishes, it
    creates one markdown file in `src/content/blog/` and runs `make verify` + `npm run build`.
-4. **Critic** (`claude -p` with `.github/prompts/news-desk-critic.md`) — adversarial
-   second pass: fetches and verifies every cited source, re-checks the hard rules
-   and voice, edits the file directly, and **vetoes by deleting it**.
+4. **Critic** (`claude -p` with `.github/prompts/news-desk-critic.md` **plus the same run
+   context**, so it can check a commissioned post's facts against the proposal) —
+   adversarial second pass: fetches and verifies every cited source, re-checks the hard
+   rules and voice, edits the file directly, and **vetoes by deleting it**.
 5. **Verify + build** — the workflow re-runs `make verify` and the build itself; a
    PR only opens from a green tree.
 6. **Pull request** — the surviving draft goes up as a PR (branch
@@ -56,11 +60,25 @@ member's rough draft) and label it:
   that issue, on top of leaving it in the backlog. Labelling is the trust gate: only members
   (who can apply labels) trigger it.
 
-An immediate run is **not** a force — it still obeys the guards and the publish decision, so
-pacing holds. Whatever the outcome, the issue hears back: a draft opens a PR that
+An immediate run still obeys the major-fire pause, the hard rules, and the scope rule (never
+an unfolding incident) — but **not** the cadence guard, and pacing is not a reason for the
+writer to decline it. Labelling is a member's editorial call, and §6's pacing/variety tests
+exist to stand in for exactly that when nobody is making it.
+
+**Organizational news is in scope when — and only when — a member proposes it**
+(brief §4.6). The desk never originates a post about S.I.E.R.R.A: it can't verify any of it.
+A proposal changes who is publishing, not what is verifiable, so the proposal becomes the
+source of record for the organization's own facts (the writer quotes each one in its notes;
+the reviewer, who wrote them, is the check), the post is tagged `Announcement`, and
+everything else in it — a funder's history, a price, a spec — still needs its own citable
+source. Hard rule §10.4 is exempt for nobody: what the organization is _doing_ is
+publishable, what the network _reaches or covers_ is not, however a member phrased it and
+however far in the future it sits.
+
+Whatever the outcome, the issue hears back: a draft opens a PR that
 `Closes #N` (merging publishes and closes the issue), comments the PR link, and drops the
 `desk:*` labels so the daily run won't redraft an in-flight proposal (re-label to re-queue
-if you close the PR unmerged); a skip (too soon / major-fire pause) or an editorial decline
+if you close the PR unmerged); a skip (major-fire pause) or an editorial decline
 comments the reason and leaves the issue open as a standing candidate. A **member's draft is source material, not final copy** —
 the writer verifies every claim, re-voices it, and applies the hard rules; it never
 publishes the submission verbatim, and declines (with a reason) if it can't clear the bar.

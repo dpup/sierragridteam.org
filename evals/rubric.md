@@ -16,8 +16,8 @@ Fail the gate if the post does any of these:
 
 - **Covers an unfolding incident as its subject** (an active fire, evacuation, or
   in-progress storm). Retrospectives on concluded events are fine.
-- **Makes any claim about S.I.E.R.R.A's own network or operations** — status, coverage,
-  performance, plans — _including implied or comparative ones_. This is the most common
+- **Makes any claim about S.I.E.R.R.A's network coverage, performance, or reliability** —
+  actual or projected, _including implied or comparative ones_. This is the most common
   failure: "where satellite/cell fails, a mesh like ours gets through," or implying our
   relays reach the canyons/homes where people live. If a sentence lets the reader infer
   our coverage or reliability anywhere specific — even when the ostensible subject is
@@ -28,7 +28,14 @@ Fail the gate if the post does any of these:
   payoff is the contrast, and that a sentence like "it can still move sideways to a
   repeater that has the view" lets the reader infer our relays route around the canyon
   here. Per §4.1, if the piece only works as a foil for the mesh, fail the gate.
-- **States a factual claim with no linkable source** (org facts from the mandate aside),
+  **A commissioned post (§4.6, tagged `Announcement`) is the one place S.I.E.R.R.A may be
+  the subject** — a member proposed it, so what the organization is _doing_ (applying for a
+  grant, planning a training) is not a gate failure. What it would _reach or cover_ still
+  is: "10 repeaters along Highway 4" passes, "10 repeaters will close the gaps along
+  Highway 4" fails. Judge a self-originated post about the organization as a scope failure
+  under §4, not a §10.4 one.
+- **States a factual claim with no linkable source** (org facts from the mandate — or, in a
+  commissioned post, from the member's proposal — aside),
   or asserts a false/again-check-this technical parallel (e.g. "terrain blocks a satellite
   the same way it blocks a cell tower" — different geometry).
 - **Issues emergency instructions**, speaks for an agency's intent, includes personal

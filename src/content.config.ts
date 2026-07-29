@@ -25,7 +25,9 @@ const blog = defineCollection({
      *  text. Posts without it render in full in the feed as before. */
     summary: z.string().optional(),
     /** One pillar tag, e.g. "Explainer", "Tech", "Preparedness", "Field Report",
-     *  "Retrospective", or "Fire Update" (an open, live wildfire bulletin). */
+     *  "Retrospective", "Fire Update" (an open, live wildfire bulletin), or
+     *  "Announcement" (organizational news — only ever member-commissioned; see the
+     *  news brief §4.6). */
     tag: z.string().optional(),
     /** Byline. Omit for organizational posts; the automated desk sets its own. Also gates
      *  the standing colophon footnote (shown once per page for automated-desk posts). */
