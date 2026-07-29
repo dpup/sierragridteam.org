@@ -75,6 +75,15 @@ source. Hard rule §10.4 is exempt for nobody: what the organization is _doing_ 
 publishable, what the network _reaches or covers_ is not, however a member phrased it and
 however far in the future it sits.
 
+**A finished piece of writing is edited, not rewritten** (brief §4.7). If the proposal is
+notes, a link, or an angle, the desk writes the post in its own voice. If it is a member's
+completed, signed piece, it publishes under **their** byline, tagged `Member Submission`,
+and the desk copy-edits: their voice, structure, and sign-off survive; the voice rules
+(§7–§9) and the word range do not bind their copy. What the desk fixes regardless of byline
+is anything simply _wrong_ — canonical spellings, typos, hard specs like the headline
+limit — plus the honesty rules (§10) in full, with every change to their words disclosed.
+The desk's public notes are written to the author, who is reading them.
+
 Whatever the outcome, the issue hears back: a draft opens a PR that
 `Closes #N` (merging publishes and closes the issue), comments the PR link, and drops the
 `desk:*` labels so the daily run won't redraft an in-flight proposal (re-label to re-queue

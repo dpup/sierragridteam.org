@@ -188,7 +188,11 @@ stable.
   treated as source material, not final copy. A proposal is also the **only** route by which
   S.I.E.R.R.A itself may be a post's subject (a "commissioned" post, tagged `Announcement`,
   brief §4.6) — the desk never originates organizational news, and no proposal licenses a
-  claim about the network's coverage or performance. See the runbook's "Proposing topics".
+  claim about the network's coverage or performance. A proposal that is already **a finished
+  signed piece** is a member submission (tagged `Member Submission`, the member's byline,
+  brief §4.7): the desk **copy-edits it, never rewrites it** — voice rules don't bind the
+  author's copy, but canonical spellings, typos, hard specs, and the §10 honesty rules are
+  always fixed. See the runbook's "Proposing topics".
 - **Fire bulletins** are the one sanctioned live-incident post. Conventions: exactly
   **one open bulletin** at a time, tagged `Fire Update` (retagged `Retrospective` on
   close); it has a `summary` (the feed shows only that current-status head + a "Read the

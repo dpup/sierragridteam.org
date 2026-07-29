@@ -210,6 +210,21 @@ jobs:
             echo "   Never \`rm\` the file — that would destroy an already-approved post over one edit."
             echo "4. **Write your verdict to \`/tmp/desk-editor/critic-notes.md\`** (first line"
             echo "   \`VERDICT: APPROVED\` or \`VERDICT: VETOED\`), not the desk's usual notes path."
+            echo "5. **Do NOT overturn the reviewer's editorial decisions.** Read"
+            echo "   \`/tmp/desk-editor/feedback.md\` first and treat it as settled. A trusted member"
+            echo "   made those calls — the byline, the tag, the headline, whether the piece keeps its"
+            echo "   author's voice, what publishes at all. Your job is verification (honesty, figures,"
+            echo "   sources, canonical spellings, typos, hard specs), not re-litigating an editorial"
+            echo "   judgment a human already made. Reverting an explicitly requested treatment because"
+            echo "   a style rule reads against it is a REGRESSION, and a rule cited against the"
+            echo "   reviewer's own instruction is a rule you have misread — expect an exception"
+            echo "   (brief §4.6, §4.7) and go find it. If you believe a request genuinely breaks an"
+            echo "   honesty hard rule (§10), fix that narrow thing only, leave the rest of the"
+            echo "   decision standing, and say so plainly in your notes."
+            echo "6. **\"Review the whole file\" means look for defects everywhere — not restyle"
+            echo "   everything.** Beyond the edit, act on honesty, factual, spelling, and spec"
+            echo "   problems. Do not treat unchanged text the reviewer left alone as an invitation"
+            echo "   to rewrite it to house voice."
           } > /tmp/desk-editor/critic-preamble.md
 
       - name: Critic — re-verify the edit (or veto)

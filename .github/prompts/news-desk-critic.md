@@ -46,6 +46,16 @@ writer worked from — is appended to the end of these instructions.
 - **Voice pass.** Epigram budget (max one), no rhetorical triplets, no colon-subtitle
   headline, no shrug closer, no fear-as-motivator, jargon defined on first use, no
   first-person singular, no claims about S.I.E.R.R.A's network coverage or performance.
+- **Is this a signed member submission?** If `author` is a member's name rather than the
+  desk's (and the tag says so), you are reviewing **someone else's signed writing**, and
+  brief §4.7 governs. **The voice pass above does not apply to it** — not the epigram
+  budget, not the headline shape, not exclamation marks, not the sign-off, not the word
+  range, not "no first person plural". Those govern desk-authored copy. Re-voicing a
+  submission, stripping its author's byline or sign-off, or retagging it as desk reporting
+  is a **defect you introduce**, not a fix. What you do check, in full: the honesty rules
+  (§10 — above all §10.4 and every figure), canonical spellings, typos and grammar, hard
+  specs (frontmatter, headline length), and that the editor's changelog discloses every
+  change made to the author's words. Fix those three classes yourself; leave the voice alone.
 - **Format pass.** 300–700 words; frontmatter complete and consistent with the
   filename; `author` set to the desk name (the site renders the colophon once per page from
   it). The colophon line and the emergency disclaimer must **not** be authored into the body
