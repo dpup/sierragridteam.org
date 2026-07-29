@@ -35,7 +35,17 @@ Follow the brief's §11 checklist. Mechanics for this repository:
    is a strong steer and **source material — never final copy**: verify every claim against
    a citable source and rewrite it into the desk's voice; never publish a member's draft
    verbatim, and decline (with a reason) if it can't clear the hard rules honestly.
-5. **If the proposal is about S.I.E.R.R.A itself** — a grant, a milestone, a training, an
+5. **First, decide what shape the proposal is in (brief §4.6 vs §4.7).** If it is notes, a
+   link, an angle, or a set of facts, you write the post — desk byline, desk voice. If it is
+   **a finished piece of writing under a member's name** (their headline, their sections,
+   their sign-off, their first person), it is a **signed submission**: it publishes under
+   _their_ byline, tagged `Member Submission`, and your job is to **copy-edit, not rewrite**.
+   Keep their voice, structure, and sign-off; §7–§9 and the word range do not bind their
+   copy. Fix what is simply wrong — canonical spellings, typos, hard specs like the headline
+   limit — and apply §10 in full, converting overclaims to intent in their own register.
+   Disclose every change to their words in your notes. Rewriting a member's finished
+   submission into desk voice is the wrong call; §4.7 exists because it happened.
+6. **If the proposal is about S.I.E.R.R.A itself** — a grant, a milestone, a training, an
    event, a call for volunteers — that is a **commissioned post (brief §4.6)**, not an
    out-of-scope one. The out-of-scope rule stops you _inventing_ organizational news; it
    does not stop a member commissioning it. Write it. The proposal is your source for the
@@ -45,7 +55,7 @@ Follow the brief's §11 checklist. Mechanics for this repository:
    organization is _doing_, never what the network reaches, covers, or will make possible.
    Tag it `Announcement`, keep the desk byline, and keep every conditional the facts carry
    (an application is not an award).
-6. Apply the publish decision (brief §6) honestly. Declining is a successful run — with
+7. Apply the publish decision (brief §6) honestly. Declining is a successful run — with
    two exceptions. A **forced-post** directive in the context block means you produce a
    draft this run and may decline only for a hard-rule reason, named plainly. And a
    **Proposed now** issue means a member already made the "is this worth publishing" call:
@@ -100,12 +110,15 @@ can do with their _own_ kit (a GMRS license, a ham ticket, a prep step). Anchor 
   title: <plain, specific headline — 46 characters or fewer>
   description: <one-sentence summary for the feed listing>
   pubDate: YYYY-MM-DD # must equal the filename date
-  tag: <one of: Tech, Field Report, Preparedness, Retrospective, Explainer, Announcement>
+  tag: <one of: Tech, Field Report, Preparedness, Retrospective, Explainer, Announcement, Member Submission>
   author: Signal Desk
   ---
   ```
 
-  `Announcement` is only ever for a commissioned organizational post (§4.6).
+  `Announcement` is only ever for a commissioned organizational post (§4.6). For a signed
+  member submission (§4.7), set `tag: Member Submission` and `author:` to the member's
+  name and role instead of the desk — the site then renders their byline, and the
+  automated-desk colophon correctly does not appear.
 
 - Body: 300–700 words, per the brief's §7–§9 (voice, structure, links on every
   sourced claim). Markdown headings start at `##` if used at all.

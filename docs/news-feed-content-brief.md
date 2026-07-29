@@ -63,7 +63,42 @@ What does **not** change:
 - **§10.4 binds absolutely.** No member can authorize a coverage or performance claim, because nobody can verify one. Write what the organization is _doing_ — applying, building, planning, hosting — never what the network _reaches, covers, withstands, or guarantees_, and never a projected version of it ("will create a continuous backbone," "means residents can reach help when the power is out"). Naming the repeater count or the corridor a project would fund is a fact about the project; promising the coverage that would result is not. Cut such a sentence or rewrite it as intent.
 - **Provisional stays provisional.** An application is not an award, a plan is not a schedule, a proposal is not a commitment. Carry every conditional the proposal's own facts carry, and attribute planned activity as planned.
 - **Everything not organizational still needs its own source.** Background on a funder, a technology, a radio band, a device price, a dollar figure, a founding date — verify each against a citable source and link it, or cut it. The proposal vouches for the organization's facts and nothing else.
-- **Voice and every other hard rule.** A submission is raw material, never final copy. Re-voice it per §7–§9 — no marketing language, no exclamation marks, no benefit tables, no personal sign-off — and apply §10 in full.
+- **Voice and every other hard rule.** For a commissioned post the submission is raw material, never final copy. Re-voice it per §7–§9 — no marketing language, no exclamation marks, no benefit tables, no personal sign-off — and apply §10 in full. **This is the rule that does not apply to a signed submission — see §4.7 before you rewrite anything.**
+
+### 4.7 Signed member submissions (guest posts)
+
+A proposal arrives in one of two shapes, and they are handled very differently. Decide which you have before you write a word.
+
+- **Notes, a link, an angle, a set of facts** → a **commissioned post** (§4.6). The desk writes it: desk byline, desk voice, §7–§9 in full.
+- **A finished piece of writing under a member's name** — their headline, their sections, their sign-off, their first person → a **signed submission**. It publishes under _their_ byline (`author:` their name), tagged `Member Submission`, and the desk **copy-edits** it.
+
+If you cannot tell, ask whether the author would recognise the published piece as theirs. Rewriting a member's finished submission into desk voice is the wrong call — a volunteer wrote something for their organization and got back a stranger's essay. That mistake is why this section exists.
+
+**What stays theirs.** Voice and register. Structure and section order. First-person plural. Their headline's wording, their emphasis, their sign-off, an exclamation mark, a turn of phrase you would not have chosen. §7–§9 — voice, the epigram budget, headline shape, the 300–700-word range — govern desk-authored copy and **do not bind a signed submission**. Do not trim to length. Do not neutralise the register. Their name is on it.
+
+**What is always yours.** A signed submission keeps the author's voice, not their mistakes. Three classes of change are the desk's job on every post regardless of byline. Make them, then list them; do not raise them as questions:
+
+1. **Canonical names.** Every proper noun takes the spelling fixed by the style guide's terminology section or this brief — the project's own capitalization, not the author's. Products, platforms, agencies, places, the organization itself. An author's variant spelling of a name is an error, not a voice choice.
+2. **Errors of execution.** Typos, misspellings, dropped or transposed words, broken grammar, malformed markdown, a mangled set phrase. Where the author obviously meant one thing and the text says another, set it to what they meant.
+3. **Hard specs.** Whatever the site or the schema requires: valid frontmatter, `pubDate` equal to the filename date, a headline short enough that the page title stays within its limit, a one-sentence description, links that resolve. **Specs are not preferences and are not the author's to decline.** Always edit to spec — and stay as close to the spirit of what they wrote as the spec allows.
+
+The question that separates the two columns: _is this how the author writes, or is it simply wrong?_ How they write is theirs. Wrong is yours. Never leave a known defect in a member's published writing out of deference — deference that publishes someone at their worst is not a kindness.
+
+**Editing to spec without rewriting.** Cut, don't recompose. To bring an over-long headline within limits, drop a subtitle, a modifier, or a trailing clause and keep the author's key nouns and their claim; reach for your own phrasing only when nothing of theirs fits. Record the original in the changelog either way.
+
+**Honesty still binds absolutely.** §10 applies to every word published on this site, whoever wrote it — most of all §10.4 (no coverage, reach, or performance claim, actual or projected) and §10.5 (every figure sourced). A byline is not a waiver. Convert claims to intent in the author's own register rather than deleting their point, and where a conversion changes what they were saying, say so in the changelog and offer the veto.
+
+**Every change to the author's words is disclosed.** The changelog covers all of it — including, especially, a figure you corrected. Silently changing a number in someone's signed writing is the one edit they would most want to know about.
+
+**Write the note to a person, because one is reading it.** Your notes on a submission are posted publicly, under the author's name, to a volunteer who wrote something for their own organization. That is the audience — not the reviewer, not the log.
+
+- **Lead with the piece, not the defect list.** What you kept and what works, first and briefly. Then what changed.
+- **Attribute corrections to the rules, not the writer.** "The style guide writes it MeshCore," not "you misspelled it." "We can say what we're building, not the coverage it will deliver" — never a sentence that reads as an accusation of overclaiming.
+- **A fix you already made is one changelog line, not a question.** Never hold up a typo, a misspelling, or a spec breach as an open item for the author to rule on; that publishes the slip twice and asks them to endorse it. Reserve the "for your decision" list for genuine judgment calls — a taxonomy name, an offered addition, timing, a conversion that changed their meaning.
+- **Say what you could not source without impugning them.** Name the source you checked and what it says. Nobody's integrity is in question when a figure is out of date.
+- **Offer the veto once, plainly, and mean it.** Do not make them defend sentences one by one.
+- **No section numbers, rule names, or brief vocabulary** in anything addressed to the author. "§10.4" means nothing to a volunteer; the plain-English version of it does.
+- **Length is a courtesy too.** A changelog can be complete without reading as an audit.
 
 ## 5. Sources
 
