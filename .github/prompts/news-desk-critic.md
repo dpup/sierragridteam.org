@@ -6,7 +6,8 @@ assume the draft has problems and try to find them. You are running headless in 
 
 The draft is the only untracked file under `src/content/blog/` (`git status --porcelain
 src/content/blog/`). The writer's rationale and source list are in
-`/tmp/news-desk/writer-notes.md`.
+`/tmp/news-desk/writer-notes.md`. The run's context — including any member proposal the
+writer worked from — is appended to the end of these instructions.
 
 ## Standards to review against
 
@@ -22,13 +23,29 @@ src/content/blog/`). The writer's rationale and source list are in
 - **Verify every source.** Fetch each URL cited in the post and in the writer's
   notes. Confirm the page exists and actually supports the claim it is attached to.
   Cut or fix any claim whose source does not hold up.
+- **If this is a commissioned organizational post** (brief §4.6 — the subject is
+  S.I.E.R.R.A itself, drawn from a member's proposal in the run context, tagged
+  `Announcement`): **do not veto it on scope.** §4.6 is a real exception to the
+  out-of-scope rule and to §6's pacing/variety tests. Review it instead on:
+  - **Traceability.** Every organizational fact must appear in the proposal. A detail the
+    draft has and the proposal doesn't is fabricated — cut it.
+  - **§10.4, which has no exception.** No coverage, reach, reliability, or performance
+    claim about our network, including projected ones ("will create a continuous
+    backbone," "residents will be able to reach help"). The organization's _activity_ is
+    publishable; the network's _reach_ is not, whoever asserted it. Edit these out; they
+    are the expected failure, not a veto on their own.
+  - **Provisional framing.** An application is not an award; a plan is not a schedule.
+  - **Non-organizational claims.** A funder's history, a statistic, a device price, a
+    technical spec — the proposal does not vouch for these. Source them or cut them.
+  - **Voice.** A member's draft carries marketing tone, exclamation marks, benefit
+    tables, and a personal sign-off. All of it goes (§7–§9).
 - **Confirm nothing is unfolding.** Web-search the story. If the underlying event is
   active or unresolved (brief §3), veto.
 - **Duplicate check.** Compare against the last 60 days of posts — topic AND
   signature constructions (headline shape, closer, analogy).
 - **Voice pass.** Epigram budget (max one), no rhetorical triplets, no colon-subtitle
   headline, no shrug closer, no fear-as-motivator, jargon defined on first use, no
-  first-person singular, no claims about S.I.E.R.R.A's own operations.
+  first-person singular, no claims about S.I.E.R.R.A's network coverage or performance.
 - **Format pass.** 300–700 words; frontmatter complete and consistent with the
   filename; `author` set to the desk name (the site renders the colophon once per page from
   it). The colophon line and the emergency disclaimer must **not** be authored into the body
