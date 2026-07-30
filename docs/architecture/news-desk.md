@@ -88,9 +88,11 @@ Whatever the outcome, the issue hears back: a draft opens a PR that
 `Closes #N` (merging publishes and closes the issue), comments the PR link, and drops the
 `desk:*` labels so the daily run won't redraft an in-flight proposal (re-label to re-queue
 if you close the PR unmerged); a skip (major-fire pause) or an editorial decline
-comments the reason and leaves the issue open as a standing candidate. A **member's draft is source material, not final copy** —
-the writer verifies every claim, re-voices it, and applies the hard rules; it never
-publishes the submission verbatim, and declines (with a reason) if it can't clear the bar.
+comments the reason and leaves the issue open as a standing candidate. A **topic proposal is
+source material, not final copy** — for notes, a link, or an angle the writer verifies every
+claim, writes it in the desk's voice, and applies the hard rules, declining (with a reason)
+if it can't clear the bar. A finished signed piece takes the §4.7 path above instead:
+copy-edited under its author's byline, never re-voiced.
 One-time setup: the `desk:news` and `desk:topic` labels must exist (created on the repo).
 
 **The desk never pushes to main.** The colophon (and every post's closing line)

@@ -194,8 +194,8 @@ jobs:
             echo "## Editor re-review — read this before the instructions above"
             echo
             echo "This is NOT a fresh daily draft. A trusted member left feedback on an OPEN pull"
-            echo "request and the Desk Editor just applied it. Adjust your run in four ways; every"
-            echo "review standard above still binds to the WHOLE edited post:"
+            echo "request and the Desk Editor just applied it. Adjust your run in six ways; the review"
+            echo "standards above still bind to the WHOLE edited post, subject to points 5 and 6:"
             echo
             echo "1. **The post is a tracked file already committed on this branch — the edit shows"
             echo "   as a MODIFIED file, not an untracked one.** Find it with:"

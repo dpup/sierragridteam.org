@@ -188,9 +188,13 @@ jobs:
               echo
               echo '~~~~'
               echo
-              echo "A member asked for this NOW. Treat it as a strong steer AND as source material — not"
-              echo "final copy. Do NOT publish a member's draft verbatim: verify every claim against a"
-              echo "citable source, rewrite it into the desk's voice, and apply every hard rule (§10)."
+              echo "A member asked for this NOW. Treat it as a strong steer AND as source material, and"
+              echo "note which SHAPE it is (brief §4.6 vs §4.7). If it is notes, a link, or an angle, you"
+              echo "write the post: verify every claim against a citable source, put it in the desk's"
+              echo "voice, and apply every hard rule (§10). If it is already a FINISHED, SIGNED piece, do"
+              echo "NOT re-voice it — that is a signed submission (§4.7): copy-edit it under the author's"
+              echo "byline, keeping their voice, structure and sign-off. Either way you verify every claim"
+              echo "and apply §10 in full; neither path publishes an unverified claim."
               echo
               echo "**Pacing is already settled.** The cadence guard was bypassed for this run on purpose —"
               echo "a member making the call is what §6's pacing/variety/\"so what\" tests exist to substitute"

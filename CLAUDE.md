@@ -30,6 +30,12 @@ or editing any copy.**
 accessibility, testing). `docs/architecture/design-tokens.md` is the human-readable
 version of the rules below.
 
+`docs/solutions/` holds documented solutions to past problems — bugs, conventions, and
+pipeline/workflow patterns — organized by category with YAML frontmatter (`module`,
+`tags`, `problem_type`). `CONCEPTS.md` (repo root) is the shared domain vocabulary: the
+desks, the post kinds, and the status concepts. Both are relevant when working in an area
+they cover.
+
 ## Hard rules (do not break these)
 
 1. **Tokens only.** Never write a raw color, font family, or font-size px value in a
