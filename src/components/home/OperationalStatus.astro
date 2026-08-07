@@ -1,7 +1,7 @@
 ---
 /**
- * OperationalStatus — the four operational-status tiles (design-system §7). Relay Sites +
- * Coverage are static owned config. Active Alerts + Fire Weather are LIVE-ONLY: they SSR a
+ * OperationalStatus — the four operational-status tiles (design-system §7). Coverage is the
+ * one static owned fact. Relay Nodes, Active Alerts + Fire Weather are LIVE-ONLY: they SSR a
  * muted "—" placeholder and a client island fills them from data.sierragridteam.org on load (and every
  * 5 min). On any failure they stay "—" (an honest "unknown") — never a stale baked value,
  * never a spinner. (It doesn't need /live's full loader; the page isn't gated.)
@@ -16,11 +16,10 @@ import { home } from '@config/content';
 import { site } from '@config/site';
 
 interface Props {
-  // Static owned facts (not from the feed) — the only data this component renders at SSR.
-  relaySites: number;
+  // The one static owned fact left here (not from the feed) — everything else is live.
   coverageCounties: number;
 }
-const { relaySites, coverageCounties } = Astro.props;
+const { coverageCounties } = Astro.props;
 ---
 
 <section
@@ -37,12 +36,18 @@ const { relaySites, coverageCounties } = Astro.props;
     </div>
 
     <div class="ops__grid">
+      {
+        /* Relay Nodes counts S.I.E.R.R.A repeaters the mesh is currently HEARING — it is not
+          a count of sites confirmed up (a site can hold more than one node, and an advert
+          proves a node was heard, not that the site is healthy). Links to /mesh, where the
+          per-repeater detail lives. */
+      }
       <StatTile
-        label="Relay Sites"
-        value={`${relaySites} Active`}
-        sublabel="Deployed relay sites"
-        state="ok-static"
-        href="/live"
+        label="Relay Nodes"
+        value="—"
+        sublabel="S.I.E.R.R.A repeaters heard"
+        state="muted"
+        href="/mesh"
         key="relay"
       />
       <StatTile
@@ -80,6 +85,7 @@ const { relaySites, coverageCounties } = Astro.props;
     deriveActiveAlertsTile,
     type HazardsSnapshot,
   } from '@lib/hazards';
+  import { buildRegionGraph, deriveRelayNodesTile, type MeshFeatureCollection } from '@lib/mesh';
 
   // Live refresh — upgrades the SSR snapshot when CORS allows; silently keeps it otherwise.
   const REFRESH_MS = 5 * 60 * 1000;
@@ -107,11 +113,12 @@ const { relaySites, coverageCounties } = Astro.props;
         // "Active Alerts" must agree with /live, so derive it from the SAME hazard layers via
         // the shared pure summary (not the weather-alerts endpoint, which misses wildfire &
         // evacuation — the bug where the homepage read "0" during an active evac).
-        const [conditions, wildfire, evacuation, weather_alert] = await Promise.all([
+        const [conditions, wildfire, evacuation, weather_alert, mesh_node] = await Promise.all([
           json('/conditions'),
           json(`/places/${area}/map/wildfire.geojson`),
           json(`/places/${area}/map/evacuation.geojson`),
           json(`/places/${area}/map/weather_alert.geojson`),
+          json(`/places/${area}/map/mesh_node.geojson`),
         ]);
 
         const haz = {
@@ -123,6 +130,12 @@ const { relaySites, coverageCounties } = Astro.props;
         } as unknown as HazardsSnapshot;
         const tile = deriveActiveAlertsTile(deriveSituationSummary(haz));
         setTile('alerts', tile.value, tile.state);
+
+        // Relay Nodes — the same derivation /mesh uses, so the two surfaces always agree.
+        const relay = deriveRelayNodesTile(
+          buildRegionGraph(mesh_node as MeshFeatureCollection, null)
+        );
+        setTile('relay', relay.value, relay.state);
 
         // Authoritative fire-weather state from the feed (FR-3) — never inferred.
         const state = (conditions.fireWeather?.state ?? '').toUpperCase();
@@ -139,7 +152,7 @@ const { relaySites, coverageCounties } = Astro.props;
         if (synced && ts) synced.textContent = `Synced ${formatPtTime(ts)}`;
       } catch {
         // Live-only: there's no baked value to fall back to. Mark the sync state honestly;
-        // the Active Alerts / Fire Weather tiles stay on their "—" placeholder (unknown).
+        // the Relay Nodes / Active Alerts / Fire Weather tiles stay on "—" (unknown).
         const synced = section.querySelector<HTMLElement>('[data-synced] .pill__label');
         if (synced) synced.textContent = 'Live data unavailable';
       }

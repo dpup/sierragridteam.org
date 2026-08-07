@@ -1,0 +1,585 @@
+/*
+ * mesh.css — styles for the /mesh regions that are RENDERED BY THE BROWSER.
+ *
+ * /mesh fetches the mesh topology and re-renders its panel client-side (see
+ * src/lib/mesh-view.ts), and Astro scoped styles don't apply to client-injected HTML. So
+ * the tiles, legend, roster and the runtime map popup are styled here, globally but
+ * namespaced under `.mesh-view`. Imported only by src/pages/mesh.astro, so it ships on
+ * /mesh alone. Tokens only (no raw colors/fonts) — same rules as a component.
+ *
+ * Page chrome that lives in the .astro template (the map/panel layout, the toggle, the
+ * loader, the window control) keeps its scoped styles in mesh.astro.
+ *
+ * Palette note: this page is calm by definition — the mesh is infrastructure, not a hazard
+ * — so burnt orange is absent throughout. Green carries the network, brass marks our own
+ * nodes as a small accent, muted ink demotes everything belonging to other operators.
+ */
+
+/* ---- Stat tiles ---- */
+.mesh-view .mesh-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.mesh-view .mesh-tile {
+  padding: var(--space-4);
+  background: var(--surface-page);
+  border: var(--border);
+  border-radius: var(--radius);
+}
+.mesh-view .mesh-tile__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.mesh-view .mesh-tile__value {
+  margin-top: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-stat);
+  line-height: 1.1;
+  color: var(--brand-green);
+}
+/* An unknown value must not read like a healthy one — drop it to muted ink. */
+.mesh-view .mesh-tile--muted .mesh-tile__value {
+  color: var(--ink-muted);
+}
+.mesh-view .mesh-tile__sub {
+  margin-top: var(--space-1);
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+
+/* ---- Legend: the recency scale, mirroring the map's line treatment ---- */
+.mesh-view .mesh-legend__note {
+  margin-top: var(--space-3);
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--ink-secondary);
+}
+.mesh-view .mesh-legend {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.mesh-view .mesh-legend__item {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-small);
+  color: var(--ink-body);
+}
+.mesh-view .mesh-legend__line {
+  height: 3px;
+  background: var(--brand-green);
+  border-radius: var(--radius);
+}
+/* Opacity + thickness mirror TIER_STYLE in src/lib/mesh-map.ts — keep them in step. */
+.mesh-view .mesh-legend__line--live {
+  opacity: 0.95;
+}
+.mesh-view .mesh-legend__line--recent {
+  height: 2.5px;
+  opacity: 0.68;
+}
+.mesh-view .mesh-legend__line--fading {
+  height: 2px;
+  opacity: 0.44;
+}
+.mesh-view .mesh-legend__line--cold {
+  height: 1.5px;
+  opacity: 0.26;
+}
+.mesh-view .mesh-legend__dot {
+  justify-self: center;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.mesh-view .mesh-legend__dot--ours {
+  background: var(--brand-green);
+  box-shadow: 0 0 0 2px var(--brand-brass);
+}
+.mesh-view .mesh-legend__dot--neighbour {
+  background: transparent;
+  border: 1.5px solid var(--ink-muted);
+}
+.mesh-view .mesh-legend__item--node {
+  color: var(--ink-secondary);
+}
+.mesh-view .mesh-legend__count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+
+/* ---- Roster: the corridor repeaters, busiest first ---- */
+.mesh-view .mesh-roster {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  border-top: var(--border-soft);
+}
+.mesh-view .mesh-roster__item {
+  border-bottom: var(--border-soft);
+}
+.mesh-view .mesh-roster__btn {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.mesh-view .mesh-roster__btn:hover,
+.mesh-view .mesh-roster__btn[data-active='true'] {
+  background: var(--surface-page);
+}
+.mesh-view .mesh-roster__btn:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: -2px;
+}
+.mesh-view .mesh-roster__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.mesh-view .mesh-roster__name {
+  font-size: var(--fs-body);
+  color: var(--ink-strong);
+}
+.mesh-view .mesh-roster__meta {
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.mesh-view .mesh-roster__key {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--ink-muted);
+}
+
+/*
+ * The roster dot carries the same recency tier as the node's freshest link, and blinks at
+ * the same relative rate as the map's pulse. A blink is the one motion the design system
+ * sanctions; opacity/size still carry the tier on their own, so the meaning survives
+ * prefers-reduced-motion switching the animation off.
+ */
+.mesh-view .mesh-roster__pulse {
+  justify-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  opacity: 0.3;
+}
+.mesh-view .mesh-roster__pulse--live {
+  background: var(--brand-green);
+  opacity: 1;
+  animation: mesh-blink 2s ease-in-out infinite;
+}
+.mesh-view .mesh-roster__pulse--recent {
+  background: var(--brand-green);
+  opacity: 0.7;
+  animation: mesh-blink 4s ease-in-out infinite;
+}
+.mesh-view .mesh-roster__pulse--fading {
+  background: var(--brand-green);
+  opacity: 0.45;
+}
+.mesh-view .mesh-roster__pulse--cold {
+  background: var(--ink-muted);
+  opacity: 0.35;
+}
+
+@keyframes mesh-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-view .mesh-roster__pulse--live,
+  .mesh-view .mesh-roster__pulse--recent {
+    animation: none;
+  }
+  .mesh-view .mesh-roster__btn {
+    transition: none;
+  }
+}
+
+/* ---- Honest empty / unknown / failure state ---- */
+.mesh-view .mesh-empty__head {
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-brass-text);
+  margin-bottom: var(--space-2);
+}
+.mesh-view .mesh-empty {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: var(--surface-banner);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--ink-body);
+}
+
+/*
+ * ---- Corridor map pins (DOM markers, injected by src/lib/mesh-map.ts) ----
+ *
+ * A coordinate-anchored dot with a PERSISTENT label, not a speech-bubble popup: the map
+ * names its repeaters and shows their status without a click, which is what let the node
+ * popup go away entirely (several popups used to stack up fighting for the same space).
+ *
+ * Adapted to the house style rather than copied: square label (radius 0), tokens only,
+ * `--font-ui` for the name and `--font-mono` for the data line, and no burnt orange — the
+ * mesh is infrastructure, not a hazard, so the status scale runs green → muted, never red.
+ * Brass marks a S.I.E.R.R.A-operated node, the one sanctioned small-accent use.
+ */
+.mesh-pin,
+.mesh-pin * {
+  box-sizing: border-box;
+}
+
+/* The marker itself has no dimensions — its centre IS the map coordinate, and the dot and
+   label are positioned around that origin. */
+.mesh-pin {
+  position: relative;
+  display: block;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  color: var(--ink-strong);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  /* Pale halo so the pin holds up over detailed tiles without a heavy drop shadow. */
+  /* Status is carried by the dot; the label's ink stays constant. */
+}
+
+/* 11px dot, with the map halo as a ring rather than a border — the ring reads as a cutout
+   in the map, which is what lets the dot sit on detailed tiles without a card around it. */
+.mesh-pin__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--brand-green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--surface-page) 90%, transparent);
+  transition:
+    width var(--transition),
+    height var(--transition);
+}
+
+/* Ours vs another operator's repeater inside the corridor: the brass keyline is the only
+   thing that says "we run this", so the map never implies we own someone else's node. */
+.mesh-pin--ours .mesh-pin__dot {
+  border-color: var(--brand-brass);
+}
+.mesh-pin--other .mesh-pin__dot {
+  background: var(--ink-secondary);
+}
+
+/* Status = how recently anything was heard from this repeater. Same four tiers as the
+   links, so the dots and the lines tell one story. Opacity carries it (no new colours). */
+.mesh-pin--recent .mesh-pin__dot {
+  opacity: 0.82;
+}
+.mesh-pin--fading .mesh-pin__dot {
+  opacity: 0.62;
+}
+.mesh-pin--cold .mesh-pin__dot,
+.mesh-pin--quiet .mesh-pin__dot {
+  background: var(--ink-muted);
+}
+
+/* The live tier gets the one sanctioned motion — a slow blink, matching the roster dot. */
+.mesh-pin--live .mesh-pin__dot {
+  animation: mesh-blink var(--blink-duration) ease-in-out infinite;
+}
+
+/*
+ * No box. A beige chip per node, repeated across a dozen nodes, made the map read as a wall
+ * of tags — legibility over map detail comes from a text halo instead. The label sits 7px
+ * clear of the dot's edge (dot radius 5.5 + 7).
+ */
+.mesh-pin__label {
+  position: absolute;
+  top: 0;
+  left: 12.5px;
+  transform: translateY(-50%);
+  display: block;
+}
+.mesh-pin__label strong,
+.mesh-pin__label small {
+  display: block;
+  line-height: 1.15;
+}
+.mesh-pin__label strong {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-strong);
+  text-shadow:
+    0 0 3px var(--surface-page),
+    0 0 6px var(--surface-page),
+    0 0 9px var(--surface-page);
+}
+/* The stat line is revealed on demand. Showing it on every pin doubled each label's height
+   and turned the corridor cluster into a stack of overlapping blocks; the name alone answers
+   "which repeater is that", and the detail is one hover (or a roster row) away. */
+.mesh-pin__label small {
+  display: none;
+  margin-top: 1px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--ink-muted);
+  text-shadow:
+    0 0 3px var(--surface-page),
+    0 0 6px var(--surface-page),
+    0 0 9px var(--surface-page);
+}
+.mesh-pin:hover .mesh-pin__label small,
+.mesh-pin--hover .mesh-pin__label small,
+.mesh-pin:focus-visible .mesh-pin__label small,
+.mesh-pin--selected .mesh-pin__label small {
+  display: block;
+}
+
+/* With the box gone, the active pin is marked in ink rather than by a keyline (its marker
+   is also lifted in z-order below, so it wins where labels overlap). */
+.mesh-pin:hover .mesh-pin__label strong,
+.mesh-pin--hover .mesh-pin__label strong,
+.mesh-pin:focus-visible .mesh-pin__label strong,
+.mesh-pin--selected .mesh-pin__label strong {
+  color: var(--brand-green);
+}
+
+.mesh-pin:focus-visible {
+  outline: none;
+}
+.mesh-pin:focus-visible .mesh-pin__dot,
+.mesh-pin--selected .mesh-pin__dot {
+  width: 15px;
+  height: 15px;
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+}
+
+/*
+ * Stacking inside the map. A hovered or selected pin's label may overlap its neighbours, so
+ * it lifts clear — but giving markers a z-index at all puts them above the popup, which has
+ * none by default, and link popups ended up rendering BEHIND the pins. So the popup is
+ * lifted above every marker state here. Keep these three in order: pin < active pin < popup.
+ */
+.meshmap .maplibregl-marker {
+  z-index: 2;
+}
+.meshmap .maplibregl-marker:hover,
+.meshmap .maplibregl-marker:focus-within,
+.meshmap .mesh-pin--selected {
+  z-index: 4;
+}
+.meshmap .maplibregl-popup {
+  z-index: 6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-pin--live .mesh-pin__dot {
+    animation: none;
+  }
+  .mesh-pin__dot,
+  .mesh-pin__label {
+    transition: none;
+  }
+}
+
+/*
+ * ---- The map popover: "anchored strip" ----
+ *
+ * Sits ON the map rather than floating above it — a 93%-opacity parchment fill over a 4px
+ * backdrop blur, so the mesh lines stay faintly legible behind it. That is the whole
+ * mechanic: it must NOT also carry a drop shadow (--shadow-popover exists for the other
+ * approach and the two don't combine).
+ *
+ * Three type sizes only — mono numerals, uppercase micro labels, one serif title — and a
+ * fixed 296px width, which is what keeps every value on a single line.
+ *
+ * Colour substitutions from the source spec, deliberate: the spec's #9a906f and #8a6a26 are
+ * the pre-AA values this design system already rejected (see the notes on --ink-muted and
+ * --brand-brass-text in tokens.css). The tokens are used instead so the close button and
+ * the metric labels stay legible.
+ */
+.mesh-pop-wrap .maplibregl-popup-content {
+  width: 296px;
+  padding: 0;
+  border: var(--border);
+  border-top: 2px solid var(--brand-green);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-card) 93%, transparent);
+  backdrop-filter: blur(4px);
+  box-shadow: none;
+  font-family: var(--font-display);
+  /* Fade + a small rise. No scale, no bounce. */
+  animation: mesh-pop-in 120ms ease-out;
+}
+.mesh-pop-wrap .maplibregl-popup-tip {
+  display: none;
+}
+.mesh-pop:focus {
+  outline: none;
+}
+
+@keyframes mesh-pop-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mesh-pop-wrap .maplibregl-popup-content {
+    animation: none;
+  }
+}
+
+/* -- Header -- */
+.mesh-pop__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-3);
+  border-bottom: var(--border-soft);
+}
+.mesh-pop__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: 1.28;
+  color: var(--ink-strong);
+}
+/* The arrow recedes so the two place names carry the title. */
+.mesh-pop__sep {
+  color: var(--ink-muted);
+}
+/* Freshness lives up here so the metric row can stay purely numeric. */
+.mesh-pop__kicker {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-brass-text);
+}
+.mesh-pop__close {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: -1px -3px 0 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  border-radius: var(--radius);
+  font-size: var(--fs-label-lg);
+  line-height: 1;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.mesh-pop__close:hover {
+  color: var(--ink-strong);
+}
+.mesh-pop__close:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 1px;
+}
+
+/* -- Metric row: always three cells, never collapsed -- */
+.mesh-pop__metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: var(--border-soft);
+}
+.mesh-pop__metric {
+  padding: var(--space-3);
+  border-right: var(--border-soft);
+}
+.mesh-pop__metric:last-child {
+  border-right: 0;
+}
+.mesh-pop__value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  line-height: 1.1;
+  color: var(--ink-strong);
+}
+.mesh-pop__unit {
+  /* Hair gap so "12.8 dB" breathes; a denominator ("/30") still reads as attached. */
+  margin-left: 1px;
+  font-size: var(--fs-label);
+  color: var(--ink-muted);
+}
+.mesh-pop__na {
+  color: var(--ink-muted);
+}
+.mesh-pop__metriclabel {
+  margin-top: var(--space-1);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* -- Standing footnote (not dynamic copy — it's on every relay-link popover) -- */
+.mesh-pop__foot {
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.meshmap .maplibregl-ctrl-group {
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-overlay);
+}

@@ -35,13 +35,22 @@ for (const pg of pages) {
         })
         .catch(() => {});
     }
+    // /mesh renders its panel (including the roster's buttons) from the live feed — scan
+    // the filled state, not the empty skeleton. Falls through if the feed is unreachable,
+    // where the honest failure panel is what gets scanned instead.
+    if (pg.path === '/mesh') {
+      await page
+        .waitForFunction(
+          () => {
+            const el = document.querySelector('[data-mesh-tiles]');
+            return !!el && el.children.length > 0;
+          },
+          { timeout: 12000 }
+        )
+        .catch(() => {});
+    }
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
-      // Exclude the embedded wcmesh live-map iframe — it's third-party content we don't
-      // control (its own unlabeled controls would otherwise fail the gate). axe descends
-      // into it only when it actually loads (CI), not when the sandbox blocks it. The
-      // /mesh chrome around the embed is still scanned.
-      .exclude('[data-mesh-frame]')
       .analyze();
 
     const serious = results.violations.filter(

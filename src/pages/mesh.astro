@@ -1,14 +1,37 @@
 ---
+/**
+ * /mesh — the mesh topology map. Like /live, this page renders its data ENTIRELY in the
+ * browser: nothing about the network is baked at build time, so no stale topology can ship
+ * in the HTML. SSR is the full-bleed layout, an empty panel skeleton and the map's
+ * "reading the mesh" state; the client fills both from The Grid's mesh feed.
+ */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import MeshMap from '@components/mesh/MeshMap.astro';
 import MeshSidebar from '@components/mesh/MeshSidebar.astro';
+import { mesh as copy } from '@config/content';
+import { site } from '@config/site';
+import '../styles/mesh.css';
 
 const description =
-  'Live coverage map of the S.I.E.R.R.A LoRa / MeshCore mesh network across the ' +
-  'Highway 4 and Highway 49 corridors of the Calaveras & Tuolumne foothills.';
+  'Live topology map of the S.I.E.R.R.A LoRa / MeshCore mesh across the Ebbetts Pass ' +
+  'corridor — every corridor repeater, the relay links observed between them, and how ' +
+  'recently each was heard.';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: `${copy.heading} — ${site.name}`,
+  url: `${site.url}/mesh`,
+};
 ---
 
-<BaseLayout title="Mesh Network" description={description} path="/mesh" mainClass="mesh-main">
+<BaseLayout
+  title={copy.title}
+  description={description}
+  path="/mesh"
+  mainClass="mesh-main"
+  schema={schema}
+>
   <div class="mesh-layout" data-panel="open">
     <div class="mesh-layout__map">
       <MeshMap />
@@ -32,15 +55,153 @@ const description =
 </BaseLayout>
 
 <script>
-  const layout = document.querySelector<HTMLElement>('.mesh-layout');
-  const toggle = document.querySelector<HTMLButtonElement>('[data-mesh-toggle]');
-  const label = document.querySelector<HTMLElement>('[data-mesh-toggle-label]');
+  // /mesh is live-only: fetch the mesh topology in the browser, render the map + panel,
+  // and refresh on an interval. maplibre is imported HERE (a client script), never from
+  // Astro frontmatter.
+  import { initMeshMap, type MeshMapHandle } from '../lib/mesh-map';
+  import { fetchGlobalGraph, fetchRegionGraph } from '../lib/mesh-client';
+  import { buildMeshView } from '../lib/mesh-view';
+  import { linksToGeoJSON, MESH_WINDOW, type MeshGraph } from '../lib/mesh';
+  import { mesh as copy } from '../config/content';
+  import { serviceAreaBounds } from '../config/coverage';
+  import { escapeHtml as esc } from '../lib/format';
+
+  const REFRESH_MS = 120_000;
+
+  const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel);
+  const figure = $('[data-mesh-map]');
+  const loading = $('[data-mesh-loading]');
+  const tilesEl = $('[data-mesh-tiles]');
+  const legendEl = $('[data-mesh-legend]');
+  const rosterEl = $('[data-mesh-roster]');
+  const statusEl = $('[data-mesh-status]');
+  const statusDetailEl = $('[data-mesh-status-detail]');
+
+  let handle: MeshHandleOrNull = null;
+  let graph: MeshGraph | null = null;
+  let inflight: AbortController | null = null;
+  let backdropLoaded = false;
+
+  type MeshHandleOrNull = MeshMapHandle | null;
+
+  // ---- panel rendering ----
+
+  function renderPanel(g: MeshGraph, nowMs: number) {
+    const view = buildMeshView(g, MESH_WINDOW, nowMs);
+    if (tilesEl) tilesEl.innerHTML = view.html.tiles;
+    if (legendEl) legendEl.innerHTML = view.html.legend;
+    if (rosterEl) rosterEl.innerHTML = view.html.roster;
+    if (statusEl) {
+      statusEl.textContent = view.status.label;
+      statusEl.setAttribute('data-mesh-status-tone', view.status.tone);
+    }
+    if (statusDetailEl) statusDetailEl.textContent = `${view.status.detail} · ${copy.autoRefresh}`;
+  }
+
+  /** Honest failure: no stale topology, just what we know and where the data lives. */
+  function renderFailure() {
+    if (tilesEl) {
+      tilesEl.innerHTML =
+        `<div class="mesh-empty">` +
+        `<p class="mesh-empty__head">${esc(copy.failHeading)}</p>` +
+        `<p>${esc(copy.failBody)}</p>` +
+        `</div>`;
+    }
+    if (legendEl) legendEl.innerHTML = '';
+    if (rosterEl) rosterEl.innerHTML = '';
+    if (statusEl) {
+      statusEl.textContent = copy.statusUnavailableLabel;
+      statusEl.setAttribute('data-mesh-status-tone', 'unknown');
+    }
+    if (statusDetailEl) statusDetailEl.textContent = 'Network state unknown';
+    loading?.setAttribute('data-hidden', 'true');
+  }
+
+  // ---- the live cycle ----
+
+  async function load() {
+    inflight?.abort();
+    const ac = new AbortController();
+    inflight = ac;
+    try {
+      const g = await fetchRegionGraph(MESH_WINDOW, ac.signal);
+      if (ac.signal.aborted) return;
+      graph = g;
+      const now = Date.now();
+      renderPanel(g, now);
+
+      if (figure && !handle) {
+        handle = initMeshMap(figure, {
+          bounds: serviceAreaBounds,
+          onSelectNode: (key) => markActive(key),
+        });
+        // Panning past the corridor is the cue to bring in the rest of the observed mesh.
+        handle?.onPanOut(loadBackdrop);
+      }
+      handle?.setGraph(g, MESH_WINDOW, now);
+      loading?.setAttribute('data-hidden', 'true');
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return;
+      renderFailure();
+    }
+  }
+
+  /** Lazily pull the whole observed mesh in as a faint backdrop. Once, best-effort. */
+  async function loadBackdrop() {
+    if (backdropLoaded || !graph || !handle) return;
+    backdropLoaded = true;
+    try {
+      const known = new Set(graph.nodes.map((n) => n.publicKey));
+      const ac = new AbortController();
+      const global = await fetchGlobalGraph(known, ac.signal);
+      handle.setBackdrop(global.nodes, linksToGeoJSON(global.links, Date.now()));
+    } catch {
+      // The backdrop is context, not the subject — a failure here leaves the corridor
+      // map exactly as it was and says nothing. Allow a later retry.
+      backdropLoaded = false;
+    }
+  }
+
+  // ---- panel ↔ map wiring ----
+
+  function markActive(key: string | null) {
+    for (const btn of document.querySelectorAll<HTMLElement>('[data-mesh-node]')) {
+      btn.setAttribute('data-active', btn.dataset.meshNode === key ? 'true' : 'false');
+    }
+  }
+
+  // Delegated: the roster is re-rendered on every refresh, so listeners can't live on rows.
+  rosterEl?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-node]');
+    const key = btn?.dataset.meshNode;
+    if (!key) return;
+    // select() is what reveals this repeater's links out of the corridor; markActive is
+    // driven back through onSelectNode, so it isn't set here.
+    handle?.focus(key);
+    handle?.select(key);
+  });
+  const hoverKey = (e: Event) => {
+    const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-node]');
+    handle?.highlight(btn?.dataset.meshNode ?? null);
+  };
+  rosterEl?.addEventListener('mouseover', hoverKey);
+  rosterEl?.addEventListener('focusin', hoverKey);
+  rosterEl?.addEventListener('mouseleave', () => handle?.highlight(null));
+
+  // ---- panel collapse ----
+
+  const layout = $('.mesh-layout');
+  const toggle = $<HTMLButtonElement>('[data-mesh-toggle]');
+  const toggleLabel = $('[data-mesh-toggle-label]');
   toggle?.addEventListener('click', () => {
     const open = layout?.getAttribute('data-panel') !== 'closed';
     layout?.setAttribute('data-panel', open ? 'closed' : 'open');
     toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-    if (label) label.textContent = open ? 'Show panel' : 'Hide panel';
+    if (toggleLabel) toggleLabel.textContent = open ? 'Show panel' : 'Hide panel';
   });
+
+  load();
+  setInterval(load, REFRESH_MS);
 </script>
 
 <style>
@@ -49,12 +210,17 @@ const description =
     display: block;
   }
 
+  /* Fill exactly the space left below the chrome — no more. The subtractions are the
+     sticky topbar, its 1px bottom border, the EmergencyBanner when a life-safety event is
+     active (--banner-h, published by its island; 0 otherwise), and this element's own 1px
+     bottom border. Miss any of them and the map overflows the viewport. */
   .mesh-layout {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 400px;
     align-items: stretch;
-    min-height: calc(100dvh - var(--topbar-h));
+    height: calc(100dvh - var(--topbar-h) - var(--banner-h) - var(--border-w) - var(--border-w));
+    min-height: 520px;
     border-bottom: var(--border);
     transition: grid-template-columns var(--transition);
   }
@@ -70,15 +236,18 @@ const description =
   .mesh-layout__panel {
     border-left: var(--border);
     background: var(--surface-card);
+    min-height: 0;
+    overflow-y: auto;
   }
   .mesh-layout[data-panel='closed'] .mesh-layout__panel {
     border-left: 0;
+    overflow: hidden;
   }
 
   .mesh-layout__toggle {
     position: absolute;
     top: var(--space-4);
-    right: calc(380px + var(--space-4));
+    right: calc(400px + var(--space-4));
     z-index: var(--z-overlay);
     display: inline-flex;
     align-items: center;
@@ -118,22 +287,34 @@ const description =
     transform: rotate(135deg);
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 900px) {
     .mesh-layout,
     .mesh-layout[data-panel='closed'] {
       grid-template-columns: 1fr;
       height: auto;
+      min-height: 0;
     }
+    /* Stacked below the breakpoint: the map takes a fixed slice and the panel flows. */
     .mesh-layout__map {
-      height: 52vh;
-      min-height: 320px;
+      height: 60vh;
+      min-height: 360px;
     }
     .mesh-layout__panel {
       border-left: 0;
       border-top: var(--border);
+      max-height: none;
+      overflow: visible;
     }
     .mesh-layout__toggle {
       display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mesh-layout,
+    .mesh-layout__toggle,
+    .mesh-layout__toggle-icon {
+      transition: none;
     }
   }
 </style>

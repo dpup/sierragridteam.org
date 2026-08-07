@@ -1,68 +1,73 @@
 ---
 /**
- * MeshMap — the embedded live mesh map pane (the authoritative live view).
- * Shows a calm "initializing" panel until the iframe loads (or a fallback
- * timeout), plus an "Open Full Map" external link. No spinner (motion rules).
+ * MeshMap — the /mesh topology map frame: the MapLibre canvas, a calm "reading the mesh"
+ * panel until the graph lands, and the required basemap + data attribution.
+ *
+ * This is the FRAME only. The map itself is built in `src/lib/mesh-map.ts` from a browser
+ * `<script>` in the page (maplibre must never be imported from Astro frontmatter), and the
+ * SSR state here is an honest placeholder — nothing about the mesh is baked at build time.
  */
-import Button from '../Button.astro';
-import { externalLinks } from '@config/site';
+import { BASEMAP_ATTRIBUTION } from '@lib/basemap';
 import { mesh } from '@config/content';
 ---
 
-<div class="meshmap">
-  <div class="meshmap__loading" data-mesh-loading>
+<figure class="meshmap" data-mesh-map>
+  <div class="meshmap__canvas" data-mesh-canvas>
+    {
+      /* Shown when JS/WebGL can't run, and until the layers are added. The roster in the
+        panel carries the same information as a list, so this is a degradation, not a
+        dead end. */
+    }
+    <p class="meshmap__fallback" data-mesh-fallback>{mesh.mapFallback}</p>
+  </div>
+
+  <div class="meshmap__loading" data-mesh-loading role="status" aria-live="polite">
     <span class="meshmap__dot" aria-hidden="true"></span>
-    <p class="meshmap__loadtext">Initializing live map…</p>
+    <p class="meshmap__loadtext">{mesh.loading}</p>
   </div>
 
-  <iframe
-    class="meshmap__frame"
-    data-mesh-frame
-    src={externalLinks.liveMeshMap}
-    title={mesh.mapEmbedTitle}
-    loading="lazy"
-    referrerpolicy="no-referrer"
-    sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
-
-  <div class="meshmap__open">
-    <Button
-      variant="secondary"
-      href={externalLinks.liveMeshMap}
-      arrow
-      target="_blank"
-      rel="noopener external"
-    >
-      {mesh.openMapLabel}
-    </Button>
-  </div>
-</div>
-
-<script>
-  const frame = document.querySelector<HTMLIFrameElement>('[data-mesh-frame]');
-  const loading = document.querySelector<HTMLElement>('[data-mesh-loading]');
-  const hide = () => loading?.setAttribute('data-hidden', 'true');
-  if (frame) {
-    frame.addEventListener('load', hide);
-    // Fallback: never leave the panel up indefinitely (e.g. blocked embeds).
-    setTimeout(hide, 6000);
-  } else {
-    hide();
-  }
-</script>
+  <figcaption class="meshmap__foot">
+    <ul class="meshmap__key" aria-label="Map key">
+      <li>
+        <span class="meshmap__node meshmap__node--corridor" aria-hidden="true"></span>Corridor node
+      </li>
+      <li>
+        <span class="meshmap__node meshmap__node--neighbour" aria-hidden="true"></span>Neighbour
+      </li>
+      <li><span class="meshmap__line" aria-hidden="true"></span>Observed relay</li>
+    </ul>
+    <p class="meshmap__attrib">{BASEMAP_ATTRIBUTION} · {mesh.attribution}</p>
+  </figcaption>
+</figure>
 
 <style>
   .meshmap {
     position: relative;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
     min-height: 420px;
+    margin: 0;
     background: var(--surface-hero);
   }
 
-  .meshmap__frame {
-    width: 100%;
-    height: 100%;
-    border: 0;
+  .meshmap__canvas {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .meshmap__fallback {
+    max-width: 42ch;
+    padding: var(--space-6);
+    text-align: center;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
   }
 
   .meshmap__loading {
@@ -75,13 +80,21 @@ import { mesh } from '@config/content';
     justify-content: center;
     gap: var(--space-3);
     background: var(--surface-hero);
-    transition: opacity var(--transition);
+    transition:
+      opacity var(--transition),
+      visibility 0s linear var(--transition);
   }
+  /* `visibility: hidden` as well as opacity: an opacity-0 element is still in the
+     accessibility tree, so axe flags its (now invisible) text for contrast and screen
+     readers would still announce this role="status" region after it's done. The delayed
+     visibility transition lets the fade finish first. */
   .meshmap__loading[data-hidden='true'] {
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
   }
 
+  /* Slow blink — the one sanctioned motion for a "working on it" state. */
   .meshmap__dot {
     width: 10px;
     height: 10px;
@@ -114,15 +127,63 @@ import { mesh } from '@config/content';
     color: var(--ink-secondary);
   }
 
-  .meshmap__open {
-    position: absolute;
-    right: var(--space-4);
-    bottom: var(--space-4);
-    z-index: var(--z-overlay);
-  }
-  /* Sit the button on a parchment chip so it stays legible over the map. */
-  .meshmap__open :global(.btn) {
+  /* Basemap credit is a licence requirement, so it sits in the flow of the figure rather
+     than in a floating MapLibre control (attributionControl is off). */
+  /* Key and credit share one row when there's room and stack when there isn't. The credit
+     is long, so without wrapping it squeezed the key into a cramped vertical column and got
+     itself clipped at intermediate widths — the map column's width, not the viewport's, is
+     what runs out, so a media query can't catch this. */
+  .meshmap__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    padding: var(--space-2) var(--space-4);
     background: var(--surface-page);
-    box-shadow: var(--shadow-overlay);
+    border-top: var(--border);
+  }
+  .meshmap__key {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-secondary);
+  }
+  .meshmap__key li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .meshmap__node {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .meshmap__node--corridor {
+    background: var(--brand-green);
+    box-shadow: 0 0 0 1.5px var(--brand-brass);
+  }
+  .meshmap__node--neighbour {
+    border: 1px solid var(--ink-muted);
+  }
+  .meshmap__line {
+    width: 20px;
+    height: 2px;
+    background: var(--brand-green);
+    opacity: 0.65;
+  }
+  .meshmap__attrib {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
   }
 </style>

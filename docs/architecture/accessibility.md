@@ -26,7 +26,14 @@ residents — accessibility is a requirement, not a nicety.
   never `outline: none` without a replacement.
 - The collapsible mesh sidebar toggle is a real `<button aria-expanded>`; expandable alert
   cards use `<button aria-expanded aria-controls>`.
-- `<iframe>`s have descriptive `title` attributes.
+- Both MapLibre maps degrade to text: /live keeps the alert stream, /mesh keeps the corridor
+  roster, so no information is map-only. The /mesh roster rows are real `<button>`s, and so
+  are the corridor map pins themselves (`.mesh-pin`, each with an `aria-label` naming the
+  repeater and its status) — a canvas circle layer could never be reached by keyboard. The
+  map popover is `role="dialog"` with an `aria-label`, takes focus on open, and puts its
+  close button first in the tab order; Escape and a click on bare map both dismiss it.
+- The /mesh loading panel is `role="status" aria-live="polite"` and is hidden with
+  `visibility: hidden` (not opacity alone) once it's done, so it leaves the a11y tree.
 
 ## Motion
 

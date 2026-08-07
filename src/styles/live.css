@@ -430,13 +430,26 @@
 .live-view .maplibregl-popup-content {
   border: var(--border);
   border-radius: var(--radius);
-  box-shadow: none;
+  box-shadow: var(--shadow-overlay);
   background: var(--surface-card);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-5);
   font-family: var(--font-display);
 }
 .live-view .maplibregl-popup-tip {
   display: none;
+}
+.live-view .maplibregl-popup-close-button {
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 20px;
+  color: var(--ink-muted);
+}
+.live-view .maplibregl-popup-close-button:hover {
+  background: var(--surface-page);
+  color: var(--ink-strong);
 }
 .live-view .map-pop__sev {
   font-family: var(--font-ui);
@@ -447,8 +460,11 @@
   color: var(--ink-muted);
 }
 .live-view .map-pop__title {
+  max-width: 24ch;
+  padding-right: var(--space-4);
   font-size: var(--fs-body);
   font-weight: var(--fw-medium);
+  line-height: 1.3;
   color: var(--ink-strong);
   margin-top: var(--space-1);
 }
@@ -467,7 +483,9 @@
   font-family: var(--font-ui);
   font-size: var(--fs-micro);
   color: var(--ink-muted);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-soft);
 }
 .live-view .map-pop__src a {
   color: var(--brand-green);
@@ -480,7 +498,7 @@
 .live-view .maplibregl-ctrl-group {
   border: var(--border);
   border-radius: var(--radius);
-  box-shadow: none;
+  box-shadow: var(--shadow-overlay);
 }
 
 @media (prefers-reduced-motion: reduce) {

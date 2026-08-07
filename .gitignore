@@ -4,6 +4,9 @@ dist/
 
 # dependencies
 node_modules/
+# `make test` runs the unit tests through bun; npm + package-lock.json remain the
+# source of truth for dependencies, so bun's lockfile must never be committed.
+bun.lock
 
 # playwright
 /test-results/

@@ -151,10 +151,13 @@ stable.
 ## Project facts
 
 - **Stack:** Astro 7 (static `output: 'static'`), self-hosted fonts, no UI framework.
-  The one runtime library is **MapLibre GL JS** (open, non-Google) for the `/live`
-  hazard map, on a **CARTO Positron** basemap (no API key). It loads only on `/live`;
-  the map reads its colors from the CSS tokens at runtime and degrades to a static
-  fallback if WebGL/tiles are unavailable (the hazards are always in the alert stream).
+  The one runtime library is **MapLibre GL JS** (open, non-Google), used by the two maps —
+  the `/live` hazard map and the `/mesh` topology map — both on **OpenFreeMap Positron**
+  (`src/lib/basemap.ts`, no API key, no rate limit; replaced CARTO Positron 2026-08). Each
+  map reads its colors from the CSS tokens at runtime and degrades to a static fallback if
+  WebGL/tiles are unavailable (the hazards stay in the alert stream, the repeaters stay in
+  the /mesh roster). The basemap credit is required and renders as visible caption text
+  under each map (`BASEMAP_ATTRIBUTION`), not in a floating MapLibre control.
 - **`/live` is the flagship** situation page (replaced `/alerts`, which now redirects).
   Unlike the rest of the site, it is **client-rendered live**: the static header paints,
   a loader shows, then the browser fetches data.sierragridteam.org and renders the whole body at
@@ -167,6 +170,32 @@ stable.
   The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
   (an active **evacuation or wildfire** — both area-scoped, so the region-wide rollup is
   never trusted) — its orange is a sanctioned genuine-alert use.
+- **`/mesh` draws our own topology map** from The Grid's MeshCore feed — it replaced an
+  embedded third-party iframe (2026-08). Client-rendered live like `/live`: `mesh.ts` holds
+  the types + pure derivations, `mesh-client.ts` the fetches, `mesh-view.ts` the panel HTML,
+  `mesh-map.ts` the MapLibre map, `src/styles/mesh.css` the global `.mesh-view`-namespaced
+  CSS. Two reads frame the page: the **corridor** (`mesh_node.geojson` for the authoritative
+  in-region roster ∪ `mesh_link.geojson?window=` for the subgraph + one-hop neighbours; the
+  roster alone decides who is in-region, so /mesh and the homepage tile always agree) loads
+  on arrival; the **whole observed mesh** (`/mesh/links` + `/events?layer=MESH`, ~260 KB gz)
+  is lazy-loaded as a muted backdrop only once the reader pans past the corridor. A link's
+  recency tier drives BOTH a static opacity/width and the rate of a travelling dash, so
+  freshness survives `prefers-reduced-motion` switching the animation off. One fixed window
+  (`MESH_WINDOW`, 30d) and **no picker** — the fade is the time control. **Links that leave
+  the corridor are hidden until a repeater is selected** (map click or roster row); selecting
+  reveals just that node's outward links and fits the map to its reach. Escape or a click on
+  bare map clears it. Corridor repeaters are **DOM pins** (`.mesh-pin`, real `<button>`s with
+  a persistent halo-set name label, no chip — a beige box per node made the map a wall of
+  tags), not a circle layer. Neighbours and the backdrop stay cheap circle layers. The
+  popover is the **"anchored strip"**: fixed 296px, square, 2px green top edge, 93%-parchment
+  over a backdrop blur (it sits ON the map — so **no drop shadow**, that's a different
+  mechanic and they don't combine), header + a always-three-cell metric row + a standing
+  footnote. Values are compressed to their units ("4 /30" under DAYS SEEN); a metric that
+  can't be said in ~8 characters belongs in the kicker or the panel, not the row. Only ONE
+  popover may be open (`showPopup`); pin/marker z-index must stay below it. **Honesty:** an
+  edge is an observation ("we heard these two repeaters relay"), never a routing table or a
+  coverage claim, and a faint edge is NOT "down" — a backbone repeater adverts twice a day.
+  `UNAVAILABLE` → "Unknown" counts, never a zero.
 - **The blog** (`/blog`) is an Astro content collection: markdown posts in
   `src/content/blog/`, one file per post named `yyyy-mm-dd-topic.md` (the filename is
   the URL slug; `pubDate` must match the date prefix). Frontmatter: `title`,

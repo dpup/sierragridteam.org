@@ -118,8 +118,10 @@ feed with them; no page imports them.
      it shows an honest "feed unavailable" panel with the official sources — never stale data.
    - **Home `OperationalStatus`**: Active Alerts + Fire Weather start on a "—" placeholder and a
      client island fills them from the `wildfire`/`evacuation`/`weather_alert` map layers +
-     `/conditions` (every 5 min); on failure they stay "—". Relay Sites + Coverage are static
-     owned config.
+     `/conditions` (every 5 min); on failure they stay "—". **Relay Nodes** is live too — it
+     counts the S.I.E.R.R.A repeaters in `mesh_node.geojson` via the same
+     `deriveRelayNodesTile` /mesh uses, so the two surfaces cannot disagree. Only Coverage is
+     static owned config.
    - **`EmergencyBanner`** (every page): SSR-hidden; a client island polls
      `/places/{area}/summary` + the `wildfire` map layer and shows it only on an active
      evacuation/wildfire.
@@ -137,17 +139,46 @@ browser ──fetch──> grid.ts/hazards.ts derivations ──> live render �
 All units converted for display in `src/lib/units.ts` (°C→°F, km→mi, km/h→mph) since the audience
 is US public-safety/residents.
 
+## Mesh topology (the `/mesh` map)
+
+**Shipped 2026-08 — this closed FR-6.** The Grid ingests MeshCore node adverts and derives
+the relay topology from them (`docs/mesh-topology-design.md` in `dpup/sierra-data`), which
+is what `/mesh` now draws. It replaced an embedded third-party map. Three surfaces:
+
+| Read                                               | Shape                                                                                                                                                                          | Used for                                           |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `GET /places/{area}/map/mesh_node.geojson`         | Point features for the nodes INSIDE the place — the authoritative roster, including a node with no observed links                                                              | The corridor roster (panel + full-strength dots)   |
+| `GET /places/{area}/map/mesh_link.geojson?window=` | A self-contained subgraph: Points for in-region nodes ∪ their one-hop neighbours (`properties.mesh.inRegion` separates them), plus LineString edges with ≥1 endpoint in region | The map's links + the demoted neighbour markers    |
+| `GET /mesh/links` + `GET /events?layer=MESH`       | The WHOLE observed mesh: a coordinate-free link list joined against the global node roster (~260 KB gzipped, paged 200/page)                                                   | The lazy-loaded backdrop, once the reader pans out |
+
+Edge properties (camelCase): `a`, `b`, `observations`, `daysActive`, `firstSeen`, `lastSeen`,
+`bestSnr`. `window` accepts `24h` / `72h` (the feed's default) / `7d` / `30d` / `all`.
+
+**The site reads one fixed window — `MESH_WINDOW` (`30d`) in `src/lib/mesh.ts` — and offers
+no picker.** The recency fade already is the time control, continuously and without a mode to
+choose; a picker only let a reader hide data from themselves. Change the constant if the
+span should change.
+
+**Honesty rules specific to this feed** — an edge is an _observation_ ("we heard these two
+repeaters relay for each other", weighted by how often and how recently), never a routing
+table and never a coverage guarantee. A faint edge is **not** a link that is down: on a mesh
+where a backbone repeater adverts twice a day, quiet is not gone, so the copy always says
+what we _heard_. `sourceStatus: UNAVAILABLE` → `null` counts → "Unknown", never a `0`; a
+confirmed-empty `OK` feed is a real `0`. Derivations + tests: `src/lib/mesh.ts`,
+`src/lib/mesh.test.ts`.
+
 ## Data gaps → feature requests (FR)
 
-**FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26 and are wired up.** The remaining
-placeholders are the org's own mesh/relay status (FR-5/FR-6), which The Grid does
-not own:
+**FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26; FR-6 shipped 2026-08** (see the mesh
+section above). One gap remains:
 
-| FR       | Gap                                                     | Where it shows                 | UI behavior today                                                                |
-| -------- | ------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------- |
-| **FR-5** | No **per-relay-site status** (the org's own mesh nodes) | Home "Relay Sites" tile, /mesh | "Relay Sites" uses owned static config; no live up/down until a feed exists      |
-| **FR-6** | No structured **mesh node** feed (count/health)         | /mesh sidebar                  | Static deployment-zone list (`live` flags in `coverage.ts`); live counts pending |
+| FR       | Gap                                                   | Where it shows          | UI behavior today                                                                                       |
+| -------- | ----------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| **FR-5** | No **per-relay-site health** (is the site itself up?) | Home "Relay Nodes" tile | Tile reports mesh PRESENCE instead — "N repeaters heard", live from `mesh_node.geojson`; "—" on failure |
 
-FR-5/FR-6 concern the org’s own mesh/relay infrastructure (out of The Grid’s roads/weather
-domain); they stay open until the org exposes its own feed. Placeholders must be visually
+FR-5 concerns the org's own site-level infrastructure health, which is **not** the same thing
+as mesh presence: an advert proves a node was _heard_, not that the site is healthy, and one
+site can hold more than one node. So the homepage tile is deliberately labelled "Relay Nodes"
+/ "S.I.E.R.R.A repeaters heard" rather than "Relay Sites" — it says exactly what the feed can
+prove. FR-5 stays open until the org exposes real site health. Placeholders must be visually
 honest: a muted note, never an invented number.

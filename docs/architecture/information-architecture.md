@@ -55,7 +55,9 @@ Order, top to bottom:
      coverage town, orange = regional hub. A thin legend strip is pinned to the hero bottom.
 2. **Operational Status (stats)** — section header "Real-time Operational Status" with a
    "Synced [time]" indicator on the right; a 4-column row of bordered tiles:
-   - **Relay Sites** — `6 Active` — static owned config.
+   - **Relay Nodes** — `N Active` — live: S.I.E.R.R.A repeaters currently heard on the mesh
+     (`deriveRelayNodesTile`), NOT sites confirmed up. Links to /mesh. "—" until the fetch
+     lands, "Unknown" if the feed is down.
    - **Coverage** — `2 Counties` — static scope (Calaveras & Tuolumne).
    - **Active Alerts** — live count from data.sierragridteam.org `/weather/alerts?zones=…` (NWS foothill
      zones, FR-2). `0 Active` normal; `>0` escalates count + dot to orange.
@@ -71,11 +73,19 @@ Order, top to bottom:
 
 ### Mesh / LoRa (`/mesh`)
 
-- Full-page embedded **live map** (`https://livemap.wcmesh.com/bayarea/`) with a loading state
-  while it initializes. **This is the authoritative live map** — the homepage hero is not.
-- Collapsible info **sidebar**: tech specs (LoRa/MeshCore), S.I.E.R.R.A deployment zones
-  (Murphys, Angels Camp, Sonora, Arnold, …), security notes.
-- External **"Open Full Map"** link.
+- Full-page **topology map we draw ourselves** (`src/lib/mesh-map.ts`, MapLibre GL +
+  OpenFreeMap Positron) from The Grid's MeshCore feed — it replaced an embedded
+  third-party iframe in 2026-08. **This is the authoritative live map** — the homepage hero
+  is not. Corridor repeaters draw at full strength (ours ringed in brass), one-hop
+  neighbours as demoted hollow markers, and each observed relay link carries its recency in
+  both static weight/opacity and the rate of a travelling dash. Links out of the corridor are
+  hidden by default and revealed one repeater at a time by selecting it, which also frames
+  the map on that repeater's reach.
+- Collapsible info **sidebar**, client-rendered from the same feed (`src/lib/mesh-view.ts`):
+  status + freshness, four count tiles, a recency legend (there is deliberately no window
+  picker — the fade is the time control; see `MESH_WINDOW`), the corridor roster (select a repeater to frame its reach and reveal its outward links), and the
+  standing "what this map does not say" note.
+- Pan past the corridor and the **rest of the observed mesh** lazy-loads as a muted backdrop.
 
 ### Live Feed (`/live`) — the situation flagship (replaced `/alerts`)
 
@@ -84,7 +94,7 @@ Order, top to bottom:
 - **Summary tiles** — Wildfires / Evacuations / Weather Alerts / Fire Weather (honest
   "Unknown" when a source is unavailable, never an implied all-clear).
 - **Evacuation callout** — the official Cal OES / Genasys evacuation map link.
-- **Live hazard map** (`src/lib/live-map.ts`) — MapLibre GL + CARTO Positron, with the
+- **Live hazard map** (`src/lib/live-map.ts`) — MapLibre GL + OpenFreeMap Positron, with the
   `/hazards/*.geojson` layers severity-colored; subtle town reference dots; SSR fallback.
 - **Active alerts stream** (`renderStream` in `src/lib/live-view.ts`) — every relevant hazard,
   most-urgent first (`deriveStream` in `src/lib/hazards.ts`). The region-wide `road_incident`

@@ -67,15 +67,63 @@ export const home = {
   },
 } as const;
 
+/**
+ * The Mesh page — the live topology map. Every count on this page comes from The Grid's
+ * MeshCore feed; the copy must stay inside what an advert can actually prove (we observed
+ * these two repeaters relay for each other, this often, this recently) and must never
+ * upgrade that into a coverage or reliability claim — see docs/content-style-guide.md §10
+ * and the "what the map does not say" note below, which is load-bearing, not decoration.
+ */
 export const mesh = {
   title: 'Mesh Network',
   kicker: 'LoRa · MeshCore',
+  heading: 'The Mesh',
   intro:
-    'A live view of the S.I.E.R.R.A mesh — solar-powered LoRa relays that pass text and ' +
-    'telemetry across the foothills when power and cellular service are down. This map is the ' +
-    'authoritative live view; the homepage map is an identity visual only.',
-  openMapLabel: 'Open Full Map',
-  mapEmbedTitle: 'S.I.E.R.R.A live mesh coverage map',
+    'Solar-powered LoRa relays that pass short text and telemetry across the foothills when ' +
+    'power and cellular service are down. The map draws what the network has actually been ' +
+    'heard doing: every S.I.E.R.R.A repeater along the Ebbetts Pass corridor, and every relay ' +
+    'link we observed between them.',
+  loading: 'Loading the mesh…',
+  autoRefresh: 'Auto-refreshes every 2 minutes',
+  mapTitle: 'S.I.E.R.R.A mesh topology map',
+  mapFallback:
+    'The mesh map needs JavaScript and WebGL. Every corridor repeater is also listed beside ' +
+    'the map.',
+  legendHeading: 'What you are looking at',
+  legendNote:
+    'Links between corridor repeaters heard in the last 30 days are always drawn. How ' +
+    'recently one was heard sets how bright and heavy it is, and how fast it pulses. Select ' +
+    'a repeater to add the links reaching out past the corridor to the wider mesh.',
+  rosterHeading: 'Corridor repeaters',
+  rosterHint: 'Select a repeater to find it on the map and see what it reaches.',
+  rosterEmpty:
+    'The feed returned no repeaters inside the corridor for this window. That is a reading ' +
+    'from the network, not a confirmed outage — check the official channels if you need to ' +
+    'reach someone.',
+  neighbourHeading: 'The wider mesh',
+  neighbourNote:
+    'Hollow markers are neighbouring MeshCore repeaters run by other operators — the ' +
+    'one-hop neighbours our corridor nodes were heard relaying with. They are drawn faintly ' +
+    'because they are context, not our infrastructure. The links out to them stay hidden ' +
+    'until you select a repeater — all of them at once buried the corridor. Pan out and the ' +
+    'rest of the observed mesh loads behind them.',
+  honestyHeading: 'What this map does not say',
+  honestyNote:
+    'A link means we heard two repeaters relay for each other, weighted by how often and how ' +
+    'recently. It is not a routing table, and a faint link is not a link that is down — a ' +
+    'backbone repeater can advert only twice a day and still be working. Nothing here is a ' +
+    'guarantee of coverage at any given address, and it is never an all-clear.',
+  statusUnavailableLabel: 'Mesh feed unavailable',
+  statusUnavailableNote:
+    'The mesh feed could not be reached, so the network state is unknown. Rather than show a ' +
+    'stale picture, the map is left empty — an empty map here means "we do not know", not ' +
+    '"nothing is up".',
+  failHeading: 'Mesh feed unavailable',
+  failBody:
+    "We couldn't reach the mesh feed right now. Rather than show a stale topology, here is " +
+    'where the underlying data lives.',
+  meshcoreLabel: 'MeshCore community map',
+  attribution: 'Mesh topology via data.sierragridteam.org · Node adverts via MeshCore',
 } as const;
 
 /** The Live Feed (situation) page — the public flagship during an emergency. */

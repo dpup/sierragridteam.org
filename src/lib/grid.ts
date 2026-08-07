@@ -10,8 +10,22 @@
  * only (the screenshot harness mocks the feed with them).
  */
 
+/**
+ * Base URL for every live fetch.
+ *
+ * In `astro dev` this defaults to the same-origin `/grid-api` path, which the dev server
+ * proxies to The Grid (see `vite.server.proxy` in astro.config.mjs). That's not a
+ * convenience — The Grid's CORS allowlist only names the production origin and
+ * `http://localhost:4321`, so developing from any other hostname (a container port map, a
+ * LAN IP, `--host`) fails every live region without it. Same-origin requests aren't subject
+ * to CORS at all.
+ *
+ * Builds and `astro preview` use the absolute URL, exactly as production does. Set
+ * `PUBLIC_GRID_API_BASE` to override either (e.g. to point dev at a local Grid).
+ */
 export const GRID_API_BASE =
-  import.meta.env?.PUBLIC_GRID_API_BASE ?? 'https://data.sierragridteam.org/api/v1';
+  import.meta.env?.PUBLIC_GRID_API_BASE ??
+  (import.meta.env?.DEV ? '/grid-api' : 'https://data.sierragridteam.org/api/v1');
 
 // ---- Types (mirror the real API responses captured 2026-07-09) ----
 

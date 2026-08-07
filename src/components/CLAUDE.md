@@ -32,16 +32,23 @@ full list and each component's contract.
 
 ## Live-data islands
 
-`OperationalStatus`, `EmergencyBanner`, `LocalClock`, and `MeshMap` use small client
-`<script>`s. **No feed data is rendered at build time** — they SSR a placeholder/hidden
+`OperationalStatus`, `EmergencyBanner`, and `LocalClock` use small client `<script>`s.
+**No feed data is rendered at build time** — they SSR a placeholder/hidden
 shell and a client island fills it live. On any failure (CORS, blocked tiles, no WebGL)
 they **stay on the honest placeholder** ("—" / hidden) — never stale data, never a spinner
-or error in view. (`OperationalStatus`: Active Alerts + Fire Weather start "—"; the static
-Relay Sites + Coverage come from owned config. `EmergencyBanner`: hidden until the client
-confirms an evacuation/wildfire.)
+or error in view. (`OperationalStatus`: Relay Nodes + Active Alerts + Fire Weather all start "—" and are filled
+live — Relay Nodes counts S.I.E.R.R.A repeaters the mesh is HEARING, not sites confirmed up;
+only Coverage is owned static config. `EmergencyBanner`: hidden until the client confirms an
+evacuation/wildfire.)
 
 > `/live` is the fullest version: **client-rendered live** from `src/lib/live-view.ts` (the
 > shared render functions) + `live-map.ts`; CSS is global+namespaced in `src/styles/live.css`
 > (Astro scoped styles don't reach client-injected HTML). It shows a loader, reveals the
 > whole body once the first fetch resolves, and on failure shows an honest "feed unavailable"
 > panel with the official sources — never stale data.
+>
+> `/mesh` follows the same pattern: `MeshMap` + `MeshSidebar` are empty SSR shells, and the
+> page script fills the panel from `src/lib/mesh-view.ts` and builds the map with
+> `mesh-map.ts`; CSS is global+namespaced in `src/styles/mesh.css`. On failure it shows an
+> honest "mesh feed unavailable" block and leaves the map empty — an empty mesh map means
+> "we do not know", never "nothing is up".

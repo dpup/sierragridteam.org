@@ -40,6 +40,18 @@ import { emergencyBanner as copy } from '@config/content';
   if (el) {
     const base = el.dataset.apiBase ?? 'https://data.sierragridteam.org/api/v1';
     const area = el.dataset.area ?? 'ebbetts-pass';
+
+    // Publish the banner's rendered height as --banner-h so full-bleed pages can size
+    // themselves to the space actually left over. /mesh fills the viewport below the nav,
+    // and this band appears *above* <main> only during a life-safety event — without this
+    // the mesh map overflowed the screen by exactly the banner's height whenever an
+    // evacuation or wildfire was active. Defaults to 0px in tokens.css; a ResizeObserver
+    // keeps it right when the headline wraps to two lines.
+    const publishHeight = () => {
+      const h = el.hidden ? 0 : el.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--banner-h', `${Math.round(h)}px`);
+    };
+    new ResizeObserver(publishHeight).observe(el);
     let lastSig = '';
     const set = (sel: string, text: string) => {
       const t = el.querySelector<HTMLElement>(sel);
@@ -92,11 +104,13 @@ import { emergencyBanner as copy } from '@config/content';
 
         if (!active) {
           el.hidden = true;
+          publishHeight();
           return;
         }
         set('[data-ebanner-headline]', headline);
         set('[data-ebanner-label]', label);
         el.hidden = false;
+        publishHeight();
       } catch {
         /* keep the SSR banner state */
       }

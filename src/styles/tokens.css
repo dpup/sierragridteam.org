@@ -18,6 +18,10 @@
   --surface-hero: #edefe7; /* hero band */
   --surface-card: #f6f2e7; /* cards / tiles */
   --surface-banner: #efe9da; /* banners / call-outs */
+  /* Near-white parchment for a floating overlay ONLY (the map popover). Every other surface
+     sits in the beige family; this one is deliberately lifted off it so a popover reads as
+     hovering ABOVE the map's labels rather than as one more beige chip beside them. */
+  --surface-raised: #fdfcf7;
 
   /* ---- Ink (text) ---- */
   --ink-strong: #16271e; /* headings (near-black) */
@@ -108,13 +112,19 @@
 
   /* ---- Layout misc ---- */
   --topbar-h: 64px;
+  /* Rendered height of the site-wide EmergencyBanner, published by its client island (0
+     unless a life-safety event is active). Full-bleed pages subtract it — see /mesh. */
+  --banner-h: 0px;
   --z-skiplink: 100;
   --z-topbar: 50;
   --z-overlay: 40;
 
-  /* Cards never use drop shadows. --shadow-overlay exists only for the rare elevated
-     overlay (e.g. a loading panel over an iframe) and stays subtle. */
+  /* Cards never use drop shadows. These two exist only for genuinely elevated overlays, and
+     neither may be used on a card or tile. --shadow-overlay is the flat hairline for chrome
+     that sits ON the page (e.g. a loading panel, a floating control). --shadow-popover is a
+     soft cast for something floating ABOVE the map, where a hairline reads as flat. */
   --shadow-overlay: 0 1px 0 var(--line);
+  --shadow-popover: 0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
 }
 
 /* Honor reduced-motion at the token layer so every animation can gate on it. */

@@ -1,5 +1,5 @@
 /**
- * live-map.ts — the /live hazard map (MapLibre GL JS over CARTO Positron), extracted so
+ * live-map.ts — the /live hazard map (MapLibre GL JS over OpenFreeMap Positron), extracted so
  * the client controller can (re)build and refresh it. CLIENT-ONLY: it imports maplibre,
  * so it must never be imported from Astro frontmatter — only from a browser `<script>`.
  *
@@ -13,6 +13,7 @@
  */
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { BASEMAP_STYLE } from './basemap';
 import { escapeHtml as esc } from './format';
 import { wildfireTitle, wildfireStats, type LiveMapData } from './live-view';
 
@@ -92,7 +93,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
   try {
     map = new maplibregl.Map({
       container: canvas,
-      style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      style: BASEMAP_STYLE,
       bounds: [
         [mapData.bounds.minLng, mapData.bounds.minLat],
         [mapData.bounds.maxLng, mapData.bounds.maxLat],
@@ -106,6 +107,30 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
   } catch {
     return null; // no WebGL → keep the SSR fallback
   }
+  // Fit-to-bounds frames the whole service area, which leaves the populated Hwy 4/49
+  // corridors small and surrounded by empty foothill. Open one zoom step tighter.
+  //
+  // Zooming alone is not enough: serviceAreaBounds runs east to -119.55 over empty Sierra,
+  // so its midpoint sits well east of where anyone lives — tightening around it pushed
+  // Murphys (HQ) to the frame edge. Recentre on the mean of the town markers, which is the
+  // corridor's real centre of gravity. Every hazard is still one pan away, and all of them
+  // are in the alert stream regardless. (getZoom() is valid immediately: the constructor
+  // resolves `bounds` to a camera synchronously.)
+  const townCentre = (() => {
+    let n = 0;
+    let lng = 0;
+    let lat = 0;
+    for (const f of mapData.towns.features as { geometry?: { coordinates?: number[] } }[]) {
+      const c = f?.geometry?.coordinates;
+      if (!c || !Number.isFinite(c[0]) || !Number.isFinite(c[1])) continue;
+      lng += c[0];
+      lat += c[1];
+      n++;
+    }
+    return n ? ([lng / n, lat / n] as [number, number]) : null;
+  })();
+  map.setZoom(map.getZoom() + 1);
+  if (townCentre) map.setCenter(townCentre);
   map.on('error', () => {}); // swallow tile/style errors — never surface them
   // Settled signal for the deterministic screenshot harness: html[data-map-settled]
   // means the map has nothing left to render (set on idle, cleared by any render —

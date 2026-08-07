@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
 
 const pages = [
   { name: 'home', path: '/', h1: /signal stays up/i },
-  { name: 'mesh', path: '/mesh', h1: /mesh network/i },
+  { name: 'mesh', path: '/mesh', h1: /^the mesh$/i },
   { name: 'blog', path: '/blog', h1: /notes from the foothills/i },
   { name: 'blog-archive', path: '/blog/archive', h1: /archive/i },
   {

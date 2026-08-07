@@ -7,6 +7,17 @@
 `live-map.ts` is the MapLibre map; `units.ts` converts metric→imperial; `format.ts` is
 `escapeHtml` + `formatPtTime`. See `docs/architecture/data-feed.md` for the design.
 
+`mesh.ts` is the same split for `/mesh`: typed MeshCore topology shapes + pure derivations
+(`buildRegionGraph`, `buildGlobalGraph`, `linkRecency`, `deriveMeshSummary`, …), with
+`mesh-client.ts` doing the fetches, `mesh-view.ts` the panel HTML, and `mesh-map.ts` the
+MapLibre topology map. `basemap.ts` holds the one basemap both maps draw on (OpenFreeMap
+Positron) and its required attribution string.
+
+> ⚠️ **MapLibre paint expressions: `zoom` is only legal at the TOP level.** It may not be
+> nested inside a `case`/`match`. Wrap the zoom `interpolate` around the data-driven test,
+> never the reverse — an invalid expression is dropped silently and the layer vanishes with
+> no error. `linkOpacity` in `mesh-map.ts` shows the correct shape.
+
 **There is NO build-time fetch.** Every page renders live data in the browser; the lib is
 pure types + derivations the client feeds a fetched snapshot into. The checked-in
 `src/data/*.json` are **test fixtures only** (the screenshot harness mocks the feed with

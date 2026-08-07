@@ -1,0 +1,4194 @@
+{
+  "fetchedAt": "2026-08-06T15:51:00.263Z",
+  "area": "ebbetts-pass",
+  "node": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3391, 38.2368]
+        },
+        "properties": {
+          "id": "meshcore:cb0c0579fda6fb8fe86277a7cd4ad6d782ef0a97c368471945eaa29f914c2944",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Pinebrook Tree (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-06T12:30:09Z",
+          "areaLabel": "SIERRA Pinebrook Tree",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "cb0c0579fda6fb8fe86277a7cd4ad6d782ef0a97c368471945eaa29f914c2944",
+            "nodeType": "repeater",
+            "name": "SIERRA Pinebrook Tree",
+            "snr": 12.8,
+            "rssi": -53,
+            "hopCount": 4,
+            "gateways": ["E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3698, 38.1951]
+        },
+        "properties": {
+          "id": "meshcore:a30081749739257489c372a0183f5f7cfd1705eb1dc4441ae11dd30533927c71",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Hathaway Pines (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T18:39:31Z",
+          "areaLabel": "SIERRA Hathaway Pines",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "a30081749739257489c372a0183f5f7cfd1705eb1dc4441ae11dd30533927c71",
+            "nodeType": "repeater",
+            "name": "SIERRA Hathaway Pines",
+            "snr": 2.2,
+            "rssi": -112,
+            "hopCount": 3,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4464, 38.147]
+        },
+        "properties": {
+          "id": "meshcore:3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA UticiaPowerhouse (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T18:39:03Z",
+          "areaLabel": "SIERRA UticiaPowerhouse",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+            "nodeType": "repeater",
+            "name": "SIERRA UticiaPowerhouse",
+            "snr": 9.8,
+            "rssi": -84,
+            "hopCount": 5,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3468, 38.2501]
+        },
+        "properties": {
+          "id": "meshcore:a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Lilac Park (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T12:25:04Z",
+          "areaLabel": "SIERRA Lilac Park",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+            "nodeType": "repeater",
+            "name": "SIERRA Lilac Park",
+            "snr": 11.8,
+            "rssi": -50,
+            "hopCount": 3,
+            "gateways": ["E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4119, 38.1614]
+        },
+        "properties": {
+          "id": "meshcore:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T12:18:58Z",
+          "areaLabel": "SIERRA Forest Meadows",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "nodeType": "repeater",
+            "name": "SIERRA Forest Meadows",
+            "snr": 12.25,
+            "rssi": -53,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5379E29B981FB62698D6C4ED525FEEFC6B9792E960B16E934E6841B83724FB8B",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.2758, 38.2927]
+        },
+        "properties": {
+          "id": "meshcore:2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Snowshoe Lake (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:46:09Z",
+          "areaLabel": "SIERRA Snowshoe Lake",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c",
+            "nodeType": "repeater",
+            "name": "SIERRA Snowshoe Lake",
+            "snr": 11.8,
+            "rssi": -83,
+            "hopCount": 3,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3643, 38.0213]
+        },
+        "properties": {
+          "id": "meshcore:655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Columbia jwt1 (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:16:10Z",
+          "areaLabel": "SIERRA Columbia jwt1",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+            "nodeType": "repeater",
+            "name": "SIERRA Columbia jwt1",
+            "snr": 11.75,
+            "rssi": -76,
+            "hopCount": 9,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3203, 38.3016]
+        },
+        "properties": {
+          "id": "meshcore:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T03:00:48Z",
+          "areaLabel": "SIERRA Arnold Summit",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "nodeType": "repeater",
+            "name": "SIERRA Arnold Summit",
+            "snr": 11,
+            "rssi": -85,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4056, 38.167]
+        },
+        "properties": {
+          "id": "meshcore:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Eagle One 🦅 (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T02:33:36Z",
+          "areaLabel": "SIERRA Eagle One 🦅",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "nodeType": "repeater",
+            "name": "SIERRA Eagle One 🦅",
+            "snr": -5,
+            "rssi": -93,
+            "hopCount": 7,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ]
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.2785, 38.3099]
+        },
+        "properties": {
+          "id": "meshcore:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T02:09:04Z",
+          "areaLabel": "SIERRA Camp Connell",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "nodeType": "repeater",
+            "name": "SIERRA Camp Connell",
+            "snr": 11.8,
+            "rssi": -47,
+            "hopCount": 1,
+            "gateways": ["E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"]
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "layer": "mesh_node",
+      "area": "ebbetts-pass",
+      "generatedAt": "2026-08-06T15:50:59Z",
+      "sourceStatus": "OK",
+      "schemaVersion": 1
+    }
+  },
+  "link": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.9225, 37.62]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Sunol Ridge Repeater",
+          "updatedAt": "2026-08-06T15:50:01Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+            "observations": 483,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T00:09:59Z",
+            "lastSeen": "2026-08-06T15:50:01Z",
+            "bestSnr": 12.75
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2758, 38.2927],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Snowshoe Lake ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T15:50:01Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 409,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T02:53:58Z",
+            "lastSeen": "2026-08-06T15:50:01Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T15:45:14Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 340,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:00:39Z",
+            "lastSeen": "2026-08-06T15:45:14Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-121.9225, 37.62]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ Sunol Ridge Repeater",
+          "updatedAt": "2026-08-06T15:37:15Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+            "observations": 316,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T02:39:09Z",
+            "lastSeen": "2026-08-06T15:37:15Z",
+            "bestSnr": 13
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-121.4557, 37.6772]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ Tracy (TH) Repeater",
+          "updatedAt": "2026-08-06T15:50:01Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+            "observations": 297,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:33:07Z",
+            "lastSeen": "2026-08-06T15:50:01Z",
+            "bestSnr": 13.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.51, 37.3138]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ VLK-RS-16",
+          "updatedAt": "2026-08-06T15:20:20Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+            "observations": 278,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T00:18:42Z",
+            "lastSeen": "2026-08-06T15:20:20Z",
+            "bestSnr": 12.75
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-06T14:33:46Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 238,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T05:42:22Z",
+            "lastSeen": "2026-08-06T14:33:46Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.4557, 37.6772]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Tracy (TH) Repeater",
+          "updatedAt": "2026-08-06T15:50:01Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+            "observations": 226,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T00:44:30Z",
+            "lastSeen": "2026-08-06T15:50:01Z",
+            "bestSnr": 12.75
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.5796, 37.675],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Top of the World - Live ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T15:38:11Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 201,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T02:47:10Z",
+            "lastSeen": "2026-08-06T15:38:11Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.5884, 37.3467],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Albiani Park ⛳ ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T15:21:23Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 123,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T05:42:47Z",
+            "lastSeen": "2026-08-06T15:21:23Z",
+            "bestSnr": 13
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.5796, 37.675]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Top of the World - Live",
+          "updatedAt": "2026-08-06T15:20:20Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+            "observations": 96,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T00:27:04Z",
+            "lastSeen": "2026-08-06T15:20:20Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.448, 37.2942]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ VLK-RS-BR",
+          "updatedAt": "2026-08-06T14:36:26Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+            "observations": 96,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T01:31:00Z",
+            "lastSeen": "2026-08-06T14:36:26Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-121.6275, 36.5395]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ PL@T Toro Deathstar",
+          "updatedAt": "2026-08-06T13:59:51Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+            "observations": 95,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T06:35:56Z",
+            "lastSeen": "2026-08-06T13:59:51Z",
+            "bestSnr": 13.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-06T14:03:10Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 94,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:00:40Z",
+            "lastSeen": "2026-08-06T14:03:10Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.5005, 36.7506]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ AD77 ⛰️ TOOYOHTAK",
+          "updatedAt": "2026-08-06T15:28:46Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+            "observations": 87,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T02:16:54Z",
+            "lastSeen": "2026-08-06T15:28:46Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-121.4749, 37.6855]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ Tracy (TH) Repeater II",
+          "updatedAt": "2026-08-06T12:45:14Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+            "observations": 85,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:37:11Z",
+            "lastSeen": "2026-08-06T12:45:14Z",
+            "bestSnr": 13
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-120.51, 37.3138]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ VLK-RS-16",
+          "updatedAt": "2026-08-06T15:11:13Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+            "observations": 83,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:52:34Z",
+            "lastSeen": "2026-08-06T15:11:13Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.577, 37.3314],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:9b7752174bf93ebb6d4d20f947774e57e6b644ff0187e2cd321ae820982b09b1:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-BH ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T14:56:12Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "9b7752174bf93ebb6d4d20f947774e57e6b644ff0187e2cd321ae820982b09b1",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 79,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T06:44:26Z",
+            "lastSeen": "2026-08-06T14:56:12Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.6275, 36.5395]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ PL@T Toro Deathstar",
+          "updatedAt": "2026-08-06T14:35:37Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+            "observations": 68,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:16:34Z",
+            "lastSeen": "2026-08-06T14:35:37Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.412, 37.2894],
+            [-120.4119, 38.1614]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:0202b93da1c3b3ce32e36a0778549545a966c2f2cae863cea80d7851d937c2d0:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-OM-HB ↔ SIERRA Forest Meadows",
+          "updatedAt": "2026-08-06T14:53:56Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "0202b93da1c3b3ce32e36a0778549545a966c2f2cae863cea80d7851d937c2d0",
+            "b": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "observations": 66,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T12:45:15Z",
+            "lastSeen": "2026-08-06T14:53:56Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.51, 37.3138],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-16 ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T15:15:33Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 64,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T07:14:28Z",
+            "lastSeen": "2026-08-06T15:15:33Z",
+            "bestSnr": 12.25
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.4749, 37.6855]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Tracy (TH) Repeater II",
+          "updatedAt": "2026-08-06T15:45:20Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+            "observations": 59,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T04:37:04Z",
+            "lastSeen": "2026-08-06T15:45:20Z",
+            "bestSnr": 13
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T12:18:43Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 52,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T10:30:34Z",
+            "lastSeen": "2026-08-06T12:18:43Z",
+            "bestSnr": 12.25
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.363, 37.2275]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ VLK-RS-LG",
+          "updatedAt": "2026-08-06T14:35:39Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+            "observations": 48,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T03:05:50Z",
+            "lastSeen": "2026-08-06T14:35:39Z",
+            "bestSnr": 13
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.3478, 37.8148],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:51bf881960eebb83883e78759101a9b9f8e822e0bcfae231c16410007087a3a9:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Lathrop (RI) Repeater ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T15:48:19Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "51bf881960eebb83883e78759101a9b9f8e822e0bcfae231c16410007087a3a9",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 47,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T05:18:33Z",
+            "lastSeen": "2026-08-06T15:48:19Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-121.5005, 36.7506]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ AD77 ⛰️ TOOYOHTAK",
+          "updatedAt": "2026-08-05T22:40:11Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+            "observations": 43,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T06:28:43Z",
+            "lastSeen": "2026-08-05T22:40:11Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.5005, 36.7506]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ AD77 ⛰️ TOOYOHTAK",
+          "updatedAt": "2026-08-06T12:44:32Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+            "observations": 41,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T05:47:10Z",
+            "lastSeen": "2026-08-06T12:44:32Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-06T03:44:22Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 41,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T19:16:01Z",
+            "lastSeen": "2026-08-06T03:44:22Z",
+            "bestSnr": 13.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.3643, 38.0213]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ SIERRA Columbia jwt1",
+          "updatedAt": "2026-08-06T00:44:33Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+            "observations": 34,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T07:15:56Z",
+            "lastSeen": "2026-08-06T00:44:33Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4056, 38.167],
+            [-121.9225, 37.62]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25:e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Eagle One 🦅 ↔ Sunol Ridge Repeater",
+          "updatedAt": "2026-08-06T09:44:30Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "b": "e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+            "observations": 34,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T04:25:50Z",
+            "lastSeen": "2026-08-06T09:44:30Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3468, 38.2501],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Lilac Park ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T12:30:22Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 32,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T00:25:01Z",
+            "lastSeen": "2026-08-06T12:30:22Z",
+            "bestSnr": 13
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.6275, 36.5395]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ PL@T Toro Deathstar",
+          "updatedAt": "2026-08-06T05:11:34Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+            "observations": 28,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T05:39:24Z",
+            "lastSeen": "2026-08-06T05:11:34Z",
+            "bestSnr": 11.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3468, 38.2501],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Lilac Park ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-04T12:25:12Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 25,
+            "daysActive": 2,
+            "firstSeen": "2026-08-03T12:25:03Z",
+            "lastSeen": "2026-08-04T12:25:12Z",
+            "bestSnr": 12.25
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.5796, 37.675]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ Top of the World - Live",
+          "updatedAt": "2026-08-06T08:54:04Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+            "observations": 22,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T03:21:20Z",
+            "lastSeen": "2026-08-06T08:54:04Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.5884, 37.3467]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Albiani Park ⛳",
+          "updatedAt": "2026-08-05T08:49:53Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+            "observations": 22,
+            "daysActive": 3,
+            "firstSeen": "2026-08-03T02:21:48Z",
+            "lastSeen": "2026-08-05T08:49:53Z",
+            "bestSnr": 12.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4342, 37.2751],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-EMA ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T14:47:09Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 18,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T17:23:41Z",
+            "lastSeen": "2026-08-06T14:47:09Z",
+            "bestSnr": 12.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-121.5682, 36.311]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ PL@R Chews Ridge",
+          "updatedAt": "2026-08-06T15:10:05Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+            "observations": 18,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T04:37:10Z",
+            "lastSeen": "2026-08-06T15:10:05Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.5682, 36.311]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ PL@R Chews Ridge",
+          "updatedAt": "2026-08-05T16:14:41Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+            "observations": 16,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T07:16:01Z",
+            "lastSeen": "2026-08-05T16:14:41Z",
+            "bestSnr": 12.75
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3643, 38.0213],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Columbia jwt1 ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T00:44:33Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 16,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T07:15:57Z",
+            "lastSeen": "2026-08-06T00:44:33Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.07, 36.62],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:3a507982f246fc197bbbcdd72976331f00590578b915c0a6d0940052afbbc448:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Call Mnt 3A50 Repeater ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T12:01:09Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "3a507982f246fc197bbbcdd72976331f00590578b915c0a6d0940052afbbc448",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 15,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T07:16:02Z",
+            "lastSeen": "2026-08-06T12:01:09Z",
+            "bestSnr": 12.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.5682, 36.311]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ PL@R Chews Ridge",
+          "updatedAt": "2026-08-06T09:49:54Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+            "observations": 14,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T14:12:43Z",
+            "lastSeen": "2026-08-06T09:49:54Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3698, 38.1951],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:a30081749739257489c372a0183f5f7cfd1705eb1dc4441ae11dd30533927c71:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Hathaway Pines ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T14:42:47Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "a30081749739257489c372a0183f5f7cfd1705eb1dc4441ae11dd30533927c71",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 14,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T18:39:27Z",
+            "lastSeen": "2026-08-06T14:42:47Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4056, 38.167],
+            [-120.363, 37.2275]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25:fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Eagle One 🦅 ↔ VLK-RS-LG",
+          "updatedAt": "2026-08-05T06:33:33Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "b": "fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+            "observations": 14,
+            "daysActive": 1,
+            "firstSeen": "2026-08-05T06:33:24Z",
+            "lastSeen": "2026-08-05T06:33:33Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-120.5884, 37.3467]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ Albiani Park ⛳",
+          "updatedAt": "2026-08-06T10:40:10Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+            "observations": 11,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T04:26:14Z",
+            "lastSeen": "2026-08-06T10:40:10Z",
+            "bestSnr": 12.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.7801, 36.5056],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:88a95bc5bee8dc0ccdacd650c4dce46a122792b7488bab418265f20c0302d087:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Rancho Relaxo ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-05T08:58:26Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "88a95bc5bee8dc0ccdacd650c4dce46a122792b7488bab418265f20c0302d087",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 11,
+            "daysActive": 1,
+            "firstSeen": "2026-08-05T08:58:10Z",
+            "lastSeen": "2026-08-05T08:58:26Z",
+            "bestSnr": 11
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4342, 37.2751],
+            [-120.4119, 38.1614]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-EMA ↔ SIERRA Forest Meadows",
+          "updatedAt": "2026-08-06T12:37:10Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b",
+            "b": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "observations": 9,
+            "daysActive": 4,
+            "firstSeen": "2026-08-03T07:14:30Z",
+            "lastSeen": "2026-08-06T12:37:10Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-122.1055, 38.4002],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Mt Vaca ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T13:13:14Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 9,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T02:29:57Z",
+            "lastSeen": "2026-08-06T13:13:14Z",
+            "bestSnr": 9.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.5005, 36.7506],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "AD77 ⛰️ TOOYOHTAK ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-06T01:07:45Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 9,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T19:55:32Z",
+            "lastSeen": "2026-08-06T01:07:45Z",
+            "bestSnr": 11.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.5796, 37.675],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Top of the World - Live ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-06T01:11:39Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 8,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T04:51:37Z",
+            "lastSeen": "2026-08-06T01:11:39Z",
+            "bestSnr": 11.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.8439, 37.1098],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "1000💥Repeater G2 ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-06T13:11:29Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 7,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T05:47:06Z",
+            "lastSeen": "2026-08-06T13:11:29Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.4557, 37.6772]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ Tracy (TH) Repeater",
+          "updatedAt": "2026-08-06T15:45:14Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+            "observations": 7,
+            "daysActive": 3,
+            "firstSeen": "2026-08-04T12:32:52Z",
+            "lastSeen": "2026-08-06T15:45:14Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.4749, 37.6855]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ Tracy (TH) Repeater II",
+          "updatedAt": "2026-08-05T16:47:41Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+            "observations": 7,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T12:45:12Z",
+            "lastSeen": "2026-08-05T16:47:41Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-122.1055, 38.4002]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ Mt Vaca",
+          "updatedAt": "2026-08-06T12:10:03Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+            "observations": 5,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T06:43:16Z",
+            "lastSeen": "2026-08-06T12:10:03Z",
+            "bestSnr": 11.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-121.9714, 37.7241]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:68e262d11077beebee66f40a0944fc850f00680481ae22b1ccacf54921fcb32c",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Dublin Ridge",
+          "updatedAt": "2026-08-06T13:55:59Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "68e262d11077beebee66f40a0944fc850f00680481ae22b1ccacf54921fcb32c",
+            "observations": 5,
+            "daysActive": 2,
+            "firstSeen": "2026-08-03T10:50:40Z",
+            "lastSeen": "2026-08-06T13:55:59Z",
+            "bestSnr": 8.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-121.9714, 37.7241]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:68e262d11077beebee66f40a0944fc850f00680481ae22b1ccacf54921fcb32c",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ Dublin Ridge",
+          "updatedAt": "2026-08-06T03:20:16Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "68e262d11077beebee66f40a0944fc850f00680481ae22b1ccacf54921fcb32c",
+            "observations": 4,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T12:24:03Z",
+            "lastSeen": "2026-08-06T03:20:16Z",
+            "bestSnr": 12.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.3203, 38.3016],
+            [-120.3468, 38.2501]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656:a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit ↔ SIERRA Lilac Park",
+          "updatedAt": "2026-08-06T00:25:03Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "b": "a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+            "observations": 4,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T12:25:04Z",
+            "lastSeen": "2026-08-06T00:25:03Z",
+            "bestSnr": 11.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-122.1055, 38.4002]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ Mt Vaca",
+          "updatedAt": "2026-08-06T08:18:11Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+            "observations": 4,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T02:29:59Z",
+            "lastSeen": "2026-08-06T08:18:11Z",
+            "bestSnr": 11
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.51, 37.3138],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-16 ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-04T02:33:26Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 4,
+            "daysActive": 2,
+            "firstSeen": "2026-08-03T04:25:50Z",
+            "lastSeen": "2026-08-04T02:33:26Z",
+            "bestSnr": 11.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.8439, 37.1098],
+            [-120.3203, 38.3016]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "1000💥Repeater G2 ↔ SIERRA Arnold Summit",
+          "updatedAt": "2026-08-04T09:43:48Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74",
+            "b": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "observations": 3,
+            "daysActive": 1,
+            "firstSeen": "2026-08-04T09:29:38Z",
+            "lastSeen": "2026-08-04T09:43:48Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4119, 38.1614],
+            [-120.5218, 37.2973]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d:ad09a0dc317ce8e5f453ee7cb48eb04ae0a4698f1e8135aa996fbd80b2881168",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows ↔ VLK-OM-OF",
+          "updatedAt": "2026-08-06T04:10:10Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "b": "ad09a0dc317ce8e5f453ee7cb48eb04ae0a4698f1e8135aa996fbd80b2881168",
+            "observations": 3,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T01:58:44Z",
+            "lastSeen": "2026-08-06T04:10:10Z",
+            "bestSnr": 12.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.51, 37.3138],
+            [-120.3468, 38.2501]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb:a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-16 ↔ SIERRA Lilac Park",
+          "updatedAt": "2026-08-05T00:25:00Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+            "b": "a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+            "observations": 3,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T00:25:00Z",
+            "lastSeen": "2026-08-05T00:25:00Z",
+            "bestSnr": 11.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-120.448, 37.2942]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ VLK-RS-BR",
+          "updatedAt": "2026-08-06T05:26:47Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+            "observations": 3,
+            "daysActive": 2,
+            "firstSeen": "2026-08-05T07:58:12Z",
+            "lastSeen": "2026-08-06T05:26:47Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.4557, 37.6772],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Tracy (TH) Repeater ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-04T13:03:29Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 3,
+            "daysActive": 2,
+            "firstSeen": "2026-08-03T15:28:53Z",
+            "lastSeen": "2026-08-04T13:03:29Z",
+            "bestSnr": 11.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4342, 37.2751],
+            [-120.4056, 38.167]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-EMA ↔ SIERRA Eagle One 🦅",
+          "updatedAt": "2026-08-06T03:09:58Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b",
+            "b": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "observations": 2,
+            "daysActive": 2,
+            "firstSeen": "2026-08-04T05:01:10Z",
+            "lastSeen": "2026-08-06T03:09:58Z",
+            "bestSnr": 11.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.8439, 37.1098],
+            [-120.4119, 38.1614]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "1000💥Repeater G2 ↔ SIERRA Forest Meadows",
+          "updatedAt": "2026-08-03T12:37:13Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74",
+            "b": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "observations": 2,
+            "daysActive": 1,
+            "firstSeen": "2026-08-03T12:37:07Z",
+            "lastSeen": "2026-08-03T12:37:13Z",
+            "bestSnr": 10.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4464, 38.147],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA UticiaPowerhouse ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-04T19:02:12Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 2,
+            "daysActive": 1,
+            "firstSeen": "2026-08-04T19:02:09Z",
+            "lastSeen": "2026-08-04T19:02:12Z",
+            "bestSnr": 6.8
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.4056, 38.167],
+            [-120.448, 37.2942]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25:cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Eagle One 🦅 ↔ VLK-RS-BR",
+          "updatedAt": "2026-08-04T04:56:51Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "b": "cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+            "observations": 2,
+            "daysActive": 2,
+            "firstSeen": "2026-08-03T04:37:27Z",
+            "lastSeen": "2026-08-04T04:56:51Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.412, 37.2894],
+            [-120.2785, 38.3099]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:0202b93da1c3b3ce32e36a0778549545a966c2f2cae863cea80d7851d937c2d0:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-OM-HB ↔ SIERRA Camp Connell",
+          "updatedAt": "2026-08-05T10:04:16Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "0202b93da1c3b3ce32e36a0778549545a966c2f2cae863cea80d7851d937c2d0",
+            "b": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "observations": 1,
+            "daysActive": 1,
+            "firstSeen": "2026-08-05T10:04:16Z",
+            "lastSeen": "2026-08-05T10:04:16Z",
+            "bestSnr": 6.5
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-121.8034, 37.8112],
+            [-120.4119, 38.1614]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:25181d85a5d14cffe4020600988b77031340e23513816a6460711ffc2c86c834:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Highlands Repeater ↔ SIERRA Forest Meadows",
+          "updatedAt": "2026-08-05T16:22:33Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "25181d85a5d14cffe4020600988b77031340e23513816a6460711ffc2c86c834",
+            "b": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "observations": 1,
+            "daysActive": 1,
+            "firstSeen": "2026-08-05T16:22:33Z",
+            "lastSeen": "2026-08-05T16:22:33Z",
+            "bestSnr": 1
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2758, 38.2927],
+            [-120.4464, 38.147]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c:3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Snowshoe Lake ↔ SIERRA UticiaPowerhouse",
+          "updatedAt": "2026-08-05T18:39:00Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c",
+            "b": "3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+            "observations": 1,
+            "daysActive": 1,
+            "firstSeen": "2026-08-05T18:39:00Z",
+            "lastSeen": "2026-08-05T18:39:00Z",
+            "bestSnr": 12
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": [
+            [-120.2785, 38.3099],
+            [-120.363, 37.2275]
+          ]
+        },
+        "properties": {
+          "id": "mesh_link:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b:fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+          "layer": "MESH_LINK",
+          "kind": "Relay link",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell ↔ VLK-RS-LG",
+          "updatedAt": "2026-08-04T18:15:26Z",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "attribution": "MeshCore community mesh"
+          },
+          "meshLink": {
+            "a": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "b": "fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+            "observations": 1,
+            "daysActive": 1,
+            "firstSeen": "2026-08-04T18:15:26Z",
+            "lastSeen": "2026-08-04T18:15:26Z",
+            "bestSnr": 10.2
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.7801, 36.5056]
+        },
+        "properties": {
+          "id": "meshcore:88a95bc5bee8dc0ccdacd650c4dce46a122792b7488bab418265f20c0302d087",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Rancho Relaxo (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:30:36Z",
+          "areaLabel": "Rancho Relaxo",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "88a95bc5bee8dc0ccdacd650c4dce46a122792b7488bab418265f20c0302d087",
+            "nodeType": "repeater",
+            "name": "Rancho Relaxo",
+            "snr": 11.5,
+            "rssi": -52,
+            "hopCount": 8,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "B9CFE9A1BB07D65132366C1B50C8E0FF838F0C34961809958DEC8492290971E6",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4056, 38.167]
+        },
+        "properties": {
+          "id": "meshcore:ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Eagle One 🦅 (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T02:33:36Z",
+          "areaLabel": "SIERRA Eagle One 🦅",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "ca57b9577ee6ee8444ffaa632c1bcaab62cd1cb3f8c0d0090b55c9ded65bbb25",
+            "nodeType": "repeater",
+            "name": "SIERRA Eagle One 🦅",
+            "snr": -5,
+            "rssi": -93,
+            "hopCount": 7,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3698, 38.1951]
+        },
+        "properties": {
+          "id": "meshcore:a30081749739257489c372a0183f5f7cfd1705eb1dc4441ae11dd30533927c71",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Hathaway Pines (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T18:39:31Z",
+          "areaLabel": "SIERRA Hathaway Pines",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "a30081749739257489c372a0183f5f7cfd1705eb1dc4441ae11dd30533927c71",
+            "nodeType": "repeater",
+            "name": "SIERRA Hathaway Pines",
+            "snr": 2.2,
+            "rssi": -112,
+            "hopCount": 3,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3468, 38.2501]
+        },
+        "properties": {
+          "id": "meshcore:a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Lilac Park (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T12:25:04Z",
+          "areaLabel": "SIERRA Lilac Park",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71",
+            "nodeType": "repeater",
+            "name": "SIERRA Lilac Park",
+            "snr": 11.8,
+            "rssi": -50,
+            "hopCount": 3,
+            "gateways": ["E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.9225, 37.62]
+        },
+        "properties": {
+          "id": "meshcore:e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Sunol Ridge Repeater (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T11:52:58Z",
+          "areaLabel": "Sunol Ridge Repeater",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "e4cbe91447bb1198205612f86e70fc2386ba84d7b90a0af8854e747a18a24d9a",
+            "nodeType": "repeater",
+            "name": "Sunol Ridge Repeater",
+            "snr": 13,
+            "rssi": -32,
+            "hopCount": 7,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.448, 37.2942]
+        },
+        "properties": {
+          "id": "meshcore:cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-BR (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T06:17:58Z",
+          "areaLabel": "VLK-RS-BR",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "cf27bfcb15674c623bd965b30e693bfc2db44989727f114f033098b60ae107f4",
+            "nodeType": "repeater",
+            "name": "VLK-RS-BR",
+            "snr": 12.2,
+            "rssi": -48,
+            "hopCount": 4,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.4749, 37.6855]
+        },
+        "properties": {
+          "id": "meshcore:edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Tracy (TH) Repeater II (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T06:45:16Z",
+          "areaLabel": "Tracy (TH) Repeater II",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "edaeff6a44e3be39d680c083bb8f34027b94dd0bbd0af19910c440c3149fbf7d",
+            "nodeType": "repeater",
+            "name": "Tracy (TH) Repeater II",
+            "snr": 11.5,
+            "rssi": -83,
+            "hopCount": 3,
+            "gateways": ["0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0"],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.2758, 38.2927]
+        },
+        "properties": {
+          "id": "meshcore:2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Snowshoe Lake (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:46:09Z",
+          "areaLabel": "SIERRA Snowshoe Lake",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "2cfec925b5532214b6a2b02fdefbe68c34ca1f8c7b1e2ba0a730fe01cd7c7b1c",
+            "nodeType": "repeater",
+            "name": "SIERRA Snowshoe Lake",
+            "snr": 11.8,
+            "rssi": -83,
+            "hopCount": 3,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.51, 37.3138]
+        },
+        "properties": {
+          "id": "meshcore:77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-16 (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T03:07:10Z",
+          "areaLabel": "VLK-RS-16",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "77d7c0a0abb317383871a903ee6a4ac04b369e042c51a85fa5254200e67b63eb",
+            "nodeType": "repeater",
+            "name": "VLK-RS-16",
+            "snr": 8,
+            "rssi": -96,
+            "hopCount": 5,
+            "gateways": [
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "B9CFE9A1BB07D65132366C1B50C8E0FF838F0C34961809958DEC8492290971E6",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4342, 37.2751]
+        },
+        "properties": {
+          "id": "meshcore:0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-EMA (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T04:14:46Z",
+          "areaLabel": "VLK-RS-EMA",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "0d0d2c61f819a499dc24e48dd23084fc5b2d62e5c044fccd0f37fffec59feb7b",
+            "nodeType": "repeater",
+            "name": "VLK-RS-EMA",
+            "snr": -7,
+            "rssi": -103,
+            "hopCount": 7,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5379E29B981FB62698D6C4ED525FEEFC6B9792E960B16E934E6841B83724FB8B",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.07, 36.62]
+        },
+        "properties": {
+          "id": "meshcore:3a507982f246fc197bbbcdd72976331f00590578b915c0a6d0940052afbbc448",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Call Mnt 3A50 Repeater (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T12:50:00Z",
+          "areaLabel": "Call Mnt 3A50 Repeater",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "3a507982f246fc197bbbcdd72976331f00590578b915c0a6d0940052afbbc448",
+            "nodeType": "repeater",
+            "name": "Call Mnt 3A50 Repeater",
+            "snr": 6.5,
+            "rssi": -94,
+            "hopCount": 8,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4464, 38.147]
+        },
+        "properties": {
+          "id": "meshcore:3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA UticiaPowerhouse (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T18:39:03Z",
+          "areaLabel": "SIERRA UticiaPowerhouse",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "3d444c8b75a6b45b5e1c773deb39f131fefda7d78c4e541a9a09416a26699912",
+            "nodeType": "repeater",
+            "name": "SIERRA UticiaPowerhouse",
+            "snr": 9.8,
+            "rssi": -84,
+            "hopCount": 5,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.2785, 38.3099]
+        },
+        "properties": {
+          "id": "meshcore:ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Camp Connell (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T02:09:04Z",
+          "areaLabel": "SIERRA Camp Connell",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "ab074a85d45b976a6b7b35189d43781385a309e2dbb878cc6507687be2c3e95b",
+            "nodeType": "repeater",
+            "name": "SIERRA Camp Connell",
+            "snr": 11.8,
+            "rssi": -47,
+            "hopCount": 1,
+            "gateways": ["E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-122.1055, 38.4002]
+        },
+        "properties": {
+          "id": "meshcore:800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Mt Vaca (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-06T10:28:42Z",
+          "areaLabel": "Mt Vaca",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "800855f1596f54d8b3f9f43663efd6bed32623be34964bc17efd24d2d81ee74b",
+            "nodeType": "repeater",
+            "name": "Mt Vaca",
+            "snr": -5.5,
+            "rssi": -103,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "DEADBEEF5735CC25D74F3D022F2EAE5E87ADF93C05FEBF92EDB8C68A72A913C3",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.8034, 37.8112]
+        },
+        "properties": {
+          "id": "meshcore:25181d85a5d14cffe4020600988b77031340e23513816a6460711ffc2c86c834",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Highlands Repeater (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T02:23:39Z",
+          "areaLabel": "Highlands Repeater",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "25181d85a5d14cffe4020600988b77031340e23513816a6460711ffc2c86c834",
+            "nodeType": "repeater",
+            "name": "Highlands Repeater",
+            "snr": 6.2,
+            "rssi": -104,
+            "gateways": ["6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056"],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3391, 38.2368]
+        },
+        "properties": {
+          "id": "meshcore:cb0c0579fda6fb8fe86277a7cd4ad6d782ef0a97c368471945eaa29f914c2944",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Pinebrook Tree (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-06T12:30:09Z",
+          "areaLabel": "SIERRA Pinebrook Tree",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "cb0c0579fda6fb8fe86277a7cd4ad6d782ef0a97c368471945eaa29f914c2944",
+            "nodeType": "repeater",
+            "name": "SIERRA Pinebrook Tree",
+            "snr": 12.8,
+            "rssi": -53,
+            "hopCount": 4,
+            "gateways": ["E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3643, 38.0213]
+        },
+        "properties": {
+          "id": "meshcore:655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Columbia jwt1 (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:16:10Z",
+          "areaLabel": "SIERRA Columbia jwt1",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "655ea0b218aeb164ad793709793a8dd3c84c359adfdffbfa3f824f1a79b7c8b3",
+            "nodeType": "repeater",
+            "name": "SIERRA Columbia jwt1",
+            "snr": 11.75,
+            "rssi": -76,
+            "hopCount": 9,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.5005, 36.7506]
+        },
+        "properties": {
+          "id": "meshcore:ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "AD77 ⛰️ TOOYOHTAK (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-06T14:54:00Z",
+          "areaLabel": "AD77 ⛰️ TOOYOHTAK",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "ad777fcfd4ef8515bb1dc6b6e65943ba2c77c39633b5fe8b3109e44d7ee83a3f",
+            "nodeType": "repeater",
+            "name": "AD77 ⛰️ TOOYOHTAK",
+            "snr": 4.5,
+            "rssi": -106,
+            "hopCount": 7,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "DEADBEEF5735CC25D74F3D022F2EAE5E87ADF93C05FEBF92EDB8C68A72A913C3",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.577, 37.3314]
+        },
+        "properties": {
+          "id": "meshcore:9b7752174bf93ebb6d4d20f947774e57e6b644ff0187e2cd321ae820982b09b1",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-BH (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T06:15:48Z",
+          "areaLabel": "VLK-RS-BH",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "9b7752174bf93ebb6d4d20f947774e57e6b644ff0187e2cd321ae820982b09b1",
+            "nodeType": "repeater",
+            "name": "VLK-RS-BH",
+            "snr": -8.25,
+            "rssi": -103,
+            "hopCount": 11,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5379E29B981FB62698D6C4ED525FEEFC6B9792E960B16E934E6841B83724FB8B",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "B9CFE9A1BB07D65132366C1B50C8E0FF838F0C34961809958DEC8492290971E6",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.4119, 38.1614]
+        },
+        "properties": {
+          "id": "meshcore:55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Forest Meadows (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T12:18:58Z",
+          "areaLabel": "SIERRA Forest Meadows",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "55678f4147f9d04a32c89aa857a1fdb2b7777f3a9144fa7e63702b66081a797d",
+            "nodeType": "repeater",
+            "name": "SIERRA Forest Meadows",
+            "snr": 12.25,
+            "rssi": -53,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5379E29B981FB62698D6C4ED525FEEFC6B9792E960B16E934E6841B83724FB8B",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.3203, 38.3016]
+        },
+        "properties": {
+          "id": "meshcore:30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "SIERRA Arnold Summit (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T03:00:48Z",
+          "areaLabel": "SIERRA Arnold Summit",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "30059adfc99019769d6ee095ed2dbf81c6cf2b640d8fafb0a2aa6249558a9656",
+            "nodeType": "repeater",
+            "name": "SIERRA Arnold Summit",
+            "snr": 11,
+            "rssi": -85,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": true
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.4557, 37.6772]
+        },
+        "properties": {
+          "id": "meshcore:b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Tracy (TH) Repeater (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T03:44:34Z",
+          "areaLabel": "Tracy (TH) Repeater",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "b25fe3239c80ae9228818a74cf69d776c9afbd943043f181fa3e37a793595e19",
+            "nodeType": "repeater",
+            "name": "Tracy (TH) Repeater",
+            "snr": 12,
+            "rssi": -73,
+            "hopCount": 13,
+            "gateways": [
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.5796, 37.675]
+        },
+        "properties": {
+          "id": "meshcore:65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Top of the World - Live (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T04:14:22Z",
+          "areaLabel": "Top of the World - Live",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "65385e8709b6d39013feaa3e0c7ee17d98ab0d9ca8a0b584098dfc52dd8cabae",
+            "nodeType": "repeater",
+            "name": "Top of the World - Live",
+            "snr": -1.5,
+            "rssi": -117,
+            "gateways": ["6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056"],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.5884, 37.3467]
+        },
+        "properties": {
+          "id": "meshcore:9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Albiani Park ⛳ (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:41:28Z",
+          "areaLabel": "Albiani Park ⛳",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "9f16956c8a7e9d91c2bedb613f2995eae011913f223c8e3bc34a21ebc7fcb909",
+            "nodeType": "repeater",
+            "name": "Albiani Park ⛳",
+            "snr": 2.8,
+            "rssi": -111,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.3478, 37.8148]
+        },
+        "properties": {
+          "id": "meshcore:51bf881960eebb83883e78759101a9b9f8e822e0bcfae231c16410007087a3a9",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Lathrop (RI) Repeater (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T01:37:09Z",
+          "areaLabel": "Lathrop (RI) Repeater",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "51bf881960eebb83883e78759101a9b9f8e822e0bcfae231c16410007087a3a9",
+            "nodeType": "repeater",
+            "name": "Lathrop (RI) Repeater",
+            "snr": 11.5,
+            "rssi": -82,
+            "hopCount": 5,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.5218, 37.2973]
+        },
+        "properties": {
+          "id": "meshcore:ad09a0dc317ce8e5f453ee7cb48eb04ae0a4698f1e8135aa996fbd80b2881168",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-OM-OF (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T20:41:09Z",
+          "areaLabel": "VLK-OM-OF",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "ad09a0dc317ce8e5f453ee7cb48eb04ae0a4698f1e8135aa996fbd80b2881168",
+            "nodeType": "repeater",
+            "name": "VLK-OM-OF",
+            "snr": 12.5,
+            "rssi": -77,
+            "hopCount": 8,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.9714, 37.7241]
+        },
+        "properties": {
+          "id": "meshcore:68e262d11077beebee66f40a0944fc850f00680481ae22b1ccacf54921fcb32c",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "Dublin Ridge (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T02:08:23Z",
+          "areaLabel": "Dublin Ridge",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "68e262d11077beebee66f40a0944fc850f00680481ae22b1ccacf54921fcb32c",
+            "nodeType": "repeater",
+            "name": "Dublin Ridge",
+            "snr": 8.8,
+            "rssi": -104,
+            "gateways": ["6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056"],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.6275, 36.5395]
+        },
+        "properties": {
+          "id": "meshcore:beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "PL@T Toro Deathstar (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T10:16:09Z",
+          "areaLabel": "PL@T Toro Deathstar",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "beefd6bdd97ff349d7b7571197eba5637a532d2cf0b8d7fed82d15cb29d17e00",
+            "nodeType": "repeater",
+            "name": "PL@T Toro Deathstar",
+            "snr": 1,
+            "rssi": -94,
+            "hopCount": 6,
+            "gateways": [
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.5682, 36.311]
+        },
+        "properties": {
+          "id": "meshcore:fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "PL@R Chews Ridge (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T07:24:07Z",
+          "areaLabel": "PL@R Chews Ridge",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "fa57badbcc2491d4e9e214d1ed51d9f85a5da693cb5f99093de22cee5efe149f",
+            "nodeType": "repeater",
+            "name": "PL@R Chews Ridge",
+            "snr": -2.5,
+            "rssi": -74,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.412, 37.2894]
+        },
+        "properties": {
+          "id": "meshcore:0202b93da1c3b3ce32e36a0778549545a966c2f2cae863cea80d7851d937c2d0",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-OM-HB (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T13:23:42Z",
+          "areaLabel": "VLK-OM-HB",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "0202b93da1c3b3ce32e36a0778549545a966c2f2cae863cea80d7851d937c2d0",
+            "nodeType": "repeater",
+            "name": "VLK-OM-HB",
+            "rssi": -73,
+            "hopCount": 9,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "676767C3C697C82FE8EB93CBA090AA0FD1D996028AFC39AA1D497C2D83BED33F",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-120.363, 37.2275]
+        },
+        "properties": {
+          "id": "meshcore:fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "VLK-RS-LG (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T03:03:09Z",
+          "areaLabel": "VLK-RS-LG",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "fe5c6c50479783a5f40a8ab385e3a4c794b6b77cefefe6a433643987c1522df0",
+            "nodeType": "repeater",
+            "name": "VLK-RS-LG",
+            "snr": 12,
+            "rssi": -53,
+            "hopCount": 10,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B9CFE9A1BB07D65132366C1B50C8E0FF838F0C34961809958DEC8492290971E6",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609"
+            ],
+            "inRegion": false
+          }
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [-121.8439, 37.1098]
+        },
+        "properties": {
+          "id": "meshcore:1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74",
+          "layer": "MESH_NODE",
+          "kind": "Mesh node",
+          "category": "repeater",
+          "severity": "INFO",
+          "severityRank": 0,
+          "headline": "1000💥Repeater G2 (repeater)",
+          "status": "ACTIVE",
+          "updatedAt": "2026-08-05T23:30:41Z",
+          "areaLabel": "1000💥Repeater G2",
+          "source": {
+            "id": "meshcore",
+            "name": "MeshCore Mesh",
+            "url": "https://map.meshcore.io",
+            "attribution": "MeshCore community mesh"
+          },
+          "mesh": {
+            "publicKey": "1000009e310d729534b70faa33a1abe5cd5e45d594f72f786febccbb770b7e74",
+            "nodeType": "repeater",
+            "name": "1000💥Repeater G2",
+            "snr": 12,
+            "rssi": -52,
+            "hopCount": 4,
+            "gateways": [
+              "0202B93DA1C3B3CE32E36A0778549545A966C2F2CAE863CEA80D7851D937C2D0",
+              "0EA3EB6045CF0FBD97851115EB0DE2F9860A911D8364B3AD63B40073780E72BF",
+              "5653402F5ACE3B2671D98AF6AD6D828859664065A28D6C9B3BBC982AE5844D24",
+              "6969370DD2CCFA3E34AA9974338C55C22A8CFFABD1432A0BF59E1D5E118B2056",
+              "86475624FF5A91AFBA290C5BB61CFEC44515DDF79FE52E3A503A9DBDD5F70B92",
+              "8D49F2FEB9CBEDEA3E421508173CD06A07E9216FE81C1CCA716FBE221159EA78",
+              "921AE2AC6E2F07999215A260B790CD70617AD01B7F5D9333D80CEBE07916F12E",
+              "AC30BEAFA502F4B027A49A885285490E39A20917F3182C7E0C779F3A5AD03800",
+              "AD09A0DC317CE8E5F453EE7CB48EB04AE0A4698F1E8135AA996FBD80B2881168",
+              "B0B0B04B19C645BC1EE09FC3C614FCD86004094BC97566E386CA71A5EB052D41",
+              "C0FFEEC7289EB294D6ED2C54FEB4D9D15E4E7D3715214B8473AE65EE126A9A27",
+              "DEADBEEF5735CC25D74F3D022F2EAE5E87ADF93C05FEBF92EDB8C68A72A913C3",
+              "E3635C65DCD443E7982D2F2DDBD02853D02C195DD2C9BE071B7EC3AB01B0D609",
+              "E5280090193018325A0E65D739C571E4F3EBE6799C01893608FD27A86CB6A2B9",
+              "EA54F33299DD5256C48A71A2E4CD9FABC782522B0989C6D33C59DE27B72D3705",
+              "FEEDBEEF424FA7EB4B816B35DB231E5A4FD83140B13280A44D5E0C639B4B53C1"
+            ],
+            "inRegion": false
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "layer": "mesh_link",
+      "area": "ebbetts-pass",
+      "generatedAt": "2026-08-06T15:51:00Z",
+      "sourceStatus": "OK",
+      "schemaVersion": 1
+    }
+  }
+}

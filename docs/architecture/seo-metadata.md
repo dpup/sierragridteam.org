@@ -45,7 +45,9 @@ Centralized in `<Seo>` (`src/components/Seo.astro`) + `src/config/site.ts`. Ever
 ## Performance (Core Web Vitals = ranking + UX)
 
 - Self-hosted fonts (`@fontsource`), `font-display: swap`, preload the two most-used faces.
-- No render-blocking third-party JS. The mesh/CHP `<iframe>`s are `loading="lazy"`.
+- No render-blocking third-party JS, and no third-party embeds: /mesh draws its own map from
+  the feed (the wcmesh `<iframe>` was removed in 2026-08). MapLibre loads only on the two map
+  pages (`/live`, `/mesh`).
 - Astro ships zero JS by default; only the small refresh/clock islands hydrate.
 - Images: explicit width/height to avoid CLS; logo as SVG where possible.
 - Target Lighthouse ≥95 across the board (verified in Phase 8).

@@ -2,6 +2,7 @@
  * Refreshes the checked-in data snapshots from the live data.sierragridteam.org feed:
  *   src/data/grid-snapshot.json     — /conditions (current weather + fire-weather state)
  *   src/data/hazards-snapshot.json  — place summary + hazard GeoJSON map layers + scanners
+ *   src/data/mesh-snapshot.json     — the mesh_node + mesh_link place layers (/mesh topology)
  * These checked-in JSON are TEST FIXTURES ONLY — the screenshot harness mocks the feed
  * with them. Nothing is fetched at build time; pages render live in the browser.
  *
@@ -15,6 +16,7 @@ const API_BASE = process.env.PUBLIC_GRID_API_BASE ?? 'https://data.sierragridtea
 const dir = dirname(fileURLToPath(import.meta.url));
 const GRID_OUT = resolve(dir, '../src/data/grid-snapshot.json');
 const HAZARDS_OUT = resolve(dir, '../src/data/hazards-snapshot.json');
+const MESH_OUT = resolve(dir, '../src/data/mesh-snapshot.json');
 
 async function get(path: string): Promise<unknown> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -71,6 +73,23 @@ async function main() {
     ) + '\n'
   );
   console.error(`Wrote ${HAZARDS_OUT}`);
+
+  // The /mesh topology layers. Captured at the feed's default 72h window — the screenshot
+  // harness rebases the reception timestamps onto its frozen clock so the recency tiers
+  // render identically on every run (see scripts/screenshots.ts).
+  const [meshNode, meshLink] = await Promise.all([
+    get(`/places/${HAZARD_AREA}/map/mesh_node.geojson`),
+    get(`/places/${HAZARD_AREA}/map/mesh_link.geojson`),
+  ]);
+  writeFileSync(
+    MESH_OUT,
+    JSON.stringify(
+      { fetchedAt: new Date().toISOString(), area: HAZARD_AREA, node: meshNode, link: meshLink },
+      null,
+      2
+    ) + '\n'
+  );
+  console.error(`Wrote ${MESH_OUT}`);
 }
 
 main().catch((err) => {

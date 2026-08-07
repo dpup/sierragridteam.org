@@ -6,7 +6,7 @@
  * CoverageMap can place markers AND draw the connecting corridors in ONE shared
  * coordinate system (dots and line endpoints always stay aligned at any width).
  *
- * SAFE TO EDIT: names, labels, the relay count, deployment-zone list.
+ * SAFE TO EDIT: names, labels, deployment-zone list.
  * Coordinates are geographic truth — only change them to fix the map's geography.
  * See docs/architecture/information-architecture.md (Home hero · map honesty rule).
  */
@@ -120,15 +120,22 @@ export const legend: ReadonlyArray<{ role: TownRole; label: string }> = [
 ];
 
 /**
- * Owned/static operational values (no live feed exists for these yet — see
- * FR-5/FR-6 in docs/architecture/data-feed.md). Editable WITHOUT a code change.
+ * Owned/static operational values — the org's own stated facts, NOT feed data. Editable
+ * WITHOUT a code change. (The mesh roster and the home Relay Nodes count used to live here;
+ * both are live from The Grid as of 2026-08 — see FR-5/FR-6 in
+ * docs/architecture/data-feed.md.)
  */
 export const operations = {
-  /** "Relay Sites" stat tile — count of deployed relay locations. */
-  relaySitesActive: 6,
+  /* NOTE: the home "Relay Nodes" tile is LIVE as of 2026-08 — it counts the S.I.E.R.R.A
+     repeaters The Grid's mesh feed is currently hearing (src/lib/mesh.ts
+     `deriveRelayNodesTile`), so there is no static relay count to edit here any more. */
   /** "Coverage" stat tile scope. */
   coverageCounties: 2,
-  /** Deployment zones listed on /mesh. `live` flags whether the feed covers it. */
+  /**
+   * Deployment zones shown in the site-wide `ServiceBanner`. `live` flags whether the zone
+   * is in service. NOT the /mesh roster — that comes from The Grid's mesh feed now
+   * (src/lib/mesh.ts); these are the org's own stated coverage intent, not observed nodes.
+   */
   deploymentZones: [
     { name: 'Murphys (HQ)', live: true },
     { name: 'Angels Camp', live: true },

@@ -33,10 +33,7 @@ const websiteSchema = {
 >
   <Hero />
 
-  <OperationalStatus
-    relaySites={operations.relaySitesActive}
-    coverageCounties={operations.coverageCounties}
-  />
+  <OperationalStatus coverageCounties={operations.coverageCounties} />
 
   <Section surface="page" labelledby="mission-title">
     <div class="mission">

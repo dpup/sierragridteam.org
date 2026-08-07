@@ -22,7 +22,7 @@ const BASE = process.env.BASE_URL ?? 'http://localhost:4321';
 const SCENARIO = process.env.SCENARIO ?? 'calm';
 const FIXED = new Date('2026-06-25T13:30:00-07:00'); // 13:30 PT, stable
 
-// LIVE=1 renders against the REAL data.sierragridteam.org feed + CARTO basemap instead of the
+// LIVE=1 renders against the REAL data.sierragridteam.org feed + OpenFreeMap basemap instead of the
 // frozen/mocked defaults — for eyeballing the live page, not regression (it's not
 // deterministic). Inside Moat it tunnels through the auth-injecting relay (the headless
 // browser can't use the Moat proxy directly); elsewhere it goes direct. Output lands in a
@@ -31,7 +31,7 @@ const FIXED = new Date('2026-06-25T13:30:00-07:00'); // 13:30 PT, stable
 // Best-effort, IN-SANDBOX ONLY: the Moat proxy MITMs TLS and reframes upstream responses
 // (keep-alive, no Content-Length), which makes /live's burst of ~12 parallel fetches flaky
 // — it may stall past the page's 9s timeout and fall to the honest "Last known" fallback,
-// and the keyless CARTO basemap may not finish. The home page (2 fetches) is reliably live.
+// and the keyless OpenFreeMap basemap may not finish. The home page (2 fetches) is reliably live.
 // None of this affects production, where browsers hit data.sierragridteam.org directly.
 const LIVE = process.env.LIVE === '1';
 const OUT = resolve(root, LIVE ? 'tests/screenshots/_live' : 'tests/screenshots');
@@ -43,11 +43,14 @@ const allViewports = [
   { name: 'tablet', width: 834, height: 1112 },
   { name: 'mobile', width: 390, height: 844 },
 ];
-// LIVE mode loads the real CARTO basemap per /live capture; keep it to two viewports so
-// the keyless free-tier basemap doesn't get throttled mid-run (and it stays quick).
+// LIVE mode loads the real OpenFreeMap basemap per /live capture; keep it to two viewports
+// so the run stays quick.
 const viewports = LIVE
   ? allViewports.filter((v) => v.name === 'desktop' || v.name === 'mobile')
   : allViewports;
+
+/** Pages with a MapLibre canvas — they need the extra settle waits below. */
+const MAP_PAGES = new Set(['/live', '/mesh']);
 
 const allPages = [
   { name: 'home', path: '/' },
@@ -72,10 +75,33 @@ const pages = LIVE ? allPages.filter((p) => p.path === '/' || p.path === '/live'
 
 const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/grid-snapshot.json'), 'utf8'));
 const hazards = JSON.parse(readFileSync(resolve(root, 'src/data/hazards-snapshot.json'), 'utf8'));
+const meshSnap = JSON.parse(readFileSync(resolve(root, 'src/data/mesh-snapshot.json'), 'utf8'));
+
+/*
+ * The mesh fixture is a real capture, so its reception timestamps are whenever `make
+ * snapshot` last ran — against the frozen clock every link would age into the "cold" tier
+ * and the recency encoding would never be exercised. Shift every stamp by the constant
+ * offset between the capture and FIXED, which preserves the real relative ages (and so the
+ * real spread across live/recent/fading/cold) while staying byte-stable run to run.
+ */
+const MESH_SHIFT_MS =
+  FIXED.getTime() - Date.parse(meshSnap.link?.metadata?.generatedAt ?? meshSnap.fetchedAt);
+const shiftStamp = (v: unknown) =>
+  typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)
+    ? new Date(Date.parse(v) + MESH_SHIFT_MS).toISOString().replace(/\.\d{3}Z$/, 'Z')
+    : v;
+const rebaseMesh = (fc: unknown): unknown =>
+  JSON.parse(JSON.stringify(fc), (k, v) =>
+    ['generatedAt', 'updatedAt', 'firstSeen', 'lastSeen'].includes(k) ? shiftStamp(v) : v
+  );
+const meshLayers: Record<string, unknown> = {
+  mesh_node: rebaseMesh(meshSnap.node),
+  mesh_link: rebaseMesh(meshSnap.link),
+};
 
 // Minimal offline basemap so the MapLibre map's `load` fires without external tiles
-// (the headless browser can't reach tile hosts through the auth proxy). The hazard
-// overlays still render on a plain parchment background.
+// (the headless browser can't reach tile hosts through the auth proxy). The hazard and
+// mesh overlays still render on a plain parchment background.
 const OFFLINE_STYLE = {
   version: 8,
   sources: {},
@@ -139,6 +165,7 @@ function mockGrid(route: Route) {
   // Map-layer GeoJSON, e.g. /places/{area}/map/wildfire.geojson — match first.
   const geo = url.match(/\/map\/([^/?]+)\.geojson/);
   if (geo) {
+    if (geo[1] in meshLayers) return json(meshLayers[geo[1]]);
     const layer = hazards.layers[geo[1]] ?? {
       type: 'FeatureCollection',
       features: [],
@@ -149,6 +176,10 @@ function mockGrid(route: Route) {
     }
     return json(layer);
   }
+  // The whole-mesh backdrop only loads once a reader pans past the corridor, which a
+  // capture never does — serve empty so a stray request can't reach the network.
+  if (url.includes('/mesh/links')) return json({ window: '72h', links: [] });
+  if (url.includes('/events')) return json({ events: [] });
   if (url.includes('/summary')) return json(hazards.summary);
   if (url.includes('/scanners')) return json({ scanners: hazards.scanners });
   if (url.includes('/conditions')) {
@@ -168,7 +199,7 @@ async function main() {
   const relay = LIVE && inMoat() ? await startMoatRelay() : null;
   if (LIVE) {
     console.error(
-      `⚡ LIVE — real data.sierragridteam.org + CARTO (${relay ? 'via Moat relay' : 'direct'}); ` +
+      `⚡ LIVE — real data.sierragridteam.org + OpenFreeMap (${relay ? 'via Moat relay' : 'direct'}); ` +
         `non-deterministic, → ${OUT}`
     );
   }
@@ -186,8 +217,8 @@ async function main() {
     if (!LIVE) {
       await ctx.route(/data\.sierragridteam\.org/, mockGrid);
       // Offline basemap (broad abort first, specific style mock last = higher priority).
-      await ctx.route(/basemaps\.cartocdn\.com\//, (r) => r.abort());
-      await ctx.route(/basemaps\.cartocdn\.com\/.*style\.json/, (r) =>
+      await ctx.route(/tiles\.openfreemap\.org\//, (r) => r.abort());
+      await ctx.route(/tiles\.openfreemap\.org\/styles\//, (r) =>
         r.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -203,13 +234,13 @@ async function main() {
         waitUntil: LIVE ? 'domcontentloaded' : 'networkidle',
       });
       // /live is client-rendered: wait for the body to be revealed, then for the map
-      // (WebGL) to settle (on the mocked basemap, or real CARTO tiles in LIVE mode).
+      // (WebGL) to settle (on the mocked basemap, or real OpenFreeMap tiles in LIVE mode).
       if (pg.path === '/live') {
         await page
           .waitForSelector('html[data-live-boot="ready"]', { timeout: LIVE ? 20000 : 10000 })
           .catch(() => {});
         await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
-        // In LIVE mode the real CARTO basemap streams in — wait for it to actually paint
+        // In LIVE mode the real OpenFreeMap basemap streams in — wait for it to actually paint
         // (the fallback note is hidden once the map's layers add). Best-effort through the
         // Moat proxy (see the header note) — it may keep the SSR fallback note.
         if (LIVE) {
@@ -225,6 +256,16 @@ async function main() {
         await page
           .waitForSelector('html[data-map-settled]', { timeout: LIVE ? 15000 : 8000 })
           .catch(() => {});
+      } else if (pg.path === '/mesh' && !LIVE) {
+        // /mesh is client-rendered too: wait for the panel roster to fill from the mocked
+        // feed and for the map to settle, rather than racing networkidle.
+        await page
+          .waitForFunction(() => !!document.querySelector('[data-mesh-roster] .mesh-roster'), {
+            timeout: 8000,
+          })
+          .catch(() => {});
+        await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
+        await page.waitForSelector('html[data-map-settled]', { timeout: 8000 }).catch(() => {});
       } else if (pg.path === '/' && !LIVE) {
         // Home tiles are client-filled: Active Alerts + Fire Weather SSR a "—" placeholder
         // and the OperationalStatus island replaces it from the mocked feed. Wait for that
@@ -262,7 +303,7 @@ async function main() {
       // ResizeObserver fires on late layout shifts, e.g. the scroll walk above), which
       // repaints it. Capture only once the canvas backing store matches its CSS box AND
       // the map reports settled again — this is what actually killed the live-page churn.
-      if (pg.path === '/live') {
+      if (MAP_PAGES.has(pg.path)) {
         await page
           .waitForFunction(
             () => {

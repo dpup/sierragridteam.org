@@ -6,6 +6,7 @@ import StatusPill from '@components/StatusPill.astro';
 import StatTile from '@components/StatTile.astro';
 import { live as copy } from '@config/content';
 import { externalLinks, site } from '@config/site';
+import { BASEMAP_ATTRIBUTION } from '@lib/basemap';
 import '../styles/live.css';
 
 // /live renders ENTIRELY in the browser from the live feed — NO build-time snapshot is
@@ -190,7 +191,7 @@ const schema = {
                 }
               </ul>
               <p class="hazard-map__attrib">
-                Basemap &copy; OpenStreetMap, &copy; CARTO · Hazards via data.sierragridteam.org
+                {BASEMAP_ATTRIBUTION} · Hazards via data.sierragridteam.org
               </p>
             </figcaption>
           </figure>
@@ -573,6 +574,17 @@ const schema = {
     gap: var(--space-7);
     align-items: start;
   }
+  /* The alert stream can run far longer than the map, which used to leave a tall column of
+     dead space beside it. Sticking the map keeps it in view while the stream scrolls past —
+     the whitespace becomes the map, and a reader comparing an alert to the map no longer has
+     to scroll back up. Only above the stacking breakpoint: pinned over a list on mobile is
+     just an obstruction. */
+  @media (min-width: 901px) {
+    .live-grid__map {
+      position: sticky;
+      top: calc(var(--topbar-h) + var(--banner-h) + var(--space-5));
+    }
+  }
   /* Grid items default to min-width:auto, so the MapLibre canvas's intrinsic width would
      force the column wider than the viewport on mobile. min-width:0 lets the track shrink. */
   .live-grid > * {
@@ -608,9 +620,12 @@ const schema = {
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    aspect-ratio: 16 / 11;
-    min-height: 320px;
-    max-height: 440px;
+    aspect-ratio: 4 / 3;
+    min-height: 360px;
+    /* Sized against the viewport, not a fixed cap: the map is the page's centrepiece and
+       the old 440px ceiling left it small on any real desktop. Bounded so the whole figure
+       (heading + map + legend) still fits one screen, which is what lets the column stick. */
+    max-height: min(62dvh, 760px);
     background: var(--surface-card);
     border: var(--border);
     border-radius: var(--radius);

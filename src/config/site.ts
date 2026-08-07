@@ -95,10 +95,12 @@ export const donate = {
 
 /** External destinations referenced across the site. */
 export const externalLinks = {
-  // TODO(mesh-map): this embed currently shows the Bay Area mesh. Investigate whether
-  // `https://map.wcmesh.com/` accepts region/bounds/channel parameters to scope it to the
-  // Calaveras & Tuolumne foothills, and switch to that.
-  liveMeshMap: 'https://livemap.wcmesh.com/bayarea/',
+  /**
+   * The MeshCore community's own map — the upstream project behind the node adverts The
+   * Grid ingests. /mesh draws its own corridor-scoped map from the feed now; this is a
+   * credit + "see the wider project" link, not the source of our data.
+   */
+  meshcoreMap: 'https://map.meshcore.io/',
   chpCad: 'https://cad.chp.ca.gov/',
   nwsSacramento: 'https://www.weather.gov/sto/',
   calFire: 'https://www.fire.ca.gov/',
