@@ -266,8 +266,19 @@
 
 /* The marker itself has no dimensions — its centre IS the map coordinate, and the dot and
    label are positioned around that origin. */
+/*
+ * MUST match .maplibregl-marker's own positioning (`position:absolute; top:0; left:0`).
+ * MapLibre positions a marker by writing a transform onto this element, and both rules are
+ * a single class — so equal specificity, and whichever stylesheet lands last wins. Dev and
+ * the production bundle order them DIFFERENTLY: `position: relative` here won in the build
+ * only, dropping every marker out of absolute positioning and stacking them in the corner
+ * of the map. Absolute is also a containing block for the dot/label, so nothing else needs
+ * to change. Do not set `position: relative` here.
+ */
 .mesh-pin {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: block;
   width: 0;
   height: 0;
