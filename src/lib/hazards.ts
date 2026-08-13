@@ -196,13 +196,17 @@ export function rankOf(f: HazardFeature): number {
  * field was always specified to mean. Treating that as active would say the weather is on
  * us when it isn't; dropping it would hide an issued warning. We count and label both.
  *
- * **Two signals, because the two surfaces disagree.** `/events` carries `status: SCHEDULED`,
- * but the `.geojson` map layers — which is what /live reads — omit `status` on
- * `weather_alert` altogether. Verified live 2026-08-13 against a Red Flag Warning that
- * `/events` reported SCHEDULED and the map layer served with no `status` at all. So the
- * onset is the fallback: `effective` is on both surfaces and now means the hazard's start,
- * so an `effective` in the future is an alert that hasn't begun. `status` still wins when
- * present — if The Grid adds it to the layer, that becomes the authority with no change here.
+ * **`status` is the authority.** The Grid computes it against CAP's onset and the 2026-08-11
+ * changelog points consumers at it; we read it and trust it, including when it disagrees
+ * with the timestamps.
+ *
+ * **The onset is graceful degradation, not the working path.** The `.geojson` map layers —
+ * which is what /live reads — omitted `status` on `weather_alert` while `/events` carried
+ * it, so keying on `status` alone made the page read "1 Active" for a Red Flag Warning six
+ * hours out (found live 2026-08-13, fixed upstream). If the field goes missing again, on
+ * this layer or a new one, we compare `effective` — which is on every surface and, since
+ * 2026-08-11, means the hazard's start — rather than silently calling the alert in force.
+ * A record carrying neither counts as in force: we can't assert it hasn't started.
  */
 export function isScheduled(f: HazardFeature, now: number): boolean {
   const status = String(f.properties.status ?? '').toUpperCase();

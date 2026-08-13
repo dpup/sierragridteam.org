@@ -116,9 +116,9 @@ test('weather-only alerts read as elevated, not the life-safety orange', () => {
 // A fixed clock for the upcoming-alert tests: an alert is "not started" relative to one.
 const NOW = Date.parse('2026-08-13T05:30:00Z'); // 22:30 PT the evening before
 
-test('a SCHEDULED weather alert counts as upcoming, not as in effect', () => {
-  // Grid CHANGELOG 2026-08-11: effective/expires now carry the hazard's onset/ends, so a
-  // watch issued today for Thursday's storms arrives SCHEDULED instead of ACTIVE.
+test('`status` is the authority: SCHEDULED is upcoming, and it wins over the timestamps', () => {
+  // The normal path. Grid CHANGELOG 2026-08-11: effective/expires carry the hazard's
+  // onset/ends, and status is SCHEDULED until onset.
   const watch = point('weather_alert', 2, 0, 0, {
     headline: 'Fire Weather Watch — thunderstorms and strong outflow winds',
     status: 'SCHEDULED',
@@ -140,13 +140,24 @@ test('a SCHEDULED weather alert counts as upcoming, not as in effect', () => {
   expect(sum.weatherAlerts).toBe(0);
   expect(sum.weatherAlertsUpcoming).toBe(1);
   expect(deriveActiveAlertsTile(sum).value).toBe('None');
+
+  // status beats the timestamps when they disagree — The Grid computes it, we don't
+  // second-guess it. An onset in the future does NOT make an ACTIVE record upcoming.
+  const disagreeing = point('weather_alert', 2, 0, 2, {
+    headline: 'Wind Advisory',
+    status: 'ACTIVE',
+    effective: '2026-08-13T12:00:00Z', // still ahead of NOW
+  });
+  const trusted = deriveSituationSummary(snap({ weather_alert: fc([disagreeing]) }), NOW);
+  expect(trusted.weatherAlerts).toBe(1);
+  expect(trusted.weatherAlertsUpcoming).toBe(0);
 });
 
-test('a map-layer alert with NO status falls back to the onset', () => {
-  // The shape the map layers actually serve: `/events` carries status: SCHEDULED, but
-  // `/places/{area}/map/weather_alert.geojson` omits `status` entirely (verified live
-  // 2026-08-13). Keying on status alone made this read "1 Active" for a Red Flag Warning
-  // that hadn't started — the exact mislabel the split exists to prevent.
+test('degrades to the onset when a layer serves no status at all', () => {
+  // Graceful degradation, not the expected path. The map layers omitted `status` on
+  // weather_alert while /events carried it (found live 2026-08-13, fixed upstream), and
+  // keying on status alone made the page read "1 Active" for a Red Flag Warning six hours
+  // out. Kept so a field going missing can never silently mean "in force" again.
   const noStatus = (effective: string) =>
     point('weather_alert', 3, 0, 0, {
       headline: 'Red Flag Warning — thunderstorms and strong outflow winds',

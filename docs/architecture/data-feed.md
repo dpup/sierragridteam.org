@@ -74,19 +74,20 @@ test as `/places:resolve`), so the client no longer re-filters. Layer slugs (URL
   (`roadId`, `congestion`, `delayMinutes`, `durationMinutes`, `distanceKm`) plus
   `status`/`headline`/`areaLabel` on the envelope. Chain controls are the separate
   `chain_control` layer; road incidents the `road_incident` layer.
-- **`weather_alert`: issued ≠ in force, and `status` is NOT on this surface.** Since
-  2026-08-11 `effective`/`expires` carry CAP's `onset`/`ends` (the _hazard's_ window) rather
-  than the product's issuance time and re-issue deadline, and `status` is `SCHEDULED` until
-  onset. A warning written Wednesday for Thursday's storms is therefore not yet in effect.
-  ⚠️ **But the map layer omits `status` entirely** — `/events` carries it, the `.geojson`
-  does not (verified live 2026-08-13 on a Red Flag Warning that `/events` reported
-  `SCHEDULED` and the layer served with no `status` key). So `isScheduled` reads `status`
-  when present and **falls back to the onset** (`effective` in the future = hasn't started),
-  which is what actually fires on this surface. `deriveSituationSummary` splits the two
-  (`weatherAlerts` = in force, `weatherAlertsUpcoming` = issued), the /live tile reads
-  "N Active" or "N Upcoming", and the stream card is marked "Begins Thu 05:00 PT". We never
-  filter on `expires` — the place feed decides what it serves. The homepage "Active Alerts"
-  tile counts in-force alerts only.
+- **`weather_alert`: issued ≠ in force — read `status`.** Since 2026-08-11 `effective`/
+  `expires` carry CAP's `onset`/`ends` (the _hazard's_ window) rather than the product's
+  issuance time and re-issue deadline, and **`status` is `SCHEDULED` until onset**. A warning
+  written Wednesday for Thursday's storms is therefore not yet in effect. `status` is the
+  authority — The Grid computes it, and `isScheduled` trusts it even when it disagrees with
+  the timestamps. `deriveSituationSummary` splits the two (`weatherAlerts` = in force,
+  `weatherAlertsUpcoming` = issued), the /live tile reads "N Active" or "N Upcoming", and the
+  stream card is marked "Begins Thu 05:00 PT". We never filter on `expires` — the place feed
+  decides what it serves. The homepage "Active Alerts" tile counts in-force alerts only.
+  - **Degradation, if `status` is ever absent:** compare `effective` (the onset) to now.
+    The map layers briefly omitted `status` on this layer while `/events` carried it, which
+    made /live read "1 Active" for a Red Flag Warning six hours out (found live 2026-08-13,
+    fixed upstream). The fallback is kept so a missing field can never silently mean "in
+    force"; a record with neither counts as in force, since we can't assert otherwise.
   - Both `deriveSituationSummary` and `buildView` take `now` (defaulted to `Date.now()`) so
     the comparison stays pure and the screenshot harness's frozen clock reaches it.
   - **Open question:** the `fireWeather.state` tile reads `RED_FLAG` (orange) as soon as the
