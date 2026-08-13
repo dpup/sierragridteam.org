@@ -77,6 +77,74 @@ test('count tiles link to the alert stream only when there is something to jump 
   expect(active.tiles.fireWeather.href).toBeUndefined();
 });
 
+test('an issued-but-not-yet-in-force weather alert reads "Upcoming", never "Active"', () => {
+  const watch = (extra: Record<string, unknown> = {}): HazardFeature => ({
+    type: 'Feature',
+    geometry: null,
+    properties: {
+      id: 'nws:watch',
+      layer: 'weather_alert',
+      kind: 'Weather alert',
+      severity: 'MODERATE',
+      severityRank: 2,
+      headline: 'Fire Weather Watch — thunderstorms and strong outflow winds',
+      status: 'SCHEDULED',
+      effective: '2026-08-13T12:00:00Z', // the hazard's onset (Grid 2026-08-11), 05:00 PT
+      source: { id: 'nws', name: 'NWS Sacramento' },
+      ...extra,
+    },
+  });
+
+  const view = buildView(snap({ weather_alert: fc([watch()]) }), emptyGrid);
+  expect(view.tiles.weatherAlerts.value).toBe('1 Upcoming');
+  expect(view.tiles.weatherAlerts.href).toBe('#stream-title'); // there IS detail to jump to
+  // Visible with the card collapsed, and dated — a bare clock time would read as "today".
+  expect(view.html.stream).toContain('Begins Thu 05:00 PT');
+
+  // No onset published → say so, never invent a start time.
+  const undated = buildView(snap({ weather_alert: fc([watch({ effective: null })]) }), emptyGrid);
+  expect(undated.html.stream).toContain('Not yet in effect');
+  expect(undated.html.stream).not.toContain('Begins');
+
+  // An alert in force carries no "begins" marker at all.
+  const active = buildView(snap({ weather_alert: fc([watch({ status: 'ACTIVE' })]) }), emptyGrid);
+  expect(active.tiles.weatherAlerts.value).toBe('1 Active');
+  expect(active.html.stream).not.toContain('Begins');
+});
+
+test('an evacuation card does not repeat the zone the headline already names', () => {
+  const evac = (headline: string, zoneId: string): HazardFeature => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [-120.4, 38.2] },
+    properties: {
+      id: 'caloes:7f1c2a90', // opaque, like the real ids — must not itself contain the zone
+      layer: 'evacuation',
+      kind: 'Evacuation',
+      severity: 'EXTREME',
+      severityRank: 4,
+      headline,
+      source: { id: 'caloes', name: 'Cal OES' },
+      evacuation: { zoneId, level: 'ORDER', eventType: 'Wildfire' },
+    },
+  });
+
+  // Grid CHANGELOG 2026-08-11: the headline names the zone (it used to fall back to the
+  // county), so the detail line must not say it a second time.
+  const named = buildView(
+    snap({ evacuation: fc([evac('Evacuation Order — CAL-E-109-C', 'CAL-E-109-C')]) }),
+    emptyGrid
+  );
+  expect((named.html.stream.match(/CAL-E-109-C/g) ?? []).length).toBe(1);
+  expect(named.html.stream).toContain('Wildfire'); // the event type is still surfaced
+
+  // A headline that doesn't carry the zone still gets it on the detail line.
+  const bare = buildView(
+    snap({ evacuation: fc([evac('Evacuation Order — CALAVERAS', 'CAL-E-139-D')]) }),
+    emptyGrid
+  );
+  expect(bare.html.stream).toContain('Zone CAL-E-139-D');
+});
+
 test('a restricted road segment shows its reason; an open one adds no incident line', () => {
   const seg = (
     id: string,

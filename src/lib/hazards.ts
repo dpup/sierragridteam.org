@@ -186,6 +186,19 @@ export function rankOf(f: HazardFeature): number {
   return SEVERITY_RANK[String(f.properties.severity).toUpperCase()] ?? 0;
 }
 
+/**
+ * An alert that has been ISSUED but whose hazard window hasn't opened yet.
+ *
+ * The Grid used to read CAP's `effective`/`expires` — the *product's* issuance time and the
+ * office's re-issue deadline — so a watch written on Tuesday for Thursday's storms went
+ * straight to ACTIVE the moment it was written. Since 2026-08-11 it reads `onset`/`ends`
+ * (the *hazard's* window) instead, and `status` is SCHEDULED until onset, which is what the
+ * field was always specified to mean. Treating that as active would say the weather is on
+ * us when it isn't; dropping it would hide an issued warning. We count and label both.
+ */
+export const isScheduled = (f: HazardFeature): boolean =>
+  String(f.properties.status ?? '').toUpperCase() === 'SCHEDULED';
+
 export type Tone = 'alarm' | 'elevated' | 'ok' | 'muted';
 
 /** Severity → design tone. Orange (alarm) reserved for SEVERE/EXTREME risk only. */
@@ -247,7 +260,10 @@ export interface SituationSummary {
   wildfires: number | null;
   evacuations: number | null;
   evacuationStatus: string;
+  /** Weather alerts IN EFFECT now — a SCHEDULED one is counted below, not here. */
   weatherAlerts: number | null;
+  /** Issued, but the hazard window hasn't opened yet (see `isScheduled`). */
+  weatherAlertsUpcoming: number | null;
   fireWeather: string; // NORMAL | ELEVATED | RED_FLAG | UNKNOWN
   syncedAt: string | null;
 }
@@ -262,8 +278,11 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
   // never replays a cached 0 (CHANGELOG 2026-06-29).
   const statusOf = (layer: string): string =>
     snapshot.layers?.[layer]?.metadata?.sourceStatus ?? 'UNAVAILABLE';
-  const countOrUnknown = (layer: string): number | null =>
-    statusOf(layer) === 'UNAVAILABLE' ? null : layerFeatures(snapshot, layer).length;
+  const countOrUnknown = (layer: string, keep?: (f: HazardFeature) => boolean): number | null => {
+    if (statusOf(layer) === 'UNAVAILABLE') return null;
+    const feats = layerFeatures(snapshot, layer);
+    return keep ? feats.filter(keep).length : feats.length;
+  };
 
   const fwFeature = (snapshot.layers?.fire_weather?.features ?? [])[0];
   // The hazard fire_weather layer reports state as e.g. "normal"/"red-flag" (lowercase,
@@ -277,7 +296,8 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
     wildfires: countOrUnknown('wildfire'),
     evacuations: countOrUnknown('evacuation'),
     evacuationStatus: statusOf('evacuation'),
-    weatherAlerts: countOrUnknown('weather_alert'),
+    weatherAlerts: countOrUnknown('weather_alert', (f) => !isScheduled(f)),
+    weatherAlertsUpcoming: countOrUnknown('weather_alert', isScheduled),
     fireWeather: fireState,
     syncedAt: snapshot.summary?.generatedAt ?? snapshot.fetchedAt ?? null,
   };
@@ -294,6 +314,12 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
  * 0/all-clear) UNLESS a known count already proves an alert is live, in which case we show
  * that (an undercount is fine when we're already flagging). Orange (alarm) is reserved for
  * a genuine life-safety hazard — an active wildfire or evacuation; weather-only is elevated.
+ *
+ * A SCHEDULED weather alert is deliberately NOT counted: this tile says how many alerts are
+ * **active**, and a watch that doesn't start until Thursday isn't one. It is not hidden —
+ * /live's weather tile reads "N Upcoming" and the alert stream carries the card. The
+ * invariant this tile exists to protect (the homepage can never say "None" while /live shows
+ * an active hazard) is unaffected, because an upcoming alert isn't an active hazard.
  */
 export function deriveActiveAlertsTile(summary: SituationSummary): {
   value: string;

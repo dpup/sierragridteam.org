@@ -14,11 +14,12 @@
  * Base URL for every live fetch.
  *
  * In `astro dev` this defaults to the same-origin `/grid-api` path, which the dev server
- * proxies to The Grid (see `vite.server.proxy` in astro.config.mjs). That's not a
- * convenience — The Grid's CORS allowlist only names the production origin and
+ * proxies to The Grid (see `vite.server.proxy` in astro.config.mjs). This used to be load-
+ * bearing: The Grid's CORS allowlist named only the production origin and
  * `http://localhost:4321`, so developing from any other hostname (a container port map, a
- * LAN IP, `--host`) fails every live region without it. Same-origin requests aren't subject
- * to CORS at all.
+ * LAN IP, `--host`) failed every live region. The Grid opened CORS to `*` on 2026-08-06,
+ * so the proxy is now a convenience — it still keeps dev traffic same-origin and gives one
+ * place to point at a local Grid.
  *
  * Builds and `astro preview` use the absolute URL, exactly as production does. Set
  * `PUBLIC_GRID_API_BASE` to override either (e.g. to point dev at a local Grid).

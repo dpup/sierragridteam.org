@@ -113,6 +113,32 @@ test('weather-only alerts read as elevated, not the life-safety orange', () => {
   expect(tile.state).toBe('elevated');
 });
 
+test('a SCHEDULED weather alert counts as upcoming, not as in effect', () => {
+  // Grid CHANGELOG 2026-08-11: effective/expires now carry the hazard's onset/ends, so a
+  // watch issued today for Thursday's storms arrives SCHEDULED instead of ACTIVE.
+  const watch = point('weather_alert', 2, 0, 0, {
+    headline: 'Fire Weather Watch — thunderstorms and strong outflow winds',
+    status: 'SCHEDULED',
+    effective: '2026-08-13T12:00:00Z',
+  });
+  const warning = point('weather_alert', 2, 0, 1, { headline: 'Wind Advisory', status: 'ACTIVE' });
+
+  const both = deriveSituationSummary(snap({ weather_alert: fc([watch, warning]) }));
+  expect(both.weatherAlerts).toBe(1);
+  expect(both.weatherAlertsUpcoming).toBe(1);
+
+  // A watch on its own is not an active alert — and the homepage tile must not call it one.
+  const soon = snap({
+    wildfire: fc([], 'OK'),
+    evacuation: fc([], 'OK'),
+    weather_alert: fc([watch]),
+  });
+  const sum = deriveSituationSummary(soon);
+  expect(sum.weatherAlerts).toBe(0);
+  expect(sum.weatherAlertsUpcoming).toBe(1);
+  expect(deriveActiveAlertsTile(sum).value).toBe('None');
+});
+
 test('a confirmed-empty situation is a real "None", an outage is "Unknown" (never all-clear)', () => {
   const empty = snap({
     wildfire: fc([], 'OK'),
