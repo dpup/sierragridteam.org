@@ -77,39 +77,54 @@ test('count tiles link to the alert stream only when there is something to jump 
   expect(active.tiles.fireWeather.href).toBeUndefined();
 });
 
+// A fixed clock: an alert is "not started" only relative to one.
+const NOW = Date.parse('2026-08-13T05:30:00Z'); // 22:30 PT the evening before
+
 test('an issued-but-not-yet-in-force weather alert reads "Upcoming", never "Active"', () => {
+  // Modelled on the record the map layer actually serves — note NO `status` field, which is
+  // how `weather_alert` really arrives (verified live 2026-08-13). The onset carries it.
   const watch = (extra: Record<string, unknown> = {}): HazardFeature => ({
     type: 'Feature',
     geometry: null,
     properties: {
-      id: 'nws:watch',
+      id: 'wx:urn:oid:2.49.0.1.840.0.085e578e',
       layer: 'weather_alert',
       kind: 'Weather alert',
-      severity: 'MODERATE',
-      severityRank: 2,
-      headline: 'Fire Weather Watch — thunderstorms and strong outflow winds',
-      status: 'SCHEDULED',
+      severity: 'SEVERE',
+      severityRank: 3,
+      headline: 'Red Flag Warning — thunderstorms and strong outflow winds',
       effective: '2026-08-13T12:00:00Z', // the hazard's onset (Grid 2026-08-11), 05:00 PT
-      source: { id: 'nws', name: 'NWS Sacramento' },
+      expires: '2026-08-14T04:00:00Z',
+      source: { id: 'nws', name: 'NWS Sacramento CA' },
       ...extra,
     },
   });
 
-  const view = buildView(snap({ weather_alert: fc([watch()]) }), emptyGrid);
+  const view = buildView(snap({ weather_alert: fc([watch()]) }), emptyGrid, NOW);
   expect(view.tiles.weatherAlerts.value).toBe('1 Upcoming');
   expect(view.tiles.weatherAlerts.href).toBe('#stream-title'); // there IS detail to jump to
   // Visible with the card collapsed, and dated — a bare clock time would read as "today".
   expect(view.html.stream).toContain('Begins Thu 05:00 PT');
 
-  // No onset published → say so, never invent a start time.
-  const undated = buildView(snap({ weather_alert: fc([watch({ effective: null })]) }), emptyGrid);
-  expect(undated.html.stream).toContain('Not yet in effect');
-  expect(undated.html.stream).not.toContain('Begins');
+  // An alert already in force carries no "begins" marker at all.
+  const started = buildView(
+    snap({ weather_alert: fc([watch({ effective: '2026-08-13T00:00:00Z' })]) }),
+    emptyGrid,
+    NOW
+  );
+  expect(started.tiles.weatherAlerts.value).toBe('1 Active');
+  expect(started.html.stream).not.toContain('Begins');
 
-  // An alert in force carries no "begins" marker at all.
-  const active = buildView(snap({ weather_alert: fc([watch({ status: 'ACTIVE' })]) }), emptyGrid);
-  expect(active.tiles.weatherAlerts.value).toBe('1 Active');
-  expect(active.html.stream).not.toContain('Begins');
+  // An explicit status still wins over the onset, so the layer gaining one changes nothing.
+  const flagged = buildView(
+    snap({ weather_alert: fc([watch({ status: 'SCHEDULED', effective: null })]) }),
+    emptyGrid,
+    NOW
+  );
+  expect(flagged.tiles.weatherAlerts.value).toBe('1 Upcoming');
+  // …and with no onset to name, we say so plainly rather than invent a start time.
+  expect(flagged.html.stream).toContain('Not yet in effect');
+  expect(flagged.html.stream).not.toContain('Begins');
 });
 
 test('an evacuation card does not repeat the zone the headline already names', () => {

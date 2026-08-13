@@ -195,9 +195,21 @@ export function rankOf(f: HazardFeature): number {
  * (the *hazard's* window) instead, and `status` is SCHEDULED until onset, which is what the
  * field was always specified to mean. Treating that as active would say the weather is on
  * us when it isn't; dropping it would hide an issued warning. We count and label both.
+ *
+ * **Two signals, because the two surfaces disagree.** `/events` carries `status: SCHEDULED`,
+ * but the `.geojson` map layers — which is what /live reads — omit `status` on
+ * `weather_alert` altogether. Verified live 2026-08-13 against a Red Flag Warning that
+ * `/events` reported SCHEDULED and the map layer served with no `status` at all. So the
+ * onset is the fallback: `effective` is on both surfaces and now means the hazard's start,
+ * so an `effective` in the future is an alert that hasn't begun. `status` still wins when
+ * present — if The Grid adds it to the layer, that becomes the authority with no change here.
  */
-export const isScheduled = (f: HazardFeature): boolean =>
-  String(f.properties.status ?? '').toUpperCase() === 'SCHEDULED';
+export function isScheduled(f: HazardFeature, now: number): boolean {
+  const status = String(f.properties.status ?? '').toUpperCase();
+  if (status) return status === 'SCHEDULED';
+  const onset = Date.parse(String(f.properties.effective ?? ''));
+  return Number.isFinite(onset) && onset > now;
+}
 
 export type Tone = 'alarm' | 'elevated' | 'ok' | 'muted';
 
@@ -268,8 +280,17 @@ export interface SituationSummary {
   syncedAt: string | null;
 }
 
-/** Locally-recomputed summary (honest counts from filtered features). */
-export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSummary {
+/**
+ * Locally-recomputed summary (honest counts from filtered features).
+ *
+ * `now` is a parameter rather than a `Date.now()` read inside so the function stays pure and
+ * testable — an alert is "upcoming" relative to a clock, and the screenshot harness freezes
+ * that clock. Callers on the live path take the default.
+ */
+export function deriveSituationSummary(
+  snapshot: HazardsSnapshot,
+  now: number = Date.now()
+): SituationSummary {
   const stream = deriveStream(snapshot);
 
   // A layer's relevant-feature count, or null when its source is UNAVAILABLE (a sync
@@ -296,8 +317,8 @@ export function deriveSituationSummary(snapshot: HazardsSnapshot): SituationSumm
     wildfires: countOrUnknown('wildfire'),
     evacuations: countOrUnknown('evacuation'),
     evacuationStatus: statusOf('evacuation'),
-    weatherAlerts: countOrUnknown('weather_alert', (f) => !isScheduled(f)),
-    weatherAlertsUpcoming: countOrUnknown('weather_alert', isScheduled),
+    weatherAlerts: countOrUnknown('weather_alert', (f) => !isScheduled(f, now)),
+    weatherAlertsUpcoming: countOrUnknown('weather_alert', (f) => isScheduled(f, now)),
     fireWeather: fireState,
     syncedAt: snapshot.summary?.generatedAt ?? snapshot.fetchedAt ?? null,
   };

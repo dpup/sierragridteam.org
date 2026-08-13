@@ -113,6 +113,9 @@ test('weather-only alerts read as elevated, not the life-safety orange', () => {
   expect(tile.state).toBe('elevated');
 });
 
+// A fixed clock for the upcoming-alert tests: an alert is "not started" relative to one.
+const NOW = Date.parse('2026-08-13T05:30:00Z'); // 22:30 PT the evening before
+
 test('a SCHEDULED weather alert counts as upcoming, not as in effect', () => {
   // Grid CHANGELOG 2026-08-11: effective/expires now carry the hazard's onset/ends, so a
   // watch issued today for Thursday's storms arrives SCHEDULED instead of ACTIVE.
@@ -123,7 +126,7 @@ test('a SCHEDULED weather alert counts as upcoming, not as in effect', () => {
   });
   const warning = point('weather_alert', 2, 0, 1, { headline: 'Wind Advisory', status: 'ACTIVE' });
 
-  const both = deriveSituationSummary(snap({ weather_alert: fc([watch, warning]) }));
+  const both = deriveSituationSummary(snap({ weather_alert: fc([watch, warning]) }), NOW);
   expect(both.weatherAlerts).toBe(1);
   expect(both.weatherAlertsUpcoming).toBe(1);
 
@@ -133,10 +136,46 @@ test('a SCHEDULED weather alert counts as upcoming, not as in effect', () => {
     evacuation: fc([], 'OK'),
     weather_alert: fc([watch]),
   });
-  const sum = deriveSituationSummary(soon);
+  const sum = deriveSituationSummary(soon, NOW);
   expect(sum.weatherAlerts).toBe(0);
   expect(sum.weatherAlertsUpcoming).toBe(1);
   expect(deriveActiveAlertsTile(sum).value).toBe('None');
+});
+
+test('a map-layer alert with NO status falls back to the onset', () => {
+  // The shape the map layers actually serve: `/events` carries status: SCHEDULED, but
+  // `/places/{area}/map/weather_alert.geojson` omits `status` entirely (verified live
+  // 2026-08-13). Keying on status alone made this read "1 Active" for a Red Flag Warning
+  // that hadn't started — the exact mislabel the split exists to prevent.
+  const noStatus = (effective: string) =>
+    point('weather_alert', 3, 0, 0, {
+      headline: 'Red Flag Warning — thunderstorms and strong outflow winds',
+      effective,
+      expires: '2026-08-14T04:00:00Z',
+    });
+
+  const ahead = deriveSituationSummary(
+    snap({ weather_alert: fc([noStatus('2026-08-13T12:00:00Z')]) }), // 6.5h out
+    NOW
+  );
+  expect(ahead.weatherAlerts).toBe(0);
+  expect(ahead.weatherAlertsUpcoming).toBe(1);
+
+  // Once onset passes, the same record is in force — no status field involved either way.
+  const started = deriveSituationSummary(
+    snap({ weather_alert: fc([noStatus('2026-08-13T00:00:00Z')]) }),
+    NOW
+  );
+  expect(started.weatherAlerts).toBe(1);
+  expect(started.weatherAlertsUpcoming).toBe(0);
+
+  // No onset published at all → we can't claim it hasn't started. In force, not upcoming.
+  const undated = deriveSituationSummary(
+    snap({ weather_alert: fc([point('weather_alert', 2, 0, 0, { headline: 'Wind Advisory' })]) }),
+    NOW
+  );
+  expect(undated.weatherAlerts).toBe(1);
+  expect(undated.weatherAlertsUpcoming).toBe(0);
 });
 
 test('a confirmed-empty situation is a real "None", an outage is "Unknown" (never all-clear)', () => {
