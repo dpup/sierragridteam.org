@@ -12,16 +12,18 @@
 import {
   deriveStream,
   deriveSituationSummary,
+  isScheduled,
   layerFeatures,
   toneFor,
   severityLabel,
   type HazardFeature,
   type HazardsSnapshot,
   type Scanner,
+  type SituationSummary,
 } from './hazards';
 import type { GridSnapshot, ConditionsResponse } from './grid';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
-import { escapeHtml as esc, formatPtTime } from './format';
+import { escapeHtml as esc, formatPtTime, formatPtDayTime } from './format';
 import { mapSites, serviceAreaBounds } from '../config/coverage';
 import { live as copy } from '../config/content';
 
@@ -179,10 +181,15 @@ function streamExtra(f: HazardFeature): string | null {
     return bits.length ? bits.join(' · ') : null;
   }
   if (p.evacuation) {
-    // Level is already in the headline ("Evacuation Order/Warning — …"); surface the
-    // specific Genasys zone + event type instead (the actionable, non-redundant bits).
+    // The headline is "Evacuation {Level} — {what}". Since Grid CHANGELOG 2026-08-11 `{what}`
+    // is the zone id (it used to fall back to the county, which made a dozen county-wide
+    // activations read identically), so the zone is usually in the title already — add it
+    // here only when it isn't. The event type is never in the headline. Tested against the
+    // string rather than assumed, so a future format change degrades to showing it twice
+    // rather than to dropping the zone entirely.
     const e = p.evacuation;
-    return [e.zoneId ? `Zone ${e.zoneId}` : null, e.eventType].filter(Boolean).join(' · ') || null;
+    const zone = e.zoneId && !p.headline.includes(e.zoneId) ? `Zone ${e.zoneId}` : null;
+    return [zone, e.eventType].filter(Boolean).join(' · ') || null;
   }
   return null;
 }
@@ -199,10 +206,21 @@ function renderStream(items: HazardFeature[]): string {
       // the link is reachable.
       const moreUrl = p.provenance?.sourceUrl;
       const hasBody = !!(ex || p.description || moreUrl);
+      // An issued-but-not-yet-in-force alert is marked in the kicker, where it is visible
+      // with the card collapsed. `effective` carries the hazard's onset (Grid 2026-08-11);
+      // when the product publishes none we say so plainly rather than invent a start time.
+      const when = isScheduled(f)
+        ? (() => {
+            const at = formatPtDayTime(p.effective);
+            return at ? `Begins ${at}` : 'Not yet in effect';
+          })()
+        : null;
       const head =
         `<span class="stream__head"><span class="stream__kicker">` +
         `<span class="stream__sev">${esc(severityLabel(String(p.severity)))}</span>` +
-        `<span class="stream__kind">${esc(p.kind)}</span></span>` +
+        `<span class="stream__kind">${esc(p.kind)}</span>` +
+        (when ? `<span class="stream__when">${esc(when)}</span>` : '') +
+        `</span>` +
         `<span class="stream__title">${esc(wildfireTitle(p.headline, p.wildfire))}</span>` +
         (p.areaLabel ? `<span class="stream__where">${esc(p.areaLabel)}</span>` : '') +
         `</span>`;
@@ -364,6 +382,26 @@ const FIRE: Record<string, { label: string; state: TileState }> = {
   UNKNOWN: { label: 'Unknown', state: 'muted' },
 };
 
+/** The alert stream's heading — the count tiles jump here when they have detail to show. */
+const STREAM_ANCHOR = '#stream-title';
+
+/**
+ * The Weather Alerts tile. An alert issued today for Thursday's storms is real and belongs
+ * on the page, but it is not in effect — labelling it "Active" would say the weather is on
+ * us now. In-effect alerts lead; upcoming ones are the headline only when nothing is in
+ * force yet, and are never folded into the same number.
+ */
+function weatherAlertTile(s: SituationSummary): LiveView['tiles']['weatherAlerts'] {
+  // Both counts come off the same layer's sourceStatus, so they go unknown together.
+  if (s.weatherAlerts == null || s.weatherAlertsUpcoming == null)
+    return { value: 'Unknown', state: 'muted' };
+  if (s.weatherAlerts > 0)
+    return { value: `${s.weatherAlerts} Active`, state: 'elevated', href: STREAM_ANCHOR };
+  if (s.weatherAlertsUpcoming > 0)
+    return { value: `${s.weatherAlertsUpcoming} Upcoming`, state: 'elevated', href: STREAM_ANCHOR };
+  return { value: 'None', state: 'ok' };
+}
+
 /** Build the entire /live view-model from the two snapshots (identical SSR + client). */
 export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
   const summary = deriveSituationSummary(haz);
@@ -380,7 +418,7 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
   // A count tile jumps down to its detail in the alert stream — but only when there's
   // actually something to see (count > 0). "None"/"Unknown" stay inert (no false promise
   // of detail). `n` is number|null: null (unknown) and 0 (none) are both falsy → no link.
-  const streamLink = (n: number | null) => (n ? '#stream-title' : undefined);
+  const streamLink = (n: number | null) => (n ? STREAM_ANCHOR : undefined);
 
   return {
     status,
@@ -406,17 +444,7 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
         state: summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok',
         href: streamLink(summary.evacuations),
       },
-      weatherAlerts: {
-        value:
-          summary.weatherAlerts == null
-            ? 'Unknown'
-            : summary.weatherAlerts > 0
-              ? `${summary.weatherAlerts} Active`
-              : 'None',
-        state:
-          summary.weatherAlerts == null ? 'muted' : summary.weatherAlerts > 0 ? 'elevated' : 'ok',
-        href: streamLink(summary.weatherAlerts),
-      },
+      weatherAlerts: weatherAlertTile(summary),
       fireWeather: { value: fire.label, state: fire.state },
     },
     mapData: buildMapData(haz),

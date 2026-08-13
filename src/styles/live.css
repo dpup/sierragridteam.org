@@ -225,6 +225,12 @@
 .live-view .stream__kind {
   color: var(--ink-muted);
 }
+/* "Begins Thu 05:00 PT" on an alert that is issued but not yet in force. Inherits the
+   kicker's UI-font/uppercase/tracking; the secondary ink keeps it subordinate to the
+   severity label without relying on color to carry the meaning — the words do that. */
+.live-view .stream__when {
+  color: var(--ink-secondary);
+}
 .live-view .stream__title {
   font-family: var(--font-display);
   font-size: var(--fs-body);

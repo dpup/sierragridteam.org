@@ -74,6 +74,21 @@ test as `/places:resolve`), so the client no longer re-filters. Layer slugs (URL
   (`roadId`, `congestion`, `delayMinutes`, `durationMinutes`, `distanceKm`) plus
   `status`/`headline`/`areaLabel` on the envelope. Chain controls are the separate
   `chain_control` layer; road incidents the `road_incident` layer.
+- **`weather_alert`: `status` distinguishes issued from in force.** Since 2026-08-11
+  `effective`/`expires` carry CAP's `onset`/`ends` (the _hazard's_ window) rather than the
+  product's issuance time and re-issue deadline, and `status` is `SCHEDULED` until onset. A
+  watch written Tuesday for Thursday's storms is therefore `SCHEDULED`, not `ACTIVE`.
+  `deriveSituationSummary` splits the two (`weatherAlerts` = in force,
+  `weatherAlertsUpcoming` = issued), the /live tile reads "N Active" or "N Upcoming", and the
+  stream card is marked "Begins Thu 05:00 PT". We never filter on `expires` — the place feed
+  decides what it serves. The homepage "Active Alerts" tile counts in-force alerts only.
+- **`evacuation`: `headline` names the zone** (since 2026-08-11 `{what}` in
+  `Evacuation {Level} — {what}` is the zone id, not the county), so the stream card adds
+  `Zone …` to its detail line only when the headline doesn't already carry it.
+  `evacuation.zoneId` remains the stable identifier — never match on the headline.
+- `metadata.attribution` is populated on every layer as of 2026-08-11 (it was empty for all
+  but `evacuation`). We currently print our own credit line under each map instead; reading
+  the envelope's per-source string is available if we want the finer attribution.
 
 ### `GET /conditions` (replaced `/weather`)
 
@@ -103,8 +118,9 @@ which preserves the `HazardFeature` shape our derivations expect.
 ## Architecture: client-only live data (no build-time fetch)
 
 **Nothing feed-related is fetched at build time** — so no stale data can ever be baked into
-the HTML. Every page renders live from the browser (CORS is resolved, FR-1: the API returns
-`Access-Control-Allow-Origin` for `https://sierragridteam.org` and `http://localhost:4321`).
+the HTML. Every page renders live from the browser (CORS is resolved, FR-1 — and since
+2026-08-06 The Grid serves `Access-Control-Allow-Origin: *` rather than an origin allowlist,
+so the dev proxy in `astro.config.mjs` is now a convenience rather than a requirement).
 The checked-in `src/data/*.json` are **test fixtures only** — the screenshot harness mocks the
 feed with them; no page imports them.
 

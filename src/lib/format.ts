@@ -33,3 +33,27 @@ export function formatPtTime(iso: string | null | undefined): string {
     return '—';
   }
 }
+
+/**
+ * Format an ISO timestamp as `Thu 05:00 PT` — `formatPtTime` plus the weekday, for a time
+ * that may not be today. A scheduled weather alert's onset is routinely a day or two out,
+ * and a bare clock time would read as "this morning". Returns null (not an em dash) for
+ * unusable input, so callers can drop the phrase rather than print a placeholder time.
+ */
+export function formatPtDayTime(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    const t = new Intl.DateTimeFormat('en-GB', {
+      timeZone: TIMEZONE,
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(d);
+    return `${t} PT`;
+  } catch {
+    return null;
+  }
+}

@@ -106,7 +106,6 @@ export interface MeshFeatureProps {
   headline?: string;
   status?: string;
   updatedAt?: string;
-  areaLabel?: string;
   source?: { id?: string; name?: string; url?: string; attribution?: string };
   mesh?: MeshNodeDetail;
   meshLink?: MeshLinkDetail;
@@ -145,7 +144,6 @@ export interface MeshEventsPage {
   events: {
     id: string;
     headline?: string;
-    areaLabel?: string;
     category?: string;
     status?: string;
     geometry?: { centroid?: { lat: number; lng: number } } | null;
@@ -297,7 +295,10 @@ const nodeFromFeature = (f: MeshFeature, fallbackInRegion: boolean): MeshNode | 
   if (!m?.publicKey) return null;
   const [lng, lat] = g.coordinates;
   if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
-  const name = (m.name || f.properties.areaLabel || '').trim() || 'Unnamed node';
+  // `mesh.name` is the node's only identity. (We used to fall back to `areaLabel`, but The
+  // Grid emptied that for mesh events on 2026-08-11 — a node name is not a location, and
+  // the service doesn't reverse geocode, so the field was a duplicate and a false claim.)
+  const name = (m.name || '').trim() || 'Unnamed node';
   return {
     publicKey: m.publicKey,
     name,
@@ -422,7 +423,7 @@ export function buildGlobalGraph(
     const c = e.geometry?.centroid;
     const key = m?.publicKey || e.id.replace(/^meshcore:/, '');
     if (!key || !c || !Number.isFinite(c.lng) || !Number.isFinite(c.lat)) continue;
-    const name = (m?.name || e.areaLabel || '').trim() || 'Unnamed node';
+    const name = (m?.name || '').trim() || 'Unnamed node';
     coords.set(key, {
       publicKey: key,
       name,
