@@ -194,7 +194,7 @@ function streamExtra(f: HazardFeature): string | null {
   return null;
 }
 
-function renderStream(items: HazardFeature[]): string {
+function renderStream(items: HazardFeature[], now: number): string {
   if (items.length === 0) return `<p class="stream__empty">${esc(copy.streamEmpty)}</p>`;
   const lis = items
     .map((f) => {
@@ -209,7 +209,7 @@ function renderStream(items: HazardFeature[]): string {
       // An issued-but-not-yet-in-force alert is marked in the kicker, where it is visible
       // with the card collapsed. `effective` carries the hazard's onset (Grid 2026-08-11);
       // when the product publishes none we say so plainly rather than invent a start time.
-      const when = isScheduled(f)
+      const when = isScheduled(f, now)
         ? (() => {
             const at = formatPtDayTime(p.effective);
             return at ? `Begins ${at}` : 'Not yet in effect';
@@ -402,9 +402,19 @@ function weatherAlertTile(s: SituationSummary): LiveView['tiles']['weatherAlerts
   return { value: 'None', state: 'ok' };
 }
 
-/** Build the entire /live view-model from the two snapshots (identical SSR + client). */
-export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
-  const summary = deriveSituationSummary(haz);
+/**
+ * Build the entire /live view-model from the two snapshots (identical SSR + client).
+ *
+ * `now` decides whether an issued alert has started yet; it's a parameter so the function
+ * stays pure and the screenshot harness's frozen clock reaches it. Live callers take the
+ * default.
+ */
+export function buildView(
+  haz: HazardsSnapshot,
+  grid: GridSnapshot,
+  now: number = Date.now()
+): LiveView {
+  const summary = deriveSituationSummary(haz, now);
   const stream = deriveStream(haz);
   const fire = FIRE[summary.fireWeather] ?? FIRE.UNKNOWN;
 
@@ -450,7 +460,7 @@ export function buildView(haz: HazardsSnapshot, grid: GridSnapshot): LiveView {
     mapData: buildMapData(haz),
     html: {
       weather: renderWeather(grid.conditions),
-      stream: renderStream(stream),
+      stream: renderStream(stream, now),
       roads: renderRoads(layerFeatures(haz, 'road_segment'), layerFeatures(haz, 'chain_control')),
       scanners: renderScanners(haz.scanners ?? []),
     },
