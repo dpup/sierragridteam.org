@@ -22,6 +22,12 @@ The difference that matters: these are opt-in. Nobody is enrolled automatically.
 
 One more reason to check rather than assume you are covered: alerting systems change hands. A [ransomware attack knocked the widely used CodeRED platform offline in November 2025](https://www.securityweek.com/ransomware-attack-disrupts-local-emergency-alert-system-across-us/), and some counties dropped it and moved on afterward. A registration you made years ago, on a system your county may no longer run, is not a live subscription. Re-confirming takes less time than it took to read this.
 
+## A nonprofit app for fire alerts
+
+Another practical option is [Watch Duty](https://www.watchduty.org/), a 501(c)(3) nonprofit whose team of active and retired dispatchers, first responders, and reporters compiles wildfire information from official sources and radio traffic into a free phone app. The app sends a push notification when a fire it is tracking threatens life or property in your area.
+
+Like the county's text and email, the app needs a data connection to reach you, so in a true dead spot it is no substitute for a tower in range. Where you do have data — home wi-fi included — it does not wait on a particular cell tower to carry a federal alert. It is a way to stay oriented, not an official order; those still come from the sheriff and NWS Sacramento.
+
 ## Where the orders themselves live
 
 Signing up controls how a warning reaches you; it does not change who issues it. Evacuation orders come from the sheriff and are mapped by zone — the foothills use [Genasys](https://protect.genasys.com) — and fire-weather warnings come from [NWS Sacramento](https://www.weather.gov/sto). A county alert puts those in your hand faster, and the [Live Feed](/live) mirrors them, but the agencies remain the source.
