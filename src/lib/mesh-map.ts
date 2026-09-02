@@ -378,11 +378,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     const html = popShell(
       pairTitle(headline),
       `Relay link \u00b7 heard ${agoLabel(String(p.lastSeen || ''), now)}`,
-      metric(
-        Number.isFinite(days) ? String(days) : null,
-        span == null ? null : `/${span}`,
-        'Days seen'
-      ) +
+      metric(Number.isFinite(days) ? String(days) : null, `/${span}`, 'Days seen') +
         metric(compactCount(Number(p.observations) || 0), null, 'Receptions') +
         metric(snr == null ? null : snr.toFixed(1), snr == null ? null : 'dB', 'Best SNR'),
       tierNote(tier)

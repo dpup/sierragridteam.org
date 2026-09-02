@@ -50,8 +50,7 @@ const tile = (label: string, value: string, sub: string, muted = false) =>
 function renderTiles(s: MeshSummary, window: MeshWindow): string {
   const unknown = s.sourceStatus === 'UNAVAILABLE';
   // Name the window in the sublabel — "12 links" means nothing without the span it covers.
-  const span =
-    window === 'all' ? 'ever observed' : `in the last ${MESH_WINDOW_LABELS[window].toLowerCase()}`;
+  const span = `in the last ${MESH_WINDOW_LABELS[window].toLowerCase()}`;
   return (
     `<div class="mesh-tiles">` +
     // Leads with OUR repeaters, which is the same figure the homepage "Relay Nodes" tile

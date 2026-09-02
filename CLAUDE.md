@@ -177,11 +177,13 @@ stable.
   CSS. Two reads frame the page: the **corridor** (`mesh_node.geojson` for the authoritative
   in-region roster ∪ `mesh_link.geojson?window=` for the subgraph + one-hop neighbours; the
   roster alone decides who is in-region, so /mesh and the homepage tile always agree) loads
-  on arrival; the **whole observed mesh** (`/mesh/links` + `/events?layer=MESH`, ~260 KB gz)
+  on arrival; the **whole observed mesh** (`/mesh/links` + `/events?layer=MESH`, ~355 KB gz)
   is lazy-loaded as a muted backdrop only once the reader pans past the corridor. A link's
   recency tier drives BOTH a static opacity/width and the rate of a travelling dash, so
   freshness survives `prefers-reduced-motion` switching the animation off. One fixed window
-  (`MESH_WINDOW`, 30d) and **no picker** — the fade is the time control. **Links that leave
+  (`MESH_WINDOW`, 30d) and **no picker** — the fade is the time control. ⚠️ Send
+  `MESH_WINDOW_QUERY[...]`, never the window key: The Grid parses `?window=` with Go's
+  `time.ParseDuration`, so `30d` is not an error, it is a silent 200 carrying 72h. **Links that leave
   the corridor are hidden until a repeater is selected** (map click or roster row); selecting
   reveals just that node's outward links and fits the map to its reach. Escape or a click on
   bare map clears it. Corridor repeaters are **DOM pins** (`.mesh-pin`, real `<button>`s with

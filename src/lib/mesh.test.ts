@@ -15,6 +15,7 @@ import {
   displayName,
   MESH_WINDOW,
   MESH_WINDOW_DAYS,
+  MESH_WINDOW_QUERY,
   isOurNode,
   linkRecency,
   linkWeight,
@@ -22,6 +23,7 @@ import {
   nodeTypeLabel,
   type MeshFeature,
   type MeshFeatureCollection,
+  type MeshWindow,
 } from './mesh';
 import meshFixture from '../data/mesh-snapshot.json';
 
@@ -378,11 +380,23 @@ test('agoLabel is compact and never guesses at a missing stamp', () => {
   expect(agoLabel('nonsense', NOW)).toBe('—');
 });
 
-test('MESH_WINDOW_DAYS gives the popover its denominator, and none for all-time', () => {
+test('MESH_WINDOW_DAYS gives the popover its denominator', () => {
   expect(MESH_WINDOW_DAYS['30d']).toBe(30);
   expect(MESH_WINDOW_DAYS[MESH_WINDOW]).toBe(30);
-  // No span exists for all-time — the popover must render no denominator, not invent one.
-  expect(MESH_WINDOW_DAYS.all).toBeNull();
+});
+
+/**
+ * The regression this guards is silent and total: The Grid parses `?window=` with Go's
+ * time.ParseDuration, which has no day unit and no error path — `30d` fell back to the 72h
+ * default with a 200, so the site asked for a month and drew three days while every label
+ * said "30 days". A day/week suffix here is not a test failure you would otherwise see.
+ */
+test('every window queries the feed in hours — the only unit Go parses', () => {
+  for (const [key, query] of Object.entries(MESH_WINDOW_QUERY)) {
+    expect(query).toMatch(/^\d+h$/);
+    // The duration we send has to mean the span we label it with.
+    expect(Number(query.slice(0, -1))).toBe(MESH_WINDOW_DAYS[key as MeshWindow] * 24);
+  }
 });
 
 test('isOurNode matches the advertised S.I.E.R.R.A prefix only', () => {

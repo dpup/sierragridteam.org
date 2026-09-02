@@ -177,15 +177,29 @@ is what `/mesh` now draws. It replaced an embedded third-party map. Three surfac
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
 | `GET /places/{area}/map/mesh_node.geojson`         | Point features for the nodes INSIDE the place — the authoritative roster, including a node with no observed links                                                              | The corridor roster (panel + full-strength dots)   |
 | `GET /places/{area}/map/mesh_link.geojson?window=` | A self-contained subgraph: Points for in-region nodes ∪ their one-hop neighbours (`properties.mesh.inRegion` separates them), plus LineString edges with ≥1 endpoint in region | The map's links + the demoted neighbour markers    |
-| `GET /mesh/links` + `GET /events?layer=MESH`       | The WHOLE observed mesh: a coordinate-free link list joined against the global node roster (~260 KB gzipped, paged 200/page)                                                   | The lazy-loaded backdrop, once the reader pans out |
+| `GET /mesh/links` + `GET /events?layer=MESH`       | The WHOLE observed mesh: a coordinate-free link list joined against the global node roster (~355 KB gzipped at a 30-day window, paged 200/page)                                | The lazy-loaded backdrop, once the reader pans out |
 
 Edge properties (camelCase): `a`, `b`, `observations`, `daysActive`, `firstSeen`, `lastSeen`,
-`bestSnr`. `window` accepts `24h` / `72h` (the feed's default) / `7d` / `30d` / `all`.
+`bestSnr`. **`window` is a Go duration and hours are the widest unit it parses** — send
+`24h`, `72h` (the feed's default), `168h`, `720h`. The feed parses it with
+`time.ParseDuration` and has **no error path**: `7d`, `30d` and `all` do not parse, so they
+fall back to 72h silently, with a 200 and no hint in the response. The site therefore keeps
+the human window key and the wire value apart (`MESH_WINDOW` vs `MESH_WINDOW_QUERY` in
+`src/lib/mesh.ts`); a unit test pins every wire value to `^\d+h$`. It shipped asking for
+`30d` and drawing 72 hours under "30 days" labels until 2026-09-02.
 
 **The site reads one fixed window — `MESH_WINDOW` (`30d`) in `src/lib/mesh.ts` — and offers
 no picker.** The recency fade already is the time control, continuously and without a mode to
 choose; a picker only let a reader hide data from themselves. Change the constant if the
 span should change.
+
+**The presence horizon governs every node count on the site.** A node stays in The Grid's
+presence snapshot for `cadenceK × its own measured advert interval`, clamped to
+`[graceFloor 14h, graceCeil 72h]`; once it drops out, the disappearance sweep expires it
+`expireAfter` (2h) later. So **a repeater not heard for ~3 days leaves every mesh surface** —
+`mesh_node.geojson`, the `mesh_link` subgraph and `/events?layer=MESH` alike, since the map
+layers query `ACTIVE`+`SCHEDULED` only. It does not become a degraded row; it is simply gone,
+and no field on the wire says so. That is FR-8 below.
 
 **Honesty rules specific to this feed** — an edge is an _observation_ ("we heard these two
 repeaters relay for each other", weighted by how often and how recently), never a routing
@@ -198,11 +212,13 @@ confirmed-empty `OK` feed is a real `0`. Derivations + tests: `src/lib/mesh.ts`,
 ## Data gaps → feature requests (FR)
 
 **FR-1, FR-2, FR-3, FR-4, FR-7 shipped 2026-06-26; FR-6 shipped 2026-08** (see the mesh
-section above). One gap remains:
+section above). Three gaps remain:
 
-| FR       | Gap                                                   | Where it shows          | UI behavior today                                                                                       |
-| -------- | ----------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| **FR-5** | No **per-relay-site health** (is the site itself up?) | Home "Relay Nodes" tile | Tile reports mesh PRESENCE instead — "N repeaters heard", live from `mesh_node.geojson`; "—" on failure |
+| FR       | Gap                                                                                 | Where it shows                                    | UI behavior today                                                                                         |
+| -------- | ----------------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **FR-5** | No **per-relay-site health** (is the site itself up?)                               | Home "Relay Nodes" tile                           | Tile reports mesh PRESENCE instead — "N repeaters heard", live from `mesh_node.geojson`; "—" on failure   |
+| **FR-8** | No node **last-heard** stamp, and a ~3-day presence horizon                         | /mesh roster + repeaters tile, home "Relay Nodes" | A repeater we stop hearing vanishes silently — the roster lists the survivors and says nothing of the gap |
+| **FR-9** | No count of nodes **seen in the region**: position-less nodes are dropped at ingest | /mesh (a "nodes heard" tile), home                | Not shown at all — the site can only count nodes that carry GPS                                           |
 
 FR-5 concerns the org's own site-level infrastructure health, which is **not** the same thing
 as mesh presence: an advert proves a node was _heard_, not that the site is healthy, and one
@@ -210,3 +226,68 @@ site can hold more than one node. So the homepage tile is deliberately labelled 
 / "S.I.E.R.R.A repeaters heard" rather than "Relay Sites" — it says exactly what the feed can
 prove. FR-5 stays open until the org exposes real site health. Placeholders must be visually
 honest: a muted note, never an invented number.
+
+### FR-8 — a repeater we stop hearing should degrade, not disappear
+
+Raised 2026-09-02, from a member report: the site showed 9–10 S.I.E.R.R.A repeaters against
+13 he knew of. Nothing was wrong on this side — the missing ones are not in the feed. They
+had aged past the presence horizon above, and the two most affected are precisely the
+low-connectivity sites it is too tight for (46 and 55 receptions in 30 days, against ~37,000
+for a healthy one). They are still in the store as `EXPIRED` events, with real link
+observations behind them.
+
+**Two changes, and they have to ship together.**
+
+1. **Raise `grid.meshcore.graceCeil`** (72h today) — 7d, or a role-aware ceiling that gives a
+   repeater longer than a companion. `cadenceK × interval` already adapts to a node's own
+   rhythm; the ceiling is what overrides that adaptation for the slowest sites.
+2. **Expose the node's real last-heard: `mesh.lastHeardAt`** (RFC 3339, _our_ receive time —
+   `NodeState.LastHeardAt`, the same clock behind the store's `events.last_seen_at`) on
+   `/events?layer=MESH` and in `properties.mesh` on `mesh_node.geojson` / `mesh_link.geojson`.
+   **Nothing on the wire carries this today.** `updatedAt` is the content-revision stamp: it
+   moves only when a node's name, location or role changes, so live corridor repeaters ship
+   stamps a week old while being heard right now. `telemetry.lastAdvertAt` is node-reported
+   and the clocks are skewed — one corridor node adverts `2024-05-15`.
+
+Why together: (1) alone makes the site **less** honest, since quiet repeaters would pad a
+count labelled "heard" with nothing to tell them apart; (2) alone leaves the ~3-day cliff.
+With both, the roster can list every repeater and grade each row by its own last-heard.
+
+Optional third, if the ceiling can't move far: let the place layers include recently-expired
+mesh nodes on request (`?includeExpired=true`) so the roster keeps an honest tail — the data
+is already queryable via `/events?layer=MESH&status=EXPIRED&place=`, which is how the three
+missing repeaters were identified.
+
+Until this lands the site renders only what the feed asserts. **Do not** fill the gap with
+`updatedAt` or `lastAdvertAt` — both would put a fabricated "last heard" on the page.
+
+### FR-9 — a node census for the region, including nodes with no GPS
+
+`ingest/network.go` drops locationless nodes ("Locationless nodes can't be geofenced and are
+dropped"), which is right for a map layer and means most companions never reach the API at
+all. But the receptions firehose (`mesh_observations`) is **not** geofenced and is keyed by
+pubkey, so The Grid already holds what a census needs.
+
+**Ask:** `GET /places/{place}/mesh/census?window=720h`
+
+```json
+{
+  "window": "720h",
+  "generatedAt": "2026-09-02T01:00:00Z",
+  "sourceStatus": "OK",
+  "nodesSeen": 68,
+  "byType": { "repeater": 50, "companion": 14, "roomServer": 4 },
+  "byAttribution": { "located": 53, "heardDirect": 15 }
+}
+```
+
+Membership rule: distinct pubkeys where **either** the node's last known position is inside
+the place polygon, **or** it was heard at zero hops (the first resolved hop of a reception's
+path chain, or the receiving gateway itself) by a node whose position is inside the polygon,
+within the window. Dedupe by pubkey. `sourceStatus` must be present so the tile can read
+"Unknown" instead of a false `0` when the source is down.
+
+The equivalent derived client-side from today's surfaces is 9 corridor + 59 one-hop = **68**
+nodes, 15 of which have no presence record at all (position-less or aged out). The site does
+**not** ship that derivation: it needs the global `/mesh/links?window=720h` edge list, ~356 KB
+gzipped on page load for one number, and it could never serve the homepage tile.

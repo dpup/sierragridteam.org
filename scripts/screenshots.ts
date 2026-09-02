@@ -70,8 +70,11 @@ const allPages = [
   { name: 'colophon', path: '/colophon' },
   { name: 'notfound', path: '/this-route-does-not-exist' },
 ];
-// LIVE mode only cares about the data-driven pages (home tiles/banner + the live feed).
-const pages = LIVE ? allPages.filter((p) => p.path === '/' || p.path === '/live') : allPages;
+// LIVE mode only cares about the data-driven pages (home tiles/banner, the live feed, and
+// the mesh map — /mesh renders every count and every edge from the feed, so a change to what
+// we ask The Grid for is invisible in the mocked set and only shows up here).
+const LIVE_PATHS = new Set(['/', '/live', '/mesh']);
+const pages = LIVE ? allPages.filter((p) => LIVE_PATHS.has(p.path)) : allPages;
 
 const snapshot = JSON.parse(readFileSync(resolve(root, 'src/data/grid-snapshot.json'), 'utf8'));
 const hazards = JSON.parse(readFileSync(resolve(root, 'src/data/hazards-snapshot.json'), 'utf8'));
@@ -256,16 +259,19 @@ async function main() {
         await page
           .waitForSelector('html[data-map-settled]', { timeout: LIVE ? 15000 : 8000 })
           .catch(() => {});
-      } else if (pg.path === '/mesh' && !LIVE) {
-        // /mesh is client-rendered too: wait for the panel roster to fill from the mocked
-        // feed and for the map to settle, rather than racing networkidle.
+      } else if (pg.path === '/mesh') {
+        // /mesh is client-rendered too: wait for the panel roster to fill from the feed and
+        // for the map to settle, rather than racing networkidle. LIVE gets /live's longer
+        // budget — the real feed and the real basemap both have to arrive.
         await page
           .waitForFunction(() => !!document.querySelector('[data-mesh-roster] .mesh-roster'), {
-            timeout: 8000,
+            timeout: LIVE ? 20000 : 8000,
           })
           .catch(() => {});
         await page.waitForSelector('canvas.maplibregl-canvas', { timeout: 8000 }).catch(() => {});
-        await page.waitForSelector('html[data-map-settled]', { timeout: 8000 }).catch(() => {});
+        await page
+          .waitForSelector('html[data-map-settled]', { timeout: LIVE ? 15000 : 8000 })
+          .catch(() => {});
       } else if (pg.path === '/' && !LIVE) {
         // Home tiles are client-filled: Active Alerts + Fire Weather SSR a "—" placeholder
         // and the OperationalStatus island replaces it from the mocked feed. Wait for that
