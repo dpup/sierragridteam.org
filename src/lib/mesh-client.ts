@@ -13,6 +13,7 @@ import {
   type MeshFeatureCollection,
   type MeshGraph,
   MESH_WINDOW,
+  MESH_WINDOW_QUERY,
   type MeshNode,
   type MeshLink,
   type MeshWindow,
@@ -36,7 +37,9 @@ export async function fetchRegionGraph(
   window: MeshWindow,
   signal: AbortSignal
 ): Promise<MeshGraph> {
-  const q = `?window=${encodeURIComponent(window)}`;
+  // MESH_WINDOW_QUERY, never the window key itself — the feed parses this with Go's
+  // time.ParseDuration, which reads `30d` as a parse error and quietly serves 72h.
+  const q = `?window=${encodeURIComponent(MESH_WINDOW_QUERY[window])}`;
   const [nodes, links] = await Promise.all([
     json<MeshFeatureCollection>(`/places/${HAZARD_AREA}/map/mesh_node.geojson`, signal),
     json<MeshFeatureCollection>(`/places/${HAZARD_AREA}/map/mesh_link.geojson${q}`, signal),
@@ -67,7 +70,7 @@ export async function fetchGlobalGraph(
     if (!token) break;
   }
   const links = await json<GlobalLinksResponse>(
-    `/mesh/links?window=${encodeURIComponent(MESH_WINDOW)}`,
+    `/mesh/links?window=${encodeURIComponent(MESH_WINDOW_QUERY[MESH_WINDOW])}`,
     signal
   );
   return buildGlobalGraph(links, events, known);

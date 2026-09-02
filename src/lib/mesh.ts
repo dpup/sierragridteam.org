@@ -15,8 +15,9 @@
  *   /mesh/links?window=  +  /events?layer=MESH
  *                                          — the WHOLE mesh: a coordinate-free link list
  *                                            joined against the global node roster. Heavy
- *                                            (~260 KB gzipped), so /mesh loads it lazily,
- *                                            only once the reader pans past the corridor.
+ *                                            (~355 KB gzipped over MESH_WINDOW), so /mesh
+ *                                            loads it lazily, only once the reader pans
+ *                                            past the corridor.
  *
  * Honesty model (docs/content-style-guide.md §10): an edge is an OBSERVATION — "we heard
  * these two repeaters relay for each other", weighted by how often and how recently. It is
@@ -25,7 +26,7 @@
  * a `0` — an empty graph and a broken feed must never render the same way.
  */
 
-export type MeshWindow = '24h' | '72h' | '7d' | '30d' | 'all';
+export type MeshWindow = '24h' | '72h' | '7d' | '30d';
 
 /**
  * The single window /mesh reads. There is deliberately NO window picker: the recency fade
@@ -36,10 +37,30 @@ export type MeshWindow = '24h' | '72h' | '7d' | '30d' | 'all';
  *
  * 30d is wide enough to show the intermittent long-haul shots that make the network's reach
  * legible (a link seen once in a month is often the most interesting thing on the map) while
- * still being a span a reader can reason about — unlike `all`, whose denominator drifts with
- * however long The Grid has been collecting.
+ * still being a span a reader can reason about.
  */
 export const MESH_WINDOW: MeshWindow = '30d';
+
+/**
+ * ⚠️ The `?window=` value The Grid actually understands — NOT the key above.
+ *
+ * The feed parses the parameter with Go's `time.ParseDuration`, which has **no day unit**
+ * and **no error path**: `7d`, `30d` and `all` all fail to parse and fall back to the 72h
+ * default, silently and with a 200. So the site spent its whole life asking for `30d` and
+ * being served 72 hours of links while every label on the page said "30 days" — a page
+ * claiming more than its data (content-style-guide §10), and the reason the map showed
+ * about a fifth of the corridor's observed links (114 → 145 edges, 40 → 53 nodes).
+ *
+ * Hours are the widest unit Go parses, so every window is expressed in hours here. Anything
+ * added to `MeshWindow` MUST get an hours value — a day/week suffix is not a parse error you
+ * will see, it is a quietly narrower map.
+ */
+export const MESH_WINDOW_QUERY: Record<MeshWindow, string> = {
+  '24h': '24h',
+  '72h': '72h',
+  '7d': '168h',
+  '30d': '720h',
+};
 
 /** Human labels for the window control. */
 export const MESH_WINDOW_LABELS: Record<MeshWindow, string> = {
@@ -47,16 +68,14 @@ export const MESH_WINDOW_LABELS: Record<MeshWindow, string> = {
   '72h': '72 hours',
   '7d': '7 days',
   '30d': '30 days',
-  all: 'All time',
 };
 
 /** Nominal span of a window, in days — for the "up N of the last M days" reliability read. */
-export const MESH_WINDOW_DAYS: Record<MeshWindow, number | null> = {
+export const MESH_WINDOW_DAYS: Record<MeshWindow, number> = {
   '24h': 1,
   '72h': 3,
   '7d': 7,
   '30d': 30,
-  all: null,
 };
 
 // ---- Feed types (mirror the real API, captured 2026-08-06) ----
