@@ -239,6 +239,21 @@ const schema = {
       </ul>
     </Section>
   </div>
+
+  {
+    /* Standing legal notice. Deliberately quiet fine print at the foot of the page — part
+      of the page (it qualifies THIS page's data), not the site footer. Gated like the
+      footer so it doesn't sit under the loader, but it stays visible in the failure /
+      no-JS state, where the page is still making claims about what it can't show. */
+  }
+  <div class="live-legal" data-live-legal>
+    <Section surface="page">
+      <p class="live-legal__note" role="note">
+        <span class="live-legal__label">{copy.disclaimerHeading}:</span>{' '}
+        {copy.disclaimerBody}
+      </p>
+    </Section>
+  </div>
 </BaseLayout>
 
 <script>
@@ -747,6 +762,24 @@ const schema = {
     color: var(--ink-secondary);
   }
 
+  /* Legal fine print — a hairline rule and the lightest ink tier; it should read as a
+     footnote to the feed, never compete with it. */
+  .live-legal__note {
+    max-width: 80ch;
+    padding-top: var(--space-5);
+    border-top: var(--border-soft);
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-muted);
+  }
+  .live-legal__label {
+    font-family: var(--font-ui);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
   @media (max-width: 900px) {
     .live-tiles {
       grid-template-columns: repeat(2, 1fr);
@@ -788,6 +821,9 @@ const schema = {
   }
   /* [data-site-footer] is the hook on SiteFooter.astro's <footer> — keep them in sync. */
   html[data-live-boot='loading'] [data-site-footer] {
+    display: none;
+  }
+  html[data-live-boot='loading'] [data-live-legal] {
     display: none;
   }
 

@@ -156,6 +156,17 @@ export const live = {
   failBody:
     "We couldn't reach the data feeds right now. Rather than show stale information, here are " +
     'the official sources — check them directly for current conditions.',
+  /**
+   * Standing legal notice at the foot of the page (NOT the site footer — it belongs to
+   * this page's data). Provided by the organization; keep the wording as given.
+   */
+  disclaimerHeading: 'Limitation of Liability',
+  disclaimerBody:
+    'By accessing this site, you acknowledge and agree that the site operators, owners, and ' +
+    'affiliated entities disclaim all liability and responsibility for any loss, damage, ' +
+    'injury, fine, or legal enforcement action resulting from reliance on the preliminary ' +
+    'data provided herein. Information is provided "as is" without warranties of any kind, ' +
+    'express or implied.',
 } as const;
 
 /** Site-wide emergency banner copy. One CTA only — it takes you to the Live Feed,
