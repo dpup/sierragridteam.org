@@ -115,8 +115,8 @@ it for. Top to bottom:
 - **Honesty:** "Limited Telemetry" where there is no monitor (a gap in _our_ coverage, not a
   verdict on the repeater), "Gauge unread" where a monitor could not read one, "Unknown"
   rather than a zero when the feed is down. Orange only below `LOW_BATTERY_PCT` (10%). The
-  chart breaks its line across a monitor outage, marks reboots, and names where the archive
-  starts rather than drawing empty axes over a range that predates it.
+  chart draws through a monitor outage rather than breaking at one, marks reboots, and names
+  where the archive starts rather than drawing empty axes over a range that predates it.
 
 ### Live Feed (`/live`) — the situation flagship (replaced `/alerts`)
 

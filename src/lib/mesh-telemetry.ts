@@ -14,8 +14,9 @@
  *   1. `null` is not zero. A gauge the monitor could not read comes back `null`; a battery
  *      at 0% and a battery nobody could read must never look alike. → the point is SKIPPED,
  *      never coerced (`num()` refuses null, '' and non-numeric strings).
- *   2. A gap is not a flat line. Drawing straight through a silence asserts readings nobody
- *      took. → `splitRuns` breaks the path when the step exceeds twice the observed cadence.
+ *   2. A gap WAS broken out of the line; as of 2026-09-17 the chart connects straight
+ *      through one instead — a deliberate product call, with the trade written out on
+ *      `pointsIn`. Rules 1, 3, 4 and 5 all still hold.
  *   3. Outside `coverage` is not a quiet node. An empty window can mean the node said
  *      nothing, or that the window predates anything The Grid holds. → `coverage` is carried
  *      through and the view renders "no data retained before …" rather than empty axes.
@@ -80,8 +81,6 @@ export interface TelemetryPoint {
 export interface TelemetrySeries {
   publicKey: string;
   points: TelemetryPoint[];
-  /** Observed median gap, seconds — what "abnormal" is measured against. */
-  cadenceSeconds: number | null;
   /** What the ARCHIVE holds, ignoring the requested window. */
   coverage: { from: number | null; to: number | null; samples: number };
   /** Counter restarts, epoch ms. */
@@ -127,7 +126,6 @@ export function buildSeries(publicKey: string, res: TelemetryResponse | null): T
   return {
     publicKey,
     points,
-    cadenceSeconds: num(res?.cadenceSeconds),
     coverage: {
       from: Number.isFinite(covFrom) ? covFrom : null,
       to: Number.isFinite(covTo) ? covTo : null,
@@ -141,55 +139,49 @@ export function buildSeries(publicKey: string, res: TelemetryResponse | null): T
   };
 }
 
-/** Fallback cadence when the archive holds too few samples to observe one (15 min). */
-const DEFAULT_CADENCE_S = 900;
-
 /**
- * Split a series into continuously-drawable runs for one metric.
+ * The plottable points for one metric in a window, as ONE connected series.
  *
- * Two things break a run, and both are claims we would otherwise make silently:
- *   • a step longer than 2x the observed cadence — the monitor was quiet, and a straight
- *     line across it asserts readings nobody took;
- *   • a reboot — counters restart there, and even on a gauge the landmark belongs on every
- *     chart on the page so two of them can be read against each other.
- * Samples whose value for THIS metric is null are skipped, which itself opens a gap.
+ * The chart draws straight through a gap rather than breaking the path — an explicit product
+ * decision (2026-09-17), reversing the earlier behaviour. The trade is worth stating: a
+ * connected line across a monitor outage implies readings that were never taken, and at this
+ * page's cadence an outage of a few hours is a visually plausible slope. The reasons for
+ * connecting anyway: with seven traces a synchronised outage produced a full-width vertical
+ * break that read as a rendering fault rather than as missing data, and the gaps that occur
+ * in practice are monitor hiccups of tens of minutes on a battery that moves slowly.
+ *
+ * What is NOT given up: a null reading is still skipped rather than plotted as zero (rule 1),
+ * `coverage` still drives "no data retained before …" so a range predating the archive is
+ * never drawn as a quiet network (rule 3), reboots are still MARKED on the plot (rule 4), and
+ * `truncated` is still reported (rule 5).
+ *
+ * If a counter (`packetsSent`, `airtimeMs`, …) is ever plotted here, this has to grow a split
+ * at `reboots` again: those reset to zero, so a line drawn across one plunges and climbs and
+ * is a graph of arithmetic rather than of the mesh.
  */
-export function splitRuns(
+export function pointsIn(
   series: TelemetrySeries,
   metric: HistoryMetric,
   from: number,
   to: number
-): { t: number; v: number }[][] {
-  const cadence = (series.cadenceSeconds ?? DEFAULT_CADENCE_S) * 1000;
-  const maxStep = Math.max(cadence * 2, 60_000);
-  const runs: { t: number; v: number }[][] = [];
-  let run: { t: number; v: number }[] = [];
-  let prev: number | null = null;
+): { t: number; v: number }[] {
+  const out: { t: number; v: number }[] = [];
   for (const p of series.points) {
     if (p.t < from || p.t > to) continue;
     const v = metricValue(p, metric);
-    if (v == null) {
-      prev = null;
-      if (run.length) runs.push(run);
-      run = [];
-      continue;
-    }
-    const rebooted = prev != null && series.reboots.some((r) => r > prev! && r <= p.t);
-    if (prev != null && (p.t - prev > maxStep || rebooted)) {
-      if (run.length) runs.push(run);
-      run = [];
-    }
-    run.push({ t: p.t, v });
-    prev = p.t;
+    if (v == null) continue;
+    out.push({ t: p.t, v });
   }
-  if (run.length) runs.push(run);
-  return runs;
+  return out;
 }
 
 /**
  * The reading nearest a moment, for the chart's hover hint. Returns null when the closest
  * sample is further away than `toleranceMs` — hovering a stretch the monitor was silent for
- * must say nothing, not reach across the gap for a value it never took (rule 2).
+ * must say nothing, not reach across the gap for a value it never took.
+ *
+ * This is now the ONE place the chart still refuses to speak for a gap. The line is drawn
+ * through one, but the hint will not put a number on a moment nobody measured.
  */
 export function valueAt(
   series: TelemetrySeries,

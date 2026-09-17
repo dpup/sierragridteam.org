@@ -208,8 +208,12 @@ stable.
   `LOW_BATTERY_PCT` (10) is the orange risk line. It was 60 and fired every night — these
   sites discharge into the teens and recover after sunrise, so the strip was permanently full
   of repeaters doing exactly what they should, which is how a warning stops being read. The chart
-  breaks its line on a monitor gap, marks reboots, and says "no data retained before …"
-  rather than drawing empty axes — there is **no backfill** in the archive.
+  **connects straight through a gap** (a product call, 2026-09-17 — the trade is written out
+  on `pointsIn`), still marks reboots, and still says "no data retained before …" rather than
+  drawing empty axes — there is **no backfill** in the archive. The hover hint is now the one
+  place that refuses to speak for a gap: `valueAt` returns null outside its tolerance rather
+  than naming a value for a moment nobody measured. ⚠️ If a COUNTER is ever plotted, the
+  split at `reboots` has to come back — counters reset to zero.
 - **Mesh map details.** One fixed link window (`MESH_WINDOW`, 30d) and no window picker; the
   panel's **"heard in" control is a DISPLAY cut** over the same 30 days (it maps onto the
   recency tiers, changes nothing that is fetched, and defaults to 30d). Links leaving the

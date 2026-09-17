@@ -10,7 +10,7 @@ import {
   earliestCoverage,
   latestValue,
   rangeWindow,
-  splitRuns,
+  pointsIn,
   valueExtent,
   type TelemetryResponse,
 } from './mesh-telemetry';
@@ -33,10 +33,11 @@ const res = (over: Partial<TelemetryResponse> = {}): TelemetryResponse => ({
 });
 
 test('the reading is nested and its int64s are strings — both are absorbed', () => {
+  // `cadenceSeconds` is still on the wire type, but is no longer carried onto the derived
+  // series: it existed only to size the gap the line used to break at.
   const s = buildSeries('aaa', res());
   expect(s.points).toHaveLength(3);
   expect(s.points[0]).toMatchObject({ battery: 80, volts: 4, tempF: 68 });
-  expect(s.cadenceSeconds).toBe(900);
   expect(s.coverage.samples).toBe(5);
 });
 
@@ -53,17 +54,18 @@ test('rule 1 — a null gauge is skipped, never read as zero', () => {
   );
   expect(s.points[1].battery).toBeNull();
   // A battery at 0% and a battery nobody could read must never look alike, so the extent
-  // never reaches down to zero because of an unread gauge.
+  // never reaches down to zero because of an unread gauge…
   expect(valueExtent([s], 'battery', T0, T0 + 3_600_000)).toEqual({ min: 76, max: 80 });
-  // …and the path breaks there rather than drawing through a reading nobody took.
-  expect(splitRuns(s, 'battery', T0, T0 + 3_600_000)).toHaveLength(2);
+  // …and the unreadable sample is dropped from the plot rather than plotted as one.
+  expect(pointsIn(s, 'battery', T0, T0 + 3_600_000).map((p) => p.v)).toEqual([80, 76]);
 });
 
-test('rule 2 — a monitor outage breaks the line instead of flattening it', () => {
+test('the line is drawn THROUGH a monitor outage, not broken at it', () => {
+  // Reversed 2026-09-17 by product decision. A connected line across a silence does imply
+  // readings nobody took; the reasons for accepting that are written out on `pointsIn`.
   const s = buildSeries(
     'aaa',
     res({
-      cadenceSeconds: '900',
       samples: [
         { reading: { reportedAt: at(0), batteryPercent: 80 } },
         { reading: { reportedAt: at(15), batteryPercent: 78 } },
@@ -73,16 +75,13 @@ test('rule 2 — a monitor outage breaks the line instead of flattening it', () 
       ],
     })
   );
-  const runs = splitRuns(s, 'battery', T0, T0 + 8 * 3_600_000);
-  expect(runs).toHaveLength(2);
-  expect(runs[0].map((p) => p.v)).toEqual([80, 78]);
-  expect(runs[1].map((p) => p.v)).toEqual([60, 58]);
+  expect(pointsIn(s, 'battery', T0, T0 + 8 * 3_600_000).map((p) => p.v)).toEqual([80, 78, 60, 58]);
 });
 
-test('rule 2 — a normal step does NOT break the line', () => {
-  const runs = splitRuns(buildSeries('aaa', res()), 'battery', T0, T0 + 3_600_000);
-  expect(runs).toHaveLength(1);
-  expect(runs[0]).toHaveLength(3);
+test('points outside the requested window are excluded', () => {
+  const s = buildSeries('aaa', res());
+  // The window is the chart's range; a sample before it belongs to an earlier frame.
+  expect(pointsIn(s, 'battery', T0 + 20 * 60_000, T0 + 3_600_000).map((p) => p.v)).toEqual([76]);
 });
 
 test('rule 3 — coverage is carried through so the view can say where the record starts', () => {
@@ -94,7 +93,7 @@ test('rule 3 — coverage is carried through so the view can say where the recor
   expect(earliestCoverage([buildSeries('bbb', { samples: [] })])).toBeNull();
 });
 
-test('rule 4 — a reboot splits the series, because counters restart there', () => {
+test('rule 4 — a reboot is still carried, so the plot can mark it', () => {
   const s = buildSeries(
     'aaa',
     res({
@@ -107,8 +106,10 @@ test('rule 4 — a reboot splits the series, because counters restart there', ()
     })
   );
   expect(s.reboots).toEqual([T0 + 20 * 60_000]);
-  // The samples are 15 minutes apart — well inside cadence — so only the reboot splits them.
-  expect(splitRuns(s, 'battery', T0, T0 + 3_600_000)).toHaveLength(2);
+  // Battery is a gauge and survives a restart, so the line runs through it — but the chart
+  // still draws the landmark. A COUNTER would have to be split here: it resets to zero, and
+  // a line across that is a graph of arithmetic rather than of the mesh.
+  expect(pointsIn(s, 'battery', T0, T0 + 3_600_000)).toHaveLength(3);
 });
 
 test('rule 5 — truncation is our limit, and is carried so the view can say so', () => {
