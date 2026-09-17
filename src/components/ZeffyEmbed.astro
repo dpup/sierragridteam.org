@@ -33,7 +33,7 @@ const { formUrl, title, height = 450 } = Astro.props;
 const src = `https://www.zeffy.com${formUrl}`;
 ---
 
-<div class="zeffy">
+<div class="zeffy" data-zeffy-title={title}>
   <div data-zeffy-embed data-form-url={formUrl}></div>
 
   <div class="zeffy__fallback" data-zeffy-embed-fallback style="display: none">
@@ -43,6 +43,58 @@ const src = `https://www.zeffy.com${formUrl}`;
     </div>
   </div>
 </div>
+
+<script>
+  /**
+   * Label the DOM Zeffy's script injects. Their embed mounts a React app into the PARENT
+   * document (not inside the cross-origin iframe), and two of its nodes ship with no
+   * accessible name:
+   *
+   *   • the payment `<iframe>` itself, with no `title`;
+   *   • their logo `<a>`, whose only content is an SVG with no label.
+   *
+   * Both are serious WCAG failures that axe caught in CI — the one environment where their
+   * script actually loads. We cannot change their markup, but these land in our page, under
+   * our domain, so they are ours to fix rather than to exclude from the scan.
+   *
+   * A MutationObserver, not a one-shot pass: the form mounts asynchronously and re-renders
+   * (it swaps desktop/mobile chrome on resize), so anything applied once gets thrown away.
+   */
+  const ZEFFY_LINK_LABEL = 'Zeffy';
+
+  function labelZeffy(wrap: HTMLElement) {
+    const title = wrap.dataset.zeffyTitle;
+    if (title) {
+      for (const frame of wrap.querySelectorAll('iframe:not([title])')) {
+        frame.setAttribute('title', title);
+      }
+    }
+    for (const link of wrap.querySelectorAll<HTMLAnchorElement>('a[href]')) {
+      // Only links with no name of their own, and only Zeffy's own — naming someone else's
+      // link is guessing, and a wrong label is worse than none.
+      const named =
+        link.getAttribute('aria-label') ||
+        link.textContent?.trim() ||
+        link.querySelector('img[alt]:not([alt=""])');
+      if (named) continue;
+      let host = '';
+      try {
+        host = new URL(link.href, location.href).hostname;
+      } catch {
+        continue;
+      }
+      if (host.endsWith('zeffy.com')) link.setAttribute('aria-label', ZEFFY_LINK_LABEL);
+    }
+  }
+
+  for (const wrap of document.querySelectorAll<HTMLElement>('[data-zeffy-title]')) {
+    labelZeffy(wrap);
+    new MutationObserver(() => labelZeffy(wrap)).observe(wrap, {
+      childList: true,
+      subtree: true,
+    });
+  }
+</script>
 
 <style>
   .zeffy {
