@@ -284,6 +284,13 @@ stable.
 - **Package manager:** npm (`bun install` hangs behind some proxies; `bun` is used
   only as a test/script runner). Use `make install`.
 - **Deploy:** AWS S3 + CloudFront, DNS at Hostinger — see `docs/deployment.md`.
+- **Third-party embeds (/donate, Zeffy):** their script mounts a React app into OUR
+  document, not just a cross-origin iframe, so its markup is inside our a11y surface. It
+  ships an untitled payment `<iframe>` and an unlabelled logo `<a>`; `ZeffyEmbed.astro`
+  labels both via a MutationObserver (it re-renders on resize, so a one-shot pass is thrown
+  away). ⚠️ **The embed only loads in CI** — the dev sandbox has no route to `zeffy.com` and
+  the preview CI serves doesn't either, so `tests/donate.spec.ts` SIMULATES the injected DOM.
+  Anything about a third-party embed that "passes locally" has probably not been exercised.
 - **Supporters:** the homepage band renders `src/config/supporters.ts` — add or remove an
   organization there, never in markup. A supporter's logo is used **unmodified** (their brand
   is not ours to recolor), which makes this the one sanctioned place non-palette color
