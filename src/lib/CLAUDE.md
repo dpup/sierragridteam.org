@@ -13,10 +13,21 @@
 MapLibre topology map. `basemap.ts` holds the one basemap both maps draw on (OpenFreeMap
 Positron) and its required attribution string.
 
+`mesh-telemetry.ts` holds the per-repeater monitor ARCHIVE: types + pure derivations for the
+history chart and the roster sparklines, including the five rules a naive chart breaks (a
+null gauge is not zero, a gap is not a flat line, outside coverage is not a quiet node, a
+reboot is not a collapse, truncation is ours not the node's). `mesh-history.ts` renders the
+chart. Both are tested in `mesh-telemetry.test.ts`.
+
+`mesh-link-paint.ts` holds the link layers' filter + paint expressions as **pure JSON**
+(no MapLibre import), so `mesh-link-paint.test.ts` can compile every one of them against the
+real style spec. Put new link expressions there, not in the map's closure — see the warning
+below for why eyeballing the map does not count as testing them.
+
 > ⚠️ **MapLibre paint expressions: `zoom` is only legal at the TOP level.** It may not be
 > nested inside a `case`/`match`. Wrap the zoom `interpolate` around the data-driven test,
 > never the reverse — an invalid expression is dropped silently and the layer vanishes with
-> no error. `linkOpacity` in `mesh-map.ts` shows the correct shape.
+> no error. `linkOpacity` in `mesh-link-paint.ts` shows the correct shape, and its test pins it.
 
 **There is NO build-time fetch.** Every page renders live data in the browser; the lib is
 pure types + derivations the client feeds a fetched snapshot into. The checked-in

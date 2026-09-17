@@ -38,6 +38,42 @@
   --signal-orange-hover: #9a330a; /* orange hover (one step darker) — used by the sanctioned Donate CTA */
   --signal-orange-text: #b03808; /* small orange TEXT — AA-compliant (≥4.5:1) variant of the risk orange */
 
+  /* ---- Deep surface (the /mesh status band) ----
+     The one dark ground in the system. It exists so the mesh page opens on a status board
+     rather than a page of prose: the figures read as instrumentation, and the parchment
+     below reads as the document. Its ink tokens live here too — nothing may put
+     --ink-body on this ground. */
+  --surface-deep: #14281d;
+  --surface-deep-line: #2c4536; /* hairline between metric cells */
+  --ink-on-deep: #f1ece0; /* headline figures on the deep ground */
+  --ink-on-deep-muted: #9db3a4; /* labels + sublabels on the deep ground */
+
+  /* ---- Chart series ----
+     A categorical scale for the /mesh telemetry history, where one line per monitored
+     repeater is the point. This is the ONLY categorical scale in the system and the only
+     place these hexes may appear — UI chrome still has exactly one brand colour.
+
+     Chosen by search, not by eye, under four constraints, and verified by
+     `src/lib/mesh-series.test.ts` so it cannot silently regress:
+       1. contrast >= 3:1 on --surface-page, so a 2px line is legible;
+       2. worst normal-vision pair separation >= 15 (OKLab dE x100) — measured 15.4;
+       3. worst separation under simulated deuter/prot/tritanopia >= 6 — measured 7.6,
+          legal only WITH secondary encoding, which this chart has: the legend names every
+          series with its current value, hover highlights, and selecting isolates a trace;
+       4. NO hue near the alert orange (OKLCH H~38). A trace reading as "alarming" when it
+          is merely series 5 would break the palette's one hard promise (rule 2). Measured
+          as an angular distance in OKLCH; the test has already rejected one candidate
+          (#5a2900, 14.7 degrees off the alert hue) that looked perfectly fine by eye.
+     Series 1 is the brand forest green; the rest are its neighbours in the same muted band.
+     Adding an 8th slot means re-running the search, not appending a guess. */
+  --series-1: #1d5b3f;
+  --series-2: #8980cd;
+  --series-3: #ae782a;
+  --series-4: #002803;
+  --series-5: #389160;
+  --series-6: #730b24;
+  --series-7: #1f1446;
+
   /* ---- Lines / borders (always warm tan, never gray) ---- */
   --line: #d8d0bd; /* default 1px border */
   --line-soft: #e5ddca; /* lighter internal rule */

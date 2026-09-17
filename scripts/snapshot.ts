@@ -18,6 +18,9 @@ const GRID_OUT = resolve(dir, '../src/data/grid-snapshot.json');
 const HAZARDS_OUT = resolve(dir, '../src/data/hazards-snapshot.json');
 const MESH_OUT = resolve(dir, '../src/data/mesh-snapshot.json');
 
+/** Just enough of the node layer to find the repeaters that carry a monitor. */
+type MeshFc = { features?: { properties?: { mesh?: { publicKey?: string; admin?: unknown } } }[] };
+
 async function get(path: string): Promise<unknown> {
   const res = await fetch(`${API_BASE}${path}`, {
     signal: AbortSignal.timeout(10000),
@@ -81,15 +84,50 @@ async function main() {
     get(`/places/${HAZARD_AREA}/map/mesh_node.geojson`),
     get(`/places/${HAZARD_AREA}/map/mesh_link.geojson`),
   ]);
+
+  // The monitor ARCHIVE for every corridor repeater that carries one, so the screenshot
+  // harness can draw the history band deterministically. One request per node, as The Grid
+  // takes a single `node` per call. Captured over the chart's widest range.
+  const monitored = ((meshNode as MeshFc).features ?? [])
+    .map((f) => f.properties?.mesh)
+    .filter((m): m is { publicKey: string; admin?: unknown } => !!m?.publicKey && !!m.admin);
+  const to = new Date();
+  const from = new Date(to.getTime() - 30 * 86_400_000);
+  //
+  // Thinned on the way in. A month at 15-minute cadence is ~2,880 samples per node, which
+  // across seven nodes would commit a ~30 MB fixture to git for a chart that draws at most
+  // a few hundred points per trace anyway. Keeping every Nth sample preserves the shape,
+  // the coverage window and the cadence, which is all the harness needs.
+  const MAX_FIXTURE_SAMPLES = 400;
+  const telemetry: Record<string, unknown> = {};
+  for (const m of monitored) {
+    const res = (await get(
+      `/mesh/telemetry?node=${encodeURIComponent(m.publicKey)}` +
+        `&from=${from.toISOString()}&to=${to.toISOString()}`
+    )) as { samples?: unknown[] };
+    const all = res.samples ?? [];
+    const step = Math.ceil(all.length / MAX_FIXTURE_SAMPLES);
+    telemetry[m.publicKey] = {
+      ...res,
+      samples: step > 1 ? all.filter((_, i) => i % step === 0) : all,
+    };
+  }
+
   writeFileSync(
     MESH_OUT,
     JSON.stringify(
-      { fetchedAt: new Date().toISOString(), area: HAZARD_AREA, node: meshNode, link: meshLink },
+      {
+        fetchedAt: new Date().toISOString(),
+        area: HAZARD_AREA,
+        node: meshNode,
+        link: meshLink,
+        telemetry,
+      },
       null,
       2
     ) + '\n'
   );
-  console.error(`Wrote ${MESH_OUT}`);
+  console.error(`Wrote ${MESH_OUT} (${monitored.length} monitored repeater archive(s))`);
 }
 
 main().catch((err) => {

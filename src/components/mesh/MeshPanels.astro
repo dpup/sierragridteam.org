@@ -1,0 +1,59 @@
+---
+/**
+ * MeshPanels — the /mesh status board's SSR skeleton. Empty by construction: every figure,
+ * row, legend count and chart path is filled by the browser from the live mesh feed via
+ * `src/lib/mesh-view.ts` and `src/lib/mesh-history.ts`. No feed data is fetched at build
+ * (docs/architecture/data-feed.md), so nothing here can ship stale.
+ *
+ * The h1 lives in the deep band because the band is the page's document header; the map and
+ * the roster below it are the figure and the table. Layout + collapse live in the page.
+ */
+import MeshMap from './MeshMap.astro';
+import { mesh } from '@config/content';
+import { BASEMAP_ATTRIBUTION } from '@lib/basemap';
+---
+
+<div class="mesh-view">
+  {/* 1. The deep band: identity + freshness on the left, headline figures on the right. */}
+  <div class="mesh-band">
+    <div class="mesh-band__id">
+      <h1 class="mesh-band__title">{mesh.heading}</h1>
+      <p class="mesh-band__status">
+        <span data-mesh-status-detail>{mesh.loading}</span>
+      </p>
+    </div>
+    <div data-mesh-band></div>
+  </div>
+
+  {/* 2. Anything outside limits. Client-filled; absent until the first fetch resolves. */}
+  <div data-mesh-attention aria-live="polite"></div>
+
+  {
+    /* 3. Two equal columns, each scrolling on its own so per-repeater telemetry is never
+        pushed below the fold by whatever sits above it. */
+  }
+  <div class="mesh-cols">
+    <section class="mesh-panel mesh-panel--map" aria-label={mesh.mapPanelTitle}>
+      <div data-mesh-controls-map></div>
+      <div class="mesh-panel__body">
+        <MeshMap />
+      </div>
+      <div class="mesh-panel__foot" data-mesh-legend></div>
+    </section>
+
+    <section class="mesh-panel mesh-panel--roster" aria-labelledby="mesh-roster-heading">
+      <h2 class="mesh-sr-only" id="mesh-roster-heading">{mesh.rosterHeading}</h2>
+      <div data-mesh-controls-roster></div>
+      <div class="mesh-panel__body" data-mesh-roster></div>
+    </section>
+  </div>
+
+  {/* 4. The history band: every monitored repeater on one scale. */}
+  <div class="mesh-history" data-mesh-history></div>
+
+  <p class="mesh-attrib">
+    {BASEMAP_ATTRIBUTION} · {mesh.attribution} · <a class="mesh-attrib__link" href="/about#mesh"
+      >{mesh.aboutLink}</a
+    >
+  </p>
+</div>

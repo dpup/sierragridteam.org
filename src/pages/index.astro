@@ -7,6 +7,7 @@ import SectionHeader from '@components/SectionHeader.astro';
 import Kicker from '@components/Kicker.astro';
 import DoctrineCard from '@components/DoctrineCard.astro';
 import ServiceBanner from '@components/ServiceBanner.astro';
+import Supporters from '@components/home/Supporters.astro';
 import { operations } from '@config/coverage';
 import { home } from '@config/content';
 import { site } from '@config/site';
@@ -61,6 +62,8 @@ const websiteSchema = {
       }
     </div>
   </Section>
+
+  <Supporters />
 
   <ServiceBanner />
 </BaseLayout>

@@ -68,24 +68,55 @@ Order, top to bottom:
      **Never** show a spinner or error in the hero region.
 3. **Mission statement** — Newsreader 21px, editorial gravitas. Builds + operates + trains.
 4. **Operational Doctrine** — three numbered doctrine cards: **EDUCATE / BUILD / OPERATE**.
-5. **Service-area banner** — full-width band, centered uppercase town list.
-6. **Footer.**
+5. **Supporters band** — organizations backing the network (`src/config/supporters.ts`),
+   as logo tiles plus a green "Support this work" link to /donate. Placed here on purpose:
+   after Mission and Doctrine the reader knows what we do and how, which is where social
+   proof lands — and deliberately NOT in the hero, where a sponsor mark would sit beside
+   "not an emergency dispatch service" and blur the one thing that page must say plainly.
+   Hidden entirely when there are no supporters.
+6. **Service-area banner** — full-width band, centered uppercase town list.
+7. **Footer.**
 
-### Mesh / LoRa (`/mesh`)
+### Mesh / LoRa (`/mesh`) — the status board
 
-- Full-page **topology map we draw ourselves** (`src/lib/mesh-map.ts`, MapLibre GL +
-  OpenFreeMap Positron) from The Grid's MeshCore feed — it replaced an embedded
-  third-party iframe in 2026-08. **This is the authoritative live map** — the homepage hero
-  is not. Corridor repeaters draw at full strength (ours ringed in brass), one-hop
-  neighbours as demoted hollow markers, and each observed relay link carries its recency in
-  both static weight/opacity and the rate of a travelling dash. Links out of the corridor are
-  hidden by default and revealed one repeater at a time by selecting it, which also frames
-  the map on that repeater's reach.
-- Collapsible info **sidebar**, client-rendered from the same feed (`src/lib/mesh-view.ts`):
-  status + freshness, four count tiles, a recency legend (there is deliberately no window
-  picker — the fade is the time control; see `MESH_WINDOW`), the corridor roster (select a repeater to frame its reach and reveal its outward links), and the
-  standing "what this map does not say" note.
-- Pan past the corridor and the **rest of the observed mesh** lazy-loads as a muted backdrop.
+Reorganised around monitoring (2026-09-17). The "what is the mesh" explainer moved to
+**/about#mesh**, which freed the top of the page for the figures an operator actually opens
+it for. Top to bottom:
+
+1. **Deep metrics band** (`--surface-deep`) — the freshness stamp and four headline figures:
+   **Repeaters heard** `N / M` within 12 h, **Lowest battery**, **Active this hour**,
+   **Observed links**. Brass marks only the two that can go wrong.
+2. **"Needs attention" strip** — anything outside limits, each item a button that selects
+   that repeater. Two kinds, because they are different failures: a battery under the watch
+   floor of 20% (brass) and a repeater not heard inside the window (orange). The region
+   renders **nothing at all** when there is nothing to say — a standing bar that is almost
+   always reassuring trains a reader to skip the place where the warnings appear.
+3. **Two equal columns, each scrolling independently**, so per-repeater telemetry is never
+   pushed below the fold by whatever sits above it.
+   - **Map** (`src/lib/mesh-map.ts`, MapLibre + OpenFreeMap Positron) with a **"heard in"**
+     display cut (1h · 6h · 24h · 30d, defaulting to 30d) and its legend collapsed into one
+     horizontal strip along the panel's foot.
+   - **Roster** with **sort** by links · battery · stalest. Each row carries the recency
+     pulse (_can we hear it_), a battery bar and a **sparkline** (_which way is it going_),
+     and a monitored row expands **inline** to Battery · Volts · Enclosure. The sparkline's
+     span is a fixed 6 h, deliberately not tied to the chart's range control, and drawn on an
+     absolute 0–100 scale so a steady 90–100% node cannot look like one that is collapsing.
+4. **History band** — every monitored repeater on one scale, with **Battery / Temp** and
+   **Day / Week / Month**. The legend doubles as the selector, and **hovering a trace or a
+   legend entry** lifts it, drops the rest back and names it with its value at that moment —
+   which is what makes seven muted colours individually readable. The plot sits on a warm
+   band with no frame; the axis labels sit outside it on the page ground.
+
+- **Two selections, decoupled.** Roster row · map pin · attention item share one — it opens
+  the row and frames + emphasises the repeater on the map. The chart's legend has its own — it
+  isolates a trace and touches nothing else. Reading a curve and inspecting a site are
+  different tasks, and tying them made each one disturb the other. Non-selected traces and
+  links dim to context, never to nothing.
+- **Honesty:** "Limited Telemetry" where there is no monitor (a gap in _our_ coverage, not a
+  verdict on the repeater), "Gauge unread" where a monitor could not read one, "Unknown"
+  rather than a zero when the feed is down. Orange only below `LOW_BATTERY_PCT` (10%). The
+  chart breaks its line across a monitor outage, marks reboots, and names where the archive
+  starts rather than drawing empty axes over a range that predates it.
 
 ### Live Feed (`/live`) — the situation flagship (replaced `/alerts`)
 

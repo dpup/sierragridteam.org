@@ -20,6 +20,9 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* The topbar is sticky, so an in-page anchor (/about#mesh) would otherwise land its
+     heading underneath it. Applies to the skip link and every future anchor too. */
+  scroll-padding-top: calc(var(--topbar-h) + var(--space-4));
 }
 
 body {

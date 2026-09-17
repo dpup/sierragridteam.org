@@ -1,0 +1,76 @@
+---
+/**
+ * ZeffyEmbed — one Zeffy donation or ticketing form.
+ *
+ * Zeffy's own embed markup, with the layout moved out of inline `style` attributes into the
+ * scoped block below. Two things are load-bearing and must NOT be "tidied":
+ *
+ *   • `data-zeffy-embed` + `data-form-url` — Zeffy's script finds the mount point by these.
+ * Zeffy's snippet ships `allowpaymentrequest` and `allowTransparency`; both are dead. The
+ * first was removed from browsers years ago and replaced by `allow="payment"`, which is what
+ * is used here, and the second has no effect on a non-transparent embed.
+ *
+ *   • The fallback block's inline `style="display: none"` and `data-zeffy-embed-src`. If
+ *     their script fails to load, the page's `onerror` handler reveals these and copies the
+ *     `data-` attribute onto `src`, so the form still renders as a plain iframe. The iframe
+ *     deliberately has NO `src` until then — otherwise every visitor loads the form twice.
+ *
+ * The script itself is loaded ONCE by the page, not here: two embeds on /donate would
+ * otherwise pull the same bundle twice.
+ */
+interface Props {
+  /** Zeffy path, e.g. `/embed/donation-form/donate-to-support-sierra`. */
+  formUrl: string;
+  /** Accessible name for the fallback iframe — it is the only label a reader gets. */
+  title: string;
+  /**
+   * Fallback height. Only applies when Zeffy's script fails; their script sizes the real
+   * embed itself. Ticketing forms run taller than a donation form.
+   */
+  height?: number;
+}
+const { formUrl, title, height = 450 } = Astro.props;
+const src = `https://www.zeffy.com${formUrl}`;
+---
+
+<div class="zeffy">
+  <div data-zeffy-embed data-form-url={formUrl}></div>
+
+  <div class="zeffy__fallback" data-zeffy-embed-fallback style="display: none">
+    <div class="zeffy__frame" style={`height: ${height}px`}>
+      <iframe class="zeffy__iframe" title={title} data-zeffy-embed-src={src} allow="payment"
+      ></iframe>
+    </div>
+  </div>
+</div>
+
+<style>
+  .zeffy {
+    /* Reserves room before the script mounts, so the page below doesn't jump when it does. */
+    min-height: 420px;
+    /* The embed sits in a grid column: it must never widen its track, whatever Zeffy's
+       script injects. */
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* :global — the iframe Zeffy's script injects is created at runtime and never carries
+     Astro's scope attribute, so a scoped selector would not reach it. */
+  .zeffy :global(iframe) {
+    max-width: 100%;
+  }
+
+  .zeffy__frame {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .zeffy__iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>

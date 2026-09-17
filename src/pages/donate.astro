@@ -4,6 +4,7 @@ import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
 import Card from '@components/Card.astro';
 import Callout from '@components/Callout.astro';
+import ZeffyEmbed from '@components/ZeffyEmbed.astro';
 import { donate } from '@config/content';
 import { site } from '@config/site';
 
@@ -28,16 +29,43 @@ const pageSchema = {
     </header>
   </Section>
 
+  {
+    /* The two forms come first: they are what most people arrive to do, and burying them
+    under explanatory cards asked people to read before they could act. Side by side where
+    there is room — giving and joining are alternatives, not a sequence, so stacking one
+    above the other implied an order that isn't there. Each is its own landmark. */
+  }
+  <Section surface="page" as="div">
+    <div class="donate-forms">
+      <section class="donate-form" aria-labelledby="give-title">
+        <h2 id="give-title" class="donate-h2">{donate.giveHeading}</h2>
+        <p class="donate-note">{donate.giveNote}</p>
+        <noscript><p class="donate-note">{donate.embedFallback}</p></noscript>
+        <ZeffyEmbed
+          formUrl="/embed/donation-form/donate-to-support-sierra"
+          title="Donation form powered by Zeffy"
+        />
+      </section>
+
+      <section class="donate-form" aria-labelledby="member-title">
+        <h2 id="member-title" class="donate-h2">{donate.memberHeading}</h2>
+        <p class="donate-note">{donate.memberNote}</p>
+        <ZeffyEmbed
+          formUrl="/embed/ticketing/signal-integrity-emergency-radio-response-alliances-memberships"
+          title="Membership form powered by Zeffy"
+          height={900}
+        />
+      </section>
+    </div>
+  </Section>
+
   <Section surface="page" labelledby="ways-title">
     <h2 id="ways-title" class="donate-h2">{donate.waysHeading}</h2>
     <div class="donate-ways">
       {
         donate.ways.map((w) => (
           <Card class="donate-way">
-            <div class="donate-way__top">
-              <p class="donate-way__name">{w.name}</p>
-              {w.status === 'pending' && <span class="donate-way__tag">Coming soon</span>}
-            </div>
+            <p class="donate-way__name">{w.name}</p>
             <p class="donate-way__desc">{w.desc}</p>
           </Card>
         ))
@@ -51,6 +79,21 @@ const pageSchema = {
     </div>
   </Section>
 </BaseLayout>
+
+{
+  /* Loaded ONCE for both embeds. `is:inline` keeps Astro from bundling it — it is a
+    third-party script that must run from Zeffy's own origin.
+
+    The `onerror` is Zeffy's: if their bundle fails to load (blocked, offline, an outage),
+    it reveals each fallback block and copies `data-zeffy-embed-src` onto the iframe's `src`,
+    so giving still works as a plain iframe. Kept as an inline handler because it has to fire
+    on the tag's own error event. */
+}
+<script
+  is:inline
+  src="https://www.zeffy.com/embed/v2/zeffy-embed.js"
+  onerror="document.querySelectorAll('[data-zeffy-embed-fallback]').forEach(function(el){el.style.display='block';el.querySelectorAll('iframe[data-zeffy-embed-src]').forEach(function(f){f.src=f.getAttribute('data-zeffy-embed-src');});});"
+></script>
 
 <style>
   .donate-head {
@@ -69,34 +112,52 @@ const pageSchema = {
 
   .donate-h2 {
     font-size: var(--fs-h3);
+    margin-bottom: var(--space-4);
+  }
+  /* Two columns where both forms have room to be usable, one where they don't. auto-fit on a
+     track minimum rather than a viewport media query, because what runs out is the
+     CONTAINER's width — the page's max-width MINUS its gutters — not the window's. The
+     container is border-box, so at full width that is 1280 - 2x56 = 1168px, not 1280.
+
+     24rem, not 28: at 28rem two columns needed 922px of container and so didn't appear until
+     roughly a 1030px window, which is wider than plenty of laptops are actually opened to.
+     At 24rem the pair fits from about an 880px window.
+
+     `min(100%, ...)` guards the track minimum against a container narrower than it — without
+     it, auto-fit keeps a 24rem track and the grid overflows on a small phone. */
+  .donate-forms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: var(--space-7) var(--space-6);
+    align-items: start;
+  }
+
+  /* Grid items default to `min-width: auto`, so anything wide dropped inside — the payment
+     iframe the embed script injects — would set the item's min-content width and push the
+     track past its share. */
+  .donate-form {
+    min-width: 0;
+  }
+
+  .donate-note {
+    max-width: 60ch;
     margin-bottom: var(--space-5);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
   }
   .donate-ways {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* auto-fit, not a fixed 3: online giving moved up the page into its own section, so this
+       row's length now depends on what is in the config. */
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
     gap: var(--space-4);
   }
-  .donate-way__top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-3);
-    margin-bottom: var(--space-3);
-  }
   .donate-way__name {
+    margin-bottom: var(--space-3);
     font-family: var(--font-display);
     font-size: var(--fs-h3);
     font-weight: var(--fw-medium);
     color: var(--ink-strong);
-  }
-  .donate-way__tag {
-    flex-shrink: 0;
-    font-family: var(--font-ui);
-    font-size: var(--fs-micro);
-    font-weight: var(--fw-semibold);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    color: var(--ink-muted);
   }
   .donate-way__desc {
     font-size: var(--fs-small);
@@ -106,11 +167,5 @@ const pageSchema = {
 
   .donate-tax {
     margin-top: var(--space-6);
-  }
-
-  @media (max-width: 860px) {
-    .donate-ways {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

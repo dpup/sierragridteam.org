@@ -42,7 +42,7 @@ for (const pg of pages) {
       await page
         .waitForFunction(
           () => {
-            const el = document.querySelector('[data-mesh-tiles]');
+            const el = document.querySelector('[data-mesh-band]');
             return !!el && el.children.length > 0;
           },
           { timeout: 12000 }

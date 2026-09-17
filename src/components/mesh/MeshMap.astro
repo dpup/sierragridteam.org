@@ -6,8 +6,11 @@
  * This is the FRAME only. The map itself is built in `src/lib/mesh-map.ts` from a browser
  * `<script>` in the page (maplibre must never be imported from Astro frontmatter), and the
  * SSR state here is an honest placeholder — nothing about the mesh is baked at build time.
+ *
+ * The map KEY and the basemap credit are deliberately NOT here: the panel's foot carries the
+ * client-rendered recency legend (`mesh-view.ts`), and the credit — a licence requirement —
+ * sits once at the foot of the page rather than once per panel.
  */
-import { BASEMAP_ATTRIBUTION } from '@lib/basemap';
 import { mesh } from '@config/content';
 ---
 
@@ -25,19 +28,6 @@ import { mesh } from '@config/content';
     <span class="meshmap__dot" aria-hidden="true"></span>
     <p class="meshmap__loadtext">{mesh.loading}</p>
   </div>
-
-  <figcaption class="meshmap__foot">
-    <ul class="meshmap__key" aria-label="Map key">
-      <li>
-        <span class="meshmap__node meshmap__node--corridor" aria-hidden="true"></span>Corridor node
-      </li>
-      <li>
-        <span class="meshmap__node meshmap__node--neighbour" aria-hidden="true"></span>Neighbour
-      </li>
-      <li><span class="meshmap__line" aria-hidden="true"></span>Observed relay</li>
-    </ul>
-    <p class="meshmap__attrib">{BASEMAP_ATTRIBUTION} · {mesh.attribution}</p>
-  </figcaption>
 </figure>
 
 <style>
@@ -47,7 +37,7 @@ import { mesh } from '@config/content';
     flex-direction: column;
     width: 100%;
     height: 100%;
-    min-height: 420px;
+    min-height: 0;
     margin: 0;
     background: var(--surface-hero);
   }
@@ -125,65 +115,5 @@ import { mesh } from '@config/content';
     letter-spacing: var(--tracking-label);
     text-transform: uppercase;
     color: var(--ink-secondary);
-  }
-
-  /* Basemap credit is a licence requirement, so it sits in the flow of the figure rather
-     than in a floating MapLibre control (attributionControl is off). */
-  /* Key and credit share one row when there's room and stack when there isn't. The credit
-     is long, so without wrapping it squeezed the key into a cramped vertical column and got
-     itself clipped at intermediate widths — the map column's width, not the viewport's, is
-     what runs out, so a media query can't catch this. */
-  .meshmap__foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2) var(--space-5);
-    padding: var(--space-2) var(--space-4);
-    background: var(--surface-page);
-    border-top: var(--border);
-  }
-  .meshmap__key {
-    flex: 0 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-4);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-family: var(--font-ui);
-    font-size: var(--fs-micro);
-    color: var(--ink-secondary);
-  }
-  .meshmap__key li {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-  .meshmap__node {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex: none;
-  }
-  .meshmap__node--corridor {
-    background: var(--brand-green);
-    box-shadow: 0 0 0 1.5px var(--brand-brass);
-  }
-  .meshmap__node--neighbour {
-    border: 1px solid var(--ink-muted);
-  }
-  .meshmap__line {
-    width: 20px;
-    height: 2px;
-    background: var(--brand-green);
-    opacity: 0.65;
-  }
-  .meshmap__attrib {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-family: var(--font-ui);
-    font-size: var(--fs-micro);
-    color: var(--ink-muted);
   }
 </style>

@@ -90,7 +90,6 @@ export const nav: ReadonlyArray<{ label: string; href: string }> = [
 export const donate = {
   label: 'Donate',
   href: '/donate',
-  isPlaceholder: true,
 } as const;
 
 /** External destinations referenced across the site. */

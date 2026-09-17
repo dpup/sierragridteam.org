@@ -156,6 +156,36 @@ const redflagWeatherAlerts = [
   },
 ];
 
+/**
+ * Shift an archived series onto the frozen clock, the same way `rebaseMesh` shifts the
+ * topology layers. Without it every capture would draw a chart whose data ended days before
+ * the page's "now" — an honest empty plot, and a useless screenshot.
+ */
+function rebaseTelemetry(res: unknown) {
+  if (!res || typeof res !== 'object') return { samples: [] };
+  const shift = (iso?: string | null) =>
+    iso ? new Date(Date.parse(iso) + MESH_SHIFT_MS).toISOString() : iso;
+  const r = res as {
+    coverage?: { from?: string; to?: string };
+    reboots?: string[];
+    samples?: { reading?: { reportedAt?: string }; receivedAt?: string }[];
+  };
+  return {
+    ...r,
+    coverage: r.coverage && {
+      ...r.coverage,
+      from: shift(r.coverage.from),
+      to: shift(r.coverage.to),
+    },
+    reboots: (r.reboots ?? []).map((t) => shift(t)),
+    samples: (r.samples ?? []).map((s) => ({
+      ...s,
+      receivedAt: shift(s.receivedAt),
+      reading: s.reading && { ...s.reading, reportedAt: shift(s.reading.reportedAt) },
+    })),
+  };
+}
+
 function mockGrid(route: Route) {
   const url = route.request().url();
   const json = (body: unknown) =>
@@ -182,6 +212,10 @@ function mockGrid(route: Route) {
   // The whole-mesh backdrop only loads once a reader pans past the corridor, which a
   // capture never does — serve empty so a stray request can't reach the network.
   if (url.includes('/mesh/links')) return json({ window: '72h', links: [] });
+  // The monitor archive, per node, rebased onto the frozen clock like the mesh layers so
+  // the history band draws the same picture on every run.
+  const tel = url.match(/\/mesh\/telemetry\?node=([0-9a-f]+)/);
+  if (tel) return json(rebaseTelemetry(meshSnap.telemetry?.[tel[1]]));
   if (url.includes('/events')) return json({ events: [] });
   if (url.includes('/summary')) return json(hazards.summary);
   if (url.includes('/scanners')) return json({ scanners: hazards.scanners });

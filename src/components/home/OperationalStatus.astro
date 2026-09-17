@@ -37,10 +37,13 @@ const { coverageCounties } = Astro.props;
 
     <div class="ops__grid">
       {
-        /* Relay Nodes counts S.I.E.R.R.A repeaters the mesh is currently HEARING — it is not
-          a count of sites confirmed up (a site can hold more than one node, and an advert
-          proves a node was heard, not that the site is healthy). Links to /mesh, where the
-          per-repeater detail lives. */
+        /* Relay Nodes counts S.I.E.R.R.A-managed REPEATERS the mesh is currently HEARING.
+          Repeaters only — a companion (handheld) or room server advertising a S.I.E.R.R.A
+          name is not relay infrastructure and must not inflate this. It is also not a count
+          of sites confirmed up: an advert proves a node was heard, not that the site is
+          healthy. Per-site health now exists for the repeaters an operator monitors, but it
+          stays on /mesh — "heard" and "healthy" are independent, and merging them into one
+          number would make this tile mean less. Links to /mesh for the per-repeater detail. */
       }
       <StatTile
         label="Relay Nodes"

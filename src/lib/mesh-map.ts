@@ -48,6 +48,8 @@ import {
   type MeshWindow,
 } from './mesh';
 import { linksToGeoJSON, nodesToGeoJSON } from './mesh';
+import { linkFilter, linkPaint, TIER_STYLE } from './mesh-link-paint';
+import { HEARD_IN_OPTIONS, type MeshHeardIn } from './mesh';
 
 type GeoFC = GeoJSON.FeatureCollection;
 
@@ -66,6 +68,8 @@ export interface MeshMapHandle {
   select(key: string | null): void;
   /** Fly to a node and open its popup. */
   focus(key: string): void;
+  /** Narrow which recency tiers are drawn. Display only — nothing is refetched. */
+  setHeardIn(next: MeshHeardIn): void;
   /** Frame the in-region nodes again. */
   resetView(): void;
   /** Called when the viewport moves past the corridor — the cue to lazy-load the backdrop. */
@@ -74,15 +78,9 @@ export interface MeshMapHandle {
 }
 
 /**
- * Per-tier link treatment. `opacity`/`widthScale` are the static read; `stepMs` is how fast
+ * Per-tier link treatment. `opacity` is the static read; `stepMs` is how fast
  * the travelling dash advances (smaller = livelier). Ordered live → cold.
  */
-const TIER_STYLE: Record<MeshRecency, { opacity: number; widthScale: number; stepMs: number }> = {
-  live: { opacity: 0.82, widthScale: 1, stepMs: 110 },
-  recent: { opacity: 0.55, widthScale: 0.82, stepMs: 220 },
-  fading: { opacity: 0.3, widthScale: 0.66, stepMs: 440 },
-  cold: { opacity: 0.16, widthScale: 0.52, stepMs: 840 },
-};
 
 /**
  * The classic MapLibre "marching ants" sequence: `line-dasharray` is a paint property and
@@ -186,22 +184,39 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
    *
    * Corridor-internal links are always drawn; selection only ever ADDS.
    */
+  /**
+   * The selected node. It gates BOTH which links are drawn (`linkFilter`) and how strongly
+   * (`linkPaint`) — see src/lib/mesh-link-paint.ts, where those expressions live so they can
+   * be unit-tested against the real style spec.
+   */
   let selectedKey: string | null = null;
-  const linkFilter = (tier: MeshRecency) =>
-    [
-      'all',
-      ['==', ['get', 'recency'], tier],
-      selectedKey
-        ? [
-            'any',
-            ['!', ['get', 'outward']],
-            ['==', ['get', 'a'], selectedKey],
-            ['==', ['get', 'b'], selectedKey],
-          ]
-        : ['!', ['get', 'outward']],
-    ] as maplibregl.FilterSpecification;
 
-  // ---- paint expressions ----
+  /**
+   * The map's "heard in" cut. It maps exactly onto the recency tiers the layers are already
+   * split by — 1h is `live`, 6h adds `recent`, 24h adds `fading`, 30d is everything — so
+   * narrowing it is a visibility toggle, not a refetch and not a second filter expression.
+   *
+   * This is NOT the window picker `MESH_WINDOW` deliberately refuses. That one would change
+   * what is FETCHED and let a reader silently narrow the data behind every count on the
+   * page. This changes only what is DRAWN, leaves every figure alone, and defaults to 30d,
+   * so the page still opens on everything it knows.
+   */
+  let heardIn: MeshHeardIn = '30d';
+  const visibleTiers = () => RECENCY_TIERS.slice(0, HEARD_IN_OPTIONS.indexOf(heardIn) + 1);
+  const applyHeardIn = () => {
+    if (!ready) return;
+    const shown = new Set<string>(visibleTiers());
+    for (const tier of RECENCY_TIERS) {
+      const v = shown.has(tier) ? 'visible' : 'none';
+      for (const id of [`mesh-link-${tier}`, `mesh-pulse-${tier}`]) {
+        try {
+          map.setLayoutProperty(id, 'visibility', v);
+        } catch {
+          /* layer not up yet — applied again on the next setGraph */
+        }
+      }
+    }
+  };
 
   const expr = (e: unknown) => e as maplibregl.ExpressionSpecification;
   const onHover = (off: unknown, on: unknown) =>
@@ -219,54 +234,13 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
       off,
     ]);
 
-  /**
-   * Base line width: 1..4 px by reception weight, scaled by tier, then cut hard for a link
-   * that leaves the corridor. Without that cut the map is a starburst: the outward links are
-   * an order of magnitude longer than any corridor link and outnumber them 2:1, so at equal
-   * weight they swamp the thing the page is actually about.
-   */
-  const OUTWARD_WIDTH = 0.5;
-  /** Outward links never fade below this, whatever their recency tier or the zoom. */
-  const OUTWARD_MIN_OPACITY = 0.3;
-  const baseWidth = (scale: number) =>
-    expr([
-      '*',
-      ['case', ['get', 'outward'], OUTWARD_WIDTH, 1],
-      scale,
-      ['+', 1, ['*', 3, ['coalesce', ['get', 'weight'], 0]]],
-    ]);
-
-  /**
-   * Outward links additionally fade IN as the reader zooms out. Framed on the corridor their
-   * far endpoints are off-screen, so they'd be ~46 near-parallel rays hatching across the
-   * view for no information — there they stay a whisper. Zoom out to where the far
-   * endpoints actually are and they strengthen, which is exactly when the long-haul reach
-   * becomes the thing worth looking at. (Zoom-interpolated opacity, so it composes with the
-   * dash animation — a line-gradient would not.)
-   */
-  /**
-   * Link opacity: the tier's base value, cut for an outward link, ramped by zoom, and
-   * overridden entirely on hover.
-   *
-   * NB: `zoom` is only legal at the TOP level of a paint expression — it may not sit inside
-   * a `case`. So the interpolate must be outermost and every data-driven test (hover, then
-   * outward) lives inside its stops. Wrapping this in `onHover` instead silently produces an
-   * invalid expression: the property is dropped and the line vanishes.
-   */
-  const linkOpacity = (base: number, hover: number | null) => {
-    const stop = (mult: number) => {
-      // Scaling the tier's opacity alone made an outward link on the `cold` tier (base 0.26)
-      // effectively invisible when framed on the corridor. These links are the proof the
-      // corridor reaches the wider mesh, so they get a hard legibility floor — demoted,
-      // never gone. Raise OUTWARD_MIN_OPACITY if they still read as too faint.
-      const outwardValue = Math.max(base * mult, OUTWARD_MIN_OPACITY);
-      const byKind = ['case', ['get', 'outward'], outwardValue, base];
-      return hover == null
-        ? byKind
-        : ['case', ['boolean', ['feature-state', 'hover'], false], hover, byKind];
-    };
-    return expr(['interpolate', ['linear'], ['zoom'], 6, stop(1), 10.5, stop(0.55)]);
-  };
+  const filterFor = (tier: MeshRecency) =>
+    linkFilter(tier, selectedKey) as maplibregl.FilterSpecification;
+  // `line-width` is now a plain number (every link is one pixel), so the paint values are
+  // no longer all expressions.
+  type PaintValues = Record<string, maplibregl.ExpressionSpecification | number>;
+  const paintFor = (tier: MeshRecency) =>
+    linkPaint(tier, selectedKey) as unknown as { base: PaintValues; pulse: PaintValues };
 
   // ---- popups ----
 
@@ -388,10 +362,16 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
   };
 
   /**
-   * The node card. Opened by clicking a corridor pin OR a neighbour dot — a node click has
-   * to open a card just as a link click does. Reads the CURRENT graph rather than the
-   * feature properties, so a card opened after a refresh shows refreshed numbers and a pin's
-   * click handler doesn't close over stale data from when it was created.
+   * The node card, for a NEIGHBOUR dot only.
+   *
+   * A corridor pin no longer opens one: it has a roster row, and clicking the pin now does
+   * exactly what clicking that row does — select, frame, emphasise its links, and expand the
+   * row's reading inline. Two detail surfaces for the same repeater meant the card and the
+   * row showed different subsets of the same facts, and the card covered the map it had just
+   * flown to. A neighbour has no roster row, so the card remains the only way to see it.
+   *
+   * Reads the CURRENT graph rather than the feature properties, so a card opened after a
+   * refresh shows refreshed numbers and doesn't close over stale data.
    */
   const showNodeCard = (key: string, at: [number, number]) => {
     const n = currentNodes.get(key);
@@ -422,11 +402,22 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     setSelected(key);
   };
 
+  /** A neighbour dot. Same toggle as a corridor pin, and its card closes with it. */
+  const toggleNodeCard = (key: string, at: [number, number]) => {
+    clickedFeature = true;
+    if (selectedKey === key) {
+      closePopup();
+      setSelected(null);
+      return;
+    }
+    showNodeCard(key, at);
+  };
+
   const nodePopup = (e: maplibregl.MapLayerMouseEvent) => {
     const p = (e.features?.[0]?.properties ?? {}) as Record<string, unknown>;
     const key = String(p.publicKey || '');
     const at = (e.features?.[0]?.geometry as GeoJSON.Point)?.coordinates as [number, number];
-    if (key && at) showNodeCard(key, at);
+    if (key && at) toggleNodeCard(key, at);
   };
 
   const interactive = (id: string, handler: (e: maplibregl.MapLayerMouseEvent) => void) => {
@@ -462,21 +453,19 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
       // 2. Region links — a solid base per tier so an edge is ALWAYS continuously drawn…
       map.addSource('mesh-links', { type: 'geojson', data: EMPTY, promoteId: 'id' });
       for (const tier of RECENCY_TIERS) {
-        const s = TIER_STYLE[tier];
         map.addLayer({
           id: `mesh-link-${tier}`,
           type: 'line',
           source: 'mesh-links',
-          filter: linkFilter(tier),
+          filter: filterFor(tier),
           layout: { 'line-cap': 'round', 'line-join': 'round' },
           paint: {
             'line-color': onHover(C.green, C.greenDeep),
-            'line-width': onHover(baseWidth(s.widthScale), baseWidth(s.widthScale * 1.8)),
+            ...paintFor(tier).base,
             // Half the tier's opacity: enough that the gaps between the pulse's dashes still
             // read as a continuous link (a link that appeared to break into dashes would
             // read as intermittent, which is a claim we're not making), light enough that
             // the deep-green dash on top clearly stands off it.
-            'line-opacity': linkOpacity(s.opacity * 0.5, 0.95),
           },
         });
         // …and a brighter travelling dash ON TOP of it. This is the "alive" layer: the
@@ -486,7 +475,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
           id: `mesh-pulse-${tier}`,
           type: 'line',
           source: 'mesh-links',
-          filter: linkFilter(tier),
+          filter: filterFor(tier),
           layout: { 'line-cap': 'butt', 'line-join': 'round' },
           paint: {
             // The dash was drawn in the same green as the base at HALF its opacity, so the
@@ -494,8 +483,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
             // Inverted: the base is a light wire, the travelling dash is the deep green at
             // full tier opacity. Contrast now carries the motion.
             'line-color': C.greenDeep,
-            'line-width': baseWidth(s.widthScale),
-            'line-opacity': linkOpacity(s.opacity, null),
+            ...paintFor(tier).pulse,
             'line-dasharray': [0, 4, 3],
           },
         });
@@ -553,6 +541,8 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
       interactive('mesh-node-neighbour', nodePopup);
 
       ready = true;
+      // A setHeardIn() that arrived before the layers existed is replayed here.
+      applyHeardIn();
       if (pending) applyGraph(pending.graph, pending.window, pending.now);
       if (pendingBackdrop) applyBackdrop(pendingBackdrop.nodes, pendingBackdrop.links);
 
@@ -697,15 +687,31 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
         btn.type = 'button';
         el = btn;
         el.className = 'mesh-pin';
+        // Addressable by node, like the roster's rows — the pin and the row are two views
+        // of one repeater, and the tests assert they behave identically.
+        el.dataset.pinKey = n.publicKey;
         el.innerHTML =
           `<span class="mesh-pin__dot" aria-hidden="true"></span>` +
           `<span class="mesh-pin__label">` +
           `<strong data-pin-name></strong><small data-pin-stat></small>` +
           `</span>`;
+        // Identical to a roster-row click — `onSelectNode` carries it back to the panel,
+        // which expands the row and scrolls it into view.
         el.addEventListener('click', (ev) => {
           ev.stopPropagation();
-          const node = currentNodes.get(n.publicKey);
-          showNodeCard(n.publicKey, [node?.lng ?? n.lng, node?.lat ?? n.lat]);
+          clickedFeature = true;
+          closePopup();
+          // Toggles, exactly like its roster row: a second click on the open repeater clears
+          // the selection. Without this the only way to let go of a repeater was to find a
+          // bare patch of map or press Escape, neither of which the pin suggests.
+          if (selectedKey === n.publicKey) {
+            setSelected(null);
+            return;
+          }
+          setSelected(n.publicKey);
+          // Framing only on the way IN — re-fitting the map as the selection clears would
+          // move the ground under a reader who just let go of it.
+          focusNode(n.publicKey);
         });
         el.addEventListener('mouseenter', () => setHovered(n.publicKey));
         el.addEventListener('mouseleave', () => setHovered(null));
@@ -816,12 +822,81 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     if (!ready) return;
     for (const tier of RECENCY_TIERS) {
       try {
-        map.setFilter(`mesh-link-${tier}`, linkFilter(tier));
-        map.setFilter(`mesh-pulse-${tier}`, linkFilter(tier));
+        map.setFilter(`mesh-link-${tier}`, filterFor(tier));
+        map.setFilter(`mesh-pulse-${tier}`, filterFor(tier));
+        // Re-bake the paint: the emphasis lives in the expressions, not in feature state,
+        // because it depends on BOTH endpoints rather than on one hovered feature.
+        const paint = paintFor(tier);
+        for (const [prop, value] of Object.entries(paint.base)) {
+          map.setPaintProperty(`mesh-link-${tier}`, prop, value);
+        }
+        for (const [prop, value] of Object.entries(paint.pulse)) {
+          map.setPaintProperty(`mesh-pulse-${tier}`, prop, value);
+        }
       } catch {
-        /* layer not up yet — the initial filter already matches selectedKey */
+        /* layer not up yet — the initial filter + paint already match selectedKey */
       }
     }
+  };
+
+  /**
+   * How far past the corridor a selection is allowed to pull the view, as a fraction of the
+   * corridor's own span on each axis. A repeater's links routinely reach the Central Valley
+   * and occasionally the Bay Area; fitting to all of them zoomed out until the corridor —
+   * the subject of the page — was a smudge, and the foothills were unreadable.
+   *
+   * So the frame is clamped: endpoints beyond this box don't pull the view. Those links are
+   * still DRAWN and still emphasised, they simply run off the edge, which is the honest
+   * picture of a long-haul shot. Pan or zoom out to follow one.
+   */
+  const FOCUS_MARGIN = 0.6;
+
+  /** The box a selection may frame within — the corridor, grown by FOCUS_MARGIN. */
+  const focusLimit = (): maplibregl.LngLatBounds => {
+    // regionBounds is the repeaters we actually drew; opts.bounds is the configured service
+    // area, which is the only thing we have before the first graph lands.
+    const b =
+      regionBounds ??
+      new maplibregl.LngLatBounds(
+        [opts.bounds.minLng, opts.bounds.minLat],
+        [opts.bounds.maxLng, opts.bounds.maxLat]
+      );
+    const sw = b.getSouthWest();
+    const ne = b.getNorthEast();
+    const padLng = Math.max((ne.lng - sw.lng) * FOCUS_MARGIN, 0.05);
+    const padLat = Math.max((ne.lat - sw.lat) * FOCUS_MARGIN, 0.05);
+    return new maplibregl.LngLatBounds(
+      [sw.lng - padLng, sw.lat - padLat],
+      [ne.lng + padLng, ne.lat + padLat]
+    );
+  };
+
+  /**
+   * Frame the node AND everything it links to WITHIN the corridor's neighbourhood. Selecting
+   * a repeater is asking "what does this reach?" — zooming in on the marker answers the
+   * opposite question — but fitting to its furthest hop answers a question about the Bay
+   * Area. maxZoom keeps a corridor-only repeater from filling the screen with one street.
+   */
+  const focusNode = (key: string) => {
+    const src = map.getSource('mesh-nodes') as maplibregl.GeoJSONSource | undefined;
+    if (!src || !nodeKeys.has(key)) return;
+    const f = (src.serialize?.().data as GeoFC | undefined)?.features?.find(
+      (x) => (x.properties as { publicKey?: string } | null)?.publicKey === key
+    );
+    const c = (f?.geometry as GeoJSON.Point | undefined)?.coordinates as
+      | [number, number]
+      | undefined;
+    if (!c) return;
+    const limit = focusLimit();
+    const b = new maplibregl.LngLatBounds(c, c);
+    for (const l of currentLinks) {
+      if (l.a !== key && l.b !== key) continue;
+      for (const coord of l.coordinates) {
+        const [lng, lat] = coord as [number, number];
+        if (limit.contains([lng, lat])) b.extend([lng, lat]);
+      }
+    }
+    map.fitBounds(b, { padding: 72, maxZoom: 11, duration: 700 });
   };
 
   const setSelected = (next: string | null) => {
@@ -871,26 +946,12 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     select(key) {
       setSelected(key);
     },
+    setHeardIn(next) {
+      heardIn = next;
+      applyHeardIn();
+    },
     focus(key) {
-      const src = map.getSource('mesh-nodes') as maplibregl.GeoJSONSource | undefined;
-      if (!src || !nodeKeys.has(key)) return;
-      const f = (src.serialize?.().data as GeoFC | undefined)?.features?.find(
-        (x) => (x.properties as { publicKey?: string } | null)?.publicKey === key
-      );
-      const c = (f?.geometry as GeoJSON.Point | undefined)?.coordinates as
-        | [number, number]
-        | undefined;
-      if (!c) return;
-      // Frame the node AND everything it links to, not just the node. Selecting a repeater
-      // is asking "what does this reach?" — zooming in on the marker answers the opposite
-      // question and pushes its long-haul links straight off screen. maxZoom keeps a
-      // corridor-only repeater from filling the screen with one street.
-      const b = new maplibregl.LngLatBounds(c, c);
-      for (const l of currentLinks) {
-        if (l.a !== key && l.b !== key) continue;
-        for (const coord of l.coordinates) b.extend(coord as [number, number]);
-      }
-      map.fitBounds(b, { padding: 72, maxZoom: 11, duration: 700 });
+      focusNode(key);
     },
     resetView() {
       if (regionBounds) map.fitBounds(regionBounds, { padding: 64, maxZoom: 11 });
