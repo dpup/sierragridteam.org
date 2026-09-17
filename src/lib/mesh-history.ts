@@ -29,7 +29,7 @@ import {
   earliestCoverage,
   latestValue,
   rangeWindow,
-  splitRuns,
+  pointsIn,
   valueExtent,
   HISTORY_METRIC_LABELS,
   HISTORY_METRIC_UNITS,
@@ -151,16 +151,20 @@ function renderPlot(
       })
       .join('');
 
+  /**
+   * One continuous path per repeater. The line is drawn straight through a gap rather than
+   * broken at one — see `pointsIn` for the trade that makes.
+   */
+  const pathFor = (series: TelemetrySeries): string => {
+    const run = decimate(pointsIn(series, o.metric, from, to), MAX_POINTS);
+    if (run.length < 2) return '';
+    return run.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
+  };
+
   const paths = list
     .map(({ node, series, slot }) => {
       const dimmed = o.selected != null && o.selected !== node.publicKey;
-      const runs = splitRuns(series, o.metric, from, to).map((r) => decimate(r, MAX_POINTS));
-      const d = runs
-        .filter((r) => r.length > 1)
-        .map((r) =>
-          r.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join('')
-        )
-        .join(' ');
+      const d = pathFor(series);
       if (!d) return '';
       return (
         `<path class="mesh-chart__line${dimmed ? ' mesh-chart__line--dim' : ''}" d="${d}" ` +
@@ -184,13 +188,7 @@ function renderPlot(
   // impossible to hover; these give it a real hit target without thickening what is drawn.
   const hits = list
     .map(({ node, series, slot }) => {
-      const runs = splitRuns(series, o.metric, from, to).map((r) => decimate(r, MAX_POINTS));
-      const d = runs
-        .filter((r) => r.length > 1)
-        .map((r) =>
-          r.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join('')
-        )
-        .join(' ');
+      const d = pathFor(series);
       if (!d) return '';
       return (
         `<path class="mesh-chart__hit" d="${d}" data-mesh-hit="${esc(node.publicKey)}" ` +
