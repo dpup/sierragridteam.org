@@ -1,21 +1,25 @@
 ---
 /**
- * /mesh — the mesh topology map. Like /live, this page renders its data ENTIRELY in the
- * browser: nothing about the network is baked at build time, so no stale topology can ship
- * in the HTML. SSR is the full-bleed layout, an empty panel skeleton and the map's
- * "reading the mesh" state; the client fills both from The Grid's mesh feed.
+ * /mesh — the mesh status board. Like /live, this page renders its data ENTIRELY in the
+ * browser: nothing about the network is baked at build time, so no stale topology or stale
+ * battery can ship in the HTML. SSR is the layout, an empty panel skeleton and the map's
+ * "reading the mesh" state; the client fills all of it.
+ *
+ * ONE SELECTION DRIVES THREE PANELS. Choosing a repeater — from the roster, its map pin, an
+ * item in the attention strip, or the history chart's legend — isolates its trace in the
+ * chart, frames and emphasises it on the map, and expands its reading in the roster. There
+ * is exactly one piece of selection state on this page, and every surface reads it.
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
-import MeshMap from '@components/mesh/MeshMap.astro';
-import MeshSidebar from '@components/mesh/MeshSidebar.astro';
+import MeshPanels from '@components/mesh/MeshPanels.astro';
 import { mesh as copy } from '@config/content';
 import { site } from '@config/site';
 import '../styles/mesh.css';
 
 const description =
-  'Live topology map of the S.I.E.R.R.A LoRa / MeshCore mesh across the Ebbetts Pass ' +
-  'corridor — every corridor repeater, the relay links observed between them, and how ' +
-  'recently each was heard.';
+  'Live status board for the S.I.E.R.R.A LoRa / MeshCore mesh across the Ebbetts Pass ' +
+  'corridor — every corridor repeater, what we have heard it relaying, and what its site ' +
+  'monitor reports.';
 
 const schema = {
   '@context': 'https://schema.org',
@@ -32,36 +36,39 @@ const schema = {
   mainClass="mesh-main"
   schema={schema}
 >
-  <div class="mesh-layout" data-panel="open">
-    <div class="mesh-layout__map">
-      <MeshMap />
-    </div>
-
-    <button
-      type="button"
-      class="mesh-layout__toggle"
-      data-mesh-toggle
-      aria-expanded="true"
-      aria-controls="mesh-panel"
-    >
-      <span class="mesh-layout__toggle-icon" aria-hidden="true"></span>
-      <span data-mesh-toggle-label>Hide panel</span>
-    </button>
-
-    <aside class="mesh-layout__panel" id="mesh-panel" aria-label="Mesh network information">
-      <MeshSidebar />
-    </aside>
-  </div>
+  <MeshPanels />
 </BaseLayout>
 
 <script>
-  // /mesh is live-only: fetch the mesh topology in the browser, render the map + panel,
-  // and refresh on an interval. maplibre is imported HERE (a client script), never from
-  // Astro frontmatter.
+  // /mesh is live-only: fetch the topology + the monitor archive in the browser, render
+  // every region, and refresh on an interval. maplibre is imported HERE (a client script),
+  // never from Astro frontmatter.
   import { initMeshMap, type MeshMapHandle } from '../lib/mesh-map';
-  import { fetchGlobalGraph, fetchRegionGraph } from '../lib/mesh-client';
+  import {
+    fetchGlobalGraph,
+    fetchMeshEvents,
+    fetchRegionGraph,
+    fetchTelemetry,
+  } from '../lib/mesh-client';
   import { buildMeshView } from '../lib/mesh-view';
-  import { linksToGeoJSON, MESH_WINDOW, type MeshGraph } from '../lib/mesh';
+  import { renderMeshHistory } from '../lib/mesh-history';
+  import {
+    linksToGeoJSON,
+    MESH_WINDOW,
+    type MeshEventsPage,
+    type MeshGraph,
+    type MeshHeardIn,
+    type MeshRosterSort,
+  } from '../lib/mesh';
+  import {
+    rangeWindow,
+    valueAt,
+    HISTORY_METRIC_UNITS,
+    type HistoryMetric,
+    type HistoryRange,
+    type TelemetrySeries,
+  } from '../lib/mesh-telemetry';
+  import { PLOT } from '../lib/mesh-history';
   import { mesh as copy } from '../config/content';
   import { serviceAreaBounds } from '../config/coverage';
   import { escapeHtml as esc } from '../lib/format';
@@ -71,47 +78,80 @@ const schema = {
   const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel);
   const figure = $('[data-mesh-map]');
   const loading = $('[data-mesh-loading]');
-  const tilesEl = $('[data-mesh-tiles]');
+  const bandEl = $('[data-mesh-band]');
+  const attentionEl = $('[data-mesh-attention]');
   const legendEl = $('[data-mesh-legend]');
   const rosterEl = $('[data-mesh-roster]');
-  const statusEl = $('[data-mesh-status]');
+  const mapCtrlEl = $('[data-mesh-controls-map]');
+  const rosterCtrlEl = $('[data-mesh-controls-roster]');
+  const historyEl = $('[data-mesh-history]');
   const statusDetailEl = $('[data-mesh-status-detail]');
 
-  let handle: MeshHandleOrNull = null;
+  let handle: MeshMapHandle | null = null;
   let graph: MeshGraph | null = null;
   let inflight: AbortController | null = null;
   let backdropLoaded = false;
+  let events: MeshEventsPage['events'] | null = null;
 
-  type MeshHandleOrNull = MeshMapHandle | null;
+  /** The monitor archive, keyed by public key. Empty until the deferred fetch lands. */
+  let series = new Map<string, TelemetrySeries>();
+  let telemetryRange: HistoryRange | null = null;
 
-  // ---- panel rendering ----
+  // ---- view state ----
+  //
+  // TWO selections, deliberately decoupled. The roster and the map answer "which repeater am
+  // I looking at"; the chart answers "which trace am I following", and those are different
+  // questions asked at different moments — isolating a trace to read a curve should not
+  // scroll the roster and fly the map somewhere, and opening a roster row should not blank
+  // six traces out of the comparison the chart exists to make.
+  /** Roster + map: the repeater whose row is open and whose links are emphasised. */
+  let selected: string | null = null;
+  /** History chart only: the trace held at full strength while the rest drop back. */
+  let chartSelected: string | null = null;
+  let sort: MeshRosterSort = 'links';
+  let heardIn: MeshHeardIn = '30d';
+  let metric: HistoryMetric = 'battery';
+  let range: HistoryRange = 'day';
 
-  function renderPanel(g: MeshGraph, nowMs: number) {
-    const view = buildMeshView(g, MESH_WINDOW, nowMs);
-    if (tilesEl) tilesEl.innerHTML = view.html.tiles;
+  // ---- rendering ----
+
+  function renderPanels(g: MeshGraph, nowMs: number) {
+    const view = buildMeshView(g, MESH_WINDOW, nowMs, { selected, sort, heardIn, series });
+    if (bandEl) bandEl.innerHTML = view.html.band;
+    if (attentionEl) attentionEl.innerHTML = view.html.attention;
     if (legendEl) legendEl.innerHTML = view.html.legend;
     if (rosterEl) rosterEl.innerHTML = view.html.roster;
-    if (statusEl) {
-      statusEl.textContent = view.status.label;
-      statusEl.setAttribute('data-mesh-status-tone', view.status.tone);
-    }
+    // `controls` renders both panel heads in one string; split them into their own slots so
+    // each sits inside the column it belongs to.
+    const heads = document.createElement('div');
+    heads.innerHTML = view.html.controls;
+    const [mapHead, rosterHead] = [...heads.children];
+    if (mapCtrlEl && mapHead) mapCtrlEl.replaceChildren(mapHead);
+    if (rosterCtrlEl && rosterHead) rosterCtrlEl.replaceChildren(rosterHead);
     if (statusDetailEl) statusDetailEl.textContent = `${view.status.detail} · ${copy.autoRefresh}`;
+    renderHistory(g, nowMs);
+  }
+
+  function renderHistory(g: MeshGraph, nowMs: number) {
+    if (!historyEl) return;
+    historyEl.innerHTML = renderMeshHistory(
+      g.nodes.filter((n) => n.inRegion),
+      series,
+      { metric, range, selected: chartSelected },
+      nowMs
+    );
   }
 
   /** Honest failure: no stale topology, just what we know and where the data lives. */
   function renderFailure() {
-    if (tilesEl) {
-      tilesEl.innerHTML =
-        `<div class="mesh-empty">` +
+    if (bandEl) {
+      bandEl.innerHTML =
+        `<div class="mesh-empty mesh-empty--band">` +
         `<p class="mesh-empty__head">${esc(copy.failHeading)}</p>` +
-        `<p>${esc(copy.failBody)}</p>` +
-        `</div>`;
+        `<p>${esc(copy.failBody)}</p></div>`;
     }
-    if (legendEl) legendEl.innerHTML = '';
-    if (rosterEl) rosterEl.innerHTML = '';
-    if (statusEl) {
-      statusEl.textContent = copy.statusUnavailableLabel;
-      statusEl.setAttribute('data-mesh-status-tone', 'unknown');
+    for (const el of [attentionEl, legendEl, rosterEl, historyEl]) {
+      if (el) el.innerHTML = '';
     }
     if (statusDetailEl) statusDetailEl.textContent = 'Network state unknown';
     loading?.setAttribute('data-hidden', 'true');
@@ -128,21 +168,47 @@ const schema = {
       if (ac.signal.aborted) return;
       graph = g;
       const now = Date.now();
-      renderPanel(g, now);
+      renderPanels(g, now);
 
       if (figure && !handle) {
         handle = initMeshMap(figure, {
           bounds: serviceAreaBounds,
-          onSelectNode: (key) => markActive(key),
+          // A pin click is the same selection as a roster click or a legend click.
+          onSelectNode: (key) => applySelection(key, { fromMap: true }),
         });
-        // Panning past the corridor is the cue to bring in the rest of the observed mesh.
         handle?.onPanOut(loadBackdrop);
       }
       handle?.setGraph(g, MESH_WINDOW, now);
+      handle?.setHeardIn(heardIn);
       loading?.setAttribute('data-hidden', 'true');
+      void loadTelemetry();
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       renderFailure();
+    }
+  }
+
+  /**
+   * The monitor archive, one request per MONITORED repeater, after the corridor has painted.
+   * Deferred because it is N round-trips for a region below the fold, and re-fetched only
+   * when the range grows past what we already hold — a refresh inside the same range reuses
+   * it rather than re-fanning out every two minutes.
+   */
+  async function loadTelemetry() {
+    if (!graph) return;
+    const keys = graph.nodes.filter((n) => n.inRegion && n.admin).map((n) => n.publicKey);
+    if (!keys.length) return;
+    if (telemetryRange === range && series.size === keys.length) return;
+    try {
+      const { from, to } = rangeWindow(range, Date.now());
+      const ac = new AbortController();
+      const fetched = await fetchTelemetry(keys, new Date(from), new Date(to), ac.signal);
+      series = new Map(fetched.map((s) => [s.publicKey, s]));
+      telemetryRange = range;
+      if (graph) renderPanels(graph, Date.now());
+    } catch {
+      // Non-fatal: the corridor, the band and the roster are already correct without it.
+      // The history band keeps saying it has nothing to draw, which is true.
     }
   }
 
@@ -153,33 +219,164 @@ const schema = {
     try {
       const known = new Set(graph.nodes.map((n) => n.publicKey));
       const ac = new AbortController();
-      const global = await fetchGlobalGraph(known, ac.signal);
+      const roster = events ?? (await fetchMeshEvents(ac.signal));
+      events = roster;
+      const global = await fetchGlobalGraph(roster, known, ac.signal);
       handle.setBackdrop(global.nodes, linksToGeoJSON(global.links, Date.now()));
     } catch {
-      // The backdrop is context, not the subject — a failure here leaves the corridor
-      // map exactly as it was and says nothing. Allow a later retry.
+      // Context, not the subject — a failure leaves the corridor map exactly as it was.
       backdropLoaded = false;
     }
   }
 
-  // ---- panel ↔ map wiring ----
+  // ---- selection: one piece of state, every panel reads it ----
 
-  function markActive(key: string | null) {
-    for (const btn of document.querySelectorAll<HTMLElement>('[data-mesh-node]')) {
-      btn.setAttribute('data-active', btn.dataset.meshNode === key ? 'true' : 'false');
+  function applySelection(key: string | null, opts: { fromMap?: boolean } = {}) {
+    selected = key;
+    if (!opts.fromMap) {
+      if (key) {
+        handle?.focus(key);
+        handle?.select(key);
+      } else {
+        handle?.select(null);
+      }
+    }
+    if (graph) renderPanels(graph, Date.now());
+    if (key) {
+      rosterEl
+        ?.querySelector(`[data-mesh-node="${CSS.escape(key)}"]`)
+        ?.scrollIntoView({ block: 'nearest' });
     }
   }
 
-  // Delegated: the roster is re-rendered on every refresh, so listeners can't live on rows.
-  rosterEl?.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-node]');
-    const key = btn?.dataset.meshNode;
-    if (!key) return;
-    // select() is what reveals this repeater's links out of the corridor; markActive is
-    // driven back through onSelectNode, so it isn't set here.
-    handle?.focus(key);
-    handle?.select(key);
+  // Delegated on the whole view: the roster, the attention strip and the chart legend are
+  // all re-rendered on every refresh, so listeners cannot live on individual controls.
+  const view = $('.mesh-view');
+  view?.addEventListener('click', (e) => {
+    const el = e.target as HTMLElement;
+
+    // The chart's legend drives ONLY the chart.
+    const key = el.closest<HTMLElement>('.mesh-chart__key');
+    if (key?.dataset.meshNode && graph) {
+      chartSelected = chartSelected === key.dataset.meshNode ? null : key.dataset.meshNode;
+      renderHistory(graph, Date.now());
+      return;
+    }
+    // Everything else — roster row, map pin, attention item — drives the roster and the map.
+    const node = el.closest<HTMLElement>('[data-mesh-node]');
+    if (node?.dataset.meshNode) {
+      // A second click on the open repeater clears it — a disclosure, not a one-way trip.
+      applySelection(selected === node.dataset.meshNode ? null : node.dataset.meshNode);
+      return;
+    }
+    const seg = el.closest<HTMLElement>(
+      '[data-mesh-sort],[data-mesh-heardin],[data-mesh-metric],[data-mesh-range]'
+    );
+    if (!seg || !graph) return;
+    const d = seg.dataset;
+    if (d.meshSort) sort = d.meshSort as MeshRosterSort;
+    if (d.meshHeardin) {
+      heardIn = d.meshHeardin as MeshHeardIn;
+      handle?.setHeardIn(heardIn);
+    }
+    if (d.meshMetric) metric = d.meshMetric as HistoryMetric;
+    if (d.meshRange) {
+      range = d.meshRange as HistoryRange;
+      void loadTelemetry();
+    }
+    renderPanels(graph, Date.now());
   });
+
+  // ---- the chart's hover hint ----
+  //
+  // Seven muted traces are legible as a group but not one by one. Hovering resolves it
+  // without a re-render: the paths are re-classed in place (a re-render on every pointermove
+  // would fight the mouse), and the label reads the value AT the hovered moment from the
+  // series the page already holds.
+
+  /** How far from the pointer a sample may sit and still be the answer. */
+  const HINT_TOLERANCE_MS = 45 * 60_000;
+
+  function clearHint() {
+    const chart = $('.mesh-chart');
+    if (!chart) return;
+    for (const path of chart.querySelectorAll('.mesh-chart__line')) {
+      path.classList.remove('mesh-chart__line--mute', 'mesh-chart__line--lift');
+    }
+    chart.querySelector('[data-mesh-hint]')?.setAttribute('hidden', '');
+    chart.querySelector('.mesh-chart__cursor')?.setAttribute('hidden', '');
+  }
+
+  /** Emphasise one trace and, when a pointer position is given, label it. */
+  function showHint(key: string, ev?: PointerEvent | MouseEvent) {
+    const chart = $('.mesh-chart');
+    const svg = chart?.querySelector<SVGSVGElement>('.mesh-chart__svg');
+    const hint = chart?.querySelector<HTMLElement>('[data-mesh-hint]');
+    if (!chart || !svg || !hint) return;
+
+    for (const path of chart.querySelectorAll<SVGPathElement>('.mesh-chart__line')) {
+      const mine = path.dataset.meshSeries === key;
+      path.classList.toggle('mesh-chart__line--mute', !mine);
+      path.classList.toggle('mesh-chart__line--lift', mine);
+    }
+
+    const hit = chart.querySelector<SVGPathElement>(`[data-mesh-hit="${CSS.escape(key)}"]`);
+    const name = hit?.dataset.name ?? '';
+    const slot = hit?.dataset.slot;
+    const box = svg.getBoundingClientRect();
+    const from = Number(svg.dataset.from);
+    const to = Number(svg.dataset.to);
+    const s = series.get(key);
+
+    // Without a pointer (a legend hover) emphasise but don't try to name a moment.
+    let label = '';
+    let left = box.width / 2;
+    if (ev && s && Number.isFinite(from) && Number.isFinite(to)) {
+      const fx = (ev.clientX - box.left) / box.width;
+      const t =
+        from + ((fx * PLOT.W - PLOT.PAD.l) / (PLOT.W - PLOT.PAD.l - PLOT.PAD.r)) * (to - from);
+      const found = valueAt(s, metric, t, HINT_TOLERANCE_MS);
+      // Nothing inside tolerance means the monitor was silent here. Say nothing rather than
+      // reach across the gap for a reading it never took.
+      if (found) {
+        const unit = HISTORY_METRIC_UNITS[metric];
+        label = `${Math.round(found.v)}${unit}`;
+        left = ev.clientX - box.left;
+      }
+      const cursor = chart.querySelector<SVGLineElement>('.mesh-chart__cursor');
+      if (cursor) {
+        const cx = String(fx * PLOT.W);
+        cursor.setAttribute('x1', cx);
+        cursor.setAttribute('x2', cx);
+        cursor.removeAttribute('hidden');
+      }
+    }
+
+    hint.innerHTML =
+      `<span class="mesh-chart__hint-swatch"${slot ? ` style="background:var(--series-${slot})"` : ''}></span>` +
+      `<span>${esc(name)}</span>` +
+      (label ? `<span class="mesh-chart__hint-value">${esc(label)}</span>` : '');
+    hint.style.left = `${left}px`;
+    hint.style.top = `${Math.max(0, ev ? ev.clientY - box.top : box.height / 3)}px`;
+    hint.removeAttribute('hidden');
+  }
+
+  historyEl?.addEventListener('pointermove', (e) => {
+    const hit = (e.target as HTMLElement)?.closest<SVGPathElement>('[data-mesh-hit]');
+    if (hit?.dataset.meshHit) showHint(hit.dataset.meshHit, e);
+    else if (!(e.target as HTMLElement)?.closest('.mesh-chart__key')) clearHint();
+  });
+  historyEl?.addEventListener('pointerleave', clearHint);
+  // The legend is the other end of the same affordance.
+  historyEl?.addEventListener('mouseover', (e) => {
+    const key = (e.target as HTMLElement)?.closest<HTMLElement>('.mesh-chart__key');
+    if (key?.dataset.meshNode) showHint(key.dataset.meshNode);
+  });
+  historyEl?.addEventListener('focusin', (e) => {
+    const key = (e.target as HTMLElement)?.closest<HTMLElement>('.mesh-chart__key');
+    if (key?.dataset.meshNode) showHint(key.dataset.meshNode);
+  });
+
   const hoverKey = (e: Event) => {
     const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-node]');
     handle?.highlight(btn?.dataset.meshNode ?? null);
@@ -188,133 +385,6 @@ const schema = {
   rosterEl?.addEventListener('focusin', hoverKey);
   rosterEl?.addEventListener('mouseleave', () => handle?.highlight(null));
 
-  // ---- panel collapse ----
-
-  const layout = $('.mesh-layout');
-  const toggle = $<HTMLButtonElement>('[data-mesh-toggle]');
-  const toggleLabel = $('[data-mesh-toggle-label]');
-  toggle?.addEventListener('click', () => {
-    const open = layout?.getAttribute('data-panel') !== 'closed';
-    layout?.setAttribute('data-panel', open ? 'closed' : 'open');
-    toggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-    if (toggleLabel) toggleLabel.textContent = open ? 'Show panel' : 'Hide panel';
-  });
-
   load();
   setInterval(load, REFRESH_MS);
 </script>
-
-<style>
-  /* Full-bleed page: the map fills the viewport below the sticky nav. */
-  :global(main.mesh-main) {
-    display: block;
-  }
-
-  /* Fill exactly the space left below the chrome — no more. The subtractions are the
-     sticky topbar, its 1px bottom border, the EmergencyBanner when a life-safety event is
-     active (--banner-h, published by its island; 0 otherwise), and this element's own 1px
-     bottom border. Miss any of them and the map overflows the viewport. */
-  .mesh-layout {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    align-items: stretch;
-    height: calc(100dvh - var(--topbar-h) - var(--banner-h) - var(--border-w) - var(--border-w));
-    min-height: 520px;
-    border-bottom: var(--border);
-    transition: grid-template-columns var(--transition);
-  }
-  .mesh-layout[data-panel='closed'] {
-    grid-template-columns: 1fr 0;
-  }
-
-  .mesh-layout__map {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .mesh-layout__panel {
-    border-left: var(--border);
-    background: var(--surface-card);
-    min-height: 0;
-    overflow-y: auto;
-  }
-  .mesh-layout[data-panel='closed'] .mesh-layout__panel {
-    border-left: 0;
-    overflow: hidden;
-  }
-
-  .mesh-layout__toggle {
-    position: absolute;
-    top: var(--space-4);
-    right: calc(400px + var(--space-4));
-    z-index: var(--z-overlay);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    background: var(--surface-page);
-    border: var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-overlay);
-    font-family: var(--font-ui);
-    font-size: var(--fs-label);
-    font-weight: var(--fw-semibold);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    color: var(--ink-secondary);
-    cursor: pointer;
-    transition:
-      right var(--transition),
-      color var(--transition);
-  }
-  .mesh-layout__toggle:hover {
-    color: var(--brand-green);
-  }
-  .mesh-layout[data-panel='closed'] .mesh-layout__toggle {
-    right: var(--space-4);
-  }
-
-  .mesh-layout__toggle-icon {
-    width: 8px;
-    height: 8px;
-    border-right: 2px solid currentcolor;
-    border-bottom: 2px solid currentcolor;
-    transform: rotate(-45deg);
-    transition: transform var(--transition);
-  }
-  .mesh-layout[data-panel='closed'] .mesh-layout__toggle-icon {
-    transform: rotate(135deg);
-  }
-
-  @media (max-width: 900px) {
-    .mesh-layout,
-    .mesh-layout[data-panel='closed'] {
-      grid-template-columns: 1fr;
-      height: auto;
-      min-height: 0;
-    }
-    /* Stacked below the breakpoint: the map takes a fixed slice and the panel flows. */
-    .mesh-layout__map {
-      height: 60vh;
-      min-height: 360px;
-    }
-    .mesh-layout__panel {
-      border-left: 0;
-      border-top: var(--border);
-      max-height: none;
-      overflow: visible;
-    }
-    .mesh-layout__toggle {
-      display: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .mesh-layout,
-    .mesh-layout__toggle,
-    .mesh-layout__toggle-icon {
-      transition: none;
-    }
-  }
-</style>

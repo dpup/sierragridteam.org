@@ -9,6 +9,9 @@ import {
   buildGlobalGraph,
   buildRegionGraph,
   deriveMeshSummary,
+  deriveAttention,
+  deriveHealth,
+  deriveHeardCount,
   deriveNodeRows,
   deriveRecencyCounts,
   deriveRelayNodesTile,
@@ -20,6 +23,11 @@ import {
   linkRecency,
   linkWeight,
   linksToGeoJSON,
+  sortNodeRows,
+  ATTENTION_BATTERY_PCT,
+  HEARD_WITHIN_HOURS,
+  LOW_BATTERY_PCT,
+  nodesToGeoJSON,
   nodeTypeLabel,
   type MeshFeature,
   type MeshFeatureCollection,
@@ -35,7 +43,8 @@ function nodeFeature(
   name: string,
   lng: number,
   lat: number,
-  inRegion?: boolean
+  inRegion?: boolean,
+  mesh: Record<string, unknown> = {}
 ): MeshFeature {
   return {
     type: 'Feature',
@@ -49,6 +58,7 @@ function nodeFeature(
         nodeType: 'repeater',
         name,
         ...(inRegion === undefined ? {} : { inRegion }),
+        ...mesh,
       },
     },
   };
@@ -473,7 +483,259 @@ test('the checked-in fixture parses into a corridor graph', () => {
   expect(s.regionNodes ?? 0).toBeGreaterThan(0);
   expect(s.neighbourNodes ?? 0).toBeGreaterThan(0);
   expect(s.regionLinks ?? 0).toBeGreaterThan(0);
-  // Every corridor node in the capture is one of ours, and every link touches the corridor.
-  expect(s.ourNodes).toBe(s.regionNodes);
+  // Most of the corridor is ours, but not all of it — another operator runs a repeater
+  // inside it, which is exactly why the tile's sublabel reports the difference rather than
+  // folding it into the headline count.
+  expect(s.ourNodes ?? 0).toBeGreaterThan(0);
+  expect(s.ourNodes ?? 0).toBeLessThanOrEqual(s.regionNodes ?? 0);
   expect(g.links.every((l) => l.inRegion)).toBe(true);
+});
+
+test('the checked-in fixture carries monitor telemetry for some, but not all, repeaters', () => {
+  const g = buildRegionGraph(
+    meshFixture.node as unknown as MeshFeatureCollection,
+    meshFixture.link as unknown as MeshFeatureCollection
+  );
+  const s = deriveMeshSummary(g, Date.parse(meshFixture.fetchedAt));
+  // The point of the health column is the GAP: only some sites carry a monitor. A capture
+  // where every repeater reported would stop exercising the "Limited Telemetry" path.
+  expect(s.monitored ?? 0).toBeGreaterThan(0);
+  expect(s.monitored ?? 0).toBeLessThan(s.monitorable ?? 0);
+  expect(s.lowestBattery).not.toBeNull();
+  expect(s.lowestBattery!.percent).toBeGreaterThan(0);
+});
+
+// ---- Site health: a different class of fact from the link graph ----
+
+/** A monitored repeater, as `mesh_node.geojson` carries it — reading flat, int64s numeric. */
+const monitored = (key: string, name: string, admin: Record<string, unknown>) =>
+  nodeFeature(key, name, -120.3, 38.2, true, { admin });
+
+test('a repeater with no monitor has no health — never a zero, never a blank reading', () => {
+  const g = buildRegionGraph(fc([nodeFeature('aaa', 'SIERRA Arnold Summit', -120.3, 38.2)]), null);
+  expect(deriveHealth(g.nodes[0])).toBeNull();
+  expect(deriveNodeRows(g, NOW)[0].health).toBeNull();
+});
+
+test('health converts enclosure °C to °F and flags a voltage-derived percentage', () => {
+  const g = buildRegionGraph(
+    fc([
+      monitored('aaa', 'SIERRA Arnold Summit', {
+        batteryPercent: 58,
+        batteryPercentSource: 'estimated',
+        batteryVolts: 3.86,
+        temperatureC: 36.5,
+        reporterId: 'alanpi',
+        reportedAt: ago(0.1),
+      }),
+    ]),
+    null
+  );
+  expect(deriveHealth(g.nodes[0])).toMatchObject({
+    percent: 58,
+    estimated: true,
+    volts: 3.86,
+    tempF: 98, // 36.5 °C
+    low: false,
+    reporterId: 'alanpi',
+  });
+});
+
+test('a gauge the monitor could not read is unknown, and is never "low"', () => {
+  const g = buildRegionGraph(
+    fc([monitored('aaa', 'SIERRA Arnold Summit', { batteryPercent: null, temperatureC: null })]),
+    null
+  );
+  const h = deriveHealth(g.nodes[0]);
+  // Not null — there IS a monitor here; it just couldn't read the gauge. The two states are
+  // different sentences on the page ("Gauge unread" vs "Limited Telemetry").
+  expect(h).not.toBeNull();
+  expect(h!.percent).toBeNull();
+  expect(h!.tempF).toBeNull();
+  expect(h!.low).toBe(false);
+});
+
+test('an absent batteryPercentSource is treated as estimated, not as a measured reading', () => {
+  const g = buildRegionGraph(fc([monitored('aaa', 'SIERRA A', { batteryPercent: 90 })]), null);
+  expect(deriveHealth(g.nodes[0])!.estimated).toBe(true);
+  const m = buildRegionGraph(
+    fc([monitored('bbb', 'SIERRA B', { batteryPercent: 90, batteryPercentSource: 'measured' })]),
+    null
+  );
+  expect(deriveHealth(m.nodes[0])!.estimated).toBe(false);
+});
+
+test('the low-battery flag fires below the threshold and not at it', () => {
+  const at = buildRegionGraph(
+    fc([monitored('aaa', 'SIERRA A', { batteryPercent: LOW_BATTERY_PCT })]),
+    null
+  );
+  const under = buildRegionGraph(
+    fc([monitored('bbb', 'SIERRA B', { batteryPercent: LOW_BATTERY_PCT - 0.1 })]),
+    null
+  );
+  expect(deriveHealth(at.nodes[0])!.low).toBe(false);
+  expect(deriveHealth(under.nodes[0])!.low).toBe(true);
+});
+
+test('int64s arriving as JSON strings are coerced, and a nested telemetry.admin is read', () => {
+  // The /events surface nests the reading and renders int64s as strings; mesh_node.geojson
+  // keeps it flat with numbers. Both must produce the same health.
+  const g = buildRegionGraph(
+    fc([
+      nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true, {
+        telemetry: { admin: { batteryPercent: '47', temperatureC: '20', batteryVolts: '3.9' } },
+      }),
+    ]),
+    null
+  );
+  expect(deriveHealth(g.nodes[0])).toMatchObject({ percent: 47, tempF: 68, volts: 3.9 });
+});
+
+test('lowestBattery names the weakest readable charge and skips unreadable gauges', () => {
+  const g = buildRegionGraph(
+    fc([
+      monitored('aaa', 'SIERRA Arnold Summit', { batteryPercent: 92 }),
+      monitored('bbb', 'SIERRA Hathaway Pines', { batteryPercent: 58 }),
+      // An unread gauge must not floor to 0 and manufacture the alarm.
+      monitored('ccc', 'SIERRA Lake Alpine', { batteryPercent: null }),
+      nodeFeature('ddd', 'SIERRA Camp Connell', -120.3, 38.2, true),
+    ]),
+    null
+  );
+  const s = deriveMeshSummary(g, NOW);
+  expect(s.lowestBattery).toEqual({ percent: 58, name: 'Hathaway Pines', low: false });
+  expect(s.monitored).toBe(3); // three have a monitor…
+  expect(s.monitorable).toBe(4); // …of four repeaters of ours
+});
+
+test('health figures read Unknown (never 0) when the mesh source is unavailable', () => {
+  const s = deriveMeshSummary(buildRegionGraph(fc([], 'UNAVAILABLE'), null), NOW);
+  expect(s.monitored).toBeNull();
+  expect(s.monitorable).toBeNull();
+  expect(s.lowestBattery).toBeNull();
+});
+
+test('a S.I.E.R.R.A companion is not relay infrastructure and is not counted as a repeater', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA Arnold Summit', -120.3, 38.2, true),
+    nodeFeature('bbb', 'SIERRA Handheld', -120.3, 38.2, true, { nodeType: 'companion' }),
+  ]);
+  const g = buildRegionGraph(nodes, null);
+  expect(deriveRelayNodesTile(g).value).toBe('1 Active');
+  expect(deriveMeshSummary(g, NOW).ourNodes).toBe(1);
+  // …but it is still a real node in the corridor, so the roster and the map keep it.
+  expect(deriveNodeRows(g, NOW)).toHaveLength(2);
+});
+
+// ---- The status board's derivations ----
+
+test('the watch floor and the risk threshold are different states, not one', () => {
+  const at = (pct: number) =>
+    deriveHealth(
+      buildRegionGraph(
+        fc([
+          nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true, { admin: { batteryPercent: pct } }),
+        ]),
+        null
+      ).nodes[0]
+    )!;
+  // Comfortable: neither.
+  expect(at(ATTENTION_BATTERY_PCT + 1)).toMatchObject({ watch: false, low: false });
+  // Worth a look, brass: under the floor but not at risk.
+  expect(at(ATTENTION_BATTERY_PCT - 1)).toMatchObject({ watch: true, low: false });
+  // Genuinely at risk, orange — and NOT also "watch", so the two never both style a row.
+  expect(at(LOW_BATTERY_PCT - 1)).toMatchObject({ watch: false, low: true });
+});
+
+test('needs-attention surfaces a low battery and a repeater we have not heard', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA Arnold Summit', -120.3, 38.2, true, {
+      admin: { batteryPercent: 16 },
+    }),
+    nodeFeature('bbb', 'SIERRA Columbia jwt1', -120.3, 38.2, true),
+    nodeFeature('ccc', 'SIERRA Camp Connell', -120.3, 38.2, true, {
+      admin: { batteryPercent: 92 },
+    }),
+  ]);
+  // Arnold + Camp heard minutes ago; Columbia's only link is a day old.
+  const links = fc([
+    linkFeature('aaa', 'ccc', ago(0.05)),
+    linkFeature('bbb', 'ccc', ago(HEARD_WITHIN_HOURS + 7)),
+  ]);
+  const items = deriveAttention(buildRegionGraph(nodes, links), NOW);
+
+  const stale = items.find((i) => i.kind === 'stale');
+  expect(stale?.node.publicKey).toBe('bbb');
+  expect(stale?.detail).toContain('not heard in');
+  // "not heard" is an alert, and it never says the repeater is down.
+  expect(stale?.tone).toBe('alert');
+  expect(stale?.detail).not.toContain('down');
+
+  const battery = items.find((i) => i.kind === 'battery');
+  expect(battery?.node.publicKey).toBe('aaa');
+  // 16% is under the watch floor but above the risk line — brass, not orange.
+  expect(battery?.tone).toBe('watch');
+
+  // A healthy, recently-heard repeater raises nothing at all.
+  expect(items.some((i) => i.node.publicKey === 'ccc')).toBe(false);
+});
+
+test('an unmonitored repeater can never raise a battery item', () => {
+  const nodes = fc([nodeFeature('aaa', 'SIERRA Lilac Park', -120.3, 38.2, true)]);
+  const links = fc([linkFeature('aaa', 'bbb', ago(0.1))]);
+  const items = deriveAttention(buildRegionGraph(nodes, links), NOW);
+  // Absence of telemetry is a gap in our monitoring, never a fault to report.
+  expect(items.some((i) => i.kind === 'battery')).toBe(false);
+});
+
+test('needs-attention is empty (not unknown) when everything is inside its limits', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true, { admin: { batteryPercent: 95 } }),
+  ]);
+  const links = fc([linkFeature('aaa', 'bbb', ago(0.2))]);
+  expect(deriveAttention(buildRegionGraph(nodes, links), NOW)).toEqual([]);
+  // …but a broken feed raises nothing either, because then we do not know.
+  expect(deriveAttention(buildRegionGraph(fc([], 'UNAVAILABLE'), null), NOW)).toEqual([]);
+});
+
+test('heard-count counts receptions inside the window, and is Unknown when the feed is down', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true),
+    nodeFeature('bbb', 'SIERRA B', -120.3, 38.2, true),
+    nodeFeature('ccc', 'SIERRA C', -120.3, 38.2, true),
+  ]);
+  const links = fc([
+    linkFeature('aaa', 'bbb', ago(1)),
+    linkFeature('ccc', 'ddd', ago(HEARD_WITHIN_HOURS + 1)),
+  ]);
+  expect(deriveHeardCount(buildRegionGraph(nodes, links), NOW)).toEqual({ heard: 2, total: 3 });
+  expect(deriveHeardCount(buildRegionGraph(fc([], 'UNAVAILABLE'), null), NOW)).toBeNull();
+});
+
+test('sorting by battery puts the weakest first and unmonitored repeaters last', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true, { admin: { batteryPercent: 90 } }),
+    nodeFeature('bbb', 'SIERRA B', -120.3, 38.2, true),
+    nodeFeature('ccc', 'SIERRA C', -120.3, 38.2, true, { admin: { batteryPercent: 40 } }),
+  ]);
+  const rows = deriveNodeRows(buildRegionGraph(nodes, null), NOW);
+  // Unmonitored sorts LAST, never as 0% — "no reading" is not "empty", and floating it to
+  // the top would invent an alarm out of a monitoring gap.
+  expect(sortNodeRows(rows, 'battery').map((r) => r.node.publicKey)).toEqual(['ccc', 'aaa', 'bbb']);
+});
+
+test('sorting by stalest puts never-heard first, then the longest silence', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true),
+    nodeFeature('bbb', 'SIERRA B', -120.3, 38.2, true),
+    nodeFeature('ccc', 'SIERRA C', -120.3, 38.2, true),
+  ]);
+  const links = fc([linkFeature('aaa', 'zzz', ago(1)), linkFeature('bbb', 'zzz', ago(20))]);
+  const rows = deriveNodeRows(buildRegionGraph(nodes, links), NOW);
+  expect(sortNodeRows(rows, 'stalest').map((r) => r.node.publicKey)).toEqual(['ccc', 'bbb', 'aaa']);
+  // The default is unchanged: busiest first.
+  expect(sortNodeRows(rows, 'links')[0].degree).toBeGreaterThanOrEqual(
+    sortNodeRows(rows, 'links')[1].degree
+  );
 });

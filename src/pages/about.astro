@@ -7,7 +7,7 @@ import Button from '@components/Button.astro';
 import PersonCard from '@components/PersonCard.astro';
 import { about } from '@config/content';
 import { board, advisors } from '@config/people';
-import { site, donate } from '@config/site';
+import { site, donate, externalLinks } from '@config/site';
 
 const description =
   'About S.I.E.R.R.A — the all-volunteer Signal Integrity & Emergency Radio Response ' +
@@ -40,6 +40,46 @@ const aboutSchema = {
     </div>
   </Section>
 
+  {
+    /* The mesh explainer. It lived on /mesh until that page was reorganised around
+    monitoring; a reader needs it once, not on every visit to a status board. The /mesh
+    foot links straight to this anchor. */
+  }
+  <Section surface="page" labelledby="mesh-title">
+    <div class="about-mesh" id="mesh">
+      <div class="about-mesh__lead">
+        <Kicker>{about.mesh.kicker}</Kicker>
+        <h2 id="mesh-title" class="about-story__title">{about.mesh.title}</h2>
+        <p class="about-mesh__intro">{about.mesh.intro}</p>
+        <p>
+          <Button href={about.mesh.mapLink.href} variant="primary"
+            >{about.mesh.mapLink.label}</Button
+          >
+        </p>
+      </div>
+      <dl class="about-mesh__list">
+        {
+          about.mesh.sections.map((sec) => (
+            <div class="about-mesh__item">
+              <dt class="about-mesh__heading">{sec.heading}</dt>
+              <dd class="about-mesh__body">{sec.body}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="about-mesh__link">
+        <a
+          class="about-mesh__external"
+          href={externalLinks.meshcoreMap}
+          target="_blank"
+          rel="noopener external"
+        >
+          {about.mesh.meshcoreLabel}<span aria-hidden="true"> &#8599;</span>
+        </a>
+      </p>
+    </div>
+  </Section>
+
   <Section surface="page" labelledby="team-title">
     <SectionHeader kicker={about.team.kicker} title={about.team.title} headingId="team-title" />
     <p class="about-team__note">{about.team.note}</p>
@@ -66,6 +106,60 @@ const aboutSchema = {
 </BaseLayout>
 
 <style>
+  /* The mesh explainer: a lead column, then the four things a reader asks about the map,
+     as a definition list because that is what they are. */
+  .about-mesh {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: var(--space-7);
+    align-items: start;
+  }
+  .about-mesh__lead {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .about-mesh__intro {
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .about-mesh__list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: var(--border-soft);
+  }
+  .about-mesh__item {
+    padding-block: var(--space-5);
+    border-bottom: var(--border-soft);
+  }
+  .about-mesh__heading {
+    font-family: var(--font-display);
+    font-size: var(--fs-mission);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+  .about-mesh__body {
+    margin: var(--space-2) 0 0;
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+  .about-mesh__link {
+    grid-column: 1 / -1;
+  }
+  .about-mesh__external {
+    color: var(--brand-green);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  @media (max-width: 860px) {
+    .about-mesh {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+  }
+
   .about-head {
     max-width: 64ch;
   }

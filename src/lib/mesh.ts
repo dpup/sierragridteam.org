@@ -26,6 +26,8 @@
  * a `0` — an empty graph and a broken feed must never render the same way.
  */
 
+import { cToF } from './units';
+
 export type MeshWindow = '24h' | '72h' | '7d' | '30d';
 
 /**
@@ -82,6 +84,42 @@ export const MESH_WINDOW_DAYS: Record<MeshWindow, number> = {
 
 export type MeshSourceStatus = 'OK' | 'STALE' | 'UNAVAILABLE';
 
+/**
+ * The operator monitor's own reading of a repeater — battery, enclosure temperature and
+ * the counters — as reported by a Raspberry Pi on the site and archived by The Grid.
+ *
+ * This is a DIFFERENT class of fact from everything else in this file. The rest of the mesh
+ * feed is *observation*: we heard this node, we heard these two relay. `admin` is a node
+ * telling us about itself through a monitor someone installed. That is why it can answer
+ * "will this site last the night" when a link graph cannot, and why its absence means "no
+ * monitor here", never "unhealthy".
+ *
+ * ⚠️ TWO SHAPES, ONE MESSAGE. `mesh_node.geojson` carries it flat at `mesh.admin` with
+ * int64s as JSON numbers; `/events?layer=MESH` nests it at `mesh.telemetry.admin` with
+ * int64s as JSON STRINGS (protobuf's JSON mapping). `adminFrom()` below reads either, and
+ * every numeric read goes through `num()`, which coerces. Don't reach into `.admin`
+ * directly.
+ *
+ * Only the fields the site renders are typed. The wire carries the full packet counter set
+ * (`packetsSent`, `floodDups`, `recvErrors`, …); those are diagnostics with no consumer
+ * here, and typing them would be dead code.
+ */
+export interface MeshAdminTelemetry {
+  /** Who runs the monitor — named in the panel, because provenance is the point. */
+  reporterId?: string;
+  /** The MONITOR's stamp for this reading. The clock to trust; not our receive time. */
+  reportedAt?: string;
+  batteryVolts?: number | string | null;
+  batteryPercent?: number | string | null;
+  /**
+   * `measured` (a real gauge) or `estimated` (inferred from voltage). Every S.I.E.R.R.A
+   * repeater reports `estimated` today, so the panel must say so — an inferred number
+   * printed in the same weight as a measured one is a quiet false claim.
+   */
+  batteryPercentSource?: string;
+  temperatureC?: number | string | null;
+}
+
 /** `properties.mesh` on a mesh_node / mesh_link Point feature. */
 export interface MeshNodeDetail {
   publicKey: string;
@@ -99,6 +137,10 @@ export interface MeshNodeDetail {
    * Absent on mesh_node.geojson (every feature there is in-region by construction).
    */
   inRegion?: boolean;
+  /** Monitor telemetry as `mesh_node.geojson` carries it — flat. */
+  admin?: MeshAdminTelemetry;
+  /** …and as `/events?layer=MESH` carries it — nested. Read both via `adminFrom()`. */
+  telemetry?: { admin?: MeshAdminTelemetry };
 }
 
 /** `properties.meshLink` on a mesh_link LineString feature. */
@@ -158,7 +200,12 @@ export interface GlobalLinksResponse {
   links: MeshLinkDetail[];
 }
 
-/** One page of `GET /events?layer=MESH` — the global node roster. */
+/**
+ * One page of `GET /events?layer=MESH` — the global node roster. Shape re-captured
+ * 2026-09-16: `mesh` sits at the TOP level of an event. It was previously read from
+ * `detail.mesh`, which no longer exists on the wire — every backdrop node was silently
+ * falling back to "Unnamed node" with no SNR and `ours: false`.
+ */
 export interface MeshEventsPage {
   events: {
     id: string;
@@ -166,7 +213,7 @@ export interface MeshEventsPage {
     category?: string;
     status?: string;
     geometry?: { centroid?: { lat: number; lng: number } } | null;
-    detail?: { mesh?: MeshNodeDetail };
+    mesh?: MeshNodeDetail;
   }[];
   nextPageToken?: string;
 }
@@ -189,6 +236,11 @@ export interface MeshNode {
   snr?: number;
   rssi?: number;
   gatewayCount: number;
+  /**
+   * The operator monitor's latest reading, or `null` where nobody monitors this repeater.
+   * `null` is a statement about OUR coverage, never about the node's health.
+   */
+  admin: MeshAdminTelemetry | null;
 }
 
 export interface MeshLink {
@@ -298,8 +350,28 @@ export function linkWeight(observations: number): number {
 
 // ---- Building the graph ----
 
-const num = (v: unknown): number | undefined =>
-  typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+/**
+ * A finite number from the wire, or `undefined`. Accepts a numeric STRING: protobuf's JSON
+ * mapping renders every int64 that way (`uptimeSeconds: "1653982"`), so a field's type
+ * depends on its width rather than its meaning. Never coerces `null`, `''` or a
+ * non-numeric string to 0 — an unread gauge and a zero reading must not collapse together.
+ */
+const num = (v: unknown): number | undefined => {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : undefined;
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  return undefined;
+};
+
+/**
+ * The monitor reading off either surface — flat on `mesh_node.geojson`, nested under
+ * `telemetry` on `/events`. Returns `null` when the node carries neither, which is the
+ * common case: 7 of the corridor's 14 repeaters have no monitor.
+ */
+const adminFrom = (m: MeshNodeDetail | undefined): MeshAdminTelemetry | null =>
+  m?.admin ?? m?.telemetry?.admin ?? null;
 
 const worstStatus = (statuses: (string | undefined)[]): MeshSourceStatus => {
   if (statuses.some((s) => s === 'UNAVAILABLE')) return 'UNAVAILABLE';
@@ -331,6 +403,7 @@ const nodeFromFeature = (f: MeshFeature, fallbackInRegion: boolean): MeshNode | 
     snr: num(m.snr),
     rssi: num(m.rssi),
     gatewayCount: m.gateways?.length ?? 0,
+    admin: adminFrom(m),
   };
 };
 
@@ -438,7 +511,7 @@ export function buildGlobalGraph(
 ): { nodes: MeshNode[]; links: MeshLink[] } {
   const coords = new Map<string, MeshNode>();
   for (const e of events) {
-    const m = e.detail?.mesh;
+    const m = e.mesh;
     const c = e.geometry?.centroid;
     const key = m?.publicKey || e.id.replace(/^meshcore:/, '');
     if (!key || !c || !Number.isFinite(c.lng) || !Number.isFinite(c.lat)) continue;
@@ -455,6 +528,7 @@ export function buildGlobalGraph(
       snr: num(m?.snr),
       rssi: num(m?.rssi),
       gatewayCount: m?.gateways?.length ?? 0,
+      admin: adminFrom(m),
     });
   }
 
@@ -500,23 +574,26 @@ type FC = { type: 'FeatureCollection'; features: unknown[] };
 export function nodesToGeoJSON(nodes: MeshNode[]): FC {
   return {
     type: 'FeatureCollection',
-    features: nodes.map((n) => ({
-      type: 'Feature',
-      id: n.publicKey,
-      geometry: { type: 'Point', coordinates: [n.lng, n.lat] },
-      properties: {
-        publicKey: n.publicKey,
-        name: n.name,
-        shortName: displayName(n.name),
-        nodeType: n.nodeType,
-        inRegion: n.inRegion,
-        ours: n.ours,
-        status: n.status,
-        snr: n.snr ?? null,
-        rssi: n.rssi ?? null,
-        gatewayCount: n.gatewayCount,
-      },
-    })),
+    // Cheap insurance: a feature with NaN coordinates poisons a whole map source.
+    features: nodes
+      .filter((n) => Number.isFinite(n.lng) && Number.isFinite(n.lat))
+      .map((n) => ({
+        type: 'Feature',
+        id: n.publicKey,
+        geometry: { type: 'Point', coordinates: [n.lng, n.lat] },
+        properties: {
+          publicKey: n.publicKey,
+          name: n.name,
+          shortName: displayName(n.name),
+          nodeType: n.nodeType,
+          inRegion: n.inRegion,
+          ours: n.ours,
+          status: n.status,
+          snr: n.snr ?? null,
+          rssi: n.rssi ?? null,
+          gatewayCount: n.gatewayCount,
+        },
+      })),
   };
 }
 
@@ -548,6 +625,90 @@ export function linksToGeoJSON(links: MeshLink[], nowMs: number): FC {
 
 // ---- Panel derivations ----
 
+/**
+ * Below this, a battery reads as a genuine risk state and takes the alert orange — the one
+ * non-Donate orange the design system sanctions outside a hazard (CLAUDE.md rule 2). Set
+ * from operator experience: these repeaters routinely run a summer night down into the
+ * teens and recover after sunrise, so a higher threshold would cry wolf nightly.
+ */
+export const LOW_BATTERY_PCT = 10;
+
+/**
+ * A repeater is "heard" for the headline count if one of its links carried traffic inside
+ * this window. Twelve hours is chosen against the network's own rhythm: a backbone repeater
+ * can advert as little as twice a day, so anything tighter reports healthy sites as missing
+ * — the failure mode FR-8 was raised for. It is a reception window, never an uptime claim.
+ */
+export const HEARD_WITHIN_HOURS = 12;
+
+/**
+ * The battery level at which a repeater joins the "needs attention" strip — a watch floor,
+ * NOT the alert threshold. The two are deliberately different numbers:
+ *
+ *   • `ATTENTION_BATTERY_PCT` (20) is "worth a look", styled in brass.
+ *   • `LOW_BATTERY_PCT` (10) is "genuinely at risk" and takes the alert orange. A calm
+ *     corridor shows no orange at all.
+ *
+ * Collapsing them into one number forces a choice between crying wolf and never surfacing a
+ * decline until it is too late.
+ *
+ * Lowered from 60 to 20 (2026-09-17). At 60 the strip fired on a normal summer night: these
+ * sites routinely discharge into the teens and recover after sunrise, so "needs attention"
+ * would have been permanently populated with repeaters doing exactly what they are supposed
+ * to — which is how a warning strip stops being read at all.
+ */
+export const ATTENTION_BATTERY_PCT = 20;
+
+/** A monitored repeater's latest reading, normalised for display. */
+export interface MeshNodeHealth {
+  /** Charge, 0–100, or null where the monitor could not read it. Never a substituted 0. */
+  percent: number | null;
+  /** True when `percent` is inferred from voltage rather than read from a gauge. */
+  estimated: boolean;
+  volts: number | null;
+  /** Enclosure temperature in °F — the box in the sun, not the weather. */
+  tempF: number | null;
+  /** `percent` is known AND below the risk threshold. Unknown is never "low". */
+  low: boolean;
+  /** Known and under the watch floor but not yet at risk — brass, not orange. */
+  watch: boolean;
+  /** The monitor's own stamp for the reading. */
+  reportedAt: string | null;
+  reporterId: string | null;
+}
+
+/**
+ * The reading for one node, or `null` where nobody monitors it. The distinction is the
+ * whole point: `null` means "we have no monitor on this site", which is a statement about
+ * S.I.E.R.R.A's coverage. It must never render as a zero, a dash dressed up as calm, or
+ * anything a reader could mistake for "this repeater is fine".
+ */
+export function deriveHealth(node: MeshNode): MeshNodeHealth | null {
+  const a = node.admin;
+  if (!a) return null;
+  const percent = num(a.batteryPercent) ?? null;
+  const tempC = num(a.temperatureC);
+  return {
+    percent,
+    // Absent source is treated as estimated: claiming a reading is measured when the feed
+    // didn't say so is the direction that overclaims.
+    estimated: a.batteryPercentSource !== 'measured',
+    volts: num(a.batteryVolts) ?? null,
+    tempF: tempC == null ? null : cToF(tempC),
+    low: percent != null && percent < LOW_BATTERY_PCT,
+    watch: percent != null && percent < ATTENTION_BATTERY_PCT && percent >= LOW_BATTERY_PCT,
+    reportedAt: a.reportedAt ?? null,
+    reporterId: a.reporterId ?? null,
+  };
+}
+
+/**
+ * A repeater, as distinct from a companion (a handheld) or a room server. The count tiles
+ * are about fixed relay infrastructure S.I.E.R.R.A manages — someone's handset passing
+ * through the corridor with a S.I.E.R.R.A name is not a relay site and must not inflate it.
+ */
+export const isRepeater = (node: MeshNode): boolean => node.nodeType === 'repeater';
+
 export interface MeshSummary {
   /** Null whenever the feed is UNAVAILABLE — "Unknown", never a false zero. */
   regionNodes: number | null;
@@ -560,6 +721,14 @@ export interface MeshSummary {
   lastHeard: string | null;
   /** Best SNR observed on any region link, dB. */
   bestSnr: number | null;
+  /** Repeaters of ours a monitor reports on, and how many of ours there are in total. */
+  monitored: number | null;
+  monitorable: number | null;
+  /**
+   * The weakest battery we hold a reading for, or `null` when no monitored repeater
+   * reported a readable charge. `null` is "we don't know", not "everything is full".
+   */
+  lowestBattery: { percent: number; name: string; low: boolean } | null;
   sourceStatus: MeshSourceStatus;
 }
 
@@ -569,6 +738,17 @@ export interface MeshSummary {
  */
 const corridorNodes = (graph: MeshGraph): MeshNode[] =>
   graph.nodes.filter((n) => n.inRegion && n.status === 'ACTIVE');
+
+/**
+ * The set both count tiles are built on: S.I.E.R.R.A-named REPEATERS in the corridor.
+ * Shared so the homepage "Relay Nodes" tile and /mesh's "S.I.E.R.R.A repeaters" tile can
+ * never drift — they are the same sentence on two pages.
+ */
+const ourRepeaters = (graph: MeshGraph): MeshNode[] =>
+  corridorNodes(graph).filter((n) => n.ours && isRepeater(n));
+
+/** Every repeater of ours we could hold a reading for. */
+const healthCandidates = (graph: MeshGraph): MeshNode[] => ourRepeaters(graph);
 
 export function deriveMeshSummary(graph: MeshGraph, nowMs: number): MeshSummary {
   if (graph.sourceStatus === 'UNAVAILABLE') {
@@ -580,6 +760,9 @@ export function deriveMeshSummary(graph: MeshGraph, nowMs: number): MeshSummary 
       liveLinks: null,
       lastHeard: null,
       bestSnr: null,
+      monitored: null,
+      monitorable: null,
+      lowestBattery: null,
       sourceStatus: 'UNAVAILABLE',
     };
   }
@@ -594,14 +777,34 @@ export function deriveMeshSummary(graph: MeshGraph, nowMs: number): MeshSummary 
     if (l.bestSnr != null && l.bestSnr > bestSnr) bestSnr = l.bestSnr;
     if (linkRecency(l.lastSeen, nowMs) === 'live') live++;
   }
+  // The weakest battery across our monitored repeaters. Unreadable gauges are skipped
+  // rather than floored to 0 — one broken sensor must not manufacture an alarm.
+  const ours = ourRepeaters(graph);
+  const readings = healthCandidates(graph)
+    .map((n) => ({ node: n, health: deriveHealth(n) }))
+    .filter((r): r is { node: MeshNode; health: MeshNodeHealth } => r.health != null);
+  const charged = readings.filter((r) => r.health.percent != null);
+  const weakest = charged.length
+    ? charged.reduce((a, b) => (b.health.percent! < a.health.percent! ? b : a))
+    : null;
+
   return {
     regionNodes: region.length,
-    ourNodes: region.filter((n) => n.ours).length,
+    ourNodes: ours.length,
     neighbourNodes: graph.nodes.length - region.length,
     regionLinks: links.length,
     liveLinks: live,
     lastHeard: lastHeard ? new Date(lastHeard).toISOString() : null,
     bestSnr: Number.isFinite(bestSnr) ? bestSnr : null,
+    monitored: readings.length,
+    monitorable: healthCandidates(graph).length,
+    lowestBattery: weakest
+      ? {
+          percent: weakest.health.percent!,
+          name: displayName(weakest.node.name),
+          low: weakest.health.low,
+        }
+      : null,
     sourceStatus: graph.sourceStatus,
   };
 }
@@ -614,6 +817,8 @@ export interface MeshNodeRow {
   /** Most recent reception on any of its links, ISO — or null if it has no observed links. */
   lastHeard: string | null;
   recency: MeshRecency | null;
+  /** The monitor reading, or null where this repeater has no monitor. */
+  health: MeshNodeHealth | null;
 }
 
 export function deriveNodeRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
@@ -626,18 +831,23 @@ export function deriveNodeRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
       if (Number.isFinite(t) && t > (last.get(k) ?? 0)) last.set(k, t);
     }
   }
-  return corridorNodes(graph)
-    .map((n) => {
-      const t = last.get(n.publicKey) ?? 0;
-      const lastHeard = t ? new Date(t).toISOString() : null;
-      return {
-        node: n,
-        degree: degree.get(n.publicKey) ?? 0,
-        lastHeard,
-        recency: lastHeard ? linkRecency(lastHeard, nowMs) : null,
-      };
-    })
-    .sort((x, y) => y.degree - x.degree || x.node.name.localeCompare(y.node.name));
+  return (
+    corridorNodes(graph)
+      .map((n) => {
+        const t = last.get(n.publicKey) ?? 0;
+        const lastHeard = t ? new Date(t).toISOString() : null;
+        return {
+          node: n,
+          degree: degree.get(n.publicKey) ?? 0,
+          lastHeard,
+          recency: lastHeard ? linkRecency(lastHeard, nowMs) : null,
+          health: deriveHealth(n),
+        };
+      })
+      // Busiest first, as before. A repeater with no position sorts by the same rule — it is
+      // a roster row like any other, it simply cannot be drawn.
+      .sort((x, y) => y.degree - x.degree || x.node.name.localeCompare(y.node.name))
+  );
 }
 
 /**
@@ -645,17 +855,23 @@ export function deriveNodeRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
  * mesh is currently hearing. Mirrors `deriveActiveAlertsTile` in hazards.ts so the two live
  * tiles behave identically — `Unknown`/muted when the source is down, a real count otherwise.
  *
- * NOTE the tile counts NODES HEARD, not sites confirmed up: a site can hold more than one
- * node, and an advert proves a node was heard, not that the site is healthy. That's why the
- * tile says "repeaters heard" and why FR-5 (per-relay-site health) stays open —
- * docs/architecture/data-feed.md.
+ * NOTE the tile counts REPEATERS HEARD, not sites confirmed up: a site can hold more than
+ * one node, and an advert proves a node was heard, not that the site is healthy. That's why
+ * the tile says "repeaters heard". Companions (handhelds) and room servers are excluded via
+ * `isRepeater` even when they advertise a S.I.E.R.R.A name — this tile is about fixed relay
+ * infrastructure, and a member's handset passing through must not inflate it.
+ *
+ * Per-site HEALTH now has a real answer for the repeaters an operator monitors — see
+ * `deriveHealth` and the /mesh roster — but it is deliberately not folded into this number:
+ * "heard" and "healthy" are independent, and collapsing them would make the tile mean less,
+ * not more.
  */
 export function deriveRelayNodesTile(graph: MeshGraph): {
   value: string;
   state: 'ok' | 'muted';
 } {
   if (graph.sourceStatus === 'UNAVAILABLE') return { value: 'Unknown', state: 'muted' };
-  const n = corridorNodes(graph).filter((x) => x.ours).length;
+  const n = ourRepeaters(graph).length;
   return { value: `${n} Active`, state: n > 0 ? 'ok' : 'muted' };
 }
 
@@ -665,6 +881,133 @@ export function deriveRecencyCounts(graph: MeshGraph, nowMs: number): Record<Mes
   for (const l of graph.links) out[linkRecency(l.lastSeen, nowMs)]++;
   return out;
 }
+
+/**
+ * The "needs attention" strip: repeaters currently outside limits, worst first.
+ *
+ * Two kinds, because they are genuinely different failures — a repeater can be heard every
+ * two minutes while its battery drains, and one can sit at 100% while nothing hears it:
+ *   • `battery` — a monitored site under the watch floor.
+ *   • `stale`   — nothing heard from it inside HEARD_WITHIN_HOURS.
+ *
+ * Honesty: `stale` says we have not HEARD it, never that it is down. An unmonitored
+ * repeater can never raise a `battery` item — absence of telemetry is not a fault.
+ */
+export type MeshAttentionKind = 'battery' | 'stale';
+
+export interface MeshAttentionItem {
+  node: MeshNode;
+  kind: MeshAttentionKind;
+  /** `alert` takes the orange; `watch` takes brass. Only a real risk earns the orange. */
+  tone: 'alert' | 'watch';
+  /** The reading itself — "battery 48%", "not heard in 19 h". */
+  detail: string;
+}
+
+export function deriveAttention(graph: MeshGraph, nowMs: number): MeshAttentionItem[] {
+  if (graph.sourceStatus === 'UNAVAILABLE') return [];
+  const items: MeshAttentionItem[] = [];
+  for (const row of deriveNodeRows(graph, nowMs)) {
+    const { node, health, lastHeard } = row;
+    const ageH = lastHeard ? (nowMs - Date.parse(lastHeard)) / 3_600_000 : Infinity;
+    if (!lastHeard || ageH >= HEARD_WITHIN_HOURS) {
+      items.push({
+        node,
+        kind: 'stale',
+        tone: 'alert',
+        detail: lastHeard
+          ? `not heard in ${Math.floor(ageH)} h`
+          : 'no links observed in this window',
+      });
+    }
+    if (health?.percent != null && health.percent < ATTENTION_BATTERY_PCT) {
+      items.push({
+        node,
+        kind: 'battery',
+        tone: health.low ? 'alert' : 'watch',
+        detail: `battery ${Math.round(health.percent)}% · below ${ATTENTION_BATTERY_PCT}% floor`,
+      });
+    }
+  }
+  // Alerts first, then the lowest battery, then the longest silence.
+  const rank = (i: MeshAttentionItem) => (i.tone === 'alert' ? 0 : 1);
+  return items.sort((a, b) => rank(a) - rank(b) || a.node.name.localeCompare(b.node.name));
+}
+
+/** "10 / 12" for the headline tile — heard recently, out of the corridor's repeaters. */
+export function deriveHeardCount(
+  graph: MeshGraph,
+  nowMs: number
+): { heard: number; total: number } | null {
+  if (graph.sourceStatus === 'UNAVAILABLE') return null;
+  const rows = deriveNodeRows(graph, nowMs);
+  const cutoff = nowMs - HEARD_WITHIN_HOURS * 3_600_000;
+  return {
+    heard: rows.filter((r) => r.lastHeard != null && Date.parse(r.lastHeard) >= cutoff).length,
+    total: rows.length,
+  };
+}
+
+/**
+ * Roster ordering. `links` is the default — the busiest repeater is the one carrying the
+ * corridor — and the other two are the questions an operator actually arrives with:
+ * "which one is lowest?" and "which one have we not heard from?"
+ */
+export const ROSTER_SORTS = ['links', 'battery', 'stalest'] as const;
+export type MeshRosterSort = (typeof ROSTER_SORTS)[number];
+export const ROSTER_SORT_LABELS: Record<MeshRosterSort, string> = {
+  links: 'Links',
+  battery: 'Battery',
+  stalest: 'Stalest',
+};
+
+export function sortNodeRows(rows: MeshNodeRow[], sort: MeshRosterSort): MeshNodeRow[] {
+  const byName = (a: MeshNodeRow, b: MeshNodeRow) => a.node.name.localeCompare(b.node.name);
+  const copy = [...rows];
+  if (sort === 'battery') {
+    // Unmonitored repeaters sort last rather than as 0% — "we have no reading" is not
+    // "empty", and floating them to the top would invent an alarm.
+    return copy.sort((a, b) => {
+      const av = a.health?.percent ?? null;
+      const bv = b.health?.percent ?? null;
+      if (av == null && bv == null) return byName(a, b);
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return av - bv || byName(a, b);
+    });
+  }
+  if (sort === 'stalest') {
+    // Never heard sorts first: the longest silence there is.
+    return copy.sort((a, b) => {
+      const at = a.lastHeard ? Date.parse(a.lastHeard) : -Infinity;
+      const bt = b.lastHeard ? Date.parse(b.lastHeard) : -Infinity;
+      return at - bt || byName(a, b);
+    });
+  }
+  return copy.sort((a, b) => b.degree - a.degree || byName(a, b));
+}
+
+/**
+ * The map's "heard in" filter. Unlike the rejected window PICKER, this changes nothing about
+ * what is fetched — the page always holds MESH_WINDOW of links and this narrows what is
+ * DRAWN. The fade still carries recency continuously; this is a way to cut the 30-day
+ * accumulation down to "what is carrying traffic right now" without a second request.
+ * `30d` is the default, so the page still opens on everything it knows.
+ */
+export const HEARD_IN_OPTIONS = ['1h', '6h', '24h', '30d'] as const;
+export type MeshHeardIn = (typeof HEARD_IN_OPTIONS)[number];
+export const HEARD_IN_HOURS: Record<MeshHeardIn, number> = {
+  '1h': 1,
+  '6h': 6,
+  '24h': 24,
+  '30d': 24 * 30,
+};
+export const HEARD_IN_LABELS: Record<MeshHeardIn, string> = {
+  '1h': '1h',
+  '6h': '6h',
+  '24h': '24h',
+  '30d': '30d',
+};
 
 // ---- Display formatting ----
 

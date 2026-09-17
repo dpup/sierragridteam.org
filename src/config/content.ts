@@ -78,41 +78,49 @@ export const mesh = {
   title: 'Mesh Network',
   kicker: 'LoRa · MeshCore',
   heading: 'The Mesh',
-  intro:
-    'Solar-powered LoRa relays that pass short text and telemetry across the foothills when ' +
-    'power and cellular service are down. The map draws what the network has actually been ' +
-    'heard doing: every S.I.E.R.R.A repeater along the Ebbetts Pass corridor, and every relay ' +
-    'link we observed between them.',
   loading: 'Loading the mesh…',
   autoRefresh: 'Auto-refreshes every 2 minutes',
   mapTitle: 'S.I.E.R.R.A mesh topology map',
   mapFallback:
     'The mesh map needs JavaScript and WebGL. Every corridor repeater is also listed beside ' +
     'the map.',
-  legendHeading: 'What you are looking at',
-  legendNote:
-    'Links between corridor repeaters heard in the last 30 days are always drawn. How ' +
-    'recently one was heard sets how bright and heavy it is, and how fast it pulses. Select ' +
-    'a repeater to add the links reaching out past the corridor to the wider mesh.',
+  mapPanelTitle: 'Observed topology · Ebbetts Pass',
+  legendCorridor: 'Corridor repeater',
+  legendNeighbour: 'Neighbour',
+  aboutLink: 'What this map does and does not say',
+
+  // ---- The history band. The chart compares repeaters against each other; the roster's
+  // bar and sparkline answer "how is this one doing". Keep the copy about comparison.
+  historyLabel: 'History',
+  historyHint: 'All monitored repeaters — hover a trace to name it, click to isolate it',
+  historyHintSelected: 'One repeater isolated — click it again to compare all',
+  historyEmpty:
+    'No repeater in the corridor is reporting monitor telemetry yet, so there is no history ' +
+    'to draw. That is a gap in what we watch, not a reading from the network.',
+  historyNoRange:
+    'No readings were retained inside this range. Try a shorter one — the archive begins at ' +
+    'the first accepted report, and there is no backfill before it.',
+  historyNoDataBefore: 'No data retained before',
+  historyTruncated:
+    'This range holds more samples than one response carries, so at least one trace is cut ' +
+    'short — narrow the range to see all of it.',
+  attentionLabel: 'Needs attention',
   rosterHeading: 'Corridor repeaters',
-  rosterHint: 'Select a repeater to find it on the map and see what it reaches.',
+  // "Not monitored" read as an accusation — nobody is watching this site. What is actually
+  // true is narrower: we hear the repeater on the mesh, we just have no site telemetry from
+  // it. "Limited Telemetry" says that without implying neglect or a fault.
+  notMonitored: 'Limited Telemetry',
+  healthUnreadable: 'Gauge unread',
+  healthUnreadableNote: 'Monitor reached it, gauge unread',
+  healthUnknownSub: 'Battery reporting unavailable',
+  detailKicker: 'monitored by',
+  detailKickerAnon: 'monitored',
+  detailEstimated: 'Charge estimated from voltage',
+  detailMeasured: 'Charge read from the gauge',
   rosterEmpty:
     'The feed returned no repeaters inside the corridor for this window. That is a reading ' +
     'from the network, not a confirmed outage — check the official channels if you need to ' +
     'reach someone.',
-  neighbourHeading: 'The wider mesh',
-  neighbourNote:
-    'Hollow markers are neighbouring MeshCore repeaters run by other operators — the ' +
-    'one-hop neighbours our corridor nodes were heard relaying with. They are drawn faintly ' +
-    'because they are context, not our infrastructure. The links out to them stay hidden ' +
-    'until you select a repeater — all of them at once buried the corridor. Pan out and the ' +
-    'rest of the observed mesh loads behind them.',
-  honestyHeading: 'What this map does not say',
-  honestyNote:
-    'A link means we heard two repeaters relay for each other, weighted by how often and how ' +
-    'recently. It is not a routing table, and a faint link is not a link that is down — a ' +
-    'backbone repeater can advert only twice a day and still be working. Nothing here is a ' +
-    'guarantee of coverage at any given address, and it is never an all-clear.',
   statusUnavailableLabel: 'Mesh feed unavailable',
   statusUnavailableNote:
     'The mesh feed could not be reached, so the network state is unknown. Rather than show a ' +
@@ -122,8 +130,25 @@ export const mesh = {
   failBody:
     "We couldn't reach the mesh feed right now. Rather than show a stale topology, here is " +
     'where the underlying data lives.',
-  meshcoreLabel: 'MeshCore community map',
   attribution: 'Mesh topology via data.sierragridteam.org · Node adverts via MeshCore',
+} as const;
+
+/**
+ * The homepage Supporters band. Deliberately spare: it states the relationship and gets out
+ * of the way. No superlatives, no "proudly" — the organizations listed are a fact about how
+ * the network is funded and equipped, not a boast (docs/content-style-guide.md §2).
+ */
+export const supporters = {
+  kicker: 'Supporters',
+  heading: 'Organizations backing the network.',
+  // Deliberately does NOT name what any one supporter gave. It sits directly above their
+  // logo, so "equipment and funding" would read as a claim about them specifically — and we
+  // only know that they support the work, not in which form.
+  note:
+    'Support from outside the membership is what puts a repeater on a ridge and keeps it ' +
+    'there.',
+  ctaLabel: 'Support this work',
+  ctaHref: '/donate',
 } as const;
 
 /** The Live Feed (situation) page — the public flagship during an emergency. */
@@ -337,6 +362,60 @@ export const about = {
     ctaTeam: 'Meet the Full Team',
     ctaVolunteer: 'Volunteer',
   },
+
+  /**
+   * The mesh explainer, moved off /mesh (2026-09-17) when that page was reorganised around
+   * monitoring. The status board answers "what is the network doing right now"; this answers
+   * "what is it, and what does an observed link actually prove" — which a reader needs once,
+   * not on every visit. /mesh links here from its foot.
+   */
+  mesh: {
+    kicker: 'LoRa · MeshCore',
+    title: 'The mesh, and what the map means.',
+    intro:
+      'Solar-powered LoRa relays that pass short text and telemetry across the foothills ' +
+      'when power and cellular service are down. The map on the Mesh page draws what the ' +
+      'network has actually been heard doing: every S.I.E.R.R.A repeater along the Ebbetts ' +
+      'Pass corridor, and every relay link we observed between them.',
+    sections: [
+      {
+        heading: 'What a link on the map means.',
+        body:
+          'A link means we heard two repeaters relay for each other, weighted by how often ' +
+          'and how recently. How recently one was heard sets how bright and heavy it is, ' +
+          'and how fast it pulses. Links between corridor repeaters heard in the last 30 ' +
+          'days are always drawn.',
+      },
+      {
+        heading: 'What it does not mean.',
+        body:
+          'It is not a routing table, and a faint link is not a link that is down — a ' +
+          'backbone repeater can advert only twice a day and still be working. Nothing ' +
+          'there is a guarantee of coverage at any given address, and it is never an ' +
+          'all-clear.',
+      },
+      {
+        heading: 'The wider mesh.',
+        body:
+          'Hollow markers are neighbouring MeshCore repeaters run by other operators — the ' +
+          'one-hop neighbours our corridor nodes were heard relaying with. They are drawn ' +
+          'faintly because they are context, not our infrastructure. The links out to them ' +
+          'stay hidden until you select a repeater; all of them at once buried the corridor.',
+      },
+      {
+        heading: 'What the monitors cover.',
+        body:
+          'Some of our repeater sites carry a monitor that reports battery, enclosure ' +
+          'temperature and packet counters back to The Grid. The rest read "Limited ' +
+          'Telemetry" — we hear them relaying, we just have nothing from the site itself. ' +
+          'That is a gap in what we watch, not a judgement on the repeater: several of them ' +
+          'are among the busiest in the corridor. Where a charge is shown it is usually ' +
+          'estimated from voltage rather than read from a gauge, and the page says so.',
+      },
+    ],
+    mapLink: { label: 'Open the mesh status board', href: '/mesh' },
+    meshcoreLabel: 'MeshCore community map',
+  },
 } as const;
 
 export const donate = {
@@ -346,24 +425,29 @@ export const donate = {
     'S.I.E.R.R.A is an all-volunteer non-profit. Your support funds the solar-powered relays, ' +
     'radios, and training that keep neighbors and first responders connected when the grid and ' +
     'cell service are down.',
-  waysHeading: 'Ways to give',
+  // Zeffy is the provider (chosen for its zero-fee model — 100% of a gift reaches the org).
+  // The two forms are embedded directly on this page; `src/components/ZeffyEmbed.astro`
+  // carries the markup contract.
+  giveHeading: 'Give now',
+  giveNote:
+    'Every dollar reaches S.I.E.R.R.A — our processor charges the organization no fees, and ' +
+    'any tip you add goes to them rather than to us.',
+  memberHeading: 'Become a member',
+  memberNote:
+    'Membership supports the network year-round and brings you into the roster of people who ' +
+    'build and operate it.',
+  embedFallback:
+    'The giving form needs JavaScript. If it does not appear, a check by mail works just as ' +
+    'well — the address is below.',
+  waysHeading: 'Other ways to give',
   ways: [
-    {
-      name: 'Give Online',
-      // TODO(pre-launch): wire up a donation provider (Donorbox / Stripe / PayPal Giving /
-      // Givebutter), then set status to 'live' and describe it here.
-      desc: 'Online giving is being set up and will appear here soon. In the meantime, gifts by mail and equipment donations are just as welcome.',
-      status: 'pending',
-    },
     {
       name: 'By Mail',
       desc: 'Mail a check payable to the Signal Integrity & Emergency Radio Response Alliance, P.O. Box 2071, Murphys, CA 95247.',
-      status: 'live',
     },
     {
       name: 'Equipment & In-Kind',
       desc: 'Radios, solar gear, antennas, and ridge-top tower space help as much as cash. Reach out via the contact page.',
-      status: 'live',
     },
   ],
   // TODO(pre-launch): once 501(c)(3) status is confirmed, replace with the official

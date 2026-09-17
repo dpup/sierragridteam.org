@@ -1,0 +1,156 @@
+---
+/**
+ * Supporters — the homepage's acknowledgment band for organizations backing the network.
+ *
+ * WHY IT SITS WHERE IT DOES (index.astro, after Operational Doctrine, before ServiceBanner):
+ * the reader has just been told what we do (Mission) and how we operate (Doctrine), which is
+ * the moment social proof means something. It is deliberately NOT in the hero — that space
+ * belongs to the mission and the live status, and a sponsor beside "not an emergency
+ * dispatch service" muddies the one thing the page must say clearly. It is also not in the
+ * footer, which is where acknowledgments go to be unseen by everyone except the person who
+ * asked for them.
+ *
+ * Quiet by construction: a supporter's mark is theirs and is used unmodified, so this is the
+ * one band on the site carrying color from outside the palette. Keeping the logos small, on
+ * the page surface rather than a tinted one, and giving the band no border of its own stops
+ * it competing with the service-area band immediately below.
+ *
+ * Renders nothing when there are no supporters — an empty "Supporters" heading would be a
+ * worse look than no band at all.
+ */
+import { Image } from 'astro:assets';
+import Container from '../Container.astro';
+import { supporters as list } from '@config/supporters';
+import { supporters as copy } from '@config/content';
+---
+
+{
+  list.length > 0 && (
+    <aside class="supporters" aria-labelledby="supporters-title">
+      <Container>
+        <p class="supporters__kicker">{copy.kicker}</p>
+        <h2 class="supporters__title" id="supporters-title">
+          {copy.heading}
+        </h2>
+        <p class="supporters__note">{copy.note}</p>
+
+        <ul class="supporters__list">
+          {list.map((s) => (
+            <li class="supporters__item">
+              <a
+                class="supporters__link"
+                href={s.url}
+                target="_blank"
+                rel="noopener external"
+                title={s.name}
+              >
+                <Image
+                  src={s.logo}
+                  alt={s.logoAlt}
+                  widths={[230, 460]}
+                  sizes="180px"
+                  class="supporters__logo"
+                  loading="lazy"
+                />
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <p class="supporters__cta">
+          <a class="supporters__cta-link" href={copy.ctaHref}>
+            {copy.ctaLabel}
+          </a>
+        </p>
+      </Container>
+    </aside>
+  )
+}
+
+<style>
+  .supporters {
+    background: var(--surface-page);
+    border-top: var(--border);
+    padding-block: var(--space-7);
+    text-align: center;
+  }
+
+  .supporters__kicker {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-kicker);
+    text-transform: uppercase;
+    color: var(--brand-brass-text);
+    margin-bottom: var(--space-3);
+  }
+
+  .supporters__title {
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+
+  .supporters__note {
+    max-width: 46ch;
+    margin: var(--space-3) auto 0;
+    font-size: var(--fs-small);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+
+  .supporters__list {
+    list-style: none;
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+  }
+
+  /* A logo tile, not a card: 1px rule and a lighter fill, no shadow, square corners — the
+     same geometry as every other bordered thing on the site. */
+  .supporters__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4) var(--space-6);
+    background: var(--surface-raised);
+    border: var(--border);
+    border-radius: var(--radius);
+  }
+  .supporters__link:focus-visible {
+    outline: 2px solid var(--brand-green);
+    outline-offset: 2px;
+  }
+
+  .supporters__logo {
+    display: block;
+    width: 180px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .supporters__cta {
+    margin-top: var(--space-6);
+  }
+
+  .supporters__cta-link {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    /* Green, not the Donate orange: that exception is the header link and the About-page
+       CTA button only, and CLAUDE.md is explicit about not extending it. */
+    color: var(--brand-green);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .supporters__cta-link:hover {
+    color: var(--brand-green-hover);
+    text-decoration: none;
+  }
+</style>

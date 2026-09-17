@@ -37,6 +37,13 @@ export interface Person {
   role: string;
   /** Amateur radio call sign, shown beside the role (omit if none). */
   callsign?: string;
+  /**
+   * `reporterId`s of the site monitors this member runs, as The Grid reports them on
+   * `mesh.telemetry.admin`. /mesh names the person rather than the machine id — "monitored
+   * by Allan", not "monitored by alanpi". The ids are opaque strings chosen on the monitor
+   * host, so they cannot be derived from the name and have to be listed.
+   */
+  monitorIds?: readonly string[];
   group: 'board' | 'advisor';
   /** Portrait. Omit (with initials as the stand-in) if none has been provided. */
   photo?: ImageMetadata;
@@ -240,6 +247,7 @@ export const people: readonly Person[] = [
   {
     slug: 'allan',
     name: 'Allan Claghorn',
+    monitorIds: ['alanpi'],
     firstName: 'Allan',
     role: 'Secretary',
     callsign: 'KJ6ERL',
@@ -340,6 +348,17 @@ export const people: readonly Person[] = [
 
 export const board = people.filter((p) => p.group === 'board');
 export const advisors = people.filter((p) => p.group === 'advisor');
+
+/**
+ * The member behind a monitor's `reporterId`, or `undefined` when we don't recognise it.
+ * Callers MUST fall back to the raw id rather than guessing — a monitor someone stands up
+ * without telling us is a real case, and inventing a name for it would be a fabrication
+ * (docs/content-style-guide.md §3).
+ */
+export function personByMonitorId(reporterId: string): Person | undefined {
+  const id = reporterId.trim();
+  return id ? people.find((p) => p.monitorIds?.includes(id)) : undefined;
+}
 
 export function personBySlug(slug: string): Person | undefined {
   return people.find((p) => p.slug === slug);

@@ -170,34 +170,78 @@ stable.
   The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
   (an active **evacuation or wildfire** — both area-scoped, so the region-wide rollup is
   never trusted) — its orange is a sanctioned genuine-alert use.
-- **`/mesh` draws our own topology map** from The Grid's MeshCore feed — it replaced an
-  embedded third-party iframe (2026-08). Client-rendered live like `/live`: `mesh.ts` holds
-  the types + pure derivations, `mesh-client.ts` the fetches, `mesh-view.ts` the panel HTML,
-  `mesh-map.ts` the MapLibre map, `src/styles/mesh.css` the global `.mesh-view`-namespaced
-  CSS. Two reads frame the page: the **corridor** (`mesh_node.geojson` for the authoritative
-  in-region roster ∪ `mesh_link.geojson?window=` for the subgraph + one-hop neighbours; the
-  roster alone decides who is in-region, so /mesh and the homepage tile always agree) loads
-  on arrival; the **whole observed mesh** (`/mesh/links` + `/events?layer=MESH`, ~355 KB gz)
-  is lazy-loaded as a muted backdrop only once the reader pans past the corridor. A link's
-  recency tier drives BOTH a static opacity/width and the rate of a travelling dash, so
-  freshness survives `prefers-reduced-motion` switching the animation off. One fixed window
-  (`MESH_WINDOW`, 30d) and **no picker** — the fade is the time control. ⚠️ Send
-  `MESH_WINDOW_QUERY[...]`, never the window key: The Grid parses `?window=` with Go's
-  `time.ParseDuration`, so `30d` is not an error, it is a silent 200 carrying 72h. **Links that leave
-  the corridor are hidden until a repeater is selected** (map click or roster row); selecting
-  reveals just that node's outward links and fits the map to its reach. Escape or a click on
-  bare map clears it. Corridor repeaters are **DOM pins** (`.mesh-pin`, real `<button>`s with
-  a persistent halo-set name label, no chip — a beige box per node made the map a wall of
-  tags), not a circle layer. Neighbours and the backdrop stay cheap circle layers. The
-  popover is the **"anchored strip"**: fixed 296px, square, 2px green top edge, 93%-parchment
-  over a backdrop blur (it sits ON the map — so **no drop shadow**, that's a different
-  mechanic and they don't combine), header + a always-three-cell metric row + a standing
-  footnote. Values are compressed to their units ("4 /30" under DAYS SEEN); a metric that
-  can't be said in ~8 characters belongs in the kicker or the panel, not the row. Only ONE
-  popover may be open (`showPopup`); pin/marker z-index must stay below it. **Honesty:** an
-  edge is an observation ("we heard these two repeaters relay"), never a routing table or a
-  coverage claim, and a faint edge is NOT "down" — a backbone repeater adverts twice a day.
-  `UNAVAILABLE` → "Unknown" counts, never a zero.
+- **`/mesh` is a STATUS BOARD**, reorganised around monitoring (2026-09-17). Top to bottom:
+  a **deep band** (`--surface-deep`, the one dark ground in the system) with the freshness
+  stamp and four headline figures — repeaters heard N/M within `HEARD_WITHIN_HOURS`, lowest
+  battery, active this hour, observed links; a **"Needs attention" strip** of anything
+  outside limits, which renders NOTHING at all when there is nothing to say; **two equal
+  columns that scroll independently** — map left, roster right — so per-repeater telemetry is
+  never pushed below the fold; and a **full-width history chart**. The explanation of what
+  the mesh IS lives on **/about#mesh**, not here: a reader needs it once, not every visit.
+  Client-rendered live like `/live`: `mesh.ts` holds types + pure derivations,
+  `mesh-telemetry.ts` the monitor archive, `mesh-client.ts` the fetches, `mesh-view.ts` the
+  band/attention/roster/legend HTML, `mesh-history.ts` the chart, `mesh-map.ts` the MapLibre
+  map, `mesh-link-paint.ts` the link expressions, `src/styles/mesh.css` the global
+  `.mesh-view`-namespaced CSS.
+- **TWO selections, deliberately decoupled.** The roster row, map pin and attention item
+  share one (`selected`): it expands the row and frames + emphasises on the map. The history
+  chart's legend has its own (`chartSelected`): it isolates a trace and nothing else. They
+  answer different questions at different moments — isolating a trace to read a curve must not
+  scroll the roster and fly the map somewhere, and opening a row must not blank six traces out
+  of the comparison the chart exists to make.
+- **Mesh data reads.** The **corridor** (`mesh_node.geojson` ∪ `mesh_link.geojson?window=`)
+  loads on arrival and carries **site telemetry inline** at `properties.mesh.admin` — battery
+  and enclosure temperature cost no extra request. The **monitor archive**
+  (`/mesh/telemetry?node=`) is one call per monitored repeater, deferred, and feeds both the
+  roster sparklines and the history chart. The **whole observed mesh** (`/mesh/links` +
+  `/events?layer=MESH`, ~400 KB gz) stays lazy until the reader pans past the corridor.
+  ⚠️ Send `MESH_WINDOW_QUERY[...]`, never the window key: The Grid parses `?window=` with
+  Go's `time.ParseDuration`, so `30d` is not an error, it is a silent 200 carrying 72h.
+  ⚠️ Every int64 is a JSON **string** and the reading is **nested** at `samples[i].reading`;
+  `num()`/`adminFrom()` absorb both. Plot `reportedAt` (the monitor's clock), never
+  `receivedAt`.
+- **Mesh honesty.** An edge is an observation ("we heard these two repeaters relay"), never a
+  routing table or a coverage claim, and a faint edge is NOT "down" — a backbone repeater
+  adverts twice a day. `UNAVAILABLE` → "Unknown" counts, never a zero. No monitor →
+  **"Limited Telemetry"**; a monitor that could not read the gauge → **"Gauge unread"**.
+  Two battery thresholds, deliberately: `ATTENTION_BATTERY_PCT` (20) is a brass watch floor,
+  `LOW_BATTERY_PCT` (10) is the orange risk line. It was 60 and fired every night — these
+  sites discharge into the teens and recover after sunrise, so the strip was permanently full
+  of repeaters doing exactly what they should, which is how a warning stops being read. The chart
+  breaks its line on a monitor gap, marks reboots, and says "no data retained before …"
+  rather than drawing empty axes — there is **no backfill** in the archive.
+- **Mesh map details.** One fixed link window (`MESH_WINDOW`, 30d) and no window picker; the
+  panel's **"heard in" control is a DISPLAY cut** over the same 30 days (it maps onto the
+  recency tiers, changes nothing that is fetched, and defaults to 30d). Links leaving the
+  corridor are hidden until a repeater is selected; selecting **emphasises its links and dims
+  the rest** (never hides them). Framing on select is clamped to the corridor + 60%
+  (`FOCUS_MARGIN`) — links reach the Bay Area and fitting to the furthest hop zoomed the
+  foothills into a smudge. Corridor repeaters are **DOM pins** (`.mesh-pin`, real
+  `<button>`s); neighbours and the backdrop stay cheap circle layers. **Every link is 1px
+  wide** — weight, tier, selection and hover all ride on OPACITY alone. Width and opacity were
+  both carrying the same variables, so a busy link came out 4x heavier AND 4x brighter and the
+  map read as a few fat trunks; the legend's key follows the same rule. The popover is the
+  **"anchored strip"** and is now for **neighbours and links only** — a corridor pin has a
+  roster row, and that row is its detail surface. Link filter/paint expressions live in
+  `mesh-link-paint.ts` as pure JSON so `mesh-link-paint.test.ts` can compile them against the
+  real style spec: **MapLibre drops an invalid expression SILENTLY**, so eyeballing the map
+  is not a test.
+- **Roster sparkline span is FIXED at `SPARK_WINDOW_HOURS` (6 h)**. It must NOT follow the history chart's Day/Week/Month: it used to, so switching a
+  control 700px down the page silently changed every row's span with nothing in the row to
+  say so, and at a month 2,880 points collapsed into a solid band in 72×18 units.
+- **The history chart's hover hint** is what makes seven muted traces individually readable:
+  hovering a line (or a legend entry) lifts it, drops the rest to 12%, and names the repeater
+  with its value AT that moment — `valueAt` returns null outside a tolerance, so hovering a
+  monitor outage says nothing rather than reaching across the gap. Emphasis is a class toggle
+  on the paths, never a re-render, or it fights the mouse. The plot's ground is a `<rect>`
+  INSIDE the SVG (`--surface-hero`), not a background on the container, so the axis labels sit
+  outside it and the band needs no border.
+- **The chart series palette** (`--series-1..7`) is the ONE categorical scale in the system
+  and appears nowhere else. It was chosen by search under four constraints (contrast, normal
+  separation, colour-vision separation, and no hue near the alert orange) and is pinned by
+  `src/lib/mesh-series.test.ts`. A hand-edit has no visible symptom for the author — that
+  test already rejected one candidate that looked fine by eye. An 8th series means re-running
+  the search, not appending a guess.
 - **The blog** (`/blog`) is an Astro content collection: markdown posts in
   `src/content/blog/`, one file per post named `yyyy-mm-dd-topic.md` (the filename is
   the URL slug; `pubDate` must match the date prefix). Frontmatter: `title`,
@@ -240,5 +284,10 @@ stable.
 - **Package manager:** npm (`bun install` hangs behind some proxies; `bun` is used
   only as a test/script runner). Use `make install`.
 - **Deploy:** AWS S3 + CloudFront, DNS at Hostinger — see `docs/deployment.md`.
+- **Supporters:** the homepage band renders `src/config/supporters.ts` — add or remove an
+  organization there, never in markup. A supporter's logo is used **unmodified** (their brand
+  is not ours to recolor), which makes this the one sanctioned place non-palette color
+  appears. Only list an organization once the relationship is real and they have agreed to be
+  named, and don't characterize what they gave unless we actually know.
 - **Pre-launch tracking** lives outside this repo (the project-hub repo); don't add
   a checklist here. Repo-local TODOs are inline comments at the relevant code.
