@@ -12,9 +12,15 @@ The band these radios use, 902 to 928 MHz, is one of the unlicensed "ISM" bands 
 
 ## The rule and the defaults
 
-[Section 15.247](https://www.law.cornell.edu/cfr/text/47/15.247) of the FCC's rules covers digitally modulated devices in the 900 MHz band. It permits up to 1 watt of power, but attaches a condition: "the minimum 6 dB bandwidth shall be at least 500 kHz." Bandwidth is how wide a slice of the band a signal occupies, and 500 kHz is the floor for operating under this section.
+[Section 15.247](https://www.law.cornell.edu/cfr/text/47/15.247) of the FCC's rules covers digitally modulated devices in the 900 MHz band. It permits up to 1 watt of power, but attaches a condition: "the minimum 6 dB bandwidth shall be at least 500 kHz" — the floor for operating under this section.
 
-The common LoRa mesh modes sit below that floor. Meshtastic's default "Long Fast" preset uses 250 kHz; [MeshCore's standard US preset uses 62.5 kHz](https://nodakmesh.org/blog/fcc-15-247-500khz-lora). Narrow bandwidth is not an oversight — it is how these radios reach far on very little power. A narrower signal concentrates more energy into less spectrum, which buys range, the currency that matters most in canyon terrain. That same narrowness is what falls short of the 500 kHz line.
+The common LoRa mesh modes sit below that floor. Meshtastic's default "Long Fast" preset uses 250 kHz; [MeshCore's standard US preset uses 62.5 kHz](https://nodakmesh.org/blog/fcc-15-247-500khz-lora).
+
+## What bandwidth means here
+
+A radio signal does not sit on a single frequency — it spreads across a range of them, and bandwidth is how wide that range is. A signal at 250 kHz occupies a 250 kHz-wide slice of the band; the rule's floor is twice that.
+
+The width carries a trade-off, and it is why the defaults sit where they do. Spread a fixed amount of transmit power across a wider slice and it thins out, so a distant node has a harder time picking the signal out of the background noise. Concentrate the same power into a narrower slice and it reaches further — which is what lets a low-power radio cross a canyon. Narrow buys range; wide gives it up. That is why the 500 kHz floor is a real cost, not a formality.
 
 ## Why it is not settled
 
