@@ -1,6 +1,6 @@
 ---
 title: What holds a regional mesh together
-description: Puget Mesh, a volunteer LoRa network on the same MeshCore platform this one runs, spans the Pacific Northwest — and how it got there is a lesson in what actually carries a mesh.
+description: Puget Mesh, a volunteer LoRa network on the same MeshCore platform this one runs, covers the Puget Sound region — and how it got there is a lesson in what actually carries a mesh.
 pubDate: 2026-09-27
 tag: Field Report
 author: Signal Desk
@@ -18,6 +18,6 @@ So the thing that extends a MeshCore mesh is a repeater, not another handheld. P
 
 ## Agreement is the other half
 
-Everyone on the same settings, named the same way, is what lets a mesh grow past one town without collapsing into noise. The Pacific Northwest groups have taken that further: Puget Mesh and its neighbors are working toward [shared region naming conventions](https://gessaman.com/meshcore/regions/), so traffic can be scoped by area as the map fills in. The knowledge spreads as deliberately as the hardware: Puget Mesh runs beginner MeshCore classes through [neighborhood emergency hubs](https://seattleemergencyhubs.org/calendar-event/meshcore-intro-class/).
+Everyone on the same settings, named the same way, is what lets a mesh grow past one town without collapsing into noise. The Pacific Northwest groups have taken that further: Puget Mesh and its neighbors are working toward [shared region naming conventions](https://gessaman.com/meshcore/regions/), so traffic can be scoped by area as the map fills in. The knowledge spreads as deliberately as the hardware: [neighborhood emergency hubs run beginner MeshCore classes](https://seattleemergencyhubs.org/calendar-event/meshcore-intro-class/) that point newcomers toward the Puget Mesh documentation and community.
 
-The read for anyone in the foothills weighing a mesh node is that coverage is not a purchase. A radio on the kitchen table is a client: useful to its owner, invisible to the network's reach. What extends a mesh in terrain like ours is a repeater placed where it can see — a ridgeline, a rooftop above the treeline — running the same settings as its neighbors and named so the next operator knows what they are hearing. Puget Mesh is that discipline made visible: a mesh's reach is built repeater by repeater, on shared conventions and deliberate placement, and the building happens well before anyone needs it.
+For anyone in the foothills weighing a mesh node, the practical point is that coverage is not a purchase. A radio on the kitchen table is a client: useful to its owner, invisible to the network's reach. What extends a mesh in terrain like ours is a repeater placed where it can see — a ridgeline, a rooftop above the treeline — running the same settings as its neighbors and named so the next operator knows what they are hearing. Puget Mesh is that discipline made visible: a mesh's reach is built repeater by repeater, on shared conventions and deliberate placement, and the building happens well before anyone needs it.
