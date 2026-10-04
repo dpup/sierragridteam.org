@@ -18,8 +18,20 @@ As drafted, Zone 0 covers the five feet measured from the exterior wall and from
 
 One thing to be clear about: the rule is not in force. The Board adopted it on August 19, submitted it to the Office of Administrative Law, and then [withdrew it on September 8](https://www.wildfirela.org/2026/09/11/zone-0-regulations-withdrawn-from-oal-review-what-happens-next/) to make technical edits before resubmitting. The Board has described the step as procedural, and another public comment period is likely, but no statewide Zone 0 requirement exists today and no new effective date has been set. As drafted, existing homes would phase the requirements in over several years once the rule does take effect; new construction waits on updated state guidance.
 
+## What the work involves
+
+None of it needs a contractor — most is hand work with a rake and a wheelbarrow. Moving outward from the wall:
+
+- **The ground.** Swap bark, wood chips, and other combustible mulch in the five-foot band for gravel, stone, pavers, or bare soil, and rake out the needle cast and dead leaves that collect along the foundation.
+- **Against the wall.** Move the woodpile, stacked lumber, propane tanks, and recycling bins well clear; anything leaning on the siding gives an ember a way up.
+- **Under decks and stairs.** The space beneath an attached deck is inside the zone — clear the stored combustibles and sweep out the litter that drifts underneath.
+- **Overhead.** Clean needles and leaves from the roof and gutters, and cut back branches that overhang the roofline or reach into the five feet.
+- **Fencing.** A wood fence or gate joined directly to the house runs fire straight to the wall; the drafted rule bars new combustible fencing in the zone, and replacing the last section with metal or masonry closes that path.
+
+Vegetation is the more involved part — spacing and plant choice take more judgment than a rake — so the fastest, surest wins are the dead fuel and the stored combustibles.
+
 ## Why the first five feet anyway
 
 The rule may be months from taking effect, but the first five feet earns attention now for a plainer reason. CAL FIRE calls it the [most important](https://www.readyforwildfire.org/prepare-for-wildfire/defensible-space) part of a defensible space, because that is where a drifting ember meets the materials that carry fire into the structure — the needle cast under a deck, the bark mulch along a foundation, the woodpile stacked against a wall through winter. Clearing it costs little and needs no contractor.
 
-So it does not have to wait for the regulation to land. Before the next wind-driven Red Flag stretch, the five feet closest to the house is the highest-return work available: rake out the needles and leaves, swap combustible mulch for gravel or bare soil, move the firewood well clear, and keep the roof and gutters clean. It is the one zone a homeowner can finish in an afternoon, and the one an ember tests first.
+So it does not have to wait for the regulation to land. Before the next wind-driven Red Flag stretch, the five feet closest to the house is the highest-return work available, and none of it depends on the rule taking effect. It is the one zone a homeowner can finish in an afternoon, and the one an ember tests first.
