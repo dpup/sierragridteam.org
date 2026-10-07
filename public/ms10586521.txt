@@ -1,0 +1,5 @@
+﻿{
+  "Description": "Domain ownership verification file for Microsoft 365 - place in the website root",
+  "Domain": "sierragridteam.org",
+  "Id": "de9e56ee-eacb-4dd2-96ad-e878855ce086"
+}
