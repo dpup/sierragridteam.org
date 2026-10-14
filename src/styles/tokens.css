@@ -143,8 +143,7 @@
   --space-9: 72px;
   --space-10: 96px;
 
-  --container-max: 1280px;
-  --container-wide: 1320px;
+  --container-max: 1320px;
   --gutter: clamp(20px, 5vw, 56px);
 
   /* Section vertical rhythm (64–72px), responsive down on small screens. */
