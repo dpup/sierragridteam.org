@@ -11,6 +11,17 @@ dependencies:
   - make
   - gh
 
+# Playwright (make ci's a11y/smoke tests, make screenshots) needs Chromium plus the system
+# libraries it links against. The slim base image has neither, and moatuser has no sudo, so
+# both are baked into the image here. Keep the pinned version in step with @playwright/test
+# in package.json: each Playwright release expects its own browser build.
+hooks:
+  post_build_root: npx -y playwright@1.61.1 install-deps chromium
+  post_build: npx -y playwright@1.61.1 install chromium
+  # Self-heals a Playwright bump before the image is rebuilt: a no-op when the browser that
+  # the repo's own Playwright expects is already present.
+  pre_run: if [ -d node_modules/playwright-core ]; then npx playwright install chromium >/dev/null; fi
+
 grants:
   - claude
   - github
