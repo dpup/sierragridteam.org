@@ -116,19 +116,28 @@ const { coverageCounties } = Astro.props;
         // "Active Alerts" must agree with /live, so derive it from the SAME hazard layers via
         // the shared pure summary (not the weather-alerts endpoint, which misses wildfire &
         // evacuation — the bug where the homepage read "0" during an active evac).
-        const [conditions, wildfire, evacuation, weather_alert, mesh_node] = await Promise.all([
-          json('/conditions'),
-          json(`/places/${area}/map/wildfire.geojson`),
-          json(`/places/${area}/map/evacuation.geojson`),
-          json(`/places/${area}/map/weather_alert.geojson`),
-          json(`/places/${area}/map/mesh_node.geojson`),
-        ]);
+        // Power counts only a PSPS that has put up the site-wide banner, so this tile can't say
+        // "None" beneath it. A failed power read is UNAVAILABLE ("Unknown"), and must not take
+        // the other three tiles down with it.
+        const [conditions, wildfire, evacuation, weather_alert, power, mesh_node] =
+          await Promise.all([
+            json('/conditions'),
+            json(`/places/${area}/map/wildfire.geojson`),
+            json(`/places/${area}/map/evacuation.geojson`),
+            json(`/places/${area}/map/weather_alert.geojson`),
+            json(`/places/${area}/map/power.geojson`).catch(() => ({
+              type: 'FeatureCollection',
+              features: [],
+              metadata: { sourceStatus: 'UNAVAILABLE' },
+            })),
+            json(`/places/${area}/map/mesh_node.geojson`),
+          ]);
 
         const haz = {
           fetchedAt: '',
           area,
           summary: null,
-          layers: { wildfire, evacuation, weather_alert },
+          layers: { wildfire, evacuation, weather_alert, power },
           scanners: [],
         } as unknown as HazardsSnapshot;
         const tile = deriveActiveAlertsTile(deriveSituationSummary(haz));

@@ -218,3 +218,64 @@ test('a restricted road segment shows its reason; an open one adds no incident l
   expect(segs.find((f) => f.properties.status === 'restricted')?.properties.tone).toBe('elevated');
   expect(segs.find((f) => f.properties.status === 'open')?.properties.tone).toBe('ok');
 });
+
+const NOON_WED = Date.parse('2026-10-14T19:00:00Z'); // Wed 12:00 PT
+
+function power(category: string, extra: Record<string, unknown>, pw: Record<string, unknown>) {
+  return {
+    type: 'Feature',
+    geometry: null,
+    properties: {
+      id: `${category}:1`,
+      layer: 'POWER',
+      kind: category === 'psps' ? 'Public Safety Power Shutoff' : 'Power outage',
+      category,
+      severity: 'MODERATE',
+      severityRank: 2,
+      headline: 'h',
+      source: { id: 'pge', name: 'PG&E' },
+      power: pw,
+      ...extra,
+    },
+  } as HazardFeature;
+}
+const streamOf = (f: HazardFeature) =>
+  buildView(snap({ power: fc([f]) }), emptyGrid, NOON_WED).html.stream;
+
+test('a PSPS Watch reads "possible", a Warning "planned" — never a bare "Begins"', () => {
+  const pw = { deEnergizationStart: '2026-10-15T03:00:00Z' };
+  const watch = streamOf(power('psps', { status: 'SCHEDULED' }, { ...pw, stage: 'Watch' }));
+  expect(watch).toContain('Shutoff possible Wed 20:00 PT');
+  expect(watch).not.toContain('Begins');
+  const warning = streamOf(power('psps', { status: 'SCHEDULED' }, { ...pw, stage: 'Warning' }));
+  expect(warning).toContain('Shutoff planned Wed 20:00 PT');
+  const live = streamOf(power('psps', { status: 'ACTIVE' }, { ...pw, stage: 'Warning' }));
+  expect(live).toContain('Power off since Wed 20:00 PT');
+  expect(live).not.toContain('Shutoff planned');
+});
+
+test("restoration is always PG&E's estimate, and a passed one is labelled stale", () => {
+  const ahead = streamOf(
+    power('unplanned', { status: 'ACTIVE' }, { estimatedRestoration: '2026-10-17T19:00:00Z' })
+  );
+  expect(ahead).toContain('PG&amp;E estimates restoration Sat 12:00 PT');
+  const passed = streamOf(
+    power('unplanned', { status: 'ACTIVE' }, { estimatedRestoration: '2026-10-14T15:00:00Z' })
+  );
+  expect(passed).toContain("PG&amp;E's restoration estimate (Wed 08:00 PT) has passed");
+  expect(passed).not.toContain('estimates restoration');
+});
+
+test('PG&E crew codes are translated, and unknown ones are dropped, never shown raw', () => {
+  expect(streamOf(power('planned', {}, { crewStatus: 'Crew On Site' }))).toContain('Crew on site');
+  expect(streamOf(power('planned', {}, { crewStatus: 'Awaiting T-Man' }))).toContain(
+    'Awaiting a crew'
+  );
+  expect(streamOf(power('planned', {}, { crewStatus: 'XYZ-7' }))).not.toContain('XYZ-7');
+});
+
+test('INFO outages are off the map as well as the stream', () => {
+  const info = power('planned', { severity: 'INFO', severityRank: 0 }, {});
+  const view = buildView(snap({ power: fc([info]) }), emptyGrid, NOON_WED);
+  expect(view.mapData.layers.power.features).toHaveLength(0);
+});

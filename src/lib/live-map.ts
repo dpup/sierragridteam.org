@@ -15,7 +15,8 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { BASEMAP_STYLE } from './basemap';
 import { escapeHtml as esc } from './format';
-import { wildfireTitle, wildfireStats, type LiveMapData } from './live-view';
+import { powerDetail, pspsWhen, wildfireTitle, wildfireStats, type LiveMapData } from './live-view';
+import type { HazardProps } from './hazards';
 
 type GeoFC = GeoJSON.FeatureCollection;
 
@@ -75,6 +76,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     earthquake: 'earthquake',
     incidents: 'road_incident',
     road_segment: 'road_segment',
+    power: 'power',
   };
   let mappedIds = new Set<string>();
   const indexIds = (data: LiveMapData) => {
@@ -199,7 +201,20 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
     // Use the same title/stats derivation as the alert stream so a point fire reads
     // identically on both surfaces ("Owl Fire" + "120 acres · 30% contained").
     const title = wildfireTitle(String(p.headline || p.kind || p.name || ''), wf);
-    const stats = wildfireStats(wf);
+    const pw = parseObj<HazardProps['power']>(p.power);
+    const power = pw
+      ? [
+          pspsWhen({
+            type: 'Feature',
+            geometry: null,
+            properties: { ...p, power: pw } as HazardProps,
+          }),
+          powerDetail(pw, String(p.status ?? '')),
+        ]
+          .filter(Boolean)
+          .join(' · ') || null
+      : null;
+    const stats = wildfireStats(wf) ?? power;
     const html =
       `<div class="map-pop">` +
       (p.severity ? `<span class="map-pop__sev">${esc(p.severity)}</span>` : '') +
@@ -241,6 +256,53 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
           'circle-stroke-opacity': 0.6,
         },
       });
+
+      // Power outages and shutoffs (PG&E polygons), lowest of the hazards: a PSPS can cover
+      // most of the corridor, so roads, fires and evacuation zones must all draw over it.
+      // Brass, escalating to orange only when the feed itself rates it SEVERE+ (risk, not
+      // routine). A dotted edge keeps it from reading as a fire perimeter or an evac zone.
+      const powerColor = [
+        'case',
+        ['>=', ['to-number', ['get', 'severityRank'], 0], 3],
+        C.orange,
+        C.brass,
+      ] as unknown as maplibregl.ExpressionSpecification;
+      map.addSource('power', { type: 'geojson', data: asFC(mapData, 'power'), promoteId: 'id' });
+      map.addLayer({
+        id: 'power-fill',
+        type: 'fill',
+        source: 'power',
+        paint: { 'fill-color': powerColor, 'fill-opacity': onHover(0.12, 0.3) },
+      });
+      map.addLayer({
+        id: 'power-line',
+        type: 'line',
+        source: 'power',
+        paint: {
+          'line-color': powerColor,
+          'line-width': onHover(1.25, 2.5),
+          'line-dasharray': [1, 1.5],
+        },
+      });
+      // Not `interactive()`: a PSPS polygon can cover most of the corridor, and MapLibre fires
+      // a layer's click for everything under the pointer — so a click on a fire inside it
+      // would open two stacked popups. The outage answers only when nothing drawn above it
+      // does, and re-asserts the pointer on move (a higher layer's mouseleave clears it).
+      const abovePower = [
+        'road_segment',
+        'wildfire-fill',
+        'evacuation-fill',
+        'earthquake',
+        'incidents',
+        'wildfire-point',
+      ];
+      map.on('click', 'power-fill', (e) => {
+        const layers = abovePower.filter((id) => map.getLayer(id));
+        if (map.queryRenderedFeatures(e.point, { layers }).length) return;
+        popup(e);
+      });
+      map.on('mousemove', 'power-fill', () => (map.getCanvas().style.cursor = 'pointer'));
+      map.on('mouseleave', 'power-fill', () => (map.getCanvas().style.cursor = ''));
 
       // Road-conditions corridors (road_segment lines), UNDER the hazards so incidents and
       // fires stay on top. Colored by the SAME tone as the roads table (promoted as `tone`):
@@ -391,6 +453,7 @@ export function initHazardMap(figureEl: HTMLElement, mapData: LiveMapData): MapH
 
   const applyData = (data: LiveMapData) => {
     // Towns are static; refresh only the hazard sources (the 90s live poll).
+    setData('power', asFC(data, 'power'));
     setData('road_segment', asFC(data, 'road_segment'));
     setData('wildfire', asFC(data, 'wildfire'));
     setData('evacuation', asFC(data, 'evacuation'));

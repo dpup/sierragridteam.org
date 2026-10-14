@@ -71,6 +71,26 @@ export interface HazardProps {
   earthquake?: { magnitude?: number; depthKm?: number; felt?: number | null };
   wildfire?: { acres?: number; containment?: number; county?: string; hasPerimeter?: boolean };
   evacuation?: { zoneId?: string; level?: string; eventType?: string; county?: string };
+  /**
+   * PG&E outages (`category` unplanned | planned) and Public Safety Power Shutoffs
+   * (`category` psps, which add the stage + de-energization window). `estimatedRestoration`,
+   * `deEnergizationEnd` and `allClear` are PG&E ESTIMATES that PG&E routinely overruns — The
+   * Grid deliberately keeps them off `expires`, and we only ever show them labelled as
+   * estimates, never use them to hide or close an event.
+   */
+  power?: {
+    outageId?: string;
+    cause?: string;
+    customersAffected?: number;
+    crewStatus?: string;
+    estimatedRestoration?: string;
+    eventName?: string;
+    stage?: string; // Watch | Warning
+    medicalBaselineAffected?: number;
+    deEnergizationStart?: string;
+    deEnergizationEnd?: string;
+    allClear?: string;
+  };
   [key: string]: unknown;
 }
 
@@ -169,6 +189,7 @@ export const STREAM_LAYERS = [
   'road_incident',
   'chain_control',
   'earthquake',
+  'power',
 ] as const;
 
 // ---- Severity ----
@@ -243,15 +264,47 @@ export function layerFeatures(snapshot: HazardsSnapshot, layer: string): HazardF
 // ---- Derivations ----
 
 /**
+ * Power features worth a reader's attention. The statewide median outage affects ONE
+ * customer, so most of the layer is INFO — a dozen "Planned outage — 2 customers" cards would
+ * bury the one PSPS that matters. The Grid drops INFO power from its own place rollup for the
+ * same reason; we match it, on the stream and the map alike.
+ */
+export const isNotablePower = (f: HazardFeature): boolean => rankOf(f) > 0;
+
+/**
+ * The PSPS that warrants the site-wide banner, or null. A **Warning** (PG&E expects to cut
+ * power, typically within a day) or any shutoff whose de-energization window has opened
+ * (`status` ACTIVE — The Grid keeps it SCHEDULED until then). A Watch that hasn't started stays
+ * in the /live stream only. Stage is compared case-insensitively: it arrives as a string.
+ *
+ * Deterministic when several qualify — under way first, then Warning, then by id — so feed
+ * order can't flip which one the banner names (and re-announce it) between polls.
+ */
+export function pspsBannerEvent(features: HazardFeature[]): HazardFeature | null {
+  const live = (f: HazardFeature) => String(f.properties.status ?? '').toUpperCase() === 'ACTIVE';
+  const warning = (f: HazardFeature) =>
+    String(f.properties.power?.stage ?? '').toUpperCase() === 'WARNING';
+  const hits = features.filter((f) => f.properties.category === 'psps' && (live(f) || warning(f)));
+  hits.sort(
+    (a, b) =>
+      Number(live(b)) - Number(live(a)) ||
+      Number(warning(b)) - Number(warning(a)) ||
+      String(a.properties.id).localeCompare(String(b.properties.id))
+  );
+  return hits[0] ?? null;
+}
+
+/**
  * The prioritized alert stream: every relevant active hazard, most-urgent first.
- * Excludes road segments (that's the road-conditions table) and a "normal"
- * fire-weather banner (INFO — not an alert).
+ * Excludes road segments (that's the road-conditions table), a "normal"
+ * fire-weather banner (INFO — not an alert) and INFO power outages (isNotablePower).
  */
 export function deriveStream(snapshot: HazardsSnapshot): HazardFeature[] {
   const out: HazardFeature[] = [];
   for (const layer of STREAM_LAYERS) {
     for (const f of layerFeatures(snapshot, layer)) {
       if (layer === 'fire_weather' && rankOf(f) === 0) continue; // hide "normal"
+      if (layer === 'power' && !isNotablePower(f)) continue;
       out.push(f);
     }
   }
@@ -280,6 +333,8 @@ export interface SituationSummary {
   weatherAlerts: number | null;
   /** Issued, but the hazard window hasn't opened yet (see `isScheduled`). */
   weatherAlertsUpcoming: number | null;
+  /** PSPS events that put up the site-wide banner (`pspsBannerEvent`): a Warning, or under way. */
+  powerShutoffs: number | null;
   fireWeather: string; // NORMAL | ELEVATED | RED_FLAG | UNKNOWN
   syncedAt: string | null;
 }
@@ -323,6 +378,10 @@ export function deriveSituationSummary(
     evacuationStatus: statusOf('evacuation'),
     weatherAlerts: countOrUnknown('weather_alert', (f) => !isScheduled(f, now)),
     weatherAlertsUpcoming: countOrUnknown('weather_alert', (f) => isScheduled(f, now)),
+    powerShutoffs:
+      statusOf('power') === 'UNAVAILABLE'
+        ? null
+        : layerFeatures(snapshot, 'power').filter((f) => pspsBannerEvent([f]) != null).length,
     fireWeather: fireState,
     syncedAt: snapshot.summary?.generatedAt ?? snapshot.fetchedAt ?? null,
   };
@@ -338,7 +397,9 @@ export function deriveSituationSummary(
  * Honesty rules: a `null` count is a source outage → the tile is "Unknown" (never a false
  * 0/all-clear) UNLESS a known count already proves an alert is live, in which case we show
  * that (an undercount is fine when we're already flagging). Orange (alarm) is reserved for
- * a genuine life-safety hazard — an active wildfire or evacuation; weather-only is elevated.
+ * a genuine life-safety hazard — an active wildfire or evacuation, or a PSPS that has put up
+ * the site-wide banner; weather-only is elevated. The PSPS is counted for the same reason the
+ * banner exists: the homepage must not show "Power Shutoff" above an "Active Alerts: None".
  *
  * A SCHEDULED weather alert is deliberately NOT counted: this tile says how many alerts are
  * **active**, and a watch that doesn't start until Thursday isn't one. It is not hidden —
@@ -350,11 +411,19 @@ export function deriveActiveAlertsTile(summary: SituationSummary): {
   value: string;
   state: Tone;
 } {
-  const parts = [summary.wildfires, summary.evacuations, summary.weatherAlerts];
+  const parts = [
+    summary.wildfires,
+    summary.evacuations,
+    summary.weatherAlerts,
+    summary.powerShutoffs,
+  ];
   let total = 0;
   for (const c of parts) total += c ?? 0;
   const anyUnknown = parts.some((c) => c == null);
-  const lifeSafety = (summary.wildfires ?? 0) > 0 || (summary.evacuations ?? 0) > 0;
+  const lifeSafety =
+    (summary.wildfires ?? 0) > 0 ||
+    (summary.evacuations ?? 0) > 0 ||
+    (summary.powerShutoffs ?? 0) > 0;
   if (total > 0) return { value: `${total} Active`, state: lifeSafety ? 'alarm' : 'elevated' };
   if (anyUnknown) return { value: 'Unknown', state: 'muted' };
   return { value: 'None', state: 'ok' };

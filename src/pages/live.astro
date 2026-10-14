@@ -21,6 +21,7 @@ const legend = [
   { key: 'road', label: 'Road conditions' },
   { key: 'incident', label: 'Road incident' },
   { key: 'quake', label: 'Earthquake' },
+  { key: 'power', label: 'Power outage' },
 ];
 
 const resources = [
@@ -269,7 +270,8 @@ const schema = {
 
   const REFRESH_MS = 90_000;
   const TIMEOUT_MS = 9_000;
-  // Every map layer we fetch: the alert-stream layers plus road_segment (the road table).
+  // Every map layer we fetch: the alert-stream layers (power included) plus road_segment
+  // (the road table).
   const MAP_LAYERS = [...STREAM_LAYERS, 'road_segment'];
 
   const root = document.documentElement;
@@ -712,6 +714,11 @@ const schema = {
   .hazard-map__swatch--incident {
     background: var(--brand-brass);
     border-radius: 50%;
+    border-color: var(--brand-brass);
+  }
+  .hazard-map__swatch--power {
+    background: color-mix(in srgb, var(--brand-brass) 12%, transparent);
+    border-style: dotted;
     border-color: var(--brand-brass);
   }
   .hazard-map__swatch--quake {

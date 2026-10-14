@@ -9,6 +9,7 @@ import {
   deriveStream,
   deriveSituationSummary,
   deriveActiveAlertsTile,
+  pspsBannerEvent,
   type HazardsSnapshot,
   type HazardFeature,
 } from './hazards';
@@ -135,6 +136,7 @@ test('`status` is the authority: SCHEDULED is upcoming, and it wins over the tim
     wildfire: fc([], 'OK'),
     evacuation: fc([], 'OK'),
     weather_alert: fc([watch]),
+    power: fc([], 'OK'),
   });
   const sum = deriveSituationSummary(soon, NOW);
   expect(sum.weatherAlerts).toBe(0);
@@ -194,6 +196,7 @@ test('a confirmed-empty situation is a real "None", an outage is "Unknown" (neve
     wildfire: fc([], 'OK'),
     evacuation: fc([], 'OK'),
     weather_alert: fc([], 'OK'),
+    power: fc([], 'OK'),
   });
   expect(deriveActiveAlertsTile(deriveSituationSummary(empty))).toEqual({
     value: 'None',
@@ -205,6 +208,7 @@ test('a confirmed-empty situation is a real "None", an outage is "Unknown" (neve
     wildfire: fc([], 'OK'),
     evacuation: fc([], 'UNAVAILABLE'),
     weather_alert: fc([], 'OK'),
+    power: fc([], 'OK'),
   });
   expect(deriveActiveAlertsTile(deriveSituationSummary(outage))).toEqual({
     value: 'Unknown',
@@ -233,4 +237,69 @@ test('derivations never throw on an empty snapshot', () => {
 test('the checked-in hazards snapshot fixture is well-formed (harness mocks use it)', () => {
   expect(hazardsFixture.area).toBe('ebbetts-pass');
   expect(typeof hazardsFixture.layers).toBe('object');
+});
+
+// ---- power (PG&E outages + PSPS) ----
+
+const outage = (rank: number, extra = {}) =>
+  point('power', rank, -120.3, 38.2, { category: 'planned', ...extra });
+const psps = (stage: string, status: string) =>
+  point('power', 2, -120.1, 38.3, {
+    id: `psps-${stage}-${status}`,
+    category: 'psps',
+    status,
+    headline: `PSPS ${stage} — 23,491 customers`,
+    power: { stage },
+  });
+
+test('INFO power outages stay out of the stream; MINOR and up are shown', () => {
+  const s = snap({
+    power: fc([
+      outage(0, { headline: 'Planned outage — 2 customers' }),
+      outage(1, { headline: 'Planned outage — 135 customers' }),
+    ]),
+  });
+  expect(deriveStream(s).map((f) => f.properties.headline)).toEqual([
+    'Planned outage — 135 customers',
+  ]);
+});
+
+test('the fixture power layer surfaces its PSPS Watch in the stream', () => {
+  const stream = deriveStream(hazardsFixture as unknown as HazardsSnapshot);
+  expect(stream.some((f) => f.properties.category === 'psps')).toBe(true);
+  expect(
+    stream.some((f) => f.properties.layer === 'POWER' && f.properties.severityRank === 0)
+  ).toBe(false);
+});
+
+test('PSPS banner: a Warning or a shutoff under way, never a Watch or an ordinary outage', () => {
+  expect(pspsBannerEvent([psps('Watch', 'SCHEDULED')])).toBeNull();
+  expect(pspsBannerEvent([outage(3, { status: 'ACTIVE' })])).toBeNull();
+  expect(pspsBannerEvent([psps('Warning', 'SCHEDULED')])?.properties.headline).toContain('Warning');
+  // A Watch whose de-energization window has opened: the power is going off now.
+  expect(pspsBannerEvent([psps('Watch', 'ACTIVE')])).not.toBeNull();
+});
+
+test('PSPS banner pick is stable across feed order: under way, then Warning, then id', () => {
+  const a = psps('Warning', 'SCHEDULED');
+  const b = psps('Watch', 'ACTIVE');
+  const c = { ...a, properties: { ...a.properties, id: 'psps-0' } };
+  expect(pspsBannerEvent([a, b])?.properties.id).toBe(b.properties.id);
+  expect(pspsBannerEvent([b, a])?.properties.id).toBe(b.properties.id);
+  expect(pspsBannerEvent([a, c])?.properties.id).toBe('psps-0');
+  expect(pspsBannerEvent([c, a])?.properties.id).toBe('psps-0');
+});
+
+test('the homepage tile never reads "None" under a PSPS banner, and unknown power is "Unknown"', () => {
+  const quiet = { wildfire: fc([], 'OK'), evacuation: fc([], 'OK'), weather_alert: fc([], 'OK') };
+  const warned = snap({ ...quiet, power: fc([psps('Warning', 'SCHEDULED')]) });
+  expect(deriveActiveAlertsTile(deriveSituationSummary(warned))).toEqual({
+    value: '1 Active',
+    state: 'alarm',
+  });
+  // A Watch and ordinary outages are on /live, not in the alert count.
+  const watch = snap({ ...quiet, power: fc([psps('Watch', 'SCHEDULED'), outage(1)]) });
+  expect(deriveActiveAlertsTile(deriveSituationSummary(watch)).value).toBe('None');
+  const down = snap({ ...quiet, power: fc([], 'UNAVAILABLE') });
+  expect(deriveActiveAlertsTile(deriveSituationSummary(down)).value).toBe('Unknown');
 });

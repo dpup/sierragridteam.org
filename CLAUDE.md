@@ -168,8 +168,11 @@ stable.
   the build snapshot as "last known". **Don't reintroduce `/live` per-region components**
   (it would split the markup between SSR and the live re-render) — edit `live-view.ts`.
   The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
-  (an active **evacuation or wildfire** — both area-scoped, so the region-wide rollup is
-  never trusted) — its orange is a sanctioned genuine-alert use.
+  (an active **evacuation or wildfire**, or a **PSPS at Warning stage / under way** — all
+  area-scoped, so the region-wide rollup is never trusted) — its orange is a sanctioned
+  genuine-alert use. The `power` layer (PG&E outages + PSPS) is in the /live stream and map
+  with INFO rows dropped (most outages are one customer); PG&E restoration times are
+  estimates it routinely overruns — always label them so, never use them to hide an event.
 - **`/mesh` is a STATUS BOARD**, reorganised around monitoring (2026-09-17). Top to bottom:
   a **deep band** (`--surface-deep`, the one dark ground in the system) with the freshness
   stamp and four headline figures — repeaters heard N/M within `HEARD_WITHIN_HOURS`, lowest

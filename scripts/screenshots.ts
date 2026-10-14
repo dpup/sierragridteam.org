@@ -157,6 +157,27 @@ const redflagWeatherAlerts = [
 ];
 
 /**
+ * A red-flag day is when PG&E escalates a PSPS Watch to a Warning, which is what puts the
+ * power shutoff in the site-wide banner. Upgrade the fixture's real Watch in place (its own
+ * geometry and counts) rather than inventing a second event.
+ */
+const redflagPower = (layer: { features?: { properties: Record<string, unknown> }[] }) => ({
+  ...layer,
+  features: (layer.features ?? []).map((f) =>
+    f.properties.category === 'psps'
+      ? {
+          ...f,
+          properties: {
+            ...f.properties,
+            headline: String(f.properties.headline).replace('PSPS Watch', 'PSPS Warning'),
+            power: { ...(f.properties.power as object), stage: 'Warning' },
+          },
+        }
+      : f
+  ),
+});
+
+/**
  * Shift an archived series onto the frozen clock, the same way `rebaseMesh` shifts the
  * topology layers. Without it every capture would draw a chart whose data ended days before
  * the page's "now" — an honest empty plot, and a useless screenshot.
@@ -207,6 +228,7 @@ function mockGrid(route: Route) {
     if (SCENARIO === 'redflag' && geo[1] === 'weather_alert') {
       return json({ ...layer, features: redflagWeatherAlerts });
     }
+    if (SCENARIO === 'redflag' && geo[1] === 'power') return json(redflagPower(layer));
     return json(layer);
   }
   // The whole-mesh backdrop only loads once a reader pans past the corridor, which a
