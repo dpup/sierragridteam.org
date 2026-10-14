@@ -122,13 +122,12 @@ Headlines use tight tracking (`-0.015em`); uppercase labels use loose tracking
 - **Borders:** 1px, warm tan (`--line`). **Cards never use drop shadows** — they are
   defined by border + a slightly lighter fill.
 - **Section rhythm:** ~64–72px vertical padding between major sections.
-- **Container:** content max-width ~1280px (nav/hero anchored to ~1320px); gutters ~56px.
+- **Container:** one max-width, ~1320px, for nav, hero, content and footer alike, so every page's left edge lines up with the nav logo; gutters ~56px.
 - **Spacing scale** (multiples of 4): `4 / 8 / 12 / 14 / 18 / 26 / 48 / 64 / 72`.
 
 | Token                    | Value                           |
 | ------------------------ | ------------------------------- |
-| `--container-max`        | `1280px`                        |
-| `--container-wide`       | `1320px`                        |
+| `--container-max`        | `1320px`                        |
 | `--gutter`               | `56px`                          |
 | `--radius`               | `0`                             |
 | `--border`               | `1px solid var(--line)`         |

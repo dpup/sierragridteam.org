@@ -29,7 +29,7 @@ const { coverageCounties } = Astro.props;
   data-api-base={GRID_API_BASE}
   data-area={HAZARD_AREA}
 >
-  <Container wide>
+  <Container>
     <div class="ops__head">
       <Kicker>{home.status.kicker}</Kicker>
       <StatusPill tone="muted" blink={false} data-synced>{home.status.syncing}</StatusPill>
