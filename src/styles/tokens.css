@@ -79,6 +79,15 @@
   --line-soft: #e5ddca; /* lighter internal rule */
   --line-control: #928869; /* form-control border — ≥3:1 for WCAG 1.4.11 non-text contrast */
 
+  /* ---- Hero map linework (homepage hero background ONLY) ----
+     The faint county + highway map behind the hero (src/assets/hero-map.svg). Decorative and
+     deliberately quiet: knocked-out roads, warm hairlines, muted place names. */
+  --map-county-line: #c9c1a9; /* county borders */
+  --map-road: #f8f6ef; /* state highways + route-marker fill */
+  --map-shield-line: #d3c9ad; /* route-marker outline */
+  --map-shield-text: #7d7459; /* route numbers */
+  --map-place: #9a906f; /* county names */
+
   /* ---- Status-dot states (functional) ---- */
   --state-ok: #1d5b3f; /* operational / normal */
   --state-ok-static: #2f8a5b; /* lighter "static-owned" feasibility dot */

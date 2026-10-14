@@ -42,11 +42,11 @@
 
 ## Homepage hero
 
-| Component     | File                                | Contract                                                                                                                                                                                                                                                                               |
-| ------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Hero`        | `components/home/Hero.astro`        | The coverage-map band. Composes `CoverageMap` + message column + legend strip.                                                                                                                                                                                                         |
-| `CoverageMap` | `components/home/CoverageMap.astro` | **SVG**, single coordinate system so dots & link endpoints stay aligned at any width. Layers: surface+radial glow, faint grid, topo contours, coverage links, town markers+labels. Reads town coords from `src/config/coverage.ts`. Identity visual only — never claims live topology. |
-| `MapMarker`   | (inline in CoverageMap)             | Role-colored dot + expanding ring ping; optional label chip on translucent parchment. Major towns labeled only.                                                                                                                                                                        |
+| Component     | File                                | Contract                                                                                                                                                                                                                                    |
+| ------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Hero`        | `components/home/Hero.astro`        | The coverage-map band. Full-bleed real county/highway map (`src/assets/hero-map.svg`, inline) + parchment fade + `CoverageMap` + message column + legend strip, all anchored to the 1320px column.                                          |
+| `CoverageMap` | `components/home/CoverageMap.astro` | **SVG** at 1:1 column pixels: coverage links, halos, town markers + labels, placed from real lat/lon via `heroProject` (`src/config/coverage.ts`) — the same projection as the hero map. Identity visual only — never claims live topology. |
+| `MapMarker`   | (inline in CoverageMap)             | Role-colored dot + expanding ring ping; label with a parchment halo so it reads over highways.                                                                                                                                              |
 
 ## Live-data islands (client JS; framework: vanilla `<script>` or Astro island)
 

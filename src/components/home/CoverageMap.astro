@@ -1,121 +1,123 @@
 ---
 /**
- * CoverageMap — the homepage hero's town network (corridors + markers + labels).
+ * CoverageMap — the homepage hero's town network (corridor links + markers + labels), drawn
+ * over the hero's county map.
  *
  * HONESTY RULE (design-system §6): an IDENTITY / coverage visual, NOT live network
- * topology. Towns are placed in true relative geography (src/config/coverage.ts);
- * markers and the corridor links share ONE coordinate system so they stay aligned.
- *
- * The faint grid + topographic contours now live on the Hero band background
- * (full-width), not here. This component stays deliberately thin and quiet:
- * 1px non-scaling strokes, small dots, small labels.
+ * topology. Towns sit at their real lat/lon, projected by `heroProject` into hero column
+ * space — the same space src/assets/hero-map.svg is drawn in, so every marker lands on its
+ * place on the map. The SVG is 1320×811 user units at 1:1 pixels; Hero.astro positions it
+ * on the content column. Quiet by design: 1px links, small dots, small labels.
  */
-import { towns, corridors, townById } from '@config/coverage';
+import { towns, corridors, townById, heroProject } from '@config/coverage';
 
-// viewBox from the town bounds (+ padding) so markers and links share one system.
-const xs = towns.map((t) => t.x);
-const ys = towns.map((t) => t.y);
-const PAD = 34;
-const minX = Math.min(...xs) - PAD;
-const minY = Math.min(...ys) - PAD;
-const w = Math.max(...xs) - Math.min(...xs) + PAD * 2;
-const h = Math.max(...ys) - Math.min(...ys) + PAD * 2;
-const viewBox = `${minX} ${minY} ${w} ${h}`;
-
+const at = (id: string) => {
+  const t = townById(id);
+  return t ? heroProject(t.lon, t.lat) : null;
+};
 const corridorPath = (ids: readonly string[]) =>
   ids
-    .map((id, i) => {
-      const t = townById(id);
-      return t ? `${i === 0 ? 'M' : 'L'} ${t.x} ${t.y}` : '';
-    })
+    .map(at)
+    .filter((p) => p !== null)
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
     .join(' ');
 
-const labelSide = (x: number) => (x > minX + w * 0.62 ? 'left' : 'right');
+// Faint rings that give the Highway 4 chain some weight (static; the ping is the motion).
+const halos: Record<
+  string,
+  { r: number; width: number; opacity: number; tone: 'brass' | 'green' }
+> = {
+  'bear-valley': { r: 14, width: 3, opacity: 0.3, tone: 'brass' },
+  arnold: { r: 19, width: 4, opacity: 0.25, tone: 'brass' },
+  murphys: { r: 23, width: 5, opacity: 0.08, tone: 'green' },
+};
+
+const markers = towns.map((t) => ({ ...t, ...heroProject(t.lon, t.lat), halo: halos[t.id] }));
 
 const ariaLabel =
-  'Service-area coverage map: Angels Camp, Murphys (headquarters), Arnold, ' +
-  'Dorrington, Columbia, and Sonora, linked along the Highway 4 and Highway 49 corridors.';
+  'Service-area coverage map: Bear Valley, Dorrington, Arnold, Murphys (headquarters), Angels Camp, ' +
+  'Columbia, and Sonora, linked along the Highway 4 and Highway 49 corridors.';
 ---
 
 <div class="coverage" role="img" aria-label={ariaLabel}>
-  <svg
-    class="coverage__svg"
-    viewBox={viewBox}
-    preserveAspectRatio="xMidYMid meet"
-    aria-hidden="true"
-  >
-    {/* Coverage links along road corridors — true 1px regardless of scale */}
+  <svg class="coverage__svg" width="1320" height="811" viewBox="0 0 1320 811" aria-hidden="true">
     <g class="coverage__links">
       {
         corridors.map((c) => (
           <path
             d={corridorPath(c.path)}
             class:list={['coverage__link', { 'is-dashed': c.kind === 'dashed' }]}
-            vector-effect="non-scaling-stroke"
           />
         ))
       }
     </g>
 
-    {/* Town markers + labels */}
-    <g class="coverage__markers">
-      {
-        towns.map((t, i) => (
-          <g
-            class={`coverage__marker coverage__marker--${t.role}`}
-            transform={`translate(${t.x} ${t.y})`}
-          >
+    {
+      markers.map(
+        (m) =>
+          m.halo && (
             <circle
-              class="coverage__ping"
-              r="3.4"
-              style={`animation-delay:${(i * 0.4).toFixed(2)}s`}
+              class={`coverage__halo coverage__halo--${m.halo.tone}`}
+              cx={m.x.toFixed(1)}
+              cy={m.y.toFixed(1)}
+              r={m.halo.r}
+              stroke-width={m.halo.width}
+              stroke-opacity={m.halo.opacity}
             />
-            <circle class="coverage__dot" r="3" vector-effect="non-scaling-stroke" />
-            {t.label && (
-              <text
-                class="coverage__label"
-                x={labelSide(t.x) === 'left' ? -5 : 5}
-                y="1.2"
-                text-anchor={labelSide(t.x) === 'left' ? 'end' : 'start'}
-                vector-effect="non-scaling-stroke"
-              >
-                {t.name}
-                {t.role === 'hq' ? ' · HQ' : ''}
-              </text>
-            )}
-          </g>
-        ))
-      }
-    </g>
+          )
+      )
+    }
+
+    {
+      markers.map((m, i) => (
+        <g
+          class={`coverage__marker coverage__marker--${m.role}`}
+          transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`}
+        >
+          <circle class="coverage__ping" r="7" style={`animation-delay:${(i * 0.4).toFixed(2)}s`} />
+          <circle class="coverage__dot" r="6.5" />
+          <text
+            class="coverage__label"
+            x={m.labelSide === 'left' ? -14 : 13}
+            y="3.5"
+            text-anchor={m.labelSide === 'left' ? 'end' : 'start'}
+          >
+            {m.name}
+            {m.role === 'hq' ? ' · HQ' : ''}
+          </text>
+        </g>
+      ))
+    }
   </svg>
 </div>
 
 <style>
-  .coverage {
-    width: 100%;
-    height: 100%;
-    min-height: 300px;
-    display: flex;
-  }
-
   .coverage__svg {
-    width: 100%;
-    height: 100%;
+    display: block;
+    max-width: none; /* never scaled: its units are column pixels, like the map's */
+    overflow: visible;
   }
 
-  /* Corridor links — 1px on screen at any width */
   .coverage__link {
     fill: none;
     stroke: var(--brand-green);
     stroke-width: 1;
-    stroke-linecap: round;
-    stroke-linejoin: round;
     opacity: 0.45;
   }
   .coverage__link.is-dashed {
     stroke: var(--brand-brass);
-    stroke-dasharray: 4 5;
-    opacity: 0.55;
+    stroke-dasharray: 3 4;
+    opacity: 0.75;
+  }
+
+  .coverage__halo {
+    fill: none;
+  }
+  .coverage__halo--brass {
+    stroke: var(--brand-brass);
+  }
+  .coverage__halo--green {
+    stroke: var(--brand-green);
   }
 
   .coverage__dot {
@@ -161,16 +163,18 @@ const ariaLabel =
     }
   }
 
+  /* SVG user units are screen pixels here (the SVG is never scaled). The halo stroke keeps a
+     label readable where it crosses a highway. */
   .coverage__label {
     font-family: var(--font-ui);
-    font-size: 4px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: 9.5px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     fill: var(--ink-strong);
     paint-order: stroke;
     stroke: var(--surface-hero);
-    stroke-width: 2px;
+    stroke-width: 4px;
     stroke-linejoin: round;
   }
   .coverage__marker--hq .coverage__label {

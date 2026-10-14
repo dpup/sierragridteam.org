@@ -48,11 +48,18 @@ Order, top to bottom:
    - Buttons: primary **"Open Live Map"** (green fill → `/mesh`),
      secondary **"View the Live Feed"** (brass outline → `/live`).
    - **Map honesty rule:** the hero map is an _identity/coverage_ visual, NOT live network
-     topology. It must never claim real-time node positions. Six town markers in true relative
-     geography: Dorrington, Arnold, Murphys (HQ), Angels Camp, Columbia, Sonora; links follow
-     Hwy 4 (NE chain) & Hwy 49 (south leg) + one dashed cross-link. Only major towns labeled
-     (Murphys/HQ, Angels Camp, Sonora, Arnold). Marker roles: green = Network HQ, brass =
-     coverage town, orange = regional hub. A thin legend strip is pinned to the hero bottom.
+     topology. It must never claim real-time node positions. Seven town markers at their real
+     lat/lon: Bear Valley, Dorrington, Arnold, Murphys (HQ), Angels Camp, Columbia, Sonora, all labeled;
+     links follow Hwy 4 (NE chain) & Hwy 49 (south leg) + one dashed cross-link. Marker roles:
+     green = Network HQ, brass = coverage town, orange = regional hub. A thin legend strip is
+     pinned to the hero bottom.
+   - **Background (2026-10):** a faint, full-bleed real map behind the whole band —
+     Calaveras and Tuolumne as tints, county lines as hairlines, state highways knocked out
+     with route markers (`src/assets/hero-map.svg`, US Census TIGERweb + Caltrans, regenerate
+     with `npm run hero-map`). Map and markers share one projection (`HERO_PROJECTION` in
+     `src/config/coverage.ts`) into the centered 1320px column, so they stay aligned at any
+     width; below 1320px the column pins left and the right side crops; at ≤900px map and
+     markers are dropped. A parchment fade keeps the copy legible. Replaced the grid + contours.
 2. **Operational Status (stats)** — section header "Real-time Operational Status" with a
    "Synced [time]" indicator on the right; a 4-column row of bordered tiles:
    - **Relay Nodes** — `N Active` — live: S.I.E.R.R.A repeaters currently heard on the mesh
