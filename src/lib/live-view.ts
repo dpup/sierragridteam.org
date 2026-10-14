@@ -12,6 +12,7 @@
 import {
   deriveStream,
   deriveSituationSummary,
+  isNotablePower,
   isScheduled,
   layerFeatures,
   toneFor,
@@ -170,9 +171,62 @@ export function wildfireTitle(
   return headline;
 }
 
-function streamExtra(f: HazardFeature): string | null {
+/** PG&E's crew codes in plain words; anything unrecognised is dropped rather than shown raw. */
+function crewLabel(raw?: string): string | null {
+  const c = (raw ?? '').toLowerCase();
+  if (/on ?site/.test(c)) return 'Crew on site';
+  if (/dispatch|en ?route|assigned/.test(c)) return 'Crew assigned';
+  if (/awaiting|t-?man/.test(c)) return 'Awaiting a crew';
+  return null;
+}
+
+const isUnderWay = (status?: string) => String(status ?? '').toUpperCase() === 'ACTIVE';
+
+/**
+ * The kicker for a PSPS that hasn't started. The generic "Begins …" would state a Watch — PG&E
+ * is only *considering* a shutoff — as fact; this says how sure PG&E is. Null for anything else.
+ */
+export function pspsWhen(f: HazardFeature): string | null {
+  if (f.properties.category !== 'psps' || isUnderWay(f.properties.status)) return null;
+  const at = formatPtDayTime(f.properties.power?.deEnergizationStart ?? f.properties.effective);
+  const warning = String(f.properties.power?.stage ?? '').toUpperCase() === 'WARNING';
+  if (!at) return warning ? 'Shutoff planned' : 'Shutoff possible';
+  return warning ? `Shutoff planned ${at}` : `Shutoff possible ${at}`;
+}
+
+/**
+ * Power detail ("Power off since Wed 20:00 PT · PG&E estimates restoration Fri 12:00 PT"), or
+ * null. Customer and medical-baseline counts are already in the headline, and a PSPS that
+ * hasn't started carries its start in the kicker (`pspsWhen`). Every restoration time is
+ * PG&E's own estimate, which it routinely overruns, so it is always worded as one — and once
+ * it has passed we say so rather than show a stale time as current. Shared by the stream card
+ * and the map popup.
+ */
+export function powerDetail(
+  pw: HazardFeature['properties']['power'] | undefined,
+  status: string | undefined,
+  now: number = Date.now()
+): string | null {
+  if (!pw) return null;
+  const off = isUnderWay(status) ? formatPtDayTime(pw.deEnergizationStart) : null;
+  const est = formatPtDayTime(pw.estimatedRestoration);
+  const passed = Date.parse(String(pw.estimatedRestoration ?? '')) < now;
+  const bits = [
+    off ? `Power off since ${off}` : null,
+    crewLabel(pw.crewStatus),
+    est
+      ? passed
+        ? `PG&E's restoration estimate (${est}) has passed`
+        : `PG&E estimates restoration ${est}`
+      : null,
+  ].filter(Boolean);
+  return bits.length ? bits.join(' · ') : null;
+}
+
+function streamExtra(f: HazardFeature, now: number): string | null {
   const p = f.properties;
   if (p.wildfire) return wildfireStats(p.wildfire);
+  if (p.power) return powerDetail(p.power, p.status, now);
   if (p.earthquake) {
     const bits = [
       p.earthquake.magnitude != null ? `M${p.earthquake.magnitude}` : null,
@@ -200,7 +254,7 @@ function renderStream(items: HazardFeature[], now: number): string {
     .map((f) => {
       const tone = toneFor(f);
       const p = f.properties;
-      const ex = streamExtra(f);
+      const ex = streamExtra(f, now);
       // Authoritative "more info" page for THIS event (CAL FIRE incident, Genasys evac
       // viewer, …) — from the feed's per-event provenance when present; opens the body so
       // the link is reachable.
@@ -209,12 +263,14 @@ function renderStream(items: HazardFeature[], now: number): string {
       // An issued-but-not-yet-in-force alert is marked in the kicker, where it is visible
       // with the card collapsed. `effective` carries the hazard's onset (Grid 2026-08-11);
       // when the product publishes none we say so plainly rather than invent a start time.
-      const when = isScheduled(f, now)
-        ? (() => {
-            const at = formatPtDayTime(p.effective);
-            return at ? `Begins ${at}` : 'Not yet in effect';
-          })()
-        : null;
+      const when =
+        pspsWhen(f) ??
+        (isScheduled(f, now)
+          ? (() => {
+              const at = formatPtDayTime(p.effective);
+              return at ? `Begins ${at}` : 'Not yet in effect';
+            })()
+          : null);
       const head =
         `<span class="stream__head"><span class="stream__kicker">` +
         `<span class="stream__sev">${esc(severityLabel(String(p.severity)))}</span>` +
@@ -349,8 +405,17 @@ function buildMapData(haz: HazardsSnapshot): LiveMapData {
   };
   const chains = layerFeatures(haz, 'chain_control');
   const layers: Record<string, { type: 'FeatureCollection'; features: HazardFeature[] }> = {};
-  for (const l of ['road_segment', 'road_incident', 'wildfire', 'evacuation', 'earthquake']) {
+  for (const l of [
+    'road_segment',
+    'road_incident',
+    'wildfire',
+    'evacuation',
+    'earthquake',
+    'power',
+  ]) {
     let feats = layerFeatures(haz, l);
+    // Same cut as the stream, so every mapped outage has a card and vice versa.
+    if (l === 'power') feats = feats.filter(isNotablePower);
     // MapLibre paint can't index nested props / call our helpers — promote what it needs.
     if (l === 'earthquake') {
       feats = feats.map((f) => ({

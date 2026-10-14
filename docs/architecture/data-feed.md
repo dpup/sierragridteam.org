@@ -65,11 +65,21 @@ RFC 7946 FeatureCollection with camelCase `properties` (`severityRank`, `areaLab
 and `weather_alert` are clipped to the ebbetts-pass polygon at ingest (same point-in-polygon
 test as `/places:resolve`), so the client no longer re-filters. Layer slugs (URL): `wildfire`,
 `evacuation`, `weather_alert`, `earthquake`, `road_incident`, `road_segment`, `chain_control`,
-`fire_weather`.
+`fire_weather`, `power`.
 
 - Per-feature `provenance.sourceUrl` is the event's canonical page (CAL FIRE incident /
   Genasys zone) — **optional per source** (CHP road incidents have none). The `/live` stream
   renders a "More information" link only when it's present.
+- **`power`** (enum `POWER`, added 2026-10): PG&E outages (`category` `unplanned`/`planned`)
+  and Public Safety Power Shutoffs (`psps`), detail in `properties.power` (`customersAffected`,
+  `crewStatus`, `estimatedRestoration`; PSPS adds `stage` Watch/Warning,
+  `medicalBaselineAffected`, `deEnergizationStart`/`End`, `allClear`). A PSPS is `SCHEDULED`
+  until its de-energization window opens. The statewide median outage is one customer, so most
+  rows are INFO — `/live` drops INFO power from the stream and map (as The Grid drops it from
+  the summary rollup). **Every restoration/end time is a PG&E estimate it routinely overruns**:
+  The Grid keeps them off `expires`, and we show them only labelled as estimates (and say so
+  once one has passed), never use them to hide an event. The map endpoint ignores
+  `?category=`/`?severity_min=`; the summary's `power` domain carries `highestSeverity`.
 - `road_segment` features carry the road-conditions table in `properties.road`
   (`roadId`, `congestion`, `delayMinutes`, `durationMinutes`, `distanceKm`) plus
   `status`/`headline`/`areaLabel` on the envelope. Chain controls are the separate
@@ -145,14 +155,17 @@ feed with them; no page imports them.
      `/scanners?place=`, rendered via `src/lib/live-view.ts`, refreshed every 90 s. On failure
      it shows an honest "feed unavailable" panel with the official sources — never stale data.
    - **Home `OperationalStatus`**: Active Alerts + Fire Weather start on a "—" placeholder and a
-     client island fills them from the `wildfire`/`evacuation`/`weather_alert` map layers +
-     `/conditions` (every 5 min); on failure they stay "—". **Relay Nodes** is live too — it
+     client island fills them from the `wildfire`/`evacuation`/`weather_alert`/`power` map
+     layers + `/conditions` (every 5 min); on failure they stay "—". Active Alerts counts a PSPS
+     only when it has put up the banner (below), so the two can't disagree. **Relay Nodes** is live too — it
      counts the S.I.E.R.R.A repeaters in `mesh_node.geojson` via the same
      `deriveRelayNodesTile` /mesh uses, so the two surfaces cannot disagree. Only Coverage is
      static owned config.
    - **`EmergencyBanner`** (every page): SSR-hidden; a client island polls
      `/places/{area}/summary` + the `wildfire` map layer and shows it only on an active
-     evacuation/wildfire.
+     evacuation/wildfire, or a PSPS at Warning stage or under way. It fetches the `power` layer
+     only when the summary's `power` domain is MODERATE+ (a PSPS never rates lower), and keeps
+     the last PSPS it read if that fetch fails. The decision is pure, in `src/lib/banner.ts`.
 3. **No fallback to baked data** anywhere — the honest degraded state is a placeholder /
    "unavailable", never a possibly-stale value.
 

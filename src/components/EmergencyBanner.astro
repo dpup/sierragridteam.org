@@ -2,12 +2,13 @@
 /**
  * EmergencyBanner — the site-wide alarm band (in BaseLayout, every page). Renders
  * nothing on calm days; when a life-safety hazard is active (an active evacuation or
- * wildfire — both area-scoped) it shows a slim orange band naming the hazard, linking to the
- * Live Feed (which carries the authoritative evacuation map).
+ * wildfire, or a PG&E Public Safety Power Shutoff at Warning stage or under way — all
+ * area-scoped) it shows a slim orange band naming the hazard, linking to the Live Feed
+ * (which carries the authoritative evacuation map). Priority: evacuation, wildfire, PSPS.
  * Orange here is a sanctioned genuine-alert use. Client-only (no baked data): SSR renders
- * the band hidden + empty, and a client island checks the place summary + wildfire layer on
- * load + every 90s and shows/fills it — never trusting the region-wide rollup severity, and only writing to the
- * role="alert" region when the state actually changes (so it doesn't re-announce each poll).
+ * the band hidden + empty, and a client island checks the place summary + wildfire layer
+ * (+ the power layer when the summary says a PSPS is possible) on load + every 90s. What it
+ * shows, and when it rewrites the role="alert" region, is decided in `src/lib/banner.ts`.
  */
 import { HAZARD_AREA } from '@lib/hazards';
 import { GRID_API_BASE } from '@lib/grid';
@@ -36,6 +37,9 @@ import { emergencyBanner as copy } from '@config/content';
 </aside>
 
 <script>
+  import { deriveBanner, powerCheck, pspsFromLayer } from '@lib/banner';
+  import type { HazardFeature, SummaryDomain } from '@lib/hazards';
+
   const el = document.querySelector<HTMLElement>('[data-ebanner]');
   if (el) {
     const base = el.dataset.apiBase ?? 'https://data.sierragridteam.org/api/v1';
@@ -53,17 +57,20 @@ import { emergencyBanner as copy } from '@config/content';
     };
     new ResizeObserver(publishHeight).observe(el);
     let lastSig = '';
+    // The last PSPS we could actually read. A failed power request, or a power source The
+    // Grid marks UNAVAILABLE, is "unknown" — never a reason to take a shutoff banner down
+    // (the one place this island holds a prior value rather than its hidden placeholder).
+    let lastPsps: HazardFeature | null = null;
     const set = (sel: string, text: string) => {
       const t = el.querySelector<HTMLElement>(sel);
       if (t) t.textContent = text;
     };
+    const accept = { headers: { accept: 'application/json' } };
     const refresh = async () => {
       try {
         const [sumRes, fireRes] = await Promise.all([
-          fetch(`${base}/places/${area}/summary`, { headers: { accept: 'application/json' } }),
-          fetch(`${base}/places/${area}/map/wildfire.geojson`, {
-            headers: { accept: 'application/json' },
-          }),
+          fetch(`${base}/places/${area}/summary`, accept),
+          fetch(`${base}/places/${area}/map/wildfire.geojson`, accept),
         ]);
         if (!sumRes.ok || !fireRes.ok) return;
         const s = (await sumRes.json()) as {
@@ -71,44 +78,43 @@ import { emergencyBanner as copy } from '@config/content';
             activeEvacuations?: number | null;
             topEvents?: { layer: string; headline: string }[];
           };
+          domains?: SummaryDomain[];
         };
         const fire = (await fireRes.json()) as {
           features?: { properties?: { headline?: string } }[];
         };
-        const sum = s.summary ?? {};
-        const events = sum.topEvents ?? [];
-        const fireFeatures = fire.features ?? [];
-        const hasEvac = (sum.activeEvacuations ?? 0) > 0;
-        // Read the authoritative, place-scoped wildfire MAP layer for this life-safety band,
-        // rather than a summary rollup count.
-        const hasWildfire = fireFeatures.length > 0;
 
-        // Life-safety bar ONLY: evacuation or wildfire (both area-scoped). The summary's
-        // region-wide highestSeverity / road / weather headlines are never trusted —
-        // they can describe an out-of-area event (the life-safety-only banner contract).
-        const active = hasEvac || hasWildfire;
-        const headline =
-          (hasEvac
-            ? events.find((h) => h.layer === 'EVACUATION')?.headline
-            : fireFeatures[0]?.properties?.headline) ??
-          (hasEvac
-            ? 'Active evacuation in the service area'
-            : 'Active wildfire near the foothills');
-        const label = hasEvac ? 'Evacuation' : 'Active Wildfire';
+        // Power is a separate signal: a failure here must not stop the evacuation and
+        // wildfire checks, so it degrades to "unknown" (keep the last PSPS) rather than throw.
+        const check = powerCheck(s.domains);
+        let psps: HazardFeature | null | undefined = check === 'none' ? null : undefined;
+        if (check === 'fetch') {
+          const res = await fetch(`${base}/places/${area}/map/power.geojson`, accept).catch(
+            () => null
+          );
+          psps = res?.ok ? pspsFromLayer(await res.json().catch(() => null)) : undefined;
+        }
+        if (psps !== undefined) lastPsps = psps;
+
+        const banner = deriveBanner({
+          activeEvacuations: s.summary?.activeEvacuations,
+          topEvents: s.summary?.topEvents ?? [],
+          wildfire: fire.features ?? [],
+          psps: lastPsps,
+        });
 
         // Only touch the DOM when something actually changed — the role="alert" live
         // region must not re-announce on every 90s poll during a sustained emergency.
-        const sig = `${active}|${label}|${headline}|${hasEvac}`;
-        if (sig === lastSig) return;
-        lastSig = sig;
+        if (banner.sig === lastSig) return;
+        lastSig = banner.sig;
 
-        if (!active) {
+        if (!banner.active) {
           el.hidden = true;
           publishHeight();
           return;
         }
-        set('[data-ebanner-headline]', headline);
-        set('[data-ebanner-label]', label);
+        set('[data-ebanner-headline]', banner.headline);
+        set('[data-ebanner-label]', banner.label);
         el.hidden = false;
         publishHeight();
       } catch {

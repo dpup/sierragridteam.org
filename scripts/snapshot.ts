@@ -41,6 +41,7 @@ const HAZARD_LAYERS = [
   'wildfire',
   'evacuation',
   'earthquake',
+  'power',
 ];
 
 async function main() {

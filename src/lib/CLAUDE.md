@@ -4,7 +4,8 @@
 (`deriveStream`, `deriveSituationSummary`, `layerFeatures`, …) plus shared constants
 (`GRID_API_BASE`, `HAZARD_AREA`, `STREAM_LAYERS`).
 `live-view.ts` turns a fetched snapshot into the `/live` view-model + region HTML;
-`live-map.ts` is the MapLibre map; `units.ts` converts metric→imperial; `format.ts` is
+`live-map.ts` is the MapLibre map; `banner.ts` is the site-wide EmergencyBanner's decision
+(evacuation > wildfire > PSPS, and when it may re-announce); `units.ts` converts metric→imperial; `format.ts` is
 `escapeHtml` + `formatPtTime`. See `docs/architecture/data-feed.md` for the design.
 
 `mesh.ts` is the same split for `/mesh`: typed MeshCore topology shapes + pure derivations
