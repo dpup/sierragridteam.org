@@ -2,14 +2,18 @@
 /**
  * Hero — the homepage coverage band (design-system §6).
  * Left: brand lockup (mark + S.I.E.R.R.A + full-name definition), two-tone
- * headline, subhead, two buttons. Right: the thin CoverageMap.
- * The faint surveyed grid + soft topographic contours span the WHOLE band
- * (behind everything), not just the map. On tablet and below the map is dropped.
+ * headline, subhead, two buttons. Behind it, full bleed: a faint real map of the
+ * Calaveras & Tuolumne foothills (src/assets/hero-map.svg — county tints, county lines,
+ * state highways; regenerate with `npm run hero-map`) with the CoverageMap town network on
+ * top at true geographic positions. Map and network share one coordinate system, the
+ * centered 1320px column, so they stay aligned at any width; below 1320px the column pins
+ * to the window's left edge and the right side crops. On tablet and below both are dropped.
  */
 import Container from '../Container.astro';
 import Logo from '../Logo.astro';
 import Button from '../Button.astro';
 import CoverageMap from './CoverageMap.astro';
+import HeroMap from '../../assets/hero-map.svg';
 import { home } from '@config/content';
 import { legend } from '@config/coverage';
 import { site } from '@config/site';
@@ -23,19 +27,19 @@ const roleClass: Record<string, string> = {
 ---
 
 <section class="hero" aria-labelledby="hero-title">
-  {/* Full-width band texture: faint grid (CSS) + soft contours (SVG) */}
-  <div class="hero__bg" aria-hidden="true">
-    <svg class="hero__contours" viewBox="0 0 1320 760" preserveAspectRatio="none">
-      <path class="hero__contour" d="M-20 168 C 330 110, 640 250, 1340 150"></path>
-      <path class="hero__contour is-brass" d="M-20 372 C 380 312, 740 470, 1340 360"></path>
-      <path class="hero__contour" d="M-20 560 C 300 500, 680 650, 1340 548"></path>
-      <path class="hero__contour is-brass" d="M-20 690 C 360 640, 720 770, 1340 680"></path>
-    </svg>
-  </div>
-  <div class="hero__glow" aria-hidden="true"></div>
+  <div class="hero__stage">
+    {
+      /* Background, bottom to top: green wash, county map, a fade that keeps the copy legible,
+        then the town network. All anchored to the 1320px column (see --hero-col). */
+    }
+    <div class="hero__glow" aria-hidden="true"></div>
+    <HeroMap class="hero__map" aria-hidden="true" focusable="false" />
+    <div class="hero__fade" aria-hidden="true"></div>
+    <div class="hero__mesh">
+      <CoverageMap />
+    </div>
 
-  <Container wide class="hero__container">
-    <div class="hero__grid">
+    <Container wide class="hero__container">
       <div class="hero__message">
         <div class="hero__lockup">
           <Logo variant="mark" height={46} class="hero__emblem" />
@@ -59,12 +63,8 @@ const roleClass: Record<string, string> = {
           </Button>
         </div>
       </div>
-
-      <div class="hero__map">
-        <CoverageMap />
-      </div>
-    </div>
-  </Container>
+    </Container>
+  </div>
 
   <div class="hero__legend">
     <Container wide>
@@ -95,66 +95,104 @@ const roleClass: Record<string, string> = {
     overflow: hidden;
   }
 
-  /* Faint surveyed grid across the whole band — softer than the map ever was. */
-  .hero__bg {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(
-        color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px,
-        transparent 1px
-      );
-    background-size: 52px 52px;
+  /* The stage holds the background layers and the copy. Every layer is anchored to the
+     1320px content column; --hero-col is that column's left edge, pinned to the window's
+     left edge when the window is narrower than the column (the right side crops). */
+  .hero__stage {
+    --hero-col: max(0px, 50% - 660px);
+    position: relative;
+    min-height: 811px;
+    display: flex;
+    align-items: center;
   }
 
-  .hero__contours {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .hero__contour {
-    fill: none;
-    stroke: var(--brand-green);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-    opacity: 0.09;
-  }
-  .hero__contour.is-brass {
-    stroke: var(--brand-brass);
-    opacity: 0.11;
-  }
-
-  /* The single permitted decorative gradient — a barely-visible green glow. */
+  /* The single permitted decorative gradient — a barely-visible green wash. */
   .hero__glow {
     position: absolute;
     inset: 0;
     pointer-events: none;
     background: radial-gradient(
-      120% 80% at 80% 24%,
-      color-mix(in srgb, var(--brand-green) 9%, transparent),
-      transparent 58%
+      70% 90% at 70% 25%,
+      color-mix(in srgb, var(--brand-green) 6%, transparent),
+      transparent 65%
     );
+  }
+
+  /* The map's viewBox origin is offset so its user units ARE column pixels: it runs 1100px
+     past each side of the column (no visible edge up to ~3500px windows) and 200px past the
+     top and bottom of the stage. Never scaled. */
+  .hero :global(.hero__map) {
+    position: absolute;
+    left: calc(var(--hero-col) - 1100px);
+    top: -200px;
+    max-width: none; /* base.css caps images/SVGs at 100% — this one must not scale */
+    pointer-events: none;
+  }
+  .hero :global(.hero-map__calaveras) {
+    fill: var(--brand-green);
+    fill-opacity: 0.075;
+  }
+  .hero :global(.hero-map__tuolumne) {
+    fill: var(--brand-brass);
+    fill-opacity: 0.12;
+  }
+  .hero :global(.hero-map__borders) {
+    stroke: var(--map-county-line);
+    stroke-width: 1;
+  }
+  .hero :global(.hero-map__roads) {
+    stroke: var(--map-road);
+    stroke-width: 3.4;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .hero :global(.hero-map__shield rect) {
+    fill: var(--map-road);
+    stroke: var(--map-shield-line);
+    stroke-width: 1;
+  }
+  .hero :global(.hero-map__shield text) {
+    font-family: var(--font-ui);
+    font-size: 8px;
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    fill: var(--map-shield-text);
+    text-anchor: middle;
+  }
+  .hero :global(.hero-map__county-name) {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 26px;
+    fill: var(--map-place);
+    text-anchor: middle;
+  }
+
+  /* Keeps the copy legible over the map: solid parchment from the window's left edge to
+     column x 500, clear by column x 800. Part of the hero background, like the wash. */
+  .hero__fade {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: calc(var(--hero-col) + 800px);
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--surface-hero) 93%, transparent) calc(100% - 300px),
+      transparent 100%
+    );
+  }
+
+  .hero__mesh {
+    position: absolute;
+    top: 0;
+    left: var(--hero-col);
+    pointer-events: none;
   }
 
   .hero :global(.hero__container) {
     position: relative;
     z-index: 1;
     padding-block: var(--space-9);
-  }
-
-  .hero__grid {
-    width: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--space-8);
-    align-items: center;
   }
 
   .hero__message {
@@ -226,13 +264,6 @@ const roleClass: Record<string, string> = {
     gap: var(--space-3);
   }
 
-  .hero__map {
-    position: relative;
-    align-self: stretch;
-    min-height: 380px;
-    display: flex;
-  }
-
   /* Legend strip pinned to the bottom of the band (explains the map markers) */
   .hero__legend {
     position: relative;
@@ -290,12 +321,14 @@ const roleClass: Record<string, string> = {
     color: var(--brand-brass-text);
   }
 
-  /* Tablet and below: drop the map (and its legend); keep the brand + message. */
+  /* Tablet and below: drop the map, network and legend; keep the brand + message. */
   @media (max-width: 900px) {
-    .hero__grid {
-      grid-template-columns: 1fr;
+    .hero__stage {
+      min-height: 0;
     }
-    .hero__map,
+    .hero :global(.hero__map),
+    .hero__fade,
+    .hero__mesh,
     .hero__legend {
       display: none;
     }

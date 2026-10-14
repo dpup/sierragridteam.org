@@ -1,95 +1,90 @@
 /**
  * Service-area geography and owned/static operational config.
  *
- * Town coordinates are a simple equirectangular projection of real lat/long into
- * aspect-correct "map units" (≈ miles × 10 from a local reference), so the hero
- * CoverageMap can place markers AND draw the connecting corridors in ONE shared
- * coordinate system (dots and line endpoints always stay aligned at any width).
+ * The homepage hero draws the network's towns over a real county + highway map
+ * (src/assets/hero-map.svg). Both layers share ONE projection, `HERO_PROJECTION`, into hero
+ * "column space" (the centered 1320px content column, (0,0) at its top-left), so a town's
+ * marker always lands on its place on the map. Town positions are real lat/lon.
  *
- * SAFE TO EDIT: names, labels, deployment-zone list.
- * Coordinates are geographic truth — only change them to fix the map's geography.
+ * SAFE TO EDIT: names, deployment-zone list.
+ * Coordinates are geographic truth — only change them to fix the map's geography. A town
+ * outside the hero's frame (roughly Angels Camp to Bear Valley) needs a new projection, and
+ * then the map must be regenerated to match (`npm run hero-map`).
  * See docs/architecture/information-architecture.md (Home hero · map honesty rule).
  */
 
 export type TownRole = 'hq' | 'town' | 'hub';
 
+/**
+ * Equirectangular, x scaled by cos(latRef), pinned at Murphys. `scripts/hero-map.ts` reads
+ * this too — change it there and here together by changing it HERE and regenerating.
+ */
+export const HERO_PROJECTION = {
+  lon: -120.4655,
+  lat: 38.1377,
+  x: 810,
+  y: 480,
+  k: 1350,
+  latRef: 38.1,
+} as const;
+
+/** A lon/lat in hero column space. */
+export function heroProject(lon: number, lat: number): { x: number; y: number } {
+  const p = HERO_PROJECTION;
+  return {
+    x: p.x + (lon - p.lon) * p.k * Math.cos((p.latRef * Math.PI) / 180),
+    y: p.y - (lat - p.lat) * p.k,
+  };
+}
+
 export interface CoverageTown {
   id: string;
   name: string;
-  /** Show a text label on the hero map (only major towns are labeled). */
-  label: boolean;
   /** Marker role → legend color. hq=green, town=brass, hub=orange (regional hub). */
   role: TownRole;
-  /** Map-unit coordinates (east, south). Shared by markers AND corridor links. */
-  x: number;
-  y: number;
-  county: 'Calaveras' | 'Tuolumne';
-  /** Whether the data.sierragridteam.org feed currently covers this town (Hwy 4 corridor). */
-  hasLiveData: boolean;
+  lon: number;
+  lat: number;
+  /** Which side of the marker its label sits on. */
+  labelSide: 'left' | 'right';
 }
 
-/** Six towns in true relative geography. Murphys is HQ. */
+/** Seven towns along the Highway 4 and 49 corridors. Murphys is HQ. */
 export const towns: readonly CoverageTown[] = [
   {
-    id: 'angels-camp',
-    name: 'Angels Camp',
-    label: true,
+    id: 'bear-valley',
+    name: 'Bear Valley',
     role: 'town',
-    x: 6,
-    y: 174,
-    county: 'Calaveras',
-    hasLiveData: true,
-  },
-  {
-    id: 'murphys',
-    name: 'Murphys',
-    label: true,
-    role: 'hq',
-    x: 50,
-    y: 133,
-    county: 'Calaveras',
-    hasLiveData: true,
-  },
-  {
-    id: 'arnold',
-    name: 'Arnold',
-    label: true,
-    role: 'town',
-    x: 109,
-    y: 51,
-    county: 'Calaveras',
-    hasLiveData: true,
+    lon: -120.0405,
+    lat: 38.4588,
+    labelSide: 'left',
   },
   {
     id: 'dorrington',
     name: 'Dorrington',
-    label: false,
     role: 'town',
-    x: 153,
-    y: 15,
-    county: 'Calaveras',
-    hasLiveData: false,
+    lon: -120.2702,
+    lat: 38.3119,
+    labelSide: 'left',
+  },
+  { id: 'arnold', name: 'Arnold', role: 'town', lon: -120.351, lat: 38.2555, labelSide: 'left' },
+  { id: 'murphys', name: 'Murphys', role: 'hq', lon: -120.4655, lat: 38.1377, labelSide: 'right' },
+  {
+    id: 'angels-camp',
+    name: 'Angels Camp',
+    role: 'town',
+    lon: -120.5397,
+    lat: 38.0683,
+    labelSide: 'right',
   },
   {
     id: 'columbia',
     name: 'Columbia',
-    label: false,
     role: 'town',
-    x: 82,
-    y: 203,
-    county: 'Tuolumne',
-    hasLiveData: false,
+    lon: -120.4016,
+    lat: 38.0363,
+    labelSide: 'right',
   },
-  {
-    id: 'sonora',
-    name: 'Sonora',
-    label: true,
-    role: 'hub',
-    x: 91,
-    y: 239,
-    county: 'Tuolumne',
-    hasLiveData: false,
-  },
+  { id: 'sonora', name: 'Sonora', role: 'hub', lon: -120.3822, lat: 37.9841, labelSide: 'right' },
 ] as const;
 
 export interface Corridor {
@@ -106,7 +101,7 @@ export const corridors: readonly Corridor[] = [
     id: 'hwy4',
     name: 'Highway 4',
     kind: 'solid',
-    path: ['angels-camp', 'murphys', 'arnold', 'dorrington'],
+    path: ['bear-valley', 'dorrington', 'arnold', 'murphys', 'angels-camp'],
   },
   { id: 'hwy49', name: 'Highway 49', kind: 'solid', path: ['angels-camp', 'columbia', 'sonora'] },
   { id: 'crosslink', name: 'Cross-corridor relay', kind: 'dashed', path: ['murphys', 'columbia'] },
@@ -166,7 +161,7 @@ export const serviceAreaBounds = {
 /**
  * Network sites in REAL geographic coordinates (WGS84 lat/long), for the live
  * hazard map on /live (MapLibre overlays the org's own sites on a real basemap).
- * Separate from the hero CoverageMap's stylized x/y projection. `role`: hq=green,
+ * Separate from the hero CoverageMap (which draws a fixed set of towns in its own frame). `role`: hq=green,
  * relay=brass, hub=orange. Keep coordinates accurate to the actual towns.
  */
 export const mapSites: ReadonlyArray<{

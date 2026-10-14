@@ -54,6 +54,19 @@ absent from the page.
 | `--line`      | `#D8D0BD` | Default 1px border (warm tan) — **borders are never gray** |
 | `--line-soft` | `#E5DDCA` | Lighter internal rule (table rows, list separators)        |
 
+### Hero map linework (homepage hero background only)
+
+| Token               | Hex       | Use                                |
+| ------------------- | --------- | ---------------------------------- |
+| `--map-county-line` | `#C9C1A9` | County borders                     |
+| `--map-road`        | `#F8F6EF` | State highways + route-marker fill |
+| `--map-shield-line` | `#D3C9AD` | Route-marker outline               |
+| `--map-shield-text` | `#7D7459` | Route numbers                      |
+| `--map-place`       | `#9A906F` | County names                       |
+
+The county tints are brand green (Calaveras, 7.5%) and brass (Tuolumne, 12%) — faint
+washes, not fills in the "never large fills" sense. These tokens appear nowhere else.
+
 ### Status-dot colors (functional)
 
 | Token              | Hex       | Meaning                                                                              |
@@ -66,7 +79,8 @@ absent from the page.
 Brass/gold only for kicker labels, thin dividers, and secondary-button outlines —
 **never large fills.** Burnt orange is reserved exclusively for risk/alert states.
 No gradients as decoration; the **only** permitted gradient is the barely-visible
-radial green glow behind the hero map. Borders are always warm tan, never gray.
+radial green glow behind the hero map, plus the hero's left-edge parchment fade that keeps
+the copy legible over the map (a legibility mask, not decoration). Borders are always warm tan, never gray.
 
 ---
 
