@@ -166,6 +166,7 @@ const schema = {
       </aside>
 
       <div data-live-weather></div>
+      <div data-live-burn></div>
 
       <div class="live-grid">
         <section class="live-grid__map" aria-labelledby="map-title">
@@ -309,6 +310,7 @@ const schema = {
 
   function applyView(view: LiveView) {
     setRegion('[data-live-weather]', view.html.weather);
+    setRegion('[data-live-burn]', view.html.burn);
     setRegion('[data-live-stream]', view.html.stream);
     setRegion('[data-live-roads]', view.html.roads);
     setRegion('[data-live-scanners]', view.html.scanners);
@@ -343,10 +345,16 @@ const schema = {
       if (!res.ok) throw new Error(`${path} → ${res.status}`);
       return res.json();
     };
-    const [summary, scannersRes, conditions, ...layerList] = await Promise.all([
+    const [summary, scannersRes, conditions, burn, ...layerList] = await Promise.all([
       get(`/places/${HAZARD_AREA}/summary`),
       get(`/scanners?place=${HAZARD_AREA}`),
       get('/conditions'),
+      // Burn status is a daily condition, not a hazard: its failure reads "unknown" in its
+      // own line rather than taking the whole page down to the failure panel.
+      get(`/events?layer=BURN_STATUS&place=${HAZARD_AREA}`).then(
+        (r) => r?.events ?? [],
+        () => null
+      ),
       ...MAP_LAYERS.map((l) => get(`/places/${HAZARD_AREA}/map/${l}.geojson`)),
     ]);
     const layers: Record<string, unknown> = {};
@@ -358,7 +366,7 @@ const schema = {
       layers,
       scanners: scannersRes?.scanners ?? [],
     } as unknown as HazardsSnapshot;
-    const grid = { fetchedAt: '', conditions } as unknown as GridSnapshot;
+    const grid = { fetchedAt: '', conditions, burn } as unknown as GridSnapshot;
     return { haz, grid };
   }
 

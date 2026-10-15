@@ -131,11 +131,30 @@ Weather = {
 
 `{ scanners: [{ feedId, channelLabel, agency, broadcastifyUrl }] }` (camelCase, link-out only).
 
-### Available but unused: `/events`, `/events/{id}`, `/events/{id}/history`, `/history`
+### `GET /events?layer=BURN_STATUS&place={area}` (added 2026-10)
+
+One event per county (`burn:calaveras-county`, `burn:tuolumne-county`), no geometry, always
+`ACTIVE`/`INFO`. `burnStatus` carries two authorities as separate facets — `calfireStatus`
+(CAL FIRE's seasonal permit suspension on SRA land) and `burnDay` (the county air district's
+daily call, read off its recorded phone line and transcribed) — plus `permission`, The Grid's
+deliberately pessimistic merge, and `burnLines[]` (`phone` always populated).
+
+`/live` shows ONE burn status under the weather band (`burnVerdict` in `grid.ts`), named by
+whoever decides it: **"Burning suspended by CAL FIRE"** while the suspension holds (it overrides
+the county, so the daily call is moot — all summer and much of spring and fall), otherwise
+**"Burning prohibited by the air district"** on a no-burn day (in winter that's air quality, not
+fire). Rules: trust `permission` and never re-derive `ALLOWED` from the facets; a
+`BURN_DAY_MARGINAL` day is elevation-restricted, so it sends people to the burn line; anything
+else reads "unknown — call the burn line". Counties that agree share one line. A failed fetch
+reads unknown in that line without failing the page; no events renders nothing (not covered is
+not allowed). No orange in any state — it's a condition, not a hazard.
+
+### Available but unused: `/events/{id}`, `/events/{id}/history`, `/history`
 
 The unified events feed (camelCase, UPPERCASE enums, base64 geometry, cursor pagination) is
-for future work (Fire Desk history, archive). `/live` uses the per-layer map geojson instead,
-which preserves the `HazardFeature` shape our derivations expect.
+for future work (Fire Desk history, archive). `/live` uses the per-layer map geojson for
+hazards instead, which preserves the `HazardFeature` shape our derivations expect; `/events`
+is used only for burn status, which has no map layer.
 
 ## Architecture: client-only live data (no build-time fetch)
 

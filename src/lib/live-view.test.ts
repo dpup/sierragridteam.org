@@ -7,9 +7,9 @@
 import { test, expect } from 'bun:test';
 import { buildView } from './live-view';
 import type { HazardsSnapshot, HazardFeature } from './hazards';
-import type { GridSnapshot } from './grid';
+import type { BurnStatusEvent, GridSnapshot } from './grid';
 
-const emptyGrid: GridSnapshot = { fetchedAt: '', conditions: null };
+const emptyGrid: GridSnapshot = { fetchedAt: '', conditions: null, burn: [] };
 
 function snap(layers: Record<string, unknown>): HazardsSnapshot {
   return {
@@ -278,4 +278,80 @@ test('INFO outages are off the map as well as the stream', () => {
   const info = power('planned', { severity: 'INFO', severityRank: 0 }, {});
   const view = buildView(snap({ power: fc([info]) }), emptyGrid, NOON_WED);
   expect(view.mapData.layers.power.features).toHaveLength(0);
+});
+
+// ---- burn status ----
+
+function county(name: string, s: Partial<BurnStatusEvent['burnStatus']>): BurnStatusEvent {
+  return {
+    id: `burn:${name.toLowerCase()}-county`,
+    areaLabel: `${name} County`,
+    canonicalUrl: 'https://burnpermit.fire.ca.gov/current-burn-status',
+    burnStatus: {
+      burnDay: 'BURN_DAY_UNKNOWN',
+      calfireStatus: 'CALFIRE_BURN_STATUS_UNKNOWN',
+      permission: 'BURN_PERMISSION_UNKNOWN',
+      burnLines: [
+        {
+          id: `${name.toLowerCase()}-apcd`,
+          name: `${name} County APCD burn line`,
+          phone: '+12097546600',
+          burnDay: 'BURN_DAY_UNKNOWN',
+          observation: {
+            message: '',
+            transcript: '',
+            confidence: 90,
+            observedAt: '2026-12-02T15:30:00Z',
+          },
+        },
+      ],
+      ...s,
+    },
+  };
+}
+const burnView = (burn: BurnStatusEvent[] | null) =>
+  buildView(snap({}), { ...emptyGrid, burn }).html.burn;
+const SUSPENDED = {
+  calfireStatus: 'CALFIRE_BURNING_SUSPENDED',
+  permission: 'BURN_PERMISSION_PROHIBITED',
+  calfireEffective: '2026-06-15T15:00:00Z',
+};
+const NO_BURN_DAY = {
+  calfireStatus: 'CALFIRE_NO_PERMIT_REQUIRED',
+  burnDay: 'BURN_DAY_NO',
+  permission: 'BURN_PERMISSION_PROHIBITED',
+};
+
+test('a CAL FIRE suspension is one line naming CAL FIRE and when it began', () => {
+  const html = burnView([county('Calaveras', SUSPENDED), county('Tuolumne', SUSPENDED)]);
+  expect(html.match(/burn__row/g)?.length).toBe(1);
+  expect(html).toContain('Burning suspended by CAL FIRE');
+  expect(html).toContain('Since June 15');
+  expect(html).toContain('https://burnpermit.fire.ca.gov/current-burn-status');
+  // The daily call is moot while CAL FIRE holds it — no burn-line numbers.
+  expect(html).not.toContain('tel:');
+});
+
+test('a winter no-burn day names the air district and offers the burn line', () => {
+  const html = burnView([county('Calaveras', NO_BURN_DAY), county('Tuolumne', NO_BURN_DAY)]);
+  expect(html).toContain('Burning prohibited by the air district');
+  expect(html).toContain('href="tel:+12097546600"');
+  expect(html).toContain('Calaveras County burn line (209) 754-6600');
+  expect(html).toContain('Called Wed 07:30 PT');
+  expect(html).not.toContain('CAL FIRE');
+});
+
+test('counties that disagree get a line each, named', () => {
+  const html = burnView([
+    county('Calaveras', { permission: 'BURN_PERMISSION_ALLOWED' }),
+    county('Tuolumne', NO_BURN_DAY),
+  ]);
+  expect(html.match(/burn__row/g)?.length).toBe(2);
+  expect(html).toContain('<span class="burn__county">Calaveras County</span>');
+  expect(html).toContain('Burning allowed today');
+});
+
+test('a failed burn fetch reads unknown; no counties renders nothing', () => {
+  expect(burnView(null)).toContain('Burn status unknown');
+  expect(burnView([])).toBe('');
 });

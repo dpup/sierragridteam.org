@@ -103,6 +103,64 @@
   color: var(--ink-strong);
 }
 
+/* ---- Burn status (one quiet line under the weather band) ----
+   A daily condition, not a hazard: no card, no colored state, no orange in any season. */
+.live-view .burn {
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-4);
+}
+.live-view .burn__label {
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-brass-text);
+}
+.live-view .burn__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.live-view .burn__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.live-view .burn__county {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  color: var(--ink-secondary);
+}
+.live-view .burn__status {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  color: var(--ink-strong);
+}
+.live-view .burn__meta {
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.live-view .burn__meta a {
+  /* Never break a phone number across lines — wrap between links instead. */
+  white-space: nowrap;
+  color: var(--brand-green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.live-view .burn__meta a:hover {
+  text-decoration: none;
+}
+
 /* Phones: the chips wrap raggedly as a flex row, so lay them out 2-up (50% each),
    temperature pushed to the right edge. The popover is pinned to its cell so it can
    never push the page wider than the viewport. */

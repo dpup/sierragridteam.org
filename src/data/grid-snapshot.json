@@ -100,5 +100,112 @@
       "zones": []
     },
     "lastUpdated": "2026-07-09T23:39:28.655043184Z"
-  }
+  },
+  "burn": [
+    {
+      "id": "burn:calaveras-county",
+      "layer": "BURN_STATUS",
+      "category": "burn_status",
+      "severity": "INFO",
+      "status": "ACTIVE",
+      "headline": "Calaveras County — no-burn day; CAL FIRE burning suspended",
+      "summary": "",
+      "description": "",
+      "areaLabel": "Calaveras County",
+      "canonicalUrl": "https://burnpermit.fire.ca.gov/current-burn-status",
+      "geometry": null,
+      "placeIds": [
+        "area:ebbetts-pass",
+        "county:calaveras-county",
+        "town:arnold",
+        "town:dorrington",
+        "town:murphys"
+      ],
+      "provenance": {
+        "sourceId": "burnline",
+        "sourceName": "County Burn Line",
+        "attribution": "County air district burn information line",
+        "sourceUrl": "",
+        "fetchedAt": "2026-10-14T23:42:07.322360346Z"
+      },
+      "effective": null,
+      "expires": null,
+      "observedAt": "2026-10-14T23:42:07.322334046Z",
+      "ingestedAt": "2026-10-09T10:02:24.446504734Z",
+      "revision": 2,
+      "enhancement": null,
+      "burnStatus": {
+        "burnDay": "BURN_DAY_NO",
+        "calfireStatus": "CALFIRE_BURNING_SUSPENDED",
+        "permission": "BURN_PERMISSION_PROHIBITED",
+        "calfireEffective": "2026-06-15T15:00:00Z",
+        "calfireArea": "All SRA",
+        "burnLines": [
+          {
+            "id": "calaveras-apcd",
+            "name": "Calaveras County burn line",
+            "phone": "+12097546600",
+            "burnDay": "BURN_DAY_NO",
+            "observation": {
+              "message": "Burning is prohibited in Calaveras County as all residential burn permits and outdoor burning have been suspended until further notice.",
+              "transcript": "Cal Fire has suspended all residential burn permits and outdoor burning in Calaveras County until further notice.",
+              "confidence": 95,
+              "observedAt": "2026-10-14T18:45:13Z"
+            }
+          }
+        ],
+        "calfireObservedAt": "2026-10-14T23:42:07.322334046Z"
+      }
+    },
+    {
+      "id": "burn:tuolumne-county",
+      "layer": "BURN_STATUS",
+      "category": "burn_status",
+      "severity": "INFO",
+      "status": "ACTIVE",
+      "headline": "Tuolumne County — burn day unknown; CAL FIRE burning suspended",
+      "summary": "",
+      "description": "",
+      "areaLabel": "Tuolumne County",
+      "canonicalUrl": "https://burnpermit.fire.ca.gov/current-burn-status",
+      "geometry": null,
+      "placeIds": [
+        "area:ebbetts-pass",
+        "county:tuolumne-county",
+        "town:columbia",
+        "town:sonora",
+        "town:twainharte"
+      ],
+      "provenance": {
+        "sourceId": "calfire-burn",
+        "sourceName": "CAL FIRE Burn Permits",
+        "attribution": "CAL FIRE",
+        "sourceUrl": "https://burnpermit.fire.ca.gov/current-burn-status",
+        "fetchedAt": "2026-10-14T23:42:07.424472366Z"
+      },
+      "effective": null,
+      "expires": null,
+      "observedAt": "2026-10-14T23:42:07.322334046Z",
+      "ingestedAt": "2026-10-09T09:01:53.652691609Z",
+      "revision": 1,
+      "enhancement": null,
+      "burnStatus": {
+        "burnDay": "BURN_DAY_UNKNOWN",
+        "calfireStatus": "CALFIRE_BURNING_SUSPENDED",
+        "permission": "BURN_PERMISSION_PROHIBITED",
+        "calfireEffective": "2026-06-15T15:00:00Z",
+        "calfireArea": "All SRA",
+        "burnLines": [
+          {
+            "id": "tuolumne-apcd",
+            "name": "Tuolumne County APCD burn line",
+            "phone": "+12095335598",
+            "burnDay": "BURN_DAY_UNKNOWN",
+            "observation": null
+          }
+        ],
+        "calfireObservedAt": "2026-10-14T23:42:07.322334046Z"
+      }
+    }
+  ]
 }

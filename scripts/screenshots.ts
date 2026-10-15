@@ -238,6 +238,7 @@ function mockGrid(route: Route) {
   // the history band draws the same picture on every run.
   const tel = url.match(/\/mesh\/telemetry\?node=([0-9a-f]+)/);
   if (tel) return json(rebaseTelemetry(meshSnap.telemetry?.[tel[1]]));
+  if (url.includes('layer=BURN_STATUS')) return json({ events: snapshot.burn ?? [] });
   if (url.includes('/events')) return json({ events: [] });
   if (url.includes('/summary')) return json(hazards.summary);
   if (url.includes('/scanners')) return json({ scanners: hazards.scanners });

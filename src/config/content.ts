@@ -166,6 +166,22 @@ export const live = {
   streamHeading: 'Active alerts',
   streamEmpty: 'No active hazards in the service area right now. The map and feeds below are live.',
   conditionsHeading: 'Current conditions',
+  /**
+   * The burn-status line under the weather band. One status, named by the authority that
+   * decides it: CAL FIRE's seasonal suspension overrides the county, so while it holds the
+   * daily burn-day call is moot. Keyed by `BurnVerdict` (src/lib/grid.ts).
+   */
+  burn: {
+    label: 'Burn Status',
+    calfire: 'Burning suspended by CAL FIRE',
+    district: 'Burning prohibited by the air district',
+    allowed: 'Burning allowed today',
+    elevation: 'Burning allowed only above a set elevation — call the burn line',
+    unknown: 'Burn status unknown — call the burn line',
+    unavailable: 'Burn status unknown — check with your county air district',
+    permitRequired: 'CAL FIRE permit required',
+    calfireLink: 'CAL FIRE burn status',
+  },
   roadsHeading: 'Road conditions',
   evacHeading: 'Evacuation zones & orders',
   evacNote:
