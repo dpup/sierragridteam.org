@@ -18,9 +18,8 @@
   --surface-hero: #edefe7; /* hero band */
   --surface-card: #f6f2e7; /* cards / tiles */
   --surface-banner: #efe9da; /* banners / call-outs */
-  /* Near-white parchment for a floating overlay ONLY (the map popover). Every other surface
-     sits in the beige family; this one is deliberately lifted off it so a popover reads as
-     hovering ABOVE the map's labels rather than as one more beige chip beside them. */
+  /* Near-white parchment, lifted off the beige family — the homepage supporter tiles, where
+     each organisation's logo sits on a neutral ground. */
   --surface-raised: #fdfcf7;
 
   /* ---- Ink (text) ---- */
@@ -38,55 +37,22 @@
   --signal-orange-hover: #9a330a; /* orange hover (one step darker) — used by the sanctioned Donate CTA */
   --signal-orange-text: #b03808; /* small orange TEXT — AA-compliant (≥4.5:1) variant of the risk orange */
 
-  /* ---- Deep surface (the /mesh status band) ----
-     The one dark ground in the system. It exists so the mesh page opens on a status board
-     rather than a page of prose: the figures read as instrumentation, and the parchment
-     below reads as the document. Its ink tokens live here too — nothing may put
-     --ink-body on this ground. */
-  --surface-deep: #14281d;
-  --surface-deep-line: #2c4536; /* hairline between metric cells */
-  --ink-on-deep: #f1ece0; /* headline figures on the deep ground */
-  --ink-on-deep-muted: #9db3a4; /* labels + sublabels on the deep ground */
-
-  /* ---- Chart series ----
-     A categorical scale for the /mesh telemetry history, where one line per monitored
-     repeater is the point. This is the ONLY categorical scale in the system and the only
-     place these hexes may appear — UI chrome still has exactly one brand colour.
-
-     Chosen by search, not by eye, under four constraints, and verified by
-     `src/lib/mesh-series.test.ts` so it cannot silently regress:
-       1. contrast >= 3:1 on --surface-page, so a 2px line is legible;
-       2. worst normal-vision pair separation >= 15 (OKLab dE x100) — measured 15.4;
-       3. worst separation under simulated deuter/prot/tritanopia >= 6 — measured 7.6,
-          legal only WITH secondary encoding, which this chart has: the legend names every
-          series with its current value, hover highlights, and selecting isolates a trace;
-       4. NO hue near the alert orange (OKLCH H~38). A trace reading as "alarming" when it
-          is merely series 5 would break the palette's one hard promise (rule 2). Measured
-          as an angular distance in OKLCH; the test has already rejected one candidate
-          (#5a2900, 14.7 degrees off the alert hue) that looked perfectly fine by eye.
-     Series 1 is the brand forest green; the rest are its neighbours in the same muted band.
-     Adding an 8th slot means re-running the search, not appending a guess. */
-  --series-1: #1d5b3f;
-  --series-2: #8980cd;
-  --series-3: #ae782a;
-  --series-4: #002803;
-  --series-5: #389160;
-  --series-6: #730b24;
-  --series-7: #1f1446;
-
   /* ---- Lines / borders (always warm tan, never gray) ---- */
   --line: #d8d0bd; /* default 1px border */
   --line-soft: #e5ddca; /* lighter internal rule */
+  --line-strong: #cfc7b2; /* table header rule, chart baseline, map control border */
   --line-control: #928869; /* form-control border — ≥3:1 for WCAG 1.4.11 non-text contrast */
 
-  /* ---- Hero map linework (homepage hero background ONLY) ----
-     The faint county + highway map behind the hero (src/assets/hero-map.svg). Decorative and
-     deliberately quiet: knocked-out roads, warm hairlines, muted place names. */
+  /* ---- Map linework ----
+     The faint county + highway map behind the homepage hero (src/assets/hero-map.svg), and the
+     /mesh basemap restyled to match it (src/lib/mesh-basemap.ts). Quiet on purpose: knocked-out
+     roads, warm hairlines, muted place names — the mesh is the subject, not the ground. */
   --map-county-line: #c9c1a9; /* county borders */
   --map-road: #f8f6ef; /* state highways + route-marker fill */
   --map-shield-line: #d3c9ad; /* route-marker outline */
   --map-shield-text: #7d7459; /* route numbers */
   --map-place: #9a906f; /* county names */
+  --map-water: #dde3da; /* lakes + rivers on the /mesh basemap */
 
   /* ---- Status-dot states (functional) ---- */
   --state-ok: #1d5b3f; /* operational / normal */
@@ -163,12 +129,9 @@
   --z-topbar: 50;
   --z-overlay: 40;
 
-  /* Cards never use drop shadows. These two exist only for genuinely elevated overlays, and
-     neither may be used on a card or tile. --shadow-overlay is the flat hairline for chrome
-     that sits ON the page (e.g. a loading panel, a floating control). --shadow-popover is a
-     soft cast for something floating ABOVE the map, where a hairline reads as flat. */
+  /* Cards never use drop shadows. --shadow-overlay is the flat hairline for chrome that sits
+     ON the page (e.g. a loading panel, a floating control); it may not be used on a card. */
   --shadow-overlay: 0 1px 0 var(--line);
-  --shadow-popover: 0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
 }
 
 /* Honor reduced-motion at the token layer so every animation can gate on it. */

@@ -1,153 +1,132 @@
 /**
  * Validates /mesh's link expressions against the REAL MapLibre style spec.
  *
- * Why this file exists: MapLibre drops an invalid paint expression **silently** — no throw,
- * no console warning. The property just never applies, so the layer renders wrong or
- * disappears, and it looks like a data problem. The classic version of the trap is putting
- * `zoom` inside a `case` (it is only legal at the top level), which is exactly the shape
- * `linkOpacity` has to thread. These tests fail the build instead.
+ * Why this file exists: MapLibre drops an invalid paint expression or filter **silently** —
+ * no throw, no console warning. The property just never applies, so the layer renders wrong
+ * or disappears, and it looks like a data problem. These tests fail the build instead, and
+ * pin the three selection states the map moves between.
  */
 import { test, expect } from 'bun:test';
 import { expression, type StylePropertySpecification } from '@maplibre/maplibre-gl-style-spec';
-import { linkFilter, linkPaint, TIER_STYLE } from './mesh-link-paint';
-import { RECENCY_TIERS, type MeshRecency } from './mesh';
+import {
+  linkFilter,
+  linkPaint,
+  selectedLinkFilter,
+  LINK_FOCUS_DIM,
+  SELECTION_REST,
+  STALE_STYLE,
+  TIER_STYLE,
+  type LinkState,
+} from './mesh-link-paint';
+import { RECENCY_TIERS } from './mesh';
 
 const KEY = 'a2d649457de4481afba636761b186898107959fe6f906fc9f838447b965ace71';
 
-/** Both link properties are data-driven, zoom-dependent numbers. */
 const NUMBER_PROP = {
   type: 'number',
   'property-type': 'data-driven',
   expression: { interpolated: true, parameters: ['zoom', 'feature', 'feature-state'] },
 } as unknown as StylePropertySpecification;
+const FILTER_PROP = {
+  type: 'boolean',
+  'property-type': 'data-driven',
+  expression: { interpolated: false, parameters: ['zoom', 'feature'] },
+} as unknown as StylePropertySpecification;
 
-const compile = (value: unknown) => expression.createExpression(value, NUMBER_PROP);
-
-/** Evaluate a compiled paint expression for one link at one zoom. */
-function evaluate(value: unknown, feature: Record<string, unknown>, zoom = 8): number {
-  const parsed = compile(value);
+function evaluate(
+  value: unknown,
+  feature: Record<string, unknown>,
+  spec = NUMBER_PROP,
+  hover = false
+): unknown {
+  const parsed = expression.createExpression(value, spec);
   if (parsed.result === 'error') throw new Error(JSON.stringify(parsed.value));
-  return parsed.value.evaluate({ zoom }, { type: 'Feature', properties: feature, geometry: null });
+  return parsed.value.evaluate(
+    { zoom: 9 },
+    { type: 'Feature', properties: feature, geometry: null },
+    { hover }
+  );
 }
 
 const link = (over: Record<string, unknown> = {}) => ({
+  id: 'mesh_link:x',
   recency: 'live',
   outward: false,
-  weight: 0.5,
+  stale: false,
   a: KEY,
   b: 'ffff',
   ...over,
 });
 
-test('every link paint expression compiles, selected and not', () => {
-  for (const tier of RECENCY_TIERS) {
-    for (const selected of [null, KEY]) {
-      const paint = linkPaint(tier, selected);
-      for (const [layer, props] of Object.entries(paint)) {
-        for (const [prop, value] of Object.entries(props)) {
-          const parsed = compile(value);
-          // An error here is the silent-drop bug, caught at build time instead of by eye.
-          expect(
-            parsed.result === 'error'
-              ? `${tier}/${layer}/${prop}: ${JSON.stringify(parsed.value)}`
-              : 'success'
-          ).toBe('success');
-        }
+const REST: LinkState = { node: null, link: null };
+const SELECTED: LinkState = { node: KEY, link: null };
+const FOCUSED: LinkState = { node: null, link: 'mesh_link:other' };
+const STATES = [REST, SELECTED, FOCUSED, { node: KEY, link: 'mesh_link:x' }];
+
+test('every link filter and paint expression compiles, in every selection state', () => {
+  for (const s of STATES) {
+    for (const stale of [false, true]) {
+      // An error here is the silent-drop bug, caught at build time instead of by eye.
+      expect(() => evaluate(linkFilter(stale, s), link(), FILTER_PROP)).not.toThrow();
+      for (const value of Object.values(linkPaint(stale, s))) {
+        expect(() => evaluate(value, link())).not.toThrow();
       }
     }
   }
+  expect(() => evaluate(selectedLinkFilter('x'), link(), FILTER_PROP)).not.toThrow();
+  expect(() => evaluate(selectedLinkFilter(null), link(), FILTER_PROP)).not.toThrow();
 });
 
-test('zoom stays at the top level — the expression MapLibre would drop without a word', () => {
-  // `interpolate` outermost, every data-driven test inside its stops. If someone wraps this
-  // in a `case` the compile above fails; this asserts the shape directly so the reason is
-  // legible in the diff.
-  const opacity = linkPaint('live', KEY).pulse['line-opacity'] as unknown[];
-  expect(opacity[0]).toBe('interpolate');
-  expect(JSON.stringify(opacity).indexOf('"zoom"')).toBeLessThan(40);
-});
-
-test('selecting a repeater dims the links that do not touch it, and keeps them drawn', () => {
-  const tier: MeshRecency = 'live';
-  const mine = link({ a: KEY });
-  const theirs = link({ a: '1111', b: '2222' });
-  const unselected = linkPaint(tier, null).pulse['line-opacity'];
-  const selected = linkPaint(tier, KEY).pulse['line-opacity'];
-
-  // Nothing selected: both links read the same, and a full-weight link reaches its tier's
-  // full strength. (A two-argument version of the selection helper returned the demoted
-  // value here, dimming the whole map.)
-  expect(evaluate(unselected, mine)).toBeCloseTo(evaluate(unselected, theirs), 5);
-  expect(evaluate(unselected, link({ a: KEY, weight: 1 }))).toBeCloseTo(TIER_STYLE.live.opacity, 5);
-
-  // Selected: mine holds its strength, theirs drops back to context…
-  expect(evaluate(selected, mine)).toBeCloseTo(evaluate(unselected, mine), 5);
-  expect(evaluate(selected, theirs)).toBeLessThan(evaluate(unselected, theirs) * 0.5);
-  // …but is never switched off. A link that vanished on selection would read as a claim
-  // that it stopped existing (content-style-guide §3).
-  expect(evaluate(selected, theirs)).toBeGreaterThan(0);
-});
-
-test('every link is exactly one pixel wide, whatever its weight, tier or selection', () => {
-  // Width and opacity were both carrying weight and tier, so a busy recent link came out
-  // four times heavier AND four times brighter than a faint one. Width is now a constant and
-  // opacity is the only channel; this asserts nothing has crept back into it.
-  const widths = new Set<unknown>();
-  for (const tier of RECENCY_TIERS) {
-    for (const sel of [null, KEY]) {
-      const paint = linkPaint(tier, sel);
-      widths.add(JSON.stringify(paint.base['line-width']));
-      widths.add(JSON.stringify(paint.pulse['line-width']));
-    }
+test('a fresher link is drawn darker and heavier than a colder one', () => {
+  const at = (recency: string) => ({
+    opacity: evaluate(linkPaint(false, REST)['line-opacity'], link({ recency })) as number,
+    width: evaluate(linkPaint(false, REST)['line-width'], link({ recency })) as number,
+  });
+  for (let i = 1; i < RECENCY_TIERS.length; i++) {
+    const fresher = at(RECENCY_TIERS[i - 1]);
+    const colder = at(RECENCY_TIERS[i]);
+    expect(fresher.opacity).toBeGreaterThan(colder.opacity);
+    expect(fresher.width).toBeGreaterThanOrEqual(colder.width);
   }
-  expect([...widths]).toEqual(['1']);
+  // …and exactly the design's ramp, so the legend's swatches match the map.
+  expect(at('live')).toEqual({ opacity: TIER_STYLE.live.opacity, width: TIER_STYLE.live.width });
+  expect(at('cold')).toEqual({ opacity: TIER_STYLE.cold.opacity, width: TIER_STYLE.cold.width });
 });
 
-test('reception weight rides on opacity, and a one-shot is demoted but never invisible', () => {
-  const o = linkPaint('live', null).pulse['line-opacity'];
-  const backbone = evaluate(o, link({ weight: 1 }));
-  const oneShot = evaluate(o, link({ weight: 0 }));
-  // A backbone link reads stronger than a one-shot…
-  expect(backbone).toBeGreaterThan(oneShot);
-  // …but log-scaled weight must not make the rare long-haul shot vanish: a link seen once in
-  // a month is often the most interesting thing on the map.
-  expect(oneShot).toBeGreaterThan(backbone * 0.4);
-  // A missing weight is treated as the floor, never as zero opacity.
-  expect(evaluate(o, { recency: 'live', outward: false, a: KEY, b: 'ffff' })).toBeCloseTo(
-    oneShot,
-    5
-  );
+test('nothing selected is the neutral state — no link is dimmed by default', () => {
+  // The regression this guards: a two-way version returned the "not touching" value when
+  // nothing was selected, and the whole map drew at the rest opacity.
+  const other = link({ a: 'eeee', b: 'ffff' });
+  expect(evaluate(linkPaint(false, REST)['line-opacity'], other)).toBe(TIER_STYLE.live.opacity);
 });
 
-test('the filter hides outward links until their own repeater is selected', () => {
-  const run = (value: unknown, f: Record<string, unknown>) => {
-    const parsed = expression.createExpression(value, {
-      type: 'boolean',
-      'property-type': 'data-driven',
-      expression: { interpolated: false, parameters: ['zoom', 'feature'] },
-    } as unknown as StylePropertySpecification);
-    if (parsed.result === 'error') throw new Error(JSON.stringify(parsed.value));
-    return parsed.value.evaluate({ zoom: 8 }, { type: 'Feature', properties: f, geometry: null });
-  };
-  const outwardMine = link({ outward: true, a: KEY });
-  const outwardTheirs = link({ outward: true, a: '1111', b: '2222' });
-  const corridor = link({ outward: false, a: '1111', b: '2222' });
-
-  expect(run(linkFilter('live', null), outwardMine)).toBe(false);
-  expect(run(linkFilter('live', null), corridor)).toBe(true);
-  // Selection only ever ADDS: my outward links appear, everyone else's stay hidden, and the
-  // corridor keeps its own.
-  expect(run(linkFilter('live', KEY), outwardMine)).toBe(true);
-  expect(run(linkFilter('live', KEY), outwardTheirs)).toBe(false);
-  expect(run(linkFilter('live', KEY), corridor)).toBe(true);
+test('selecting a repeater keeps its links on the ramp and drops the rest to a trace', () => {
+  const paint = linkPaint(false, SELECTED)['line-opacity'];
+  expect(evaluate(paint, link())).toBe(TIER_STYLE.live.opacity);
+  expect(evaluate(paint, link({ a: 'eeee', b: 'ffff' }))).toBe(SELECTION_REST);
 });
 
-test('a fresher tier is drawn stronger than a colder one', () => {
-  const opacity = (t: MeshRecency) =>
-    evaluate(linkPaint(t, null).pulse['line-opacity'], link({ recency: t }));
-  expect(opacity('live')).toBeGreaterThan(opacity('recent'));
-  expect(opacity('recent')).toBeGreaterThan(opacity('fading'));
-  expect(opacity('fading')).toBeGreaterThan(opacity('cold'));
-  // The dash rate carries the same ordering, so freshness survives reduced motion.
-  expect(TIER_STYLE.live.stepMs).toBeLessThan(TIER_STYLE.cold.stepMs);
+test('an open link card dims every link to a fraction of itself', () => {
+  const paint = linkPaint(false, FOCUSED)['line-opacity'];
+  expect(evaluate(paint, link())).toBeCloseTo(TIER_STYLE.live.opacity * LINK_FOCUS_DIM);
+  // …and a hovered link always lifts, so the next one to click reads as a target.
+  expect(evaluate(paint, link(), NUMBER_PROP, true)).toBe(0.95);
+});
+
+test('outward links stay hidden until their own repeater is selected', () => {
+  const outward = link({ outward: true });
+  expect(evaluate(linkFilter(false, REST), outward, FILTER_PROP)).toBe(false);
+  expect(evaluate(linkFilter(false, SELECTED), outward, FILTER_PROP)).toBe(true);
+  // Another repeater's outward link stays hidden while this one is selected.
+  const theirs = link({ outward: true, a: 'eeee', b: 'ffff' });
+  expect(evaluate(linkFilter(false, SELECTED), theirs, FILTER_PROP)).toBe(false);
+  // Corridor links are always drawn: selection only ever adds.
+  expect(evaluate(linkFilter(false, SELECTED), link({ a: 'eeee' }), FILTER_PROP)).toBe(true);
+});
+
+test("a stale repeater's links go to the dashed orange layer, and only there", () => {
+  const stale = link({ stale: true });
+  expect(evaluate(linkFilter(true, REST), stale, FILTER_PROP)).toBe(true);
+  expect(evaluate(linkFilter(false, REST), stale, FILTER_PROP)).toBe(false);
+  expect(evaluate(linkPaint(true, REST)['line-opacity'], stale)).toBe(STALE_STYLE.opacity);
 });

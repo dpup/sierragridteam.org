@@ -50,7 +50,7 @@ blip; a failed read is "unknown", not an all-clear.)
 > whole body once the first fetch resolves, and on failure shows an honest "feed unavailable"
 > panel with the official sources — never stale data.
 >
-> `/mesh` follows the same pattern: `MeshMap` + `MeshSidebar` are empty SSR shells, and the
+> `/mesh` follows the same pattern: `MeshPanels` + `MeshMap` are empty SSR shells, and the
 > page script fills the panel from `src/lib/mesh-view.ts` and builds the map with
 > `mesh-map.ts`; CSS is global+namespaced in `src/styles/mesh.css`. On failure it shows an
 > honest "mesh feed unavailable" block and leaves the map empty — an empty mesh map means

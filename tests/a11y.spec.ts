@@ -35,16 +35,13 @@ for (const pg of pages) {
         })
         .catch(() => {});
     }
-    // /mesh renders its panel (including the roster's buttons) from the live feed — scan
-    // the filled state, not the empty skeleton. Falls through if the feed is unreachable,
-    // where the honest failure panel is what gets scanned instead.
+    // /mesh renders its report (headline, figures, table) from the live feed — scan the
+    // filled state, not the skeleton. The lede leaves "Loading…" either way: filled from the
+    // feed, or the honest failure text when the feed is unreachable — which is then scanned.
     if (pg.path === '/mesh') {
       await page
         .waitForFunction(
-          () => {
-            const el = document.querySelector('[data-mesh-band]');
-            return !!el && el.children.length > 0;
-          },
+          () => !document.querySelector('[data-mesh-lede]')?.textContent?.startsWith('Loading'),
           { timeout: 12000 }
         )
         .catch(() => {});

@@ -212,27 +212,6 @@ export function latestValue(series: TelemetrySeries, metric: HistoryMetric): num
   return null;
 }
 
-/** The plotted extent across every series, or null when nothing is plottable. */
-export function valueExtent(
-  list: TelemetrySeries[],
-  metric: HistoryMetric,
-  from: number,
-  to: number
-): { min: number; max: number } | null {
-  let min = Infinity;
-  let max = -Infinity;
-  for (const s of list) {
-    for (const p of s.points) {
-      if (p.t < from || p.t > to) continue;
-      const v = metricValue(p, metric);
-      if (v == null) continue;
-      if (v < min) min = v;
-      if (v > max) max = v;
-    }
-  }
-  return Number.isFinite(min) && Number.isFinite(max) ? { min, max } : null;
-}
-
 /** The earliest moment ANY monitor has data for — where "no data retained before" begins. */
 export function earliestCoverage(list: TelemetrySeries[]): number | null {
   let min = Infinity;
@@ -240,25 +219,39 @@ export function earliestCoverage(list: TelemetrySeries[]): number | null {
   return Number.isFinite(min) ? min : null;
 }
 
-// ---- History ranges ----
-
-export const HISTORY_RANGES = ['day', 'week', 'month'] as const;
-export type HistoryRange = (typeof HISTORY_RANGES)[number];
-export const HISTORY_RANGE_LABELS: Record<HistoryRange, string> = {
-  day: 'Day',
-  week: 'Week',
-  month: 'Month',
-};
-const RANGE_DAYS: Record<HistoryRange, number> = { day: 1, week: 7, month: 30 };
+// ---- The window ----
 
 /**
- * A rolling window ending NOW, not a calendar frame. Calendar framing was the single worst
- * thing about the mockup this replaced: with two days in the archive, its "Week" drew a day
- * and a half of data inside a frame running five days into the FUTURE, and its "Day"
- * defaulted to a UTC day that had not started yet, so the page opened on "no data".
+ * The chart and the roster sparklines both cover the last day, and nothing else. There was a
+ * Day / Week / Month control; the 2026-10 redesign dropped it — a month of seven traces was a
+ * texture rather than a reading, and the question the page answers is "how did last night go".
  */
-export function rangeWindow(range: HistoryRange, nowMs: number): { from: number; to: number } {
-  return { from: nowMs - RANGE_DAYS[range] * 86_400_000, to: nowMs };
+export const HISTORY_HOURS = 24;
+
+/** A rolling window ending NOW, never a calendar day (which may not have started yet in UTC). */
+export function historyWindow(nowMs: number): { from: number; to: number } {
+  return { from: nowMs - HISTORY_HOURS * 3_600_000, to: nowMs };
+}
+
+/**
+ * The deepest fall in a run: the largest drop from any reading to a LATER, lower one. Returns
+ * the drop and where it bottomed out, or null with fewer than two points. A recovery after
+ * the low does not reduce it — a battery that fell 40 points overnight and came back by noon
+ * still fell 40 points, and that night is what the highlight is for.
+ */
+export function largestDrop(run: { t: number; v: number }[]): {
+  drop: number;
+  low: { t: number; v: number };
+} | null {
+  if (run.length < 2) return null;
+  let peak = run[0].v;
+  let best: { drop: number; low: { t: number; v: number } } | null = null;
+  for (const p of run) {
+    if (p.v > peak) peak = p.v;
+    const d = peak - p.v;
+    if (d > 0 && (!best || d > best.drop)) best = { drop: d, low: p };
+  }
+  return best;
 }
 
 /**

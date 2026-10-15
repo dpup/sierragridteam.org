@@ -6,7 +6,9 @@ import { test, expect } from '@playwright/test';
 
 const pages = [
   { name: 'home', path: '/', h1: /signal stays up/i },
-  { name: 'mesh', path: '/mesh', h1: /^the mesh$/i },
+  // The h1 is generated from the feed ("9 of 11 repeaters / heard in the last 12 hours."),
+  // or states the failure honestly when the feed can't be reached — as in this suite.
+  { name: 'mesh', path: '/mesh', h1: /repeaters|mesh/i },
   { name: 'blog', path: '/blog', h1: /notes from the foothills/i },
   { name: 'blog-archive', path: '/blog/archive', h1: /archive/i },
   {

@@ -6,35 +6,32 @@
  * `src/styles/mesh.css`, namespaced under `.mesh-view`. Keep this module PURE — no DOM, no
  * fetch, no MapLibre.
  *
- * The page is a status board, in four regions, top to bottom:
- *   • BAND      — the deep-ground headline figures. What an operator reads first.
- *   • ATTENTION — anything currently outside limits. Empty means empty, and says so.
- *   • ROSTER    — one row per corridor repeater; a monitored row expands inline.
- *   • LEGEND    — the map's recency scale, as one horizontal strip.
- * The history chart is its own module (`mesh-history.ts`) because it owns an SVG.
+ * The page reads top to bottom as one report (layout "1a", 2026-10):
+ *   • HEADER — a headline generated from the data ("9 of 11 repeaters / heard in the last
+ *     12 hours."), a line naming any repeater we have stopped hearing, and four figures.
+ *   • 01 MAP — its legend is rendered here; the map itself is `mesh-map.ts`.
+ *   • 02 REPEATERS — one table row per corridor repeater.
+ *   • 03 BATTERY — the history chart, `mesh-history.ts`, because it owns an SVG.
  *
  * Honesty rules this module enforces (docs/content-style-guide.md §3):
  *   • A `null` count renders "Unknown", never "0" or "—" dressed up as calm.
  *   • Recency copy always says what we HEARD, never what is up or down.
- *   • Any span named in copy comes from a constant, never a literal — "in the last 30 days"
- *     must stay true if MESH_WINDOW changes.
- *   • A repeater with no monitor renders "Limited Telemetry" — a fact about OUR coverage. It
- *     is never a blank cell, a zero, or anything a reader could read as "this one is fine".
+ *   • Any span named in copy comes from a constant, never a literal — "in the last 12 hours"
+ *     must stay true if HEARD_WITHIN_HOURS changes.
+ *   • A repeater with no monitor reads "No telemetry" — a fact about OUR coverage. It is never
+ *     a blank cell, a zero, or anything a reader could read as "this one is fine".
  */
 import { escapeHtml as esc } from './format';
 import {
   agoLabel,
-  deriveAttention,
   deriveHeardCount,
   deriveMeshSummary,
   deriveNodeRows,
   deriveRecencyCounts,
+  deriveStaleLinkCount,
+  deriveStaleRows,
   displayName,
-  nodeTypeLabel,
-  shortKey,
   sortNodeRows,
-  HEARD_IN_LABELS,
-  HEARD_IN_OPTIONS,
   HEARD_WITHIN_HOURS,
   MESH_WINDOW_LABELS,
   RECENCY_LABELS,
@@ -42,325 +39,264 @@ import {
   ROSTER_SORTS,
   ROSTER_SORT_LABELS,
   type MeshGraph,
-  type MeshHeardIn,
   type MeshNodeHealth,
   type MeshNodeRow,
-  type MeshRecency,
   type MeshRosterSort,
   type MeshSummary,
   type MeshWindow,
 } from './mesh';
-import { metricValue, type TelemetrySeries } from './mesh-telemetry';
+import { historyWindow, metricValue, type TelemetrySeries } from './mesh-telemetry';
 import { mesh as copy } from '../config/content';
-import { personByMonitorId } from '../config/people';
 
 export interface MeshViewOptions {
-  /** The expanded repeater, shared with the map and the history chart's legend. */
+  /** The selected repeater, shared with the map. */
   selected: string | null;
   sort: MeshRosterSort;
-  heardIn: MeshHeardIn;
   /** Archived telemetry by public key — empty until the deferred fetch lands. */
   series: Map<string, TelemetrySeries>;
 }
 
 export interface MeshView {
   summary: MeshSummary;
-  status: { tone: 'ok' | 'stale' | 'unknown'; label: string; detail: string };
-  html: { band: string; attention: string; legend: string; roster: string; controls: string };
+  html: {
+    /** The h1's two lines (the h1 element itself is in the SSR skeleton). */
+    headline: string;
+    lede: string;
+    stats: string;
+    legend: string;
+    sortTabs: string;
+    roster: string;
+  };
 }
 
 /** A count that may be honestly unknown. Never renders a fabricated zero. */
 const count = (n: number | null): string => (n == null ? 'Unknown' : String(n));
 
-// ---- The deep band ----
+/** "A", "A and B", "A, B, and C" — the style guide's Oxford comma. */
+export function listNames(names: string[]): string {
+  if (names.length <= 2) return names.join(' and ');
+  return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+}
 
-const metric = (label: string, value: string, sub: string, tone: 'plain' | 'watch' = 'plain') =>
-  `<div class="mesh-metric-cell">` +
-  `<p class="mesh-metric-cell__label">${esc(label)}</p>` +
-  `<p class="mesh-metric-cell__value${tone === 'watch' ? ' mesh-metric-cell__value--watch' : ''}">${esc(value)}</p>` +
-  `<p class="mesh-metric-cell__sub">${esc(sub)}</p>` +
-  `</div>`;
+// ---- Header ----
 
 /**
- * The headline figures. Four, in the order an operator asks them:
- * are they there · is anything running out · is it carrying traffic · how big is the picture.
- *
- * Brass marks the two that can go wrong. "Repeaters heard" and "lowest battery" turn brass
- * when they are short of the roster or under the watch floor — a value that can only ever be
- * neutral does not need a colour, and spending one on it would make the two that matter
- * invisible.
+ * The h1, generated from the data. Two lines on the hero's pattern — the first in muted ink,
+ * the second in full — so the sentence reads as one statement with the count leading.
+ * Numerals, not spelled-out counts: these are data (content-style-guide §5).
  */
-function renderBand(graph: MeshGraph, s: MeshSummary, window: MeshWindow, nowMs: number): string {
+function renderHeadline(graph: MeshGraph, nowMs: number): string {
+  const line = (a: string, b: string) =>
+    `<span class="mesh-h1__lead">${esc(a)}</span> <span class="mesh-h1__rest">${esc(b)}</span>`;
+  const heard = deriveHeardCount(graph, nowMs);
+  if (!heard) return line('Mesh status unknown —', 'the feed could not be reached.');
+  if (heard.total === 0) return line('No corridor repeaters', 'in the feed right now.');
+  const span = `heard in the last ${HEARD_WITHIN_HOURS} hours.`;
+  const noun = heard.total === 1 ? 'repeater' : 'repeaters';
+  return heard.heard === heard.total
+    ? line(heard.total === 1 ? `The 1 ${noun}` : `All ${heard.total} ${noun}`, span)
+    : line(`${heard.heard} of ${heard.total} ${noun}`, span);
+}
+
+/**
+ * Freshness, then — only when there is something to say — the repeaters we have stopped
+ * hearing, named in the alert orange. This sentence replaced the "needs attention" strip: the
+ * one fault worth acting on is stated where the page is already being read.
+ */
+function renderLede(graph: MeshGraph, s: MeshSummary, nowMs: number): string {
+  if (s.sourceStatus === 'UNAVAILABLE') return esc(copy.statusUnavailableNote);
+  const parts: string[] = [];
+  if (s.sourceStatus === 'STALE') {
+    parts.push('The mesh feed is running behind, so these figures may be out of date.');
+  }
+  parts.push(
+    s.lastHeard
+      ? `Last reception ${agoLabel(s.lastHeard, nowMs)}; ${copy.refreshNote}`
+      : `No reception in the last ${MESH_WINDOW_LABELS['30d']}; ${copy.refreshNote}`
+  );
+  let html = parts.map(esc).join(' ');
+  const stale = deriveStaleRows(graph, nowMs);
+  if (stale.length) {
+    const names = listNames(stale.map((r) => displayName(r.node.name)));
+    html +=
+      ` <span class="mesh-lede__stale">${esc(names)}</span> ` +
+      esc(
+        `${stale.length === 1 ? 'has' : 'have'} not been heard in over ${HEARD_WITHIN_HOURS} hours.`
+      );
+  }
+  return html;
+}
+
+const stat = (label: string, value: string, sub: string, tone?: 'watch' | 'low') =>
+  `<div class="mesh-stat">` +
+  `<p class="mesh-stat__label">${esc(label)}</p>` +
+  `<p class="mesh-stat__value${tone ? ` mesh-stat__value--${tone}` : ''}">${value}</p>` +
+  `<p class="mesh-stat__sub">${esc(sub)}</p>` +
+  `</div>`;
+
+/** "9 / 11", with the denominator set smaller and muted. */
+const ratio = (n: number, of: number) => `${n}<span class="mesh-stat__of"> / ${of}</span>`;
+
+/** The four figures, in the order an operator asks them. */
+function renderStats(graph: MeshGraph, s: MeshSummary, window: MeshWindow, nowMs: number): string {
   const unknown = s.sourceStatus === 'UNAVAILABLE';
   const heard = deriveHeardCount(graph, nowMs);
-  const heardValue = heard ? `${heard.heard} / ${heard.total}` : 'Unknown';
-  const heardShort = !!heard && heard.heard < heard.total;
-
   const battery = s.lowestBattery;
-  const batteryValue = unknown || !battery ? 'Unknown' : `${Math.round(battery.percent)}%`;
   const batterySub =
     unknown || s.monitored == null || s.monitorable == null
       ? copy.healthUnknownSub
       : battery
         ? battery.name
         : `${s.monitored} of ${s.monitorable} monitored`;
+  const batteryTone = battery?.low ? 'low' : battery?.watch ? 'watch' : undefined;
 
   return (
-    `<div class="mesh-band__metrics">` +
-    metric(
+    stat(
       'Repeaters heard',
-      heardValue,
-      `within ${HEARD_WITHIN_HOURS} h`,
-      heardShort ? 'watch' : 'plain'
+      heard ? ratio(heard.heard, heard.total) : 'Unknown',
+      `within ${HEARD_WITHIN_HOURS} hours`
     ) +
-    metric('Lowest battery', batteryValue, batterySub, battery?.low ? 'watch' : 'plain') +
-    metric(
-      'Active this hour',
-      count(s.liveLinks),
-      s.regionLinks == null ? 'Feed unavailable' : `of ${s.regionLinks} links`
+    stat(
+      'Lowest battery',
+      unknown || !battery
+        ? 'Unknown'
+        : `${Math.round(battery.percent)}<span class="mesh-stat__of">%</span>`,
+      batterySub,
+      batteryTone
     ) +
-    metric(
-      'Observed links',
-      count(s.regionLinks),
-      s.neighbourNodes == null
-        ? 'Feed unavailable'
-        : `${MESH_WINDOW_LABELS[window].replace(/ /g, ' ')} · ${s.neighbourNodes} neighbours`
+    stat(
+      'Links active this hour',
+      s.liveLinks == null || s.regionLinks == null ? 'Unknown' : ratio(s.liveLinks, s.regionLinks),
+      `of links seen in ${MESH_WINDOW_LABELS[window]}`
     ) +
-    `</div>`
+    stat('Neighbour nodes', count(s.neighbourNodes), 'heard via the corridor')
   );
 }
 
-// ---- Needs attention ----
+// ---- Shared chrome ----
 
 /**
- * Anything currently outside limits, as a single scannable strip. Each item is a BUTTON that
- * selects its repeater, so the strip is a way into the roster and the map rather than a
- * notice board.
- *
- * The region renders NOTHING when there is nothing to say — no empty strip, no "all clear"
- * line. A standing bar that is almost always reassuring trains a reader to skip the place
- * where the warnings appear, and the band above already carries the figures that would show
- * trouble. Its absence is not a claim either way; the same is true when the feed is down.
+ * Text tabs — the sort control and the chart's Battery / Temperature switch. Plain words with
+ * an underline on the active one; no boxed segmented buttons. `aria-pressed` carries state.
  */
-function renderAttention(graph: MeshGraph, nowMs: number): string {
-  if (graph.sourceStatus === 'UNAVAILABLE') return '';
-  const items = deriveAttention(graph, nowMs);
-  if (!items.length) return '';
-  return (
-    `<div class="mesh-attention">` +
-    `<p class="mesh-attention__label">${esc(copy.attentionLabel)}</p>` +
-    `<ul class="mesh-attention__list">` +
-    items
-      .map(
-        (i) =>
-          `<li class="mesh-attention__item" data-tone="${i.tone}">` +
-          `<button type="button" class="mesh-attention__btn" data-mesh-node="${esc(i.node.publicKey)}">` +
-          `<span class="mesh-attention__name">${esc(displayName(i.node.name))}</span>` +
-          `<span class="mesh-attention__detail">${esc(i.detail)}</span>` +
-          `</button></li>`
-      )
-      .join('') +
-    `</ul></div>`
-  );
-}
-
-// ---- Map + roster chrome ----
-
-const segmented = (
+export function textTabs(
   name: string,
   label: string,
   options: readonly string[],
   labels: Record<string, string>,
-  active: string
-) =>
-  `<div class="mesh-seg" role="group" aria-label="${esc(label)}">` +
-  `<span class="mesh-seg__label" aria-hidden="true">${esc(label)}</span>` +
-  options
-    .map(
-      (o) =>
-        `<button type="button" class="mesh-seg__btn" data-mesh-${esc(name)}="${esc(o)}"` +
-        ` aria-pressed="${o === active ? 'true' : 'false'}">${esc(labels[o])}</button>`
-    )
-    .join('') +
-  `</div>`;
-
-function renderControls(o: MeshViewOptions): string {
+  active: string,
+  showLabel = false
+): string {
   return (
-    `<div class="mesh-panel__head" data-panel="map">` +
-    `<p class="mesh-panel__title">${esc(copy.mapPanelTitle)}</p>` +
-    segmented('heardin', 'Heard in', HEARD_IN_OPTIONS, HEARD_IN_LABELS, o.heardIn) +
-    `</div>` +
-    // No title on the roster head: the column plainly IS the repeater list, and the count and
-    // the sparkline span were restating what the rows already show. The section keeps its
-    // accessible name from the visually-hidden h2 in MeshPanels.astro.
-    `<div class="mesh-panel__head" data-panel="roster">` +
-    segmented('sort', 'Sort', ROSTER_SORTS, ROSTER_SORT_LABELS, o.sort) +
+    `<div class="mesh-tabs" role="group" aria-label="${esc(label)}">` +
+    (showLabel ? `<span class="mesh-tabs__label" aria-hidden="true">${esc(label)}</span>` : '') +
+    options
+      .map(
+        (o) =>
+          `<button type="button" class="mesh-tabs__btn" data-mesh-${esc(name)}="${esc(o)}"` +
+          ` aria-pressed="${o === active ? 'true' : 'false'}">${esc(labels[o])}</button>`
+      )
+      .join('') +
     `</div>`
   );
 }
 
-function renderLegend(counts: Record<MeshRecency, number>, s: MeshSummary): string {
+// ---- 01 Map legend ----
+
+function renderLegend(graph: MeshGraph, s: MeshSummary, nowMs: number): string {
   const unknown = s.sourceStatus === 'UNAVAILABLE';
+  const counts = deriveRecencyCounts(graph, nowMs);
+  const n = (v: number | null) =>
+    `<span class="mesh-legend__count">${unknown ? 'Unknown' : count(v)}</span>`;
+  const item = (swatch: string, label: string, value: number | null, extra = '') =>
+    `<li class="mesh-legend__item${extra}">${swatch}` +
+    `<span class="mesh-legend__label">${esc(label)}</span>${n(value)}</li>`;
+  const line = (mod: string) =>
+    `<span class="mesh-legend__line mesh-legend__line--${mod}" aria-hidden="true"></span>`;
+  const dot = (mod: string) =>
+    `<span class="mesh-legend__dot mesh-legend__dot--${mod}" aria-hidden="true"></span>`;
+  const stale = unknown ? null : deriveStaleLinkCount(graph, nowMs);
+
   return (
     `<ul class="mesh-legend">` +
-    RECENCY_TIERS.map(
-      (tier) =>
-        `<li class="mesh-legend__item">` +
-        `<span class="mesh-legend__line mesh-legend__line--${tier}" aria-hidden="true"></span>` +
-        `<span class="mesh-legend__label">${esc(RECENCY_LABELS[tier])}</span>` +
-        `<span class="mesh-legend__count">${unknown ? 'Unknown' : counts[tier]}</span>` +
-        `</li>`
-    ).join('') +
-    // The map draws two kinds of marker; the key for them belongs in the same strip as the
-    // link scale rather than in a second legend somewhere else.
-    `<li class="mesh-legend__item mesh-legend__item--node">` +
-    `<span class="mesh-legend__dot mesh-legend__dot--ours" aria-hidden="true"></span>` +
-    `<span class="mesh-legend__label">${esc(copy.legendCorridor)}</span>` +
-    `<span class="mesh-legend__count">${count(s.ourNodes)}</span></li>` +
-    `<li class="mesh-legend__item mesh-legend__item--node">` +
-    `<span class="mesh-legend__dot mesh-legend__dot--neighbour" aria-hidden="true"></span>` +
-    `<span class="mesh-legend__label">${esc(copy.legendNeighbour)}</span>` +
-    `<span class="mesh-legend__count">${count(s.neighbourNodes)}</span></li>` +
+    RECENCY_TIERS.map((tier) => item(line(tier), RECENCY_LABELS[tier], counts[tier])).join('') +
+    // The dashed orange line only earns a legend entry when the map actually draws one.
+    (stale ? item(line('stale'), copy.legendStale, stale) : '') +
+    // Every corridor repeater the map pins — the same set the headline and the table count.
+    item(dot('ours'), copy.legendCorridor, s.regionNodes, ' mesh-legend__item--rule') +
+    item(dot('neighbour'), copy.legendNeighbour, s.neighbourNodes) +
     `</ul>`
   );
 }
 
-// ---- Roster ----
+// ---- 02 Repeaters ----
 
-/** A count that may be honestly unknown, for the health cell. */
-function renderHealthCell(health: MeshNodeHealth | null, spark: string): string {
-  if (!health || health.percent == null) {
-    const label = health ? copy.healthUnreadable : copy.notMonitored;
-    return (
-      `<span class="mesh-health mesh-health--none">` +
-      `<span class="mesh-health__none">${esc(label)}</span>` +
-      `</span>`
-    );
-  }
-  const pct = Math.round(health.percent);
-  return (
-    `<span class="mesh-health${health.low ? ' mesh-health--low' : ''}${health.watch ? ' mesh-health--watch' : ''}">` +
-    spark +
-    `<span class="mesh-health__pct">${pct}%</span>` +
-    `<span class="mesh-health__bar" aria-hidden="true">` +
-    `<span class="mesh-health__fill" style="width:${Math.max(0, Math.min(100, pct))}%"></span>` +
-    `</span>` +
-    `</span>`
-  );
-}
-
-/** Sparkline width/height in SVG units — small enough to sit inside a roster row. */
+/** Sparkline width/height in SVG units — sized for its table cell. */
 const SPARK_W = 72;
 const SPARK_H = 20;
 
 /**
- * The span a roster sparkline covers. FIXED, and deliberately not the history chart's range:
- * it used to draw whatever the chart below was set to, so switching that control silently
- * changed every row's span with nothing in the row to say so — and at a month, 2,880 points
- * in 72 units collapsed into a solid band.
- *
- * Six hours is short enough that the last few readings still have shape at this size, and
- * long enough to show a direction. The roster header states it, because a sparkline with no
- * axis is otherwise asking the reader to guess.
+ * The battery axis floor for both the sparklines and the chart: 50%, or the next 25-point step
+ * below the lowest reading. A fixed 0–100 scale flattened every trace into its top fifth; a
+ * floor that CLIPPED would hide exactly the night a site ran down into the teens. So the axis
+ * starts at 50 and only extends when a reading needs it.
  */
-export const SPARK_WINDOW_HOURS = 6;
+export function batteryFloor(minReading: number | null): number {
+  if (minReading == null || minReading >= 50) return 50;
+  return Math.max(0, Math.floor(minReading / 25) * 25);
+}
 
 /**
- * The row's own battery trace, on an ABSOLUTE 0-100 scale — the same scale as the level bar
- * directly beneath it, so the two read as one object: the bar is where it is, the line is
- * where it has been.
- *
- * It used to scale to each row's own min/max, and that actively lied. A repeater oscillating
- * between 90% and 100% filled the full height with a violent zigzag while one sliding from
- * 90% to 60% drew a gentle slope — the healthy node looked like the emergency. Auto-scaling
- * is defensible for a sparkline whose job is "which way is this going", but not in a column
- * where rows are read against each other, and not next to a bar on a fixed scale.
- *
- * The cost is that small real movement is small on screen: a 10-point swing is under two
- * pixels. That is the correct picture. "Steady near full" SHOULD look like a flat line near
- * the top, and the chart at the foot of the page is where a few points of drift can be
- * examined properly.
+ * The row's own battery trace over the last day, on the SAME scale for every row (50–100%,
+ * extended for a reading below 50), so rows can be read against each other. Scaling each row
+ * to its own min/max made a healthy node oscillating 90–100% look like the emergency.
  */
-const SPARK_MIN = 0;
-const SPARK_MAX = 100;
-function renderSparkline(series: TelemetrySeries | undefined, nowMs: number): string {
+function renderSparkline(
+  series: TelemetrySeries | undefined,
+  floor: number,
+  nowMs: number
+): string {
   if (!series) return '';
-  const since = nowMs - SPARK_WINDOW_HOURS * 3_600_000;
+  const { from } = historyWindow(nowMs);
   const pts = series.points
-    .filter((p) => p.t >= since)
+    .filter((p) => p.t >= from)
     .map((p) => ({ t: p.t, v: metricValue(p, 'battery') }))
     .filter((p): p is { t: number; v: number } => p.v != null);
   if (pts.length < 3) return '';
   const t0 = pts[0].t;
-  const t1 = pts[pts.length - 1].t;
-  const span = Math.max(1, t1 - t0);
-  const range = SPARK_MAX - SPARK_MIN;
+  const span = Math.max(1, pts[pts.length - 1].t - t0);
+  const range = 100 - floor;
   const d = pts
     .map((p, i) => {
       const x = ((p.t - t0) / span) * SPARK_W;
-      const clamped = Math.max(SPARK_MIN, Math.min(SPARK_MAX, p.v));
-      const y = SPARK_H - 1 - ((clamped - SPARK_MIN) / range) * (SPARK_H - 2);
+      const v = Math.max(floor, Math.min(100, p.v));
+      const y = SPARK_H - 1 - ((v - floor) / range) * (SPARK_H - 2);
       return `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join('');
   return (
     `<svg class="mesh-spark" viewBox="0 0 ${SPARK_W} ${SPARK_H}" aria-hidden="true" focusable="false">` +
-    `<path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" ` +
-    `stroke-linejoin="round" stroke-linecap="round"/></svg>`
+    `<path d="${d}"/></svg>`
   );
 }
 
-/** Stable id so a row's button can own its panel via `aria-controls`. */
-const detailId = (key: string) => `mesh-detail-${key.slice(0, 8)}`;
-
 /**
- * Who runs the monitor, by NAME where we know them — the page is read by members and
- * neighbours, and `alanpi` is a hostname, not a person. An unrecognised id is printed
- * verbatim rather than guessed at: a monitor we don't have on file is a real case.
+ * The battery cell: a thin level bar and the figure. The figure turns brass under the watch
+ * floor and orange under the risk line — the one battery warning on the page, kept beside the
+ * reading it qualifies rather than in a strip of its own. Unmonitored and unreadable are
+ * stated in words, never as an empty bar.
  */
-function monitorLabel(reporterId: string | null): string {
-  if (!reporterId) return copy.detailKickerAnon;
-  const person = personByMonitorId(reporterId);
-  return `${copy.detailKicker} ${person ? person.firstName : reporterId}`;
-}
-
-/**
- * The expanded reading. It lives INSIDE the row's <li>, so it needs no frame of its own —
- * the row's green edge and fill already bind them into one object. Returns `''` for a
- * repeater with no monitor: there is nothing honest to put here, and an empty scaffold of
- * dashes would look like a reading that failed rather than a site nobody watches.
- */
-function renderDetail(row: MeshNodeRow): string {
-  const { node, health } = row;
-  if (!health) return '';
-  const pct = health.percent == null ? 'Unknown' : `${Math.round(health.percent)}%`;
-  const temp = health.tempF == null ? 'Unknown' : `${health.tempF} °F`;
-  // Volts, not "heard": the row directly above already states when we last heard it, and the
-  // metric row has three cells to spend on things the row cannot say. Voltage is also the
-  // honest one — it is measured, where the percentage beside it is inferred from it.
-  const volts = health.volts == null ? 'Unknown' : `${health.volts.toFixed(2)} V`;
-  const basis =
-    health.percent == null
-      ? copy.healthUnreadableNote
-      : health.estimated
-        ? copy.detailEstimated
-        : copy.detailMeasured;
-  const cell = (label: string, value: string, risk = false) =>
-    `<div class="mesh-metric">` +
-    `<p class="mesh-metric__label">${esc(label)}</p>` +
-    `<p class="mesh-metric__value${risk ? ' mesh-metric__value--risk' : ''}">${esc(value)}</p>` +
-    `</div>`;
-
+function renderBattery(health: MeshNodeHealth | null): string {
+  if (!health) return `<span class="mesh-batt__none">${esc(copy.notMonitored)}</span>`;
+  if (health.percent == null)
+    return `<span class="mesh-batt__none">${esc(copy.healthUnreadable)}</span>`;
+  const pct = Math.round(health.percent);
+  const tone = health.low ? ' mesh-batt--low' : health.watch ? ' mesh-batt--watch' : '';
   return (
-    `<div class="mesh-detail" id="${detailId(node.publicKey)}">` +
-    `<div class="mesh-metrics">` +
-    cell('Battery', pct, health.low) +
-    cell('Volts', volts) +
-    cell('Enclosure', temp) +
-    `</div>` +
-    `<p class="mesh-detail__note">${esc(basis)} · ${esc(monitorLabel(health.reporterId))} · ` +
-    `<span class="mesh-detail__key">${esc(shortKey(node.publicKey))}</span></p>` +
-    `</div>`
+    `<span class="mesh-batt${tone}">` +
+    `<span class="mesh-batt__bar" aria-hidden="true">` +
+    `<span class="mesh-batt__fill" style="width:${Math.max(0, Math.min(100, pct))}%"></span>` +
+    `</span><span class="mesh-batt__pct">${pct}%</span></span>`
   );
 }
 
@@ -371,52 +307,62 @@ function renderRoster(graph: MeshGraph, nowMs: number, o: MeshViewOptions): stri
   const rows = sortNodeRows(deriveNodeRows(graph, nowMs), o.sort);
   if (!rows.length) return `<p class="mesh-empty">${esc(copy.rosterEmpty)}</p>`;
 
+  // One scale for every sparkline: the floor comes from the lowest reading on ANY row.
+  const { from } = historyWindow(nowMs);
+  let min: number | null = null;
+  for (const s of o.series.values()) {
+    for (const p of s.points) {
+      if (p.t < from || p.battery == null) continue;
+      if (min == null || p.battery < min) min = p.battery;
+    }
+  }
+  const floor = batteryFloor(min);
+
+  const row = (r: MeshNodeRow) => {
+    const { node, degree, lastHeard, status, health } = r;
+    const name = displayName(node.name);
+    const selected = node.publicKey === o.selected;
+    const heard = lastHeard ? agoLabel(lastHeard, nowMs) : 'Never';
+    return (
+      `<tr class="mesh-row mesh-row--${status}${selected ? ' mesh-row--selected' : ''}"` +
+      ` data-mesh-row="${esc(node.publicKey)}">` +
+      `<td class="mesh-row__dot"><span class="mesh-dot mesh-dot--${status}" aria-hidden="true"></span></td>` +
+      // The name is the row's one control: a real button, so the row is keyboard-reachable
+      // and announced. The rest of the row is a click target too (delegated in the page).
+      `<th scope="row" class="mesh-row__name"><button type="button" class="mesh-row__btn"` +
+      ` data-mesh-node="${esc(node.publicKey)}" aria-pressed="${selected ? 'true' : 'false'}">` +
+      `${esc(name)}</button></th>` +
+      `<td class="mesh-row__links">${degree}</td>` +
+      `<td class="mesh-row__heard">${esc(heard)}</td>` +
+      `<td class="mesh-row__batt">${renderBattery(health)}</td>` +
+      `<td class="mesh-row__spark">${health ? renderSparkline(o.series.get(node.publicKey), floor, nowMs) : ''}</td>` +
+      // Collapses the links + last-heard columns into the name cell on a phone.
+      `<td class="mesh-row__compact">${esc(
+        `${degree} ${degree === 1 ? 'link' : 'links'} · heard ${heard}`
+      )}</td>` +
+      `</tr>`
+    );
+  };
+
   return (
-    `<ul class="mesh-roster">` +
-    rows
-      .map((row) => {
-        const { node, degree, lastHeard, recency, health } = row;
-        const tierClass = recency ? ` mesh-roster__pulse--${recency}` : '';
-        // "Repeater ·" prefixed every row identically; the type only earns its space when it
-        // is NOT the expected one. The width goes to the facts that differ.
-        const type = node.nodeType === 'repeater' ? '' : `${nodeTypeLabel(node.nodeType)} · `;
-        const heard = lastHeard
-          ? `heard ${agoLabel(lastHeard, nowMs)}`
-          : 'no links observed in this window';
-        // Only a monitored repeater has anything to open, so only it gets the disclosure
-        // affordance. A chevron on a row that expands to nothing is a promise the page
-        // cannot keep — and the reason the reading was hard to find in the first place.
-        const expandable = health != null;
-        const open = expandable && node.publicKey === o.selected;
-        return (
-          `<li class="mesh-roster__item${open ? ' mesh-roster__item--open' : ''}">` +
-          `<button type="button" class="mesh-roster__btn" data-mesh-node="${esc(node.publicKey)}"` +
-          (expandable
-            ? ` aria-expanded="${open ? 'true' : 'false'}"` +
-              (open ? ` aria-controls="${detailId(node.publicKey)}"` : '')
-            : '') +
-          `>` +
-          `<span class="mesh-roster__pulse${tierClass}" aria-hidden="true"></span>` +
-          `<span class="mesh-roster__body">` +
-          `<span class="mesh-roster__name">${esc(displayName(node.name))}</span>` +
-          `<span class="mesh-roster__meta">${esc(`${type}${degree} ${degree === 1 ? 'link' : 'links'} · ${heard}`)}</span>` +
-          `</span>` +
-          renderHealthCell(health, renderSparkline(o.series.get(node.publicKey), nowMs)) +
-          (expandable ? `<span class="mesh-roster__chev" aria-hidden="true"></span>` : '') +
-          `</button>` +
-          (open ? renderDetail(row) : '') +
-          `</li>`
-        );
-      })
-      .join('') +
-    `</ul>`
+    `<table class="mesh-table">` +
+    `<thead><tr>` +
+    `<th scope="col" class="mesh-row__dot"><span class="sr-only">Status</span></th>` +
+    `<th scope="col" class="mesh-row__name">Repeater</th>` +
+    `<th scope="col" class="mesh-row__links">Links</th>` +
+    `<th scope="col" class="mesh-row__heard">Last heard</th>` +
+    `<th scope="col" class="mesh-row__batt">Battery</th>` +
+    `<th scope="col" class="mesh-row__spark">24 h</th>` +
+    `<th scope="col" class="mesh-row__compact"><span class="sr-only">Summary</span></th>` +
+    `</tr></thead>` +
+    `<tbody>${rows.map(row).join('')}</tbody></table>`
   );
 }
 
 /**
- * Build the whole panel view-model from a fetched graph. `nowMs` is passed in (never read
- * from the clock here) so the derivations stay pure and the screenshot harness's frozen
- * clock produces byte-stable output.
+ * Build the whole view-model from a fetched graph. `nowMs` is passed in (never read from the
+ * clock here) so the derivations stay pure and the screenshot harness's frozen clock produces
+ * byte-stable output.
  */
 export function buildMeshView(
   graph: MeshGraph,
@@ -427,36 +373,18 @@ export function buildMeshView(
   const o: MeshViewOptions = {
     selected: options.selected ?? null,
     sort: options.sort ?? 'links',
-    heardIn: options.heardIn ?? '30d',
     series: options.series ?? new Map(),
   };
   const summary = deriveMeshSummary(graph, nowMs);
-  const counts = deriveRecencyCounts(graph, nowMs);
-
-  const status: MeshView['status'] =
-    summary.sourceStatus === 'UNAVAILABLE'
-      ? { tone: 'unknown', label: copy.statusUnavailableLabel, detail: 'Network state unknown' }
-      : summary.sourceStatus === 'STALE'
-        ? {
-            tone: 'stale',
-            label: 'Feed stale',
-            detail: `Last reception ${agoLabel(summary.lastHeard, nowMs)}`,
-          }
-        : {
-            tone: 'ok',
-            label: 'Mesh observed',
-            detail: `Last reception ${agoLabel(summary.lastHeard, nowMs)}`,
-          };
-
   return {
     summary,
-    status,
     html: {
-      band: renderBand(graph, summary, window, nowMs),
-      attention: renderAttention(graph, nowMs),
-      legend: renderLegend(counts, summary),
+      headline: renderHeadline(graph, nowMs),
+      lede: renderLede(graph, summary, nowMs),
+      stats: renderStats(graph, summary, window, nowMs),
+      legend: renderLegend(graph, summary, nowMs),
+      sortTabs: textTabs('sort', 'Sort', ROSTER_SORTS, ROSTER_SORT_LABELS, o.sort, true),
       roster: renderRoster(graph, nowMs, o),
-      controls: renderControls(o),
     },
   };
 }

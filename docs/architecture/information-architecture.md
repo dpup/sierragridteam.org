@@ -10,7 +10,7 @@
 ```
 /                 Home        — hero coverage map → operational status → mission → doctrine → service banner
 /live             Live Feed   — situation map (MapLibre) + prioritized hazard stream + conditions/roads/scanners
-/mesh             Mesh / LoRa — embedded live mesh map (authoritative) + collapsible info sidebar
+/mesh             Mesh / LoRa — live report: headline + figures, map, repeater table, battery chart
 /about            About       — story, doctrine, by-the-numbers, leadership, get-involved CTA
 /contact          Contact     — P.O. Box, volunteer roles, mailto form, 911 disclaimer
 /donate           Donate      — ways to give (placeholder until a provider is wired)
@@ -84,46 +84,44 @@ Order, top to bottom:
 6. **Service-area banner** — full-width band, centered uppercase town list.
 7. **Footer.**
 
-### Mesh / LoRa (`/mesh`) — the status board
+### Mesh / LoRa (`/mesh`) — the report
 
-Reorganised around monitoring (2026-09-17). The "what is the mesh" explainer moved to
-**/about#mesh**, which freed the top of the page for the figures an operator actually opens
-it for. Top to bottom:
+Redesigned 2026-10 (handoff layout "1a") to match the homepage hero: parchment, Newsreader
+headlines, Plex Sans labels, hairline rules, the hero map's palette. The deep green band, the
+"Needs attention" strip, the map's "heard in" filter, the chart's Day / Week / Month and the
+seven-colour chart palette are gone. The explainer still lives on **/about#mesh**. One column,
+read top to bottom as one story:
 
-1. **Deep metrics band** (`--surface-deep`) — the freshness stamp and four headline figures:
-   **Repeaters heard** `N / M` within 12 h, **Lowest battery**, **Active this hour**,
-   **Observed links**. Brass marks only the two that can go wrong.
-2. **"Needs attention" strip** — anything outside limits, each item a button that selects
-   that repeater. Two kinds, because they are different failures: a battery under the watch
-   floor of 20% (brass) and a repeater not heard inside the window (orange). The region
-   renders **nothing at all** when there is nothing to say — a standing bar that is almost
-   always reassuring trains a reader to skip the place where the warnings appear.
-3. **Two equal columns, each scrolling independently**, so per-repeater telemetry is never
-   pushed below the fold by whatever sits above it.
-   - **Map** (`src/lib/mesh-map.ts`, MapLibre + OpenFreeMap Positron) with a **"heard in"**
-     display cut (1h · 6h · 24h · 30d, defaulting to 30d) and its legend collapsed into one
-     horizontal strip along the panel's foot.
-   - **Roster** with **sort** by links · battery · stalest. Each row carries the recency
-     pulse (_can we hear it_), a battery bar and a **sparkline** (_which way is it going_),
-     and a monitored row expands **inline** to Battery · Volts · Enclosure. The sparkline's
-     span is a fixed 6 h, deliberately not tied to the chart's range control, and drawn on an
-     absolute 0–100 scale so a steady 90–100% node cannot look like one that is collapsing.
-4. **History band** — every monitored repeater on one scale, with **Battery / Temp** and
-   **Day / Week / Month**. The legend doubles as the selector, and **hovering a trace or a
-   legend entry** lifts it, drops the rest back and names it with its value at that moment —
-   which is what makes seven muted colours individually readable. The plot sits on a warm
-   band with no frame; the axis labels sit outside it on the page ground.
+1. **Is the mesh up?** A kicker, then an h1 generated from the data on the hero's two-line
+   pattern — `9 of 11 repeaters` / `heard in the last 12 hours.` (numerals, not words; `All 11
+repeaters` when every one is heard). A line of freshness follows, and — only when it is
+   true — the repeaters we have stopped hearing, named in the alert orange. Then four figures
+   on parchment: **Repeaters heard** `N / M`, **Lowest battery**, **Links active this hour**
+   `N / M`, **Neighbour nodes**.
+2. **01 Where the signal reaches** — the map (`src/lib/mesh-map.ts` over a restyled Positron,
+   `src/lib/mesh-basemap.ts`) and a one-line legend with counts. Repeater dots are green
+   (heard within the hour), brass (within 12 h) or orange with a ring (longer); links are one
+   line per pair, darker and heavier the more recently heard, dashed orange when they touch a
+   stale repeater. Selecting a repeater zooms to every link it has been heard on (out to the
+   Bay Area), labels those neighbours and the farthest hop's distance, and opens its card.
+   Cards are "blended labels": basemap-coloured, feathered into the map, joined by a leader.
+3. **02 Repeaters** — one table row each: status dot · name · links · last heard · battery
+   (bar + figure) · 24 h sparkline. Sort by links · battery · stalest. A row selects its
+   repeater on the map and scrolls the map into view.
+4. **03 Battery charge** — every monitored repeater over the last 24 hours, in one green at low
+   opacity. The deepest fall (over 15 points) is drawn in brass with a one-line note; hovering
+   a trace or legend entry lifts it and names its value at that moment; clicking pins it.
+   Battery / Temperature tabs.
 
-- **Two selections, decoupled.** Roster row · map pin · attention item share one — it opens
-  the row and frames + emphasises the repeater on the map. The chart's legend has its own — it
-  isolates a trace and touches nothing else. Reading a curve and inspecting a site are
-  different tasks, and tying them made each one disturb the other. Non-selected traces and
-  links dim to context, never to nothing.
-- **Honesty:** "Limited Telemetry" where there is no monitor (a gap in _our_ coverage, not a
+- **Two selections, decoupled.** The table, the map and the page's `?node=` URL share one;
+  the chart's pinned trace is separate. Reading a curve and inspecting a site are different
+  tasks, and tying them made each one disturb the other.
+- **Honesty:** "No telemetry" where there is no monitor (a gap in _our_ coverage, not a
   verdict on the repeater), "Gauge unread" where a monitor could not read one, "Unknown"
-  rather than a zero when the feed is down. Orange only below `LOW_BATTERY_PCT` (10%). The
-  chart draws through a monitor outage rather than breaking at one, marks reboots, and names
-  where the archive starts rather than drawing empty axes over a range that predates it.
+  rather than a zero when the feed is down, and "not heard" — never "down" — for a stale
+  repeater. A battery figure turns brass under 20% and orange under `LOW_BATTERY_PCT` (10%).
+  The chart's axis starts at 50% and extends rather than clipping a night into the teens; it
+  draws through a monitor outage, marks reboots, and names where the archive starts.
 
 ### Live Feed (`/live`) — the situation flagship (replaced `/alerts`)
 

@@ -1,255 +1,250 @@
 /**
- * mesh-history.ts — the full-width telemetry history band at the foot of /mesh: every
- * monitored repeater's battery (or enclosure temperature) on one chart, plus a legend that
- * doubles as the page's selector.
+ * mesh-history.ts — section 03 of /mesh: every monitored repeater's battery (or enclosure
+ * temperature) over the last 24 hours, on one chart.
  *
  * Pure render-to-string, like `mesh-view.ts`, for the same reason: the browser re-renders
- * this region on every refresh, every range change and every selection, and Astro's scoped
- * styles never reach client-injected markup. CSS is global in `src/styles/mesh.css`.
+ * this region on every refresh and every interaction, and Astro's scoped styles never reach
+ * client-injected markup. CSS is global in `src/styles/mesh.css`.
  *
- * WHY A MULTI-SERIES CHART AT ALL. Seven correlated lines braided together is a genuinely
- * bad way to read one repeater's charge, and the roster's per-row bar and sparkline answer
- * that question better. This chart answers the OTHER one: whether a repeater is diverging
- * from its neighbours. Overnight discharge is weather, not a fault — the fault is the one
- * line that does not come back up with the others. That only exists in comparison, so:
- *   • the default view draws every monitored repeater on ONE scale,
- *   • selecting a repeater (here, in the roster, or on the map) isolates its trace and
- *     demotes the rest to context rather than hiding them, so the comparison survives.
+ * WHY A MULTI-SERIES CHART AT ALL. Seven correlated lines braided together is a bad way to
+ * read one repeater's charge — the table's bar and sparkline answer that. This chart answers
+ * the OTHER question: whether a repeater is diverging from its neighbours. Overnight discharge
+ * is weather, not a fault; the fault is the line that does not come back up with the others.
  *
- * COLOUR. The series scale is `--series-1..7` in tokens.css, chosen by search against
- * contrast + colour-vision separation and pinned by `mesh-series.test.ts`. Identity is never
- * colour-alone: the legend names every repeater with its current value, and one click
- * isolates it. Slots are assigned by SORTED PUBLIC KEY, not by row order or by value, so a
- * repeater keeps its colour when the sort changes or another node drops out.
+ * ONE HUE. Every trace is the brand green at low opacity (the 2026-10 redesign retired the
+ * seven-colour categorical scale). Identity comes from interaction, never from telling two
+ * colours apart: hovering a trace or its legend entry lifts it and names it, clicking pins it,
+ * and the legend lists every repeater with its current value. One trace is singled out
+ * without being asked: the largest fall in the window, in brass, with a one-line note — the
+ * night worth looking at.
+ *
+ * LAYOUT. The SVG is stretched to its box (`preserveAspectRatio="none"`, strokes kept crisp by
+ * `vector-effect: non-scaling-stroke`), and every piece of TEXT — axis labels, the note — is
+ * HTML positioned over it, so type never stretches with the plot.
  */
 import { escapeHtml as esc } from './format';
 import { displayName, type MeshNode } from './mesh';
 import {
   decimate,
   earliestCoverage,
+  historyWindow,
+  largestDrop,
   latestValue,
-  rangeWindow,
   pointsIn,
-  valueExtent,
+  HISTORY_HOURS,
   HISTORY_METRIC_LABELS,
   HISTORY_METRIC_UNITS,
   HISTORY_METRICS,
-  HISTORY_RANGE_LABELS,
-  HISTORY_RANGES,
   type HistoryMetric,
-  type HistoryRange,
   type TelemetrySeries,
 } from './mesh-telemetry';
+import { batteryFloor, textTabs } from './mesh-view';
 import { mesh as copy } from '../config/content';
-
-/** How many series the scale can carry. An eighth means re-running the palette search. */
-export const SERIES_SLOTS = 7;
+import { personByMonitorId } from '../config/people';
+import { TIMEZONE } from '../config/site';
 
 export interface HistoryOptions {
   metric: HistoryMetric;
-  range: HistoryRange;
-  /** The page-wide selection. Non-null isolates that trace. */
-  selected: string | null;
+  /** The trace pinned by a click on it or its legend entry. Chart-only state. */
+  pinned: string | null;
 }
 
 /**
- * Plot geometry, exported so the page can turn a pointer position into a timestamp without
- * re-deriving the layout. Room is left in the viewBox for the outermost axis labels, which
- * sit OUTSIDE the plot band on the page ground.
+ * Plot geometry in SVG units, exported so the page can turn a pointer position into a moment
+ * without re-deriving it. The plot fills its viewBox edge to edge; the axis labels live in
+ * HTML outside it.
  */
-export const PLOT = { W: 1200, H: 300, PAD: { l: 52, r: 16, t: 14, b: 34 } } as const;
-const { W, H, PAD } = PLOT;
-const PW = W - PAD.l - PAD.r;
-const PH = H - PAD.t - PAD.b;
-/** Past this the extra points are sub-pixel; a month of 15-minute samples is ~2,880. */
+export const PLOT = { W: 1200, H: 340 } as const;
+const { W, H } = PLOT;
+/** Past this the extra points are sub-pixel at any width this chart is drawn. */
 const MAX_POINTS = 400;
+/** A fall smaller than this is an ordinary night and earns no highlight. */
+export const DROP_HIGHLIGHT_POINTS = 15;
 
-/**
- * Colour slot for a repeater: stable, derived from the key's position in the SORTED set of
- * monitored keys. Sorting by the opaque public key means the mapping does not follow the
- * roster's current sort or a node's current value ("colour follows the entity, never its
- * rank"). Beyond the scale's slots a series falls back to muted ink rather than being given
- * a generated hue — a fabricated eighth colour is indistinguishable from an existing one
- * under colour-vision deficiency, and the legend would then be lying.
- */
-export function seriesSlot(publicKey: string, monitoredKeys: string[]): number | null {
-  const i = [...monitoredKeys].sort().indexOf(publicKey);
-  return i >= 0 && i < SERIES_SLOTS ? i + 1 : null;
+const fmt = (v: number, metric: HistoryMetric) => `${Math.round(v)}${HISTORY_METRIC_UNITS[metric]}`;
+
+const ptTime = (ms: number, opts: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('en-GB', { timeZone: TIMEZONE, hour12: false, ...opts }).format(ms);
+
+/** True when a moment falls in the evening-to-morning stretch a battery spends discharging. */
+const isOvernight = (ms: number) => {
+  const h = Number(ptTime(ms, { hour: '2-digit' }));
+  return h >= 18 || h < 9;
+};
+
+/** The value axis. Battery: 50–100%, extended down a 25-point step if a reading needs it. */
+function axis(metric: HistoryMetric, extent: { min: number; max: number }) {
+  if (metric === 'battery') {
+    const lo = batteryFloor(extent.min);
+    const ticks: number[] = [];
+    for (let v = 100; v >= lo; v -= 25) ticks.push(v);
+    return { lo, hi: 100, ticks };
+  }
+  // Temperature has no natural bounds: fit the data, rounded out to 10 °F.
+  const lo = Math.floor(extent.min / 10) * 10;
+  const hi = Math.max(lo + 10, Math.ceil(extent.max / 10) * 10);
+  const step = (hi - lo) / 10 > 4 ? 20 : 10;
+  const ticks: number[] = [];
+  for (let v = hi; v >= lo; v -= step) ticks.push(v);
+  return { lo, hi, ticks };
 }
 
-const strokeFor = (slot: number | null) =>
-  slot == null ? 'var(--ink-muted)' : `var(--series-${slot})`;
+interface Trace {
+  node: MeshNode;
+  name: string;
+  run: { t: number; v: number }[];
+  latest: number | null;
+  /** Counter restarts in the window, epoch ms (mesh-telemetry.ts rule 4). */
+  reboots: number[];
+}
 
-const fmt = (v: number, metric: HistoryMetric) =>
-  metric === 'battery' ? `${Math.round(v)}%` : `${Math.round(v)} °F`;
+/** The deepest fall worth highlighting across the traces, or null on an ordinary night. */
+type Drop = { key: string; name: string; low: { t: number; v: number }; drop: number };
 
-const segmented = (
-  name: string,
-  label: string,
-  options: readonly string[],
-  labels: Record<string, string>,
-  active: string
-) =>
-  `<div class="mesh-seg" role="group" aria-label="${esc(label)}">` +
-  options
-    .map(
-      (o) =>
-        `<button type="button" class="mesh-seg__btn" data-mesh-${esc(name)}="${esc(o)}"` +
-        ` aria-pressed="${o === active ? 'true' : 'false'}">${esc(labels[o])}</button>`
-    )
-    .join('') +
-  `</div>`;
-
-/** PT, because every time on this site is Pacific. Axis ticks only, so no seconds. */
-function axisLabel(ms: number, range: HistoryRange): string {
-  const d = new Date(ms);
-  const opts: Intl.DateTimeFormatOptions =
-    range === 'day'
-      ? { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Los_Angeles' }
-      : { month: 'short', day: 'numeric', timeZone: 'America/Los_Angeles' };
-  return new Intl.DateTimeFormat('en-US', opts).format(d);
+function findDrop(traces: Trace[], metric: HistoryMetric): Drop | null {
+  // Battery only — a temperature swing is the weather, not the site.
+  if (metric !== 'battery') return null;
+  let best: Drop | null = null;
+  for (const t of traces) {
+    const f = largestDrop(t.run);
+    if (f && f.drop > DROP_HIGHLIGHT_POINTS && (!best || f.drop > best.drop)) {
+      best = { key: t.node.publicKey, name: t.name, ...f };
+    }
+  }
+  return best;
 }
 
 function renderPlot(
-  list: { node: MeshNode; series: TelemetrySeries; slot: number | null }[],
+  traces: Trace[],
+  drop: Drop | null,
   o: HistoryOptions,
   from: number,
   to: number
 ): string {
-  const extent = valueExtent(
-    list.map((x) => x.series),
-    o.metric,
-    from,
-    to
-  );
-  if (!extent) return '';
-  // Battery is a 0–100 gauge and is always drawn on its full scale: rescaling to the data
-  // would make a calm night of 88–94% look like a cliff. Temperature has no natural bounds,
-  // so it takes a padded data range.
-  const [lo, hi] =
-    o.metric === 'battery'
-      ? [0, 100]
-      : [Math.floor((extent.min - 4) / 5) * 5, Math.ceil((extent.max + 4) / 5) * 5];
+  const values = traces.flatMap((t) => t.run.map((p) => p.v));
+  if (!values.length) return '';
+  const extent = { min: Math.min(...values), max: Math.max(...values) };
+  const { lo, hi, ticks } = axis(o.metric, extent);
   const span = Math.max(1, hi - lo);
-  const x = (t: number) => PAD.l + ((t - from) / Math.max(1, to - from)) * PW;
-  const y = (v: number) => PAD.t + (1 - (v - lo) / span) * PH;
+  const x = (t: number) => ((t - from) / Math.max(1, to - from)) * W;
+  const y = (v: number) => (1 - (v - lo) / span) * H;
+  const pct = (v: number) => `${((1 - (v - lo) / span) * 100).toFixed(2)}%`;
+  const d = (run: { t: number; v: number }[]) =>
+    run.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
 
-  const ticksY = [0, 0.25, 0.5, 0.75, 1].map((f) => lo + f * span);
-  const grid =
-    ticksY
-      .map(
-        (v) =>
-          `<line class="mesh-chart__grid" x1="${PAD.l}" x2="${W - PAD.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/>` +
-          `<text class="mesh-chart__axis" x="${PAD.l - 8}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end">${esc(fmt(v, o.metric))}</text>`
-      )
-      .join('') +
-    [0, 0.25, 0.5, 0.75, 1]
-      .map((f) => {
-        const t = from + f * (to - from);
-        const anchor = f === 0 ? 'start' : f === 1 ? 'end' : 'middle';
-        return `<text class="mesh-chart__axis" x="${x(t).toFixed(1)}" y="${H - 10}" text-anchor="${anchor}">${esc(f === 1 ? 'now' : axisLabel(t, o.range))}</text>`;
-      })
-      .join('');
-
-  /**
-   * One continuous path per repeater. The line is drawn straight through a gap rather than
-   * broken at one — see `pointsIn` for the trade that makes.
-   */
-  const pathFor = (series: TelemetrySeries): string => {
-    const run = decimate(pointsIn(series, o.metric, from, to), MAX_POINTS);
-    if (run.length < 2) return '';
-    return run.map((p, i) => `${i ? 'L' : 'M'}${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join('');
-  };
-
-  const paths = list
-    .map(({ node, series, slot }) => {
-      const dimmed = o.selected != null && o.selected !== node.publicKey;
-      const d = pathFor(series);
-      if (!d) return '';
-      return (
-        `<path class="mesh-chart__line${dimmed ? ' mesh-chart__line--dim' : ''}" d="${d}" ` +
-        `style="stroke:${strokeFor(slot)}" data-mesh-series="${esc(node.publicKey)}"/>`
-      );
-    })
-    .join('');
-
-  // Reboot marks. Counters restart here; the landmark belongs on the gauge too so a reader
-  // comparing the two charts on this page has the same reference on both.
-  const reboots = list
-    .flatMap(({ series }) => series.reboots)
-    .filter((t) => t >= from && t <= to)
+  const grid = ticks
     .map(
-      (t) =>
-        `<line class="mesh-chart__reboot" x1="${x(t).toFixed(1)}" x2="${x(t).toFixed(1)}" y1="${PAD.t}" y2="${PAD.t + PH}"/>`
+      (v, i) =>
+        `<span class="mesh-chart__rule${i === ticks.length - 1 ? ' mesh-chart__rule--base' : ''}" style="top:${pct(v)}"></span>`
+    )
+    .join('');
+  const yLabels = ticks
+    .map(
+      (v) => `<span class="mesh-chart__ytick" style="top:${pct(v)}">${esc(fmt(v, o.metric))}</span>`
     )
     .join('');
 
-  // Invisible, fat, stroke-only copies of each line. The visible trace is 2px and almost
-  // impossible to hover; these give it a real hit target without thickening what is drawn.
-  const hits = list
-    .map(({ node, series, slot }) => {
-      const d = pathFor(series);
-      if (!d) return '';
-      return (
-        `<path class="mesh-chart__hit" d="${d}" data-mesh-hit="${esc(node.publicKey)}" ` +
-        `data-name="${esc(displayName(node.name))}" data-slot="${slot ?? ''}"/>`
-      );
-    })
+  // The highlighted trace draws last, so it sits on top of the bundle.
+  const ordered = [...traces].sort(
+    (a, b) => Number(a.node.publicKey === drop?.key) - Number(b.node.publicKey === drop?.key)
+  );
+  const lineClass = (key: string) =>
+    'mesh-chart__line' +
+    (key === drop?.key ? ' mesh-chart__line--drop' : '') +
+    (o.pinned ? (key === o.pinned ? ' mesh-chart__line--lift' : ' mesh-chart__line--mute') : '');
+  const paths = ordered
+    .map((t) =>
+      t.run.length < 2
+        ? ''
+        : `<path class="${lineClass(t.node.publicKey)}" d="${d(t.run)}" data-mesh-series="${esc(t.node.publicKey)}"/>`
+    )
+    .join('');
+  // Invisible fat copies of each trace — the visible one is ~1px and nearly impossible to hover.
+  const hits = traces
+    .map((t) =>
+      t.run.length < 2
+        ? ''
+        : `<path class="mesh-chart__hit" d="${d(t.run)}" data-mesh-hit="${esc(t.node.publicKey)}" data-name="${esc(t.name)}"/>`
+    )
+    .join('');
+
+  // Reboot marks (mesh-telemetry.ts rule 4): a landmark, not a fault.
+  const reboots = [...new Set(traces.flatMap((t) => t.reboots))]
+    .filter((t) => t >= from && t <= to)
+    .map(
+      (t) =>
+        `<line class="mesh-chart__reboot" x1="${x(t).toFixed(1)}" x2="${x(t).toFixed(1)}" y1="0" y2="${H}"/>`
+    )
+    .join('');
+
+  const note = drop
+    ? `<span class="mesh-chart__note" style="left:${((x(drop.low.t) / W) * 100).toFixed(2)}%;top:${pct(drop.low.v)}">` +
+      esc(
+        `${drop.name} fell to ${fmt(drop.low.v, o.metric)}` +
+          (isOvernight(drop.low.t)
+            ? ' overnight'
+            : ` by ${ptTime(drop.low.t, { hour: '2-digit', minute: '2-digit' })} PT`)
+      ) +
+      `</span>`
+    : '';
+
+  const xLabels = [0, 6, 12, 18]
+    .map((h) => from + h * 3_600_000)
+    .map((t) => ptTime(t, { hour: '2-digit', minute: '2-digit' }))
+    .concat('Now')
+    .map((l) => `<span>${esc(l)}</span>`)
     .join('');
 
   return (
+    `<div class="mesh-chart__frame">` +
+    `<div class="mesh-chart__yaxis" aria-hidden="true">${yLabels}</div>` +
+    `<div class="mesh-chart__plot">${grid}` +
     `<svg class="mesh-chart__svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" ` +
-    `role="img" aria-label="${esc(chartSummary(list, o))}" ` +
-    `data-from="${from}" data-to="${to}">` +
-    // The plot band. It carries the fill rather than the container, so the axis labels stay
-    // on the page ground outside it and the band needs no border of its own.
-    `<rect class="mesh-chart__band" x="${PAD.l}" y="${PAD.t}" width="${PW}" height="${PH}"/>` +
-    `${grid}${reboots}${paths}${hits}` +
-    `<line class="mesh-chart__cursor" x1="0" x2="0" y1="${PAD.t}" y2="${PAD.t + PH}" hidden/>` +
-    `</svg>`
+    `role="img" aria-label="${esc(chartSummary(traces, o, drop))}" data-from="${from}" data-to="${to}">` +
+    `${reboots}${paths}${hits}` +
+    `<line class="mesh-chart__cursor" x1="0" x2="0" y1="0" y2="${H}" hidden/>` +
+    `</svg>${note}` +
+    `<p class="mesh-chart__hint" data-mesh-hint hidden></p>` +
+    `</div>` +
+    `<div class="mesh-chart__xaxis" aria-hidden="true">${xLabels}</div>` +
+    `</div>`
   );
 }
 
 /** The chart's own description, for anyone who cannot see it. Real numbers, not "a chart". */
-function chartSummary(
-  list: { node: MeshNode; series: TelemetrySeries }[],
-  o: HistoryOptions
-): string {
-  const unit = HISTORY_METRIC_UNITS[o.metric];
-  const parts = list
-    .map(({ node, series }) => {
-      const v = latestValue(series, o.metric);
-      return v == null ? null : `${displayName(node.name)} ${Math.round(v)}${unit}`;
-    })
-    .filter(Boolean);
-  return `${HISTORY_METRIC_LABELS[o.metric]} over the last ${o.range}. Latest: ${parts.join(', ') || 'no readings'}.`;
+function chartSummary(traces: Trace[], o: HistoryOptions, drop: Drop | null): string {
+  const latest = traces
+    .filter((t) => t.latest != null)
+    .map((t) => `${t.name} ${fmt(t.latest!, o.metric)}`)
+    .join(', ');
+  return (
+    `${HISTORY_METRIC_LABELS[o.metric]} over the last ${HISTORY_HOURS} hours. ` +
+    `Latest: ${latest || 'no readings'}.` +
+    (drop ? ` ${drop.name} fell to ${fmt(drop.low.v, o.metric)}.` : '')
+  );
 }
 
 /**
- * The legend IS the selector — for THIS CHART ONLY. Every entry names its repeater and shows
- * its current value, so identity never depends on telling two greens apart, and clicking
- * isolates the trace.
- *
- * Deliberately decoupled from the roster/map selection: isolating a trace to read a curve
- * should not scroll the roster and fly the map somewhere, and opening a roster row should not
- * blank six traces out of the comparison this chart exists to make.
+ * The legend: every traced repeater with its current value, highest first, the highlighted
+ * trace leading. Each entry is a button — hovering lifts the trace, clicking pins it.
  */
-function renderLegend(
-  list: { node: MeshNode; series: TelemetrySeries; slot: number | null }[],
-  o: HistoryOptions
-): string {
+function renderLegend(traces: Trace[], o: HistoryOptions, dropKey: string | null): string {
+  const sorted = [...traces].sort(
+    (a, b) =>
+      Number(b.node.publicKey === dropKey) - Number(a.node.publicKey === dropKey) ||
+      (b.latest ?? -Infinity) - (a.latest ?? -Infinity)
+  );
   return (
     `<ul class="mesh-chart__legend">` +
-    list
-      .map(({ node, series, slot }) => {
-        const v = latestValue(series, o.metric);
-        const on = o.selected === node.publicKey;
+    sorted
+      .map((t) => {
+        const key = t.node.publicKey;
         return (
-          `<li><button type="button" class="mesh-chart__key" data-mesh-node="${esc(node.publicKey)}"` +
-          ` aria-pressed="${on ? 'true' : 'false'}">` +
-          `<span class="mesh-chart__swatch" style="background:${strokeFor(slot)}" aria-hidden="true"></span>` +
-          `<span class="mesh-chart__key-name">${esc(displayName(node.name))}</span>` +
-          `<span class="mesh-chart__key-value">${v == null ? '—' : esc(fmt(v, o.metric))}</span>` +
+          `<li><button type="button" class="mesh-chart__key${key === dropKey ? ' mesh-chart__key--drop' : ''}"` +
+          ` data-mesh-key="${esc(key)}" aria-pressed="${o.pinned === key ? 'true' : 'false'}">` +
+          `<span class="mesh-chart__swatch" aria-hidden="true"></span>` +
+          `<span class="mesh-chart__key-name">${esc(t.name)}</span>` +
+          `<span class="mesh-chart__key-value">${t.latest == null ? '—' : esc(fmt(t.latest, o.metric))}</span>` +
           `</button></li>`
         );
       })
@@ -258,79 +253,83 @@ function renderLegend(
   );
 }
 
+/** Who runs the monitors, by name where we know them — `alanpi` is a hostname, not a person. */
+function monitorCredit(series: TelemetrySeries[], nodes: MeshNode[]): string {
+  const ids = new Set<string>();
+  for (const n of nodes) {
+    if (n.admin?.reporterId && series.some((s) => s.publicKey === n.publicKey)) {
+      ids.add(n.admin.reporterId);
+    }
+  }
+  const names = [...ids].map((id) => personByMonitorId(id)?.firstName).filter(Boolean);
+  return names.length ? `Site monitors run by ${[...new Set(names)].join(' and ')}.` : '';
+}
+
+export interface MeshHistoryView {
+  /** The section's one-line intro, under its h2. */
+  intro: string;
+  tabs: string;
+  body: string;
+}
+
 /**
- * Render the whole band. `nodes` is the corridor roster and `series` the archive keyed by
- * public key; a repeater with no monitor is simply absent from both, and the band says how
- * many it is drawing rather than implying it covers the corridor.
+ * Render section 03. `nodes` is the corridor roster and `series` the archive keyed by public
+ * key; a repeater with no monitor is simply absent, and the intro says how many it draws
+ * rather than implying it covers the corridor.
  */
 export function renderMeshHistory(
   nodes: MeshNode[],
   series: Map<string, TelemetrySeries>,
   o: HistoryOptions,
   nowMs: number
-): string {
-  const monitoredKeys = nodes.filter((n) => series.has(n.publicKey)).map((n) => n.publicKey);
-  const list = nodes
-    .filter((n) => series.has(n.publicKey))
-    .map((n) => ({
+): MeshHistoryView {
+  const { from, to } = historyWindow(nowMs);
+  const traced = nodes.filter((n) => series.has(n.publicKey));
+  const traces: Trace[] = traced.map((n) => {
+    const s = series.get(n.publicKey)!;
+    return {
       node: n,
-      series: series.get(n.publicKey)!,
-      slot: seriesSlot(n.publicKey, monitoredKeys),
-    }));
+      name: displayName(n.name),
+      run: decimate(pointsIn(s, o.metric, from, to), MAX_POINTS),
+      latest: latestValue(s, o.metric),
+      reboots: s.reboots,
+    };
+  });
 
-  const head =
-    `<div class="mesh-chart__head">` +
-    `<p class="mesh-chart__title">${esc(HISTORY_METRIC_LABELS[o.metric])} · ${esc(copy.historyLabel)}</p>` +
-    segmented(
-      'metric',
-      'Metric',
-      HISTORY_METRICS,
-      { battery: 'Battery', enclosure: 'Temp' },
-      o.metric
-    ) +
-    `<p class="mesh-chart__hint">${esc(o.selected ? copy.historyHintSelected : copy.historyHint)}</p>` +
-    segmented('range', 'Range', HISTORY_RANGES, HISTORY_RANGE_LABELS, o.range) +
-    `</div>`;
+  const tabs = textTabs(
+    'metric',
+    'Metric',
+    HISTORY_METRICS,
+    { battery: 'Battery', enclosure: 'Temperature' },
+    o.metric
+  );
+  const n = traced.length;
+  const intro = `${copy.historyIntroPrefix} ${n} ${n === 1 ? 'repeater that reports' : 'repeaters that report'} telemetry.`;
 
-  if (!list.length) {
-    return (
-      `<div class="mesh-chart">` +
-      head +
-      `<p class="mesh-empty">${esc(copy.historyEmpty)}</p>` +
-      `</div>`
-    );
-  }
+  if (!n) return { intro, tabs, body: `<p class="mesh-empty">${esc(copy.historyEmpty)}</p>` };
 
-  const { from, to } = rangeWindow(o.range, nowMs);
-  const plot = renderPlot(list, o, from, to);
+  const drop = findDrop(traces, o.metric);
+  const plot = renderPlot(traces, drop, o, from, to);
 
-  // Honesty, rule 3 of mesh-telemetry.ts: an empty stretch before the archive begins is not
-  // a quiet network. Say where the record starts rather than drawing empty axes over it.
-  const earliest = earliestCoverage(list.map((x) => x.series));
+  // Honesty, mesh-telemetry.ts rule 3: an empty stretch before the archive begins is not a
+  // quiet network. Say where the record starts rather than drawing empty axes over it.
+  const list = [...series.values()].filter((s) => traced.some((t) => t.publicKey === s.publicKey));
   const notes: string[] = [];
+  const earliest = earliestCoverage(list);
   if (earliest != null && earliest > from) {
     notes.push(
-      `${copy.historyNoDataBefore} ${new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'America/Los_Angeles',
-      }).format(earliest)} PT.`
+      `${copy.historyNoDataBefore} ${ptTime(earliest, { hour: '2-digit', minute: '2-digit' })} PT.`
     );
   }
-  if (list.some((x) => x.series.truncated)) notes.push(copy.historyTruncated);
+  if (list.some((s) => s.truncated)) notes.push(copy.historyTruncated);
+  const credit = monitorCredit(list, traced);
+  if (credit) notes.push(credit);
 
-  return (
+  const body =
     `<div class="mesh-chart">` +
-    head +
-    (plot
-      ? `<div class="mesh-chart__plot">${plot}` +
-        `<p class="mesh-chart__hint-box" data-mesh-hint hidden></p></div>`
-      : `<p class="mesh-empty">${esc(copy.historyNoRange)}</p>`) +
-    renderLegend(list, o) +
-    (notes.length ? `<p class="mesh-chart__note">${esc(notes.join(' '))}</p>` : '') +
-    `</div>`
-  );
+    (plot || `<p class="mesh-empty">${esc(copy.historyNoRange)}</p>`) +
+    (plot ? renderLegend(traces, o, drop?.key ?? null) : '') +
+    (notes.length ? `<p class="mesh-chart__foot">${esc(notes.join(' '))}</p>` : '') +
+    `</div>`;
+  return { intro, tabs, body };
 }
