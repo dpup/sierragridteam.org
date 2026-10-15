@@ -173,6 +173,10 @@ stable.
   genuine-alert use. The `power` layer (PG&E outages + PSPS) is in the /live stream and map
   with INFO rows dropped (most outages are one customer); PG&E restoration times are
   estimates it routinely overruns — always label them so, never use them to hide an event.
+  **Burn status** (`BURN_STATUS` events) is one quiet line under the weather band, never a
+  tile or a stream item: a daily condition, not a hazard, and never orange. It names the
+  authority that decides it — CAL FIRE's suspension (which overrides the county) or else the
+  air district's burn day. See `docs/architecture/data-feed.md`.
 - **`/mesh` is a STATUS BOARD**, reorganised around monitoring (2026-09-17). Top to bottom:
   a **deep band** (`--surface-deep`, the one dark ground in the system) with the freshness
   stamp and four headline figures — repeaters heard N/M within `HEARD_WITHIN_HOURS`, lowest

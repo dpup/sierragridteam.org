@@ -1,6 +1,7 @@
 /**
  * Refreshes the checked-in data snapshots from the live data.sierragridteam.org feed:
- *   src/data/grid-snapshot.json     — /conditions (current weather + fire-weather state)
+ *   src/data/grid-snapshot.json     — /conditions (current weather + fire-weather state) +
+ *                                     the county burn status (BURN_STATUS events)
  *   src/data/hazards-snapshot.json  — place summary + hazard GeoJSON map layers + scanners
  *   src/data/mesh-snapshot.json     — the mesh_node + mesh_link place layers (/mesh topology)
  * These checked-in JSON are TEST FIXTURES ONLY — the screenshot harness mocks the feed
@@ -48,9 +49,16 @@ async function main() {
   console.error(`Fetching snapshots from ${API_BASE} ...`);
 
   const conditions = await get('/conditions');
+  const burnRes = (await get(`/events?layer=BURN_STATUS&place=${HAZARD_AREA}`)) as {
+    events?: unknown[];
+  };
   writeFileSync(
     GRID_OUT,
-    JSON.stringify({ fetchedAt: new Date().toISOString(), conditions }, null, 2) + '\n'
+    JSON.stringify(
+      { fetchedAt: new Date().toISOString(), conditions, burn: burnRes.events ?? [] },
+      null,
+      2
+    ) + '\n'
   );
   console.error(`Wrote ${GRID_OUT}`);
 

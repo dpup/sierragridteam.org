@@ -57,3 +57,19 @@ export function formatPtDayTime(iso: string | null | undefined): string | null {
     return null;
   }
 }
+
+/**
+ * Format an ISO timestamp as a calendar date, `June 15`, in the site timezone — for a
+ * standing state measured in months (a CAL FIRE burn suspension), where a clock time is
+ * noise. Returns null for unusable input, like `formatPtDayTime`.
+ */
+export function formatPtDate(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: TIMEZONE,
+    month: 'long',
+    day: 'numeric',
+  }).format(d);
+}

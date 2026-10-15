@@ -22,9 +22,15 @@ import {
   type Scanner,
   type SituationSummary,
 } from './hazards';
-import type { GridSnapshot, ConditionsResponse } from './grid';
+import {
+  groupBurnStatus,
+  type BurnGroup,
+  type BurnStatusEvent,
+  type ConditionsResponse,
+  type GridSnapshot,
+} from './grid';
 import { cToF, kmToMi, kmhToMph, degreesToCompass } from './units';
-import { escapeHtml as esc, formatPtTime, formatPtDayTime } from './format';
+import { escapeHtml as esc, formatPtTime, formatPtDayTime, formatPtDate } from './format';
 import { mapSites, serviceAreaBounds } from '../config/coverage';
 import { live as copy } from '../config/content';
 
@@ -52,7 +58,7 @@ export interface LiveView {
   >;
   mapData: LiveMapData;
   /** Pre-rendered HTML for each data-driven region (SSR set:html + client innerHTML). */
-  html: { weather: string; stream: string; roads: string; scanners: string };
+  html: { weather: string; burn: string; stream: string; roads: string; scanners: string };
 }
 
 // ---- small helpers ----
@@ -136,6 +142,93 @@ function renderWeather(conditions: ConditionsResponse | null): string {
     })
     .join('');
   return `<ul class="wband" aria-label="${esc(copy.conditionsHeading)}">${items}</ul>`;
+}
+
+// ---- burn status (under the weather band) ----
+
+/** `+12097546600` → `(209) 754-6600`; anything else is shown as given. */
+function usPhone(e164: string): string {
+  const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(e164);
+  return m ? `(${m[1]}) ${m[2]}-${m[3]}` : e164;
+}
+
+/** The burn lines to call, each as a `tel:` link — the line itself is the authority. */
+function burnLineLinks(counties: BurnStatusEvent[]): string[] {
+  return counties.flatMap((c) => {
+    const lines = c.burnStatus.burnLines ?? [];
+    return lines
+      .filter((l) => l.phone)
+      .map((l) => {
+        const name = lines.length === 1 ? `${c.areaLabel} burn line` : l.name;
+        return `<a href="tel:${esc(l.phone)}">${esc(name)} ${esc(usPhone(l.phone))}</a>`;
+      });
+  });
+}
+
+function burnMeta(g: BurnGroup): string[] {
+  if (g.verdict === 'calfire') {
+    const since = g.counties
+      .map((c) => c.burnStatus.calfireEffective)
+      .filter((t): t is string => !!t)
+      .sort()[0];
+    const date = formatPtDate(since);
+    const url = g.counties.find((c) => c.canonicalUrl?.startsWith('https://'))?.canonicalUrl;
+    return [
+      ...(date ? [`Since ${esc(date)}`] : []),
+      ...(url
+        ? [
+            `<a href="${esc(url)}" target="_blank" rel="noopener external">${esc(copy.burn.calfireLink)}<span aria-hidden="true"> &#8599;</span></a>`,
+          ]
+        : []),
+    ];
+  }
+  const permit =
+    g.verdict === 'allowed' &&
+    g.counties.some((c) => c.burnStatus.calfireStatus === 'CALFIRE_PERMIT_REQUIRED');
+  // The oldest call in the group: the line can only be as current as its stalest reading.
+  const called = g.counties
+    .flatMap((c) => c.burnStatus.burnLines ?? [])
+    .map((l) => l.observation?.observedAt)
+    .filter((t): t is string => !!t)
+    .sort()[0];
+  const calledAt = formatPtDayTime(called);
+  return [
+    ...(permit ? [esc(copy.burn.permitRequired)] : []),
+    ...(calledAt ? [`Called ${esc(calledAt)}`] : []),
+    ...burnLineLinks(g.counties),
+  ];
+}
+
+/**
+ * One burn status for the service area: a single line when the counties agree, one per
+ * county group when they don't. Rendered beside the weather because that's what it is —
+ * a daily condition, not a hazard (CAL FIRE's suspension is a season; a winter no-burn day
+ * is about air quality). No orange in any state.
+ */
+function renderBurn(events: BurnStatusEvent[] | null): string {
+  const groups = groupBurnStatus(events);
+  if (groups && groups.length === 0) return '';
+  const rows = groups
+    ? groups.map((g) => {
+        const who =
+          groups.length > 1
+            ? `<span class="burn__county">${esc(g.counties.map((c) => c.areaLabel).join(' & '))}</span>`
+            : '';
+        const meta = burnMeta(g);
+        return (
+          `<li class="burn__row">${who}` +
+          `<span class="burn__status">${esc(copy.burn[g.verdict])}</span>` +
+          (meta.length ? `<span class="burn__meta">${meta.join(' · ')}</span>` : '') +
+          `</li>`
+        );
+      })
+    : [
+        `<li class="burn__row"><span class="burn__status">${esc(copy.burn.unavailable)}</span></li>`,
+      ];
+  return (
+    `<div class="burn"><p class="burn__label" id="burn-label">${esc(copy.burn.label)}</p>` +
+    `<ul class="burn__list" aria-labelledby="burn-label">${rows.join('')}</ul></div>`
+  );
 }
 
 // ---- alert stream (was AlertStream) ----
@@ -525,6 +618,7 @@ export function buildView(
     mapData: buildMapData(haz),
     html: {
       weather: renderWeather(grid.conditions),
+      burn: renderBurn(grid.burn),
       stream: renderStream(stream, now),
       roads: renderRoads(layerFeatures(haz, 'road_segment'), layerFeatures(haz, 'chain_control')),
       scanners: renderScanners(haz.scanners ?? []),
