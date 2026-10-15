@@ -49,6 +49,7 @@
      roads, warm hairlines, muted place names — the mesh is the subject, not the ground. */
   --map-county-line: #c9c1a9; /* county borders */
   --map-road: #f8f6ef; /* state highways + route-marker fill */
+  --map-road-casing: #ddd4bd; /* the warm edge that keeps /mesh roads visible on the ground */
   --map-shield-line: #d3c9ad; /* route-marker outline */
   --map-shield-text: #7d7459; /* route numbers */
   --map-place: #9a906f; /* county names */

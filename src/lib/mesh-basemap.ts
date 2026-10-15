@@ -8,12 +8,16 @@
  *
  * Rather than patch Positron's ~60 layers, this composes a short layer list of its own over
  * Positron's sources, glyphs and label expressions. Everything not listed is simply absent:
- * landuse, parks, buildings, POIs, rail, aeroways, hillshade, state and country lines.
+ * landuse and park fills, buildings, POIs, rail, aeroways, hillshade, state and country lines.
  *
  *   • Land is the hero's map ground, water a pale green-grey, no water labels below z10.
- *   • State highways and motorways are knocked-out lines (no casing), 3.4px at z9–11 rising to
- *     5px at z13; secondary roads appear at z11, tertiary and minor at z12.
- *   • Route shields are pills (`ROUTE_PILL`, an image the map module draws at load).
+ *   • Roads are knocked-out lines with a warm hairline casing (without one they vanish into the
+ *     ground at corridor zoom): highways 3.4px at z9–11 rising to 5px at z13, secondary roads
+ *     from z8, tertiary from z10, minor from z12. The tiles carry nothing finer at corridor zoom.
+ *   • Landmarks: villages from z8 (Arnold, Murphys, Bear Valley), lake names from z8, the top
+ *     summit in each tile cell with a dot, and park and forest names.
+ *   • Route shields are pills (`ROUTE_PILL`, an image the map module draws at load). OpenFreeMap
+ *     only ships road refs from z12, so they appear once a reader zooms in.
  *   • County lines are warm hairlines; nothing above or below county level.
  *   • Place names are muted italics. The design asks for a serif italic; OpenFreeMap serves
  *     only Noto Sans glyphs, so Noto Sans Italic is the closest available face.
@@ -36,6 +40,7 @@ export interface BasemapColors {
   land: string;
   water: string;
   road: string;
+  roadCasing: string;
   countyLine: string;
   place: string;
   shieldText: string;
@@ -53,6 +58,32 @@ const NAME = [
 ];
 
 const SOURCE = 'openmaptiles';
+
+/** Roads drawn, least to most important: [layer id, OpenMapTiles classes, minzoom, width]. */
+const ROADS: [string, string[], number, unknown][] = [
+  ['road-minor', ['minor'], 12, 1],
+  ['road-tertiary', ['tertiary'], 10, ['interpolate', ['linear'], ['zoom'], 10, 0.8, 13, 1.6]],
+  [
+    'road-secondary',
+    ['secondary'],
+    8,
+    ['interpolate', ['linear'], ['zoom'], 8, 0.8, 11, 1.6, 13, 2.4],
+  ],
+  [
+    'road-major',
+    ['motorway', 'trunk', 'primary'],
+    5,
+    ['interpolate', ['linear'], ['zoom'], 6, 1, 9, 3.4, 11, 3.4, 13, 5],
+  ],
+];
+/** A casing is its road's width plus a hairline each side, at every zoom stop. */
+const casing = (width: unknown): unknown =>
+  Array.isArray(width)
+    ? width.map((v, i) => (i >= 4 && i % 2 === 0 && typeof v === 'number' ? v + 1.4 : v))
+    : (width as number) + 1.4;
+
+/** One summit per tile cell (OpenMapTiles ranks peaks within each cell; 1 is the most prominent). */
+const PEAK = ['all', ['has', 'name'], ['==', ['get', 'rank'], 1]];
 const isLine = ['match', ['geometry-type'], ['LineString', 'MultiLineString'], true, false];
 const roadClass = (classes: string[]) => [
   'all',
@@ -94,50 +125,84 @@ export function meshBasemapStyle(positron: StyleDoc, c: BasemapColors): StyleDoc
       filter: ['all', ['==', ['get', 'admin_level'], 6], ['!=', ['get', 'maritime'], 1]],
       paint: { 'line-color': c.countyLine, 'line-width': 1 },
     },
-    {
-      id: 'road-minor',
+    // Casings first, so every road reads as a pale line with a warm edge rather than vanishing
+    // into the ground; the fill is drawn over all of them, so junctions stay knocked out.
+    ...ROADS.map(([id, classes, minzoom, width]) => ({
+      id: `${id}-casing`,
       type: 'line',
       source: SOURCE,
       'source-layer': 'transportation',
-      minzoom: 12,
-      filter: roadClass(['tertiary', 'minor']),
+      minzoom,
+      filter: roadClass(classes),
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': c.road, 'line-width': 1 },
-    },
-    {
-      id: 'road-secondary',
+      paint: { 'line-color': c.roadCasing, 'line-width': casing(width) },
+    })),
+    ...ROADS.map(([id, classes, minzoom, width]) => ({
+      id,
       type: 'line',
       source: SOURCE,
       'source-layer': 'transportation',
-      minzoom: 11,
-      filter: roadClass(['secondary']),
+      minzoom,
+      filter: roadClass(classes),
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': c.road, 'line-width': 1 },
-    },
-    {
-      id: 'road-major',
-      type: 'line',
-      source: SOURCE,
-      'source-layer': 'transportation',
-      minzoom: 5,
-      filter: roadClass(['motorway', 'trunk', 'primary']),
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': c.road,
-        'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 9, 3.4, 11, 3.4, 13, 5],
-      },
-    },
+      paint: { 'line-color': c.road, 'line-width': width },
+    })),
     {
       id: 'water-label',
       type: 'symbol',
       source: SOURCE,
       'source-layer': 'water_name',
-      minzoom: 10,
+      minzoom: 8,
       layout: {
         'text-field': NAME,
         'text-font': ['Noto Sans Italic'],
         'text-size': 10,
         'text-max-width': 6,
+      },
+      paint: { 'text-color': c.place, 'text-halo-color': c.land, 'text-halo-width': 1.2 },
+    },
+    // Landmarks, quieter than the towns and placed after them (lower layers yield on
+    // collision): the most prominent summit in each tile cell, marked with a small dot since
+    // repeaters sit on summits, and the parks and forests by name.
+    {
+      id: 'peak-dot',
+      type: 'circle',
+      source: SOURCE,
+      'source-layer': 'mountain_peak',
+      minzoom: 8,
+      filter: PEAK,
+      paint: { 'circle-radius': 1.5, 'circle-color': c.place },
+    },
+    {
+      id: 'peak-label',
+      type: 'symbol',
+      source: SOURCE,
+      'source-layer': 'mountain_peak',
+      minzoom: 8,
+      filter: PEAK,
+      layout: {
+        'text-field': NAME,
+        'text-font': ['Noto Sans Italic'],
+        'text-size': 9,
+        'text-anchor': 'left',
+        'text-offset': [0.5, 0],
+        'text-max-width': 7,
+      },
+      paint: { 'text-color': c.place, 'text-halo-color': c.land, 'text-halo-width': 1.2 },
+    },
+    {
+      id: 'park-label',
+      type: 'symbol',
+      source: SOURCE,
+      'source-layer': 'park',
+      minzoom: 8,
+      filter: ['all', ['==', ['geometry-type'], 'Point'], ['<=', ['get', 'rank'], 1]],
+      layout: {
+        'text-field': NAME,
+        'text-font': ['Noto Sans Italic'],
+        'text-size': 9,
+        'text-max-width': 8,
+        'text-letter-spacing': 0.04,
       },
       paint: { 'text-color': c.place, 'text-halo-color': c.land, 'text-halo-width': 1.2 },
     },
@@ -172,7 +237,7 @@ export function meshBasemapStyle(positron: StyleDoc, c: BasemapColors): StyleDoc
       [
         ['place-city', 'city', 4, 11],
         ['place-town', 'town', 7, 11],
-        ['place-village', 'village', 10, 10],
+        ['place-village', 'village', 8, 10],
       ] as const
     ).map(([id, cls, minzoom, size]) => ({
       id,

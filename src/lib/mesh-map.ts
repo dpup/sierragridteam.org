@@ -103,6 +103,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     muted: tok('--ink-muted', '#6f6750'),
     water: tok('--map-water', '#dde3da'),
     road: tok('--map-road', '#f8f6ef'),
+    roadCasing: tok('--map-road-casing', '#ddd4bd'),
     countyLine: tok('--map-county-line', '#c9c1a9'),
     place: tok('--map-place', '#9a906f'),
     shieldLine: tok('--map-shield-line', '#d3c9ad'),

@@ -26,6 +26,7 @@ const COLORS = {
   land: '#edefe7',
   water: '#dde3da',
   road: '#f8f6ef',
+  roadCasing: '#ddd4bd',
   countyLine: '#c9c1a9',
   place: '#9a906f',
   shieldText: '#7d7459',

@@ -128,7 +128,8 @@ make screenshots   # regenerate tests/screenshots, then LOOK at them
 If you changed anything visual, **regenerate and actually view the screenshots** to
 confirm nothing overflowed, misaligned, or lost contrast. The deterministic harness
 (`scripts/screenshots.ts`) freezes the clock and mocks the feed so the images are
-stable.
+stable; it fetches the real basemap once and caches it in `.cache/basemap/` (delete it to
+pick up a new OpenFreeMap build).
 
 ## What NOT to do
 
@@ -223,7 +224,8 @@ stable.
   plotted, the split at `reboots` has to come back — counters reset to zero.
 - **Mesh map details.** The basemap is Positron **restyled to the hero map** in the pure
   `meshBasemapStyle` (tested against the style spec): no landuse, buildings, POIs or
-  hillshade; knocked-out highways; county hairlines; muted italic place names (Noto Sans
+  hillshade; knocked-out roads with a warm hairline casing (without it they vanish at corridor
+  zoom); county hairlines; muted italic names for villages, lakes, summits and parks (Noto Sans
   Italic — OpenFreeMap serves no serif glyphs); a Calaveras/Tuolumne tint from
   `src/assets/service-counties.json` (written by `npm run hero-map`). Links: **one line per
   pair**, solid green, opacity AND width by recency (`TIER_STYLE`), dashed orange when touching

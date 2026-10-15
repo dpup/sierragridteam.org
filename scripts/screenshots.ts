@@ -3,6 +3,7 @@
  * three viewports with:
  *   - a FROZEN clock (stable LocalClock + "Synced" stamps),
  *   - MOCKED data.sierragridteam.org responses (stable data states),
+ *   - the REAL OpenFreeMap basemap, fetched once and cached in .cache/basemap/,
  *   - DISABLED animations + reduced motion,
  * so the PNGs are byte-stable and safe to diff or analyze.
  *
@@ -12,7 +13,8 @@
  * Optional: SCENARIO=redflag to render the alarm state.
  */
 import { chromium, type Route } from 'playwright';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { inMoat, startMoatRelay } from './moat-relay.mjs';
@@ -102,9 +104,60 @@ const meshLayers: Record<string, unknown> = {
   mesh_link: rebaseMesh(meshSnap.link),
 };
 
-// Minimal offline basemap so the MapLibre map's `load` fires without external tiles
-// (the headless browser can't reach tile hosts through the auth proxy). The hazard and
-// mesh overlays still render on a plain parchment background.
+/*
+ * The basemap. The headless browser can't reach tile hosts through the auth proxy, so this
+ * process fetches OpenFreeMap on its behalf and keeps every response in a git-ignored cache
+ * (.cache/basemap/) — a review of the map is worthless without its roads and towns, and the
+ * cache keeps reruns byte-stable (OpenFreeMap rebuilds weekly; delete the cache to pick that
+ * up). With no network and no cache, it falls back to OFFLINE_STYLE: the maps still load and
+ * their overlays still render, on plain parchment.
+ */
+const BASEMAP_CACHE = resolve(root, '.cache/basemap');
+let basemapOnline = true;
+async function basemap(route: Route) {
+  const url = route.request().url();
+  const file = resolve(BASEMAP_CACHE, createHash('sha1').update(url).digest('hex'));
+  let hit: { status: number; type: string; body: Buffer } | null = null;
+  if (existsSync(file)) {
+    const meta = JSON.parse(readFileSync(`${file}.json`, 'utf8'));
+    hit = { ...meta, body: readFileSync(file) };
+  } else if (basemapOnline) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      hit = {
+        status: res.status,
+        type: res.headers.get('content-type') ?? 'application/octet-stream',
+        body: Buffer.from(await res.arrayBuffer()),
+      };
+      if (res.ok) {
+        mkdirSync(BASEMAP_CACHE, { recursive: true });
+        writeFileSync(file, hit.body);
+        writeFileSync(`${file}.json`, JSON.stringify({ status: hit.status, type: hit.type }));
+      }
+    } catch {
+      basemapOnline = false; // stop waiting on every tile; the stub takes over below
+    }
+  }
+  if (hit) {
+    return route.fulfill({
+      status: hit.status,
+      contentType: hit.type,
+      headers: { 'access-control-allow-origin': '*' },
+      body: hit.body,
+    });
+  }
+  if (/\/styles\//.test(url)) {
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(OFFLINE_STYLE),
+    });
+  }
+  return route.abort();
+}
+
+// The stub basemap for when OpenFreeMap is unreachable and nothing is cached: the MapLibre
+// map's `load` still fires, and the hazard and mesh overlays render on plain parchment.
 const OFFLINE_STYLE = {
   version: 8,
   sources: {},
@@ -276,15 +329,7 @@ async function main() {
     });
     if (!LIVE) {
       await ctx.route(/data\.sierragridteam\.org/, mockGrid);
-      // Offline basemap (broad abort first, specific style mock last = higher priority).
-      await ctx.route(/tiles\.openfreemap\.org\//, (r) => r.abort());
-      await ctx.route(/tiles\.openfreemap\.org\/styles\//, (r) =>
-        r.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(OFFLINE_STYLE),
-        })
-      );
+      await ctx.route(/tiles\.openfreemap\.org\//, basemap);
     }
 
     for (const pg of pages) {
