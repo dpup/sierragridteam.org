@@ -46,9 +46,15 @@ test('the forms sit side by side when there is room, and stack when there is not
   ] as const) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/donate');
-    const cols = await page
-      .locator('.donate-forms')
-      .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
+    // Count only tracks with width: `auto-fit` reports the tracks it COLLAPSED as `0px`
+    // (at 1440 the 1208px container fits three 24rem tracks for two forms, so it reads
+    // "591px 591px 0px"), and those are not columns a reader sees.
+    const cols = await page.locator('.donate-forms').evaluate(
+      (el) =>
+        getComputedStyle(el)
+          .gridTemplateColumns.split(' ')
+          .filter((t) => parseFloat(t) > 0).length
+    );
     expect({ width, cols }).toEqual({ width, cols: expected });
     // …and never overflows sideways at any of them.
     const overflows = await page.evaluate(
