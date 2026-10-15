@@ -382,6 +382,28 @@ async function main() {
           )
           .catch(() => {});
       }
+      // Freeze each map into a picture of itself before the full-page capture. That capture
+      // temporarily grows the viewport to the whole page; MapLibre's ResizeObserver reacts
+      // mid-capture and the canvas (and its DOM pins) come out squeezed into one corner. An
+      // ELEMENT screenshot at the real viewport is correct, so take that and lay it over the
+      // live map, with the frame's height pinned so a vh-sized map can't change size either.
+      if (MAP_PAGES.has(pg.path)) {
+        for (const sel of ['[data-mesh-map]', '[data-live-map]']) {
+          const fig = page.locator(sel).first();
+          if (!(await fig.count())) continue;
+          const png = (await fig.screenshot()).toString('base64');
+          await fig.evaluate((el: HTMLElement, src: string) => {
+            el.style.height = `${el.getBoundingClientRect().height}px`;
+            if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = '';
+            img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;z-index:1000';
+            el.appendChild(img);
+            return img.decode();
+          }, `data:image/png;base64,${png}`);
+        }
+      }
       // Kill any residual motion + the text caret for byte-stability.
       await page.addStyleTag({
         content:
