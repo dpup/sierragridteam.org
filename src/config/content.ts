@@ -78,50 +78,51 @@ export const mesh = {
   title: 'Mesh Network',
   kicker: 'LoRa · MeshCore',
   heading: 'The Mesh',
+  /** The page kicker. The h1 under it is generated from the data (mesh-view.ts). */
+  pageKicker: 'The Mesh · Ebbetts Pass Corridor',
   loading: 'Loading the mesh…',
-  autoRefresh: 'Auto-refreshes every 2 minutes',
-  mapTitle: 'S.I.E.R.R.A mesh topology map',
+  refreshNote: 'this page refreshes every 2 minutes.',
   mapFallback:
-    'The mesh map needs JavaScript and WebGL. Every corridor repeater is also listed beside ' +
-    'the map.',
-  mapPanelTitle: 'Observed topology · Ebbetts Pass',
-  legendCorridor: 'Corridor repeater',
-  legendNeighbour: 'Neighbour',
+    'The mesh map needs JavaScript and WebGL. Every corridor repeater is also listed in the ' +
+    'table below.',
   aboutLink: 'What this map does and does not say',
 
-  // ---- The history band. The chart compares repeaters against each other; the roster's
-  // bar and sparkline answer "how is this one doing". Keep the copy about comparison.
-  historyLabel: 'History',
-  historyHint: 'All monitored repeaters — hover a trace to name it, click to isolate it',
-  historyHintSelected: 'One repeater isolated — click it again to compare all',
+  // ---- The three numbered sections. Each intro is one line, under its h2.
+  mapHeading: 'Where the signal reaches',
+  mapIntro:
+    'Repeaters along Highway 4 and the links heard between them. Darker lines were heard ' +
+    'more recently.',
+  rosterHeading: 'Repeaters',
+  rosterIntro: 'Every repeater on the corridor, with its last check-in and battery.',
+  historyHeading: 'Battery charge',
+  /** Completed in mesh-history.ts with the count of repeaters that report telemetry. */
+  historyIntroPrefix: 'Last 24 hours, for the',
+
+  legendCorridor: 'Corridor repeater',
+  legendNeighbour: 'Neighbour',
+  legendStale: 'Not heard in 12 h',
+
+  // ---- The history chart.
   historyEmpty:
     'No repeater in the corridor is reporting monitor telemetry yet, so there is no history ' +
     'to draw. That is a gap in what we watch, not a reading from the network.',
   historyNoRange:
-    'No readings were retained inside this range. Try a shorter one — the archive begins at ' +
-    'the first accepted report, and there is no backfill before it.',
+    'No readings were retained in the last 24 hours. The archive begins at the first ' +
+    'accepted report, and there is no backfill before it.',
   historyNoDataBefore: 'No data retained before',
   historyTruncated:
-    'This range holds more samples than one response carries, so at least one trace is cut ' +
-    'short — narrow the range to see all of it.',
-  attentionLabel: 'Needs attention',
-  rosterHeading: 'Corridor repeaters',
+    'The last 24 hours hold more samples than one response carries, so at least one trace ' +
+    'is cut short.',
+
   // "Not monitored" read as an accusation — nobody is watching this site. What is actually
-  // true is narrower: we hear the repeater on the mesh, we just have no site telemetry from
-  // it. "Limited Telemetry" says that without implying neglect or a fault.
-  notMonitored: 'Limited Telemetry',
+  // true is narrower: we hear the repeater on the mesh, we just have no site telemetry from it.
+  notMonitored: 'No telemetry',
   healthUnreadable: 'Gauge unread',
-  healthUnreadableNote: 'Monitor reached it, gauge unread',
   healthUnknownSub: 'Battery reporting unavailable',
-  detailKicker: 'monitored by',
-  detailKickerAnon: 'monitored',
-  detailEstimated: 'Charge estimated from voltage',
-  detailMeasured: 'Charge read from the gauge',
   rosterEmpty:
     'The feed returned no repeaters inside the corridor for this window. That is a reading ' +
     'from the network, not a confirmed outage — check the official channels if you need to ' +
     'reach someone.',
-  statusUnavailableLabel: 'Mesh feed unavailable',
   statusUnavailableNote:
     'The mesh feed could not be reached, so the network state is unknown. Rather than show a ' +
     'stale picture, the map is left empty — an empty map here means "we do not know", not ' +
@@ -130,6 +131,8 @@ export const mesh = {
   failBody:
     "We couldn't reach the mesh feed right now. Rather than show a stale topology, here is " +
     'where the underlying data lives.',
+  /** Every map card ends on this: an edge is an observation, never a route. */
+  popFootnote: 'Observed relay traffic, not a routing table.',
   attribution: 'Mesh topology via data.sierragridteam.org · Node adverts via MeshCore',
 } as const;
 

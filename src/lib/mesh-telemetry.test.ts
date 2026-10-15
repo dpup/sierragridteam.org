@@ -9,9 +9,9 @@ import {
   decimate,
   earliestCoverage,
   latestValue,
-  rangeWindow,
+  historyWindow,
+  largestDrop,
   pointsIn,
-  valueExtent,
   type TelemetryResponse,
 } from './mesh-telemetry';
 
@@ -53,9 +53,9 @@ test('rule 1 — a null gauge is skipped, never read as zero', () => {
     })
   );
   expect(s.points[1].battery).toBeNull();
-  // A battery at 0% and a battery nobody could read must never look alike, so the extent
-  // never reaches down to zero because of an unread gauge…
-  expect(valueExtent([s], 'battery', T0, T0 + 3_600_000)).toEqual({ min: 76, max: 80 });
+  // A battery at 0% and a battery nobody could read must never look alike, so the plotted
+  // run never reaches down to zero because of an unread gauge…
+  expect(pointsIn(s, 'battery', T0, T0 + 3_600_000).map((p) => p.v)).toEqual([80, 76]);
   // …and the unreadable sample is dropped from the plot rather than plotted as one.
   expect(pointsIn(s, 'battery', T0, T0 + 3_600_000).map((p) => p.v)).toEqual([80, 76]);
 });
@@ -122,19 +122,24 @@ test('a malformed or missing response degrades to an empty series, never to zero
     const s = buildSeries('aaa', bad as TelemetryResponse | null);
     expect(s.points).toEqual([]);
     expect(latestValue(s, 'battery')).toBeNull();
-    expect(valueExtent([s], 'battery', T0, T0 + 3_600_000)).toBeNull();
+    expect(pointsIn(s, 'battery', T0, T0 + 3_600_000)).toEqual([]);
   }
 });
 
-test('ranges are rolling windows ending now, never calendar frames', () => {
+test('the window is the last 24 hours ending now, never a calendar day', () => {
   const now = Date.parse('2026-09-16T04:00:00Z');
-  const day = rangeWindow('day', now);
-  // The mockup this replaced framed by calendar: its "Day" defaulted to a UTC day that had
-  // not started yet, so the page opened on "no data" at one minute past midnight.
-  expect(day.to).toBe(now);
-  expect(day.from).toBe(now - 86_400_000);
-  expect(rangeWindow('week', now).from).toBe(now - 7 * 86_400_000);
-  expect(rangeWindow('month', now).from).toBe(now - 30 * 86_400_000);
+  // A calendar "day" once defaulted to a UTC day that had not started yet, so the page
+  // opened on "no data" at one minute past midnight.
+  expect(historyWindow(now)).toEqual({ from: now - 86_400_000, to: now });
+});
+
+test('the largest drop is peak-to-later-trough, and a recovery does not shrink it', () => {
+  const run = [90, 92, 70, 58, 75, 91].map((v, i) => ({ t: i, v }));
+  // 92 → 58 is the fall, even though the battery came back to 91 by the end.
+  expect(largestDrop(run)).toEqual({ drop: 34, low: { t: 3, v: 58 } });
+  // A rise is never a drop, and a lone point has nothing to compare.
+  expect(largestDrop([50, 60, 70].map((v, i) => ({ t: i, v })))).toBeNull();
+  expect(largestDrop([{ t: 0, v: 80 }])).toBeNull();
 });
 
 test('decimation keeps the ends and the extremes, so a dip is never smoothed away', () => {

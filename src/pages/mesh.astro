@@ -1,14 +1,15 @@
 ---
 /**
- * /mesh — the mesh status board. Like /live, this page renders its data ENTIRELY in the
- * browser: nothing about the network is baked at build time, so no stale topology or stale
- * battery can ship in the HTML. SSR is the layout, an empty panel skeleton and the map's
- * "reading the mesh" state; the client fills all of it.
+ * /mesh — the mesh report. Like /live, this page renders its data ENTIRELY in the browser:
+ * nothing about the network is baked at build time, so no stale topology or stale battery
+ * can ship in the HTML. SSR is the layout, an empty skeleton and the map's "reading the mesh"
+ * state; the client fills all of it.
  *
- * ONE SELECTION DRIVES THREE PANELS. Choosing a repeater — from the roster, its map pin, an
- * item in the attention strip, or the history chart's legend — isolates its trace in the
- * chart, frames and emphasises it on the map, and expands its reading in the roster. There
- * is exactly one piece of selection state on this page, and every surface reads it.
+ * TWO selections, deliberately decoupled. The table and the map share one — "which repeater
+ * am I looking at" — and it is also the page's `?node=` URL, so a view can be shared. The
+ * chart has its own pinned trace — "which line am I following" — because isolating a curve
+ * should not fly the map somewhere, and selecting a repeater should not blank six traces out
+ * of the comparison the chart exists to make.
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import MeshPanels from '@components/mesh/MeshPanels.astro';
@@ -17,9 +18,9 @@ import { site } from '@config/site';
 import '../styles/mesh.css';
 
 const description =
-  'Live status board for the S.I.E.R.R.A LoRa / MeshCore mesh across the Ebbetts Pass ' +
-  'corridor — every corridor repeater, what we have heard it relaying, and what its site ' +
-  'monitor reports.';
+  'Live status of the S.I.E.R.R.A LoRa / MeshCore mesh along the Ebbetts Pass corridor — ' +
+  'which repeaters we are hearing, where their signal reaches, and how their batteries held ' +
+  'up overnight.';
 
 const schema = {
   '@context': 'https://schema.org',
@@ -29,13 +30,7 @@ const schema = {
 };
 ---
 
-<BaseLayout
-  title={copy.title}
-  description={description}
-  path="/mesh"
-  mainClass="mesh-main"
-  schema={schema}
->
+<BaseLayout title={copy.title} description={description} path="/mesh" schema={schema}>
   <MeshPanels />
 </BaseLayout>
 
@@ -51,41 +46,42 @@ const schema = {
     fetchTelemetry,
   } from '../lib/mesh-client';
   import { buildMeshView } from '../lib/mesh-view';
-  import { renderMeshHistory } from '../lib/mesh-history';
+  import { renderMeshHistory, PLOT } from '../lib/mesh-history';
   import {
     linksToGeoJSON,
     MESH_WINDOW,
     type MeshEventsPage,
     type MeshGraph,
-    type MeshHeardIn,
     type MeshRosterSort,
   } from '../lib/mesh';
   import {
-    rangeWindow,
+    historyWindow,
     valueAt,
     HISTORY_METRIC_UNITS,
     type HistoryMetric,
-    type HistoryRange,
     type TelemetrySeries,
   } from '../lib/mesh-telemetry';
-  import { PLOT } from '../lib/mesh-history';
   import { mesh as copy } from '../config/content';
   import { serviceAreaBounds } from '../config/coverage';
   import { escapeHtml as esc } from '../lib/format';
+  import counties from '../assets/service-counties.json';
 
   const REFRESH_MS = 120_000;
+  /** The archive moves slowly; re-fetch it on a refresh only once it is this old. */
+  const TELEMETRY_MAX_AGE_MS = 10 * 60_000;
 
   const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel);
   const figure = $('[data-mesh-map]');
   const loading = $('[data-mesh-loading]');
-  const bandEl = $('[data-mesh-band]');
-  const attentionEl = $('[data-mesh-attention]');
+  const headlineEl = $('[data-mesh-headline]');
+  const ledeEl = $('[data-mesh-lede]');
+  const statsEl = $('[data-mesh-stats]');
   const legendEl = $('[data-mesh-legend]');
+  const sortEl = $('[data-mesh-sort]');
   const rosterEl = $('[data-mesh-roster]');
-  const mapCtrlEl = $('[data-mesh-controls-map]');
-  const rosterCtrlEl = $('[data-mesh-controls-roster]');
+  const historyIntroEl = $('[data-mesh-history-intro]');
+  const historyTabsEl = $('[data-mesh-history-tabs]');
   const historyEl = $('[data-mesh-history]');
-  const statusDetailEl = $('[data-mesh-status-detail]');
 
   let handle: MeshMapHandle | null = null;
   let graph: MeshGraph | null = null;
@@ -95,65 +91,51 @@ const schema = {
 
   /** The monitor archive, keyed by public key. Empty until the deferred fetch lands. */
   let series = new Map<string, TelemetrySeries>();
-  let telemetryRange: HistoryRange | null = null;
+  let telemetryAt = 0;
 
   // ---- view state ----
-  //
-  // TWO selections, deliberately decoupled. The roster and the map answer "which repeater am
-  // I looking at"; the chart answers "which trace am I following", and those are different
-  // questions asked at different moments — isolating a trace to read a curve should not
-  // scroll the roster and fly the map somewhere, and opening a roster row should not blank
-  // six traces out of the comparison the chart exists to make.
-  /** Roster + map: the repeater whose row is open and whose links are emphasised. */
-  let selected: string | null = null;
-  /** History chart only: the trace held at full strength while the rest drop back. */
-  let chartSelected: string | null = null;
+  /** Table + map + URL: the selected repeater. Seeded from a shared `?node=` link. */
+  let selected: string | null = new URL(location.href).searchParams.get('node');
+  /** Chart only: the trace pinned at full strength while the rest drop back. */
+  let pinned: string | null = null;
   let sort: MeshRosterSort = 'links';
-  let heardIn: MeshHeardIn = '30d';
   let metric: HistoryMetric = 'battery';
-  let range: HistoryRange = 'day';
 
   // ---- rendering ----
 
   function renderPanels(g: MeshGraph, nowMs: number) {
-    const view = buildMeshView(g, MESH_WINDOW, nowMs, { selected, sort, heardIn, series });
-    if (bandEl) bandEl.innerHTML = view.html.band;
-    if (attentionEl) attentionEl.innerHTML = view.html.attention;
+    const view = buildMeshView(g, MESH_WINDOW, nowMs, { selected, sort, series });
+    if (headlineEl) headlineEl.innerHTML = view.html.headline;
+    if (ledeEl) ledeEl.innerHTML = view.html.lede;
+    if (statsEl) statsEl.innerHTML = view.html.stats;
     if (legendEl) legendEl.innerHTML = view.html.legend;
+    if (sortEl) sortEl.innerHTML = view.html.sortTabs;
     if (rosterEl) rosterEl.innerHTML = view.html.roster;
-    // `controls` renders both panel heads in one string; split them into their own slots so
-    // each sits inside the column it belongs to.
-    const heads = document.createElement('div');
-    heads.innerHTML = view.html.controls;
-    const [mapHead, rosterHead] = [...heads.children];
-    if (mapCtrlEl && mapHead) mapCtrlEl.replaceChildren(mapHead);
-    if (rosterCtrlEl && rosterHead) rosterCtrlEl.replaceChildren(rosterHead);
-    if (statusDetailEl) statusDetailEl.textContent = `${view.status.detail} · ${copy.autoRefresh}`;
     renderHistory(g, nowMs);
   }
 
   function renderHistory(g: MeshGraph, nowMs: number) {
-    if (!historyEl) return;
-    historyEl.innerHTML = renderMeshHistory(
+    const h = renderMeshHistory(
       g.nodes.filter((n) => n.inRegion),
       series,
-      { metric, range, selected: chartSelected },
+      { metric, pinned },
       nowMs
     );
+    if (historyIntroEl) historyIntroEl.textContent = h.intro;
+    if (historyTabsEl) historyTabsEl.innerHTML = h.tabs;
+    if (historyEl) historyEl.innerHTML = h.body;
   }
 
   /** Honest failure: no stale topology, just what we know and where the data lives. */
   function renderFailure() {
-    if (bandEl) {
-      bandEl.innerHTML =
-        `<div class="mesh-empty mesh-empty--band">` +
-        `<p class="mesh-empty__head">${esc(copy.failHeading)}</p>` +
-        `<p>${esc(copy.failBody)}</p></div>`;
+    if (headlineEl) {
+      headlineEl.innerHTML = `<span class="mesh-h1__lead">${esc(copy.failHeading)}</span>`;
     }
-    for (const el of [attentionEl, legendEl, rosterEl, historyEl]) {
+    if (ledeEl) ledeEl.textContent = copy.failBody;
+    for (const el of [statsEl, legendEl, sortEl, rosterEl, historyTabsEl, historyEl]) {
       if (el) el.innerHTML = '';
     }
-    if (statusDetailEl) statusDetailEl.textContent = 'Network state unknown';
+    if (historyIntroEl) historyIntroEl.textContent = '';
     loading?.setAttribute('data-hidden', 'true');
   }
 
@@ -168,18 +150,26 @@ const schema = {
       if (ac.signal.aborted) return;
       graph = g;
       const now = Date.now();
+      // A shared link to a repeater that is no longer in the corridor selects nothing.
+      if (selected && !g.nodes.some((n) => n.inRegion && n.publicKey === selected)) {
+        setSelected(null);
+      }
       renderPanels(g, now);
 
       if (figure && !handle) {
         handle = initMeshMap(figure, {
           bounds: serviceAreaBounds,
-          // A pin click is the same selection as a roster click or a legend click.
-          onSelectNode: (key) => applySelection(key, { fromMap: true }),
+          counties: counties as GeoJSON.FeatureCollection,
+          // A pin click, Esc or a click on bare map changes the shared selection.
+          onSelectNode: (key) => {
+            setSelected(key);
+            if (graph) renderPanels(graph, Date.now());
+          },
         });
         handle?.onPanOut(loadBackdrop);
+        if (selected) handle?.select(selected);
       }
       handle?.setGraph(g, MESH_WINDOW, now);
-      handle?.setHeardIn(heardIn);
       loading?.setAttribute('data-hidden', 'true');
       void loadTelemetry();
     } catch (err) {
@@ -190,25 +180,27 @@ const schema = {
 
   /**
    * The monitor archive, one request per MONITORED repeater, after the corridor has painted.
-   * Deferred because it is N round-trips for a region below the fold, and re-fetched only
-   * when the range grows past what we already hold — a refresh inside the same range reuses
-   * it rather than re-fanning out every two minutes.
+   * Deferred because it is N round-trips for a section below the fold, and re-fetched only
+   * once it is TELEMETRY_MAX_AGE_MS old rather than on every two-minute refresh.
    */
   async function loadTelemetry() {
     if (!graph) return;
     const keys = graph.nodes.filter((n) => n.inRegion && n.admin).map((n) => n.publicKey);
-    if (!keys.length) return;
-    if (telemetryRange === range && series.size === keys.length) return;
+    if (!keys.length || Date.now() - telemetryAt < TELEMETRY_MAX_AGE_MS) return;
     try {
-      const { from, to } = rangeWindow(range, Date.now());
-      const ac = new AbortController();
-      const fetched = await fetchTelemetry(keys, new Date(from), new Date(to), ac.signal);
+      const { from, to } = historyWindow(Date.now());
+      const fetched = await fetchTelemetry(
+        keys,
+        new Date(from),
+        new Date(to),
+        new AbortController().signal
+      );
       series = new Map(fetched.map((s) => [s.publicKey, s]));
-      telemetryRange = range;
+      telemetryAt = Date.now();
       if (graph) renderPanels(graph, Date.now());
     } catch {
-      // Non-fatal: the corridor, the band and the roster are already correct without it.
-      // The history band keeps saying it has nothing to draw, which is true.
+      // Non-fatal: the header, the map and the table are already correct without it. The
+      // chart keeps saying it has nothing to draw, which is true.
     }
   }
 
@@ -229,161 +221,146 @@ const schema = {
     }
   }
 
-  // ---- selection: one piece of state, every panel reads it ----
+  // ---- selection: one piece of state, the table, the map and the URL read it ----
 
-  function applySelection(key: string | null, opts: { fromMap?: boolean } = {}) {
+  function setSelected(key: string | null) {
     selected = key;
-    if (!opts.fromMap) {
-      if (key) {
-        handle?.focus(key);
-        handle?.select(key);
-      } else {
-        handle?.select(null);
-      }
-    }
+    const url = new URL(location.href);
+    if (key) url.searchParams.set('node', key);
+    else url.searchParams.delete('node');
+    history.replaceState(history.state, '', url);
+  }
+
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+
+  /** A table row: select (or let go of) its repeater, and bring the map into view. */
+  function selectFromTable(key: string) {
+    const next = selected === key ? null : key;
+    setSelected(next);
+    handle?.select(next);
     if (graph) renderPanels(graph, Date.now());
-    if (key) {
-      rosterEl
-        ?.querySelector(`[data-mesh-node="${CSS.escape(key)}"]`)
-        ?.scrollIntoView({ block: 'nearest' });
+    if (next) {
+      figure?.scrollIntoView({
+        behavior: reduceMotion?.matches ? 'auto' : 'smooth',
+        block: 'center',
+      });
     }
   }
 
-  // Delegated on the whole view: the roster, the attention strip and the chart legend are
-  // all re-rendered on every refresh, so listeners cannot live on individual controls.
-  const view = $('.mesh-view');
-  view?.addEventListener('click', (e) => {
-    const el = e.target as HTMLElement;
+  rosterEl?.addEventListener('click', (e) => {
+    const row = (e.target as HTMLElement).closest<HTMLElement>('[data-mesh-row]');
+    if (row?.dataset.meshRow) selectFromTable(row.dataset.meshRow);
+  });
+  const hoverRow = (e: Event) => {
+    const row = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-row]');
+    handle?.highlight(row?.dataset.meshRow ?? null);
+  };
+  rosterEl?.addEventListener('mouseover', hoverRow);
+  rosterEl?.addEventListener('focusin', hoverRow);
+  rosterEl?.addEventListener('mouseleave', () => handle?.highlight(null));
 
-    // The chart's legend drives ONLY the chart.
-    const key = el.closest<HTMLElement>('.mesh-chart__key');
-    if (key?.dataset.meshNode && graph) {
-      chartSelected = chartSelected === key.dataset.meshNode ? null : key.dataset.meshNode;
-      renderHistory(graph, Date.now());
-      return;
-    }
-    // Everything else — roster row, map pin, attention item — drives the roster and the map.
-    const node = el.closest<HTMLElement>('[data-mesh-node]');
-    if (node?.dataset.meshNode) {
-      // A second click on the open repeater clears it — a disclosure, not a one-way trip.
-      applySelection(selected === node.dataset.meshNode ? null : node.dataset.meshNode);
-      return;
-    }
-    const seg = el.closest<HTMLElement>(
-      '[data-mesh-sort],[data-mesh-heardin],[data-mesh-metric],[data-mesh-range]'
-    );
-    if (!seg || !graph) return;
-    const d = seg.dataset;
-    if (d.meshSort) sort = d.meshSort as MeshRosterSort;
-    if (d.meshHeardin) {
-      heardIn = d.meshHeardin as MeshHeardIn;
-      handle?.setHeardIn(heardIn);
-    }
-    if (d.meshMetric) metric = d.meshMetric as HistoryMetric;
-    if (d.meshRange) {
-      range = d.meshRange as HistoryRange;
-      void loadTelemetry();
-    }
+  sortEl?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-mesh-sort]');
+    if (!b?.dataset.meshSort || !graph) return;
+    sort = b.dataset.meshSort as MeshRosterSort;
     renderPanels(graph, Date.now());
   });
 
-  // ---- the chart's hover hint ----
-  //
-  // Seven muted traces are legible as a group but not one by one. Hovering resolves it
-  // without a re-render: the paths are re-classed in place (a re-render on every pointermove
-  // would fight the mouse), and the label reads the value AT the hovered moment from the
-  // series the page already holds.
+  historyTabsEl?.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-mesh-metric]');
+    if (!b?.dataset.meshMetric || !graph) return;
+    metric = b.dataset.meshMetric as HistoryMetric;
+    renderHistory(graph, Date.now());
+  });
+
+  // ---- the chart: click pins a trace, hover lifts and names it ----
+
+  historyEl?.addEventListener('click', (e) => {
+    const el = e.target as HTMLElement;
+    const key =
+      el.closest<HTMLElement>('[data-mesh-key]')?.dataset.meshKey ??
+      el.closest<SVGPathElement>('[data-mesh-hit]')?.dataset.meshHit;
+    if (!key || !graph) return;
+    pinned = pinned === key ? null : key;
+    renderHistory(graph, Date.now());
+  });
 
   /** How far from the pointer a sample may sit and still be the answer. */
   const HINT_TOLERANCE_MS = 45 * 60_000;
 
+  /** Back to the pinned state (or the resting bundle) once the pointer leaves. */
   function clearHint() {
     const chart = $('.mesh-chart');
     if (!chart) return;
-    for (const path of chart.querySelectorAll('.mesh-chart__line')) {
-      path.classList.remove('mesh-chart__line--mute', 'mesh-chart__line--lift');
+    for (const path of chart.querySelectorAll<SVGPathElement>('.mesh-chart__line')) {
+      const mine = path.dataset.meshSeries === pinned;
+      path.classList.toggle('mesh-chart__line--lift', pinned != null && mine);
+      path.classList.toggle('mesh-chart__line--mute', pinned != null && !mine);
     }
     chart.querySelector('[data-mesh-hint]')?.setAttribute('hidden', '');
     chart.querySelector('.mesh-chart__cursor')?.setAttribute('hidden', '');
   }
 
-  /** Emphasise one trace and, when a pointer position is given, label it. */
-  function showHint(key: string, ev?: PointerEvent | MouseEvent) {
+  /**
+   * Lift one trace and dim the rest — a class toggle on the paths, never a re-render, which
+   * would fight the mouse. With a pointer, also name the reading AT that moment; outside the
+   * tolerance (a monitor outage) say nothing rather than reach across the gap.
+   */
+  function showHint(key: string, ev?: PointerEvent) {
     const chart = $('.mesh-chart');
     const svg = chart?.querySelector<SVGSVGElement>('.mesh-chart__svg');
     const hint = chart?.querySelector<HTMLElement>('[data-mesh-hint]');
     if (!chart || !svg || !hint) return;
-
     for (const path of chart.querySelectorAll<SVGPathElement>('.mesh-chart__line')) {
       const mine = path.dataset.meshSeries === key;
-      path.classList.toggle('mesh-chart__line--mute', !mine);
       path.classList.toggle('mesh-chart__line--lift', mine);
+      path.classList.toggle('mesh-chart__line--mute', !mine);
     }
-
-    const hit = chart.querySelector<SVGPathElement>(`[data-mesh-hit="${CSS.escape(key)}"]`);
-    const name = hit?.dataset.name ?? '';
-    const slot = hit?.dataset.slot;
+    const name =
+      chart.querySelector<SVGPathElement>(`[data-mesh-hit="${CSS.escape(key)}"]`)?.dataset.name ??
+      '';
     const box = svg.getBoundingClientRect();
-    const from = Number(svg.dataset.from);
-    const to = Number(svg.dataset.to);
-    const s = series.get(key);
-
-    // Without a pointer (a legend hover) emphasise but don't try to name a moment.
     let label = '';
     let left = box.width / 2;
+    let top = box.height / 3;
+    const s = series.get(key);
+    const from = Number(svg.dataset.from);
+    const to = Number(svg.dataset.to);
     if (ev && s && Number.isFinite(from) && Number.isFinite(to)) {
-      const fx = (ev.clientX - box.left) / box.width;
-      const t =
-        from + ((fx * PLOT.W - PLOT.PAD.l) / (PLOT.W - PLOT.PAD.l - PLOT.PAD.r)) * (to - from);
-      const found = valueAt(s, metric, t, HINT_TOLERANCE_MS);
-      // Nothing inside tolerance means the monitor was silent here. Say nothing rather than
-      // reach across the gap for a reading it never took.
-      if (found) {
-        const unit = HISTORY_METRIC_UNITS[metric];
-        label = `${Math.round(found.v)}${unit}`;
-        left = ev.clientX - box.left;
-      }
+      const fx = Math.max(0, Math.min(1, (ev.clientX - box.left) / box.width));
+      const found = valueAt(s, metric, from + fx * (to - from), HINT_TOLERANCE_MS);
+      if (found) label = `${Math.round(found.v)}${HISTORY_METRIC_UNITS[metric]}`;
+      left = ev.clientX - box.left;
+      top = ev.clientY - box.top;
       const cursor = chart.querySelector<SVGLineElement>('.mesh-chart__cursor');
       if (cursor) {
-        const cx = String(fx * PLOT.W);
-        cursor.setAttribute('x1', cx);
-        cursor.setAttribute('x2', cx);
+        cursor.setAttribute('x1', String(fx * PLOT.W));
+        cursor.setAttribute('x2', String(fx * PLOT.W));
         cursor.removeAttribute('hidden');
       }
     }
-
     hint.innerHTML =
-      `<span class="mesh-chart__hint-swatch"${slot ? ` style="background:var(--series-${slot})"` : ''}></span>` +
       `<span>${esc(name)}</span>` +
       (label ? `<span class="mesh-chart__hint-value">${esc(label)}</span>` : '');
     hint.style.left = `${left}px`;
-    hint.style.top = `${Math.max(0, ev ? ev.clientY - box.top : box.height / 3)}px`;
+    hint.style.top = `${Math.max(0, top)}px`;
     hint.removeAttribute('hidden');
   }
 
   historyEl?.addEventListener('pointermove', (e) => {
     const hit = (e.target as HTMLElement)?.closest<SVGPathElement>('[data-mesh-hit]');
     if (hit?.dataset.meshHit) showHint(hit.dataset.meshHit, e);
-    else if (!(e.target as HTMLElement)?.closest('.mesh-chart__key')) clearHint();
+    else if (!(e.target as HTMLElement)?.closest('[data-mesh-key]')) clearHint();
   });
   historyEl?.addEventListener('pointerleave', clearHint);
-  // The legend is the other end of the same affordance.
-  historyEl?.addEventListener('mouseover', (e) => {
-    const key = (e.target as HTMLElement)?.closest<HTMLElement>('.mesh-chart__key');
-    if (key?.dataset.meshNode) showHint(key.dataset.meshNode);
-  });
-  historyEl?.addEventListener('focusin', (e) => {
-    const key = (e.target as HTMLElement)?.closest<HTMLElement>('.mesh-chart__key');
-    if (key?.dataset.meshNode) showHint(key.dataset.meshNode);
-  });
-
-  const hoverKey = (e: Event) => {
-    const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-node]');
-    handle?.highlight(btn?.dataset.meshNode ?? null);
-  };
-  rosterEl?.addEventListener('mouseover', hoverKey);
-  rosterEl?.addEventListener('focusin', hoverKey);
-  rosterEl?.addEventListener('mouseleave', () => handle?.highlight(null));
+  // The legend is the other end of the same affordance, by pointer or by keyboard.
+  for (const type of ['mouseover', 'focusin'] as const) {
+    historyEl?.addEventListener(type, (e) => {
+      const key = (e.target as HTMLElement)?.closest<HTMLElement>('[data-mesh-key]');
+      if (key?.dataset.meshKey) showHint(key.dataset.meshKey);
+    });
+  }
+  historyEl?.addEventListener('focusout', clearHint);
 
   load();
   setInterval(load, REFRESH_MS);

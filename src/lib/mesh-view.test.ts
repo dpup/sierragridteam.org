@@ -1,11 +1,16 @@
 /**
- * The /mesh panel's rendered regions. These assert the things a reader would be MISLED by,
- * not the markup: that the sparkline covers a fixed span, that "no monitor" never renders as
- * a value, and that a broken feed never renders as calm.
+ * The /mesh report's rendered regions. These assert the things a reader would be MISLED by,
+ * not the markup: that the headline counts honestly, that a repeater we stopped hearing is
+ * named, that "no monitor" never renders as a value, and that a broken feed never reads calm.
  */
 import { test, expect } from 'bun:test';
-import { buildMeshView, SPARK_WINDOW_HOURS } from './mesh-view';
-import { buildRegionGraph, type MeshFeature, type MeshFeatureCollection } from './mesh';
+import { batteryFloor, buildMeshView, listNames } from './mesh-view';
+import {
+  buildRegionGraph,
+  HEARD_WITHIN_HOURS,
+  type MeshFeature,
+  type MeshFeatureCollection,
+} from './mesh';
 import { buildSeries, type TelemetrySeries } from './mesh-telemetry';
 
 const NOW = Date.parse('2026-09-17T12:00:00Z');
@@ -66,111 +71,122 @@ const render = (series: Map<string, TelemetrySeries>) =>
     { series }
   ).html.roster;
 
-test('the sparkline covers a FIXED window, not whatever the chart below is set to', () => {
-  // It used to draw every point in the fetched series, so switching the history chart to
-  // Month silently changed every row's span with nothing in the row to say so.
-  const wide = render(new Map([['aaa', seriesOver('aaa', 24 * 30)]]));
-  const narrow = render(new Map([['aaa', seriesOver('aaa', SPARK_WINDOW_HOURS)]]));
-  const path = (html: string) => html.match(/class="mesh-spark"[\s\S]*?d="([^"]+)"/)?.[1] ?? '';
-  expect(path(wide)).not.toBe('');
-  // A month of samples and six hours of samples produce the same number of drawn points,
-  // because both are cut to the same window.
-  expect(path(wide).split('L')).toHaveLength(path(narrow).split('L').length);
+const view = (nodes: MeshFeature[], links: MeshFeature[] = [], status = 'OK') =>
+  buildMeshView(buildRegionGraph(fc(nodes, status), fc(links, status)), '30d', NOW, {}).html;
+
+// ---- header ----
+
+test('the headline counts repeaters heard, in numerals, on two lines', () => {
+  const h = view(
+    [node('aaa', 'SIERRA A'), node('bbb', 'SIERRA B'), node('ccc', 'SIERRA C')],
+    [link('aaa', 'zzz', ago(0.2)), link('bbb', 'zzz', ago(2))]
+  ).headline;
+  expect(h).toContain('2 of 3 repeaters');
+  expect(h).toContain(`heard in the last ${HEARD_WITHIN_HOURS} hours.`);
+  // Data is numerals (content-style-guide §5) — never "Two of three".
+  expect(h).not.toMatch(/Two|three/);
 });
 
-test('a series that stops before the window renders no sparkline at all', () => {
-  // Every sample older than the window: there is no recent trend, so drawing one would
-  // invent a shape out of stale readings.
-  const stale = render(new Map([['aaa', seriesOver('aaa', 24, SPARK_WINDOW_HOURS + 2)]]));
-  expect(stale).not.toContain('mesh-spark');
-  // …and the battery bar is still there, because the LATEST reading is a separate fact.
-  expect(stale).toContain('82%');
+test('every repeater heard reads "All N", and a broken feed reads unknown, never all-clear', () => {
+  expect(view([node('aaa', 'SIERRA A')], [link('aaa', 'zzz', ago(0.2))]).headline).toContain(
+    'The 1 repeater'
+  );
+  const two = view(
+    [node('aaa', 'SIERRA A'), node('bbb', 'SIERRA B')],
+    [link('aaa', 'bbb', ago(0.2))]
+  ).headline;
+  expect(two).toContain('All 2 repeaters');
+  const down = view([], [], 'UNAVAILABLE');
+  expect(down.headline).toContain('unknown');
+  expect(down.headline).not.toContain('All');
 });
 
-test('the sparkline is on an absolute scale, so calm never looks like collapse', () => {
-  // The failure this replaced: each row scaled to its OWN min/max, so a repeater oscillating
-  // 90-100% drew a full-height zigzag while one sliding 90->60% drew a gentle slope. The
-  // healthy node looked like the emergency.
-  const flat = buildSeries('aaa', {
-    cadenceSeconds: '900',
-    samples: Array.from({ length: 20 }, (_, i) => ({
-      reading: {
-        reportedAt: new Date(NOW - (20 - i) * 900_000).toISOString(),
-        batteryPercent: i % 2 ? 100 : 90,
-      },
-    })),
-  });
-  const falling = buildSeries('aaa', {
-    cadenceSeconds: '900',
-    samples: Array.from({ length: 20 }, (_, i) => ({
-      reading: {
-        reportedAt: new Date(NOW - (20 - i) * 900_000).toISOString(),
-        batteryPercent: 90 - i * 1.5,
-      },
-    })),
-  });
-  const ys = (html: string) =>
+test('the lede names the repeaters we have stopped hearing, in the alert colour', () => {
+  const html = view(
     [
-      ...(html.match(/class="mesh-spark"[\s\S]*?d="([^"]+)"/)?.[1] ?? '').matchAll(/,(-?[\d.]+)/g),
-    ].map((m) => Number(m[1]));
-  const extent = (html: string) => {
-    const v = ys(html);
-    return Math.max(...v) - Math.min(...v);
-  };
-  const flatExtent = extent(render(new Map([['aaa', flat]])));
-  const fallExtent = extent(render(new Map([['aaa', falling]])));
-
-  // A 10-point wobble must occupy a small slice of the height…
-  expect(flatExtent).toBeLessThan(3);
-  // …and a 30-point slide must be clearly bigger. Under auto-scaling both filled the box.
-  expect(fallExtent).toBeGreaterThan(flatExtent * 2);
+      node('aaa', 'SIERRA Arnold'),
+      node('bbb', 'SIERRA Pinebrook Rptr'),
+      node('ccc', 'SIERRA Pinebrook Tree'),
+    ],
+    [
+      link('aaa', 'zzz', ago(0.1)),
+      link('bbb', 'zzz', ago(HEARD_WITHIN_HOURS + 22)),
+      link('ccc', 'zzz', ago(HEARD_WITHIN_HOURS + 1)),
+    ]
+  ).lede;
+  expect(html).toContain('Last reception');
+  expect(html).toContain(
+    '<span class="mesh-lede__stale">Pinebrook Rptr and Pinebrook Tree</span> have not been heard'
+  );
+  // "not heard" is the claim — never "down" or "offline".
+  expect(html).not.toMatch(/down|offline/);
 });
 
-test('a repeater with no monitor renders the label, never a bar or a zero', () => {
-  const html = buildMeshView(
-    buildRegionGraph(fc([node('bbb', 'SIERRA Lilac Park')]), null),
-    '30d',
-    NOW,
-    {}
-  ).html.roster;
-  expect(html).toContain('Limited Telemetry');
-  expect(html).not.toContain('mesh-health__bar');
+test('a calm corridor says nothing beyond freshness', () => {
+  const html = view([node('aaa', 'SIERRA A')], [link('aaa', 'zzz', ago(0.1))]).lede;
+  expect(html).not.toContain('mesh-lede__stale');
+});
+
+test('names are listed with an Oxford comma', () => {
+  expect(listNames(['A'])).toBe('A');
+  expect(listNames(['A', 'B'])).toBe('A and B');
+  expect(listNames(['A', 'B', 'C'])).toBe('A, B, and C');
+});
+
+test('an unavailable feed renders Unknown figures, never a confident zero', () => {
+  const html = view([], [], 'UNAVAILABLE');
+  expect(html.stats).toContain('Unknown');
+  expect(html.stats).not.toMatch(/>0</);
+  expect(html.legend).toContain('Unknown');
+});
+
+// ---- legend ----
+
+test('the dashed orange entry appears only when the map actually draws a stale link', () => {
+  const calm = view([node('aaa', 'SIERRA A')], [link('aaa', 'zzz', ago(0.1))]).legend;
+  expect(calm).not.toContain('mesh-legend__line--stale');
+  const stale = view([node('aaa', 'SIERRA A')], [link('aaa', 'zzz', ago(30))]).legend;
+  expect(stale).toContain('mesh-legend__line--stale');
+});
+
+// ---- table ----
+
+test('a repeater with no monitor reads "No telemetry", never a bar or a zero', () => {
+  const html = view([node('bbb', 'SIERRA Lilac Park')]).roster;
+  expect(html).toContain('No telemetry');
+  expect(html).not.toContain('mesh-batt__bar');
   expect(html).not.toContain('0%');
 });
 
-test('an unavailable feed renders neither figures nor an attention strip', () => {
-  const view = buildMeshView(buildRegionGraph(fc([], 'UNAVAILABLE'), null), '30d', NOW, {});
-  // "Unknown", never a confident zero…
-  expect(view.html.band).toContain('Unknown');
-  expect(view.html.band).not.toMatch(/>0</);
-  // …and no "everything is fine" strip, because we do not know that.
-  expect(view.html.attention).toBe('');
+test('the battery figure turns brass under the watch floor and orange under the risk line', () => {
+  const at = (pct: number) =>
+    view([node('aaa', 'SIERRA A', { batteryPercent: pct })], [link('aaa', 'zzz', ago(0.1))]).roster;
+  expect(at(80)).not.toMatch(/mesh-batt--(watch|low)/);
+  expect(at(15)).toContain('mesh-batt--watch');
+  expect(at(6)).toContain('mesh-batt--low');
 });
 
-test('the attention strip renders nothing when nothing is outside limits', () => {
-  // No empty strip and no "all clear" line: a standing bar that is almost always reassuring
-  // trains a reader to skip the one place warnings appear.
-  const calm = buildMeshView(
-    buildRegionGraph(
-      fc([node('aaa', 'SIERRA A', { batteryPercent: 95 })]),
-      fc([link('aaa', 'zzz', ago(0.2))])
-    ),
-    '30d',
-    NOW,
-    {}
-  );
-  expect(calm.html.attention).toBe('');
+test('a stale row is marked, so its "last heard" can take the alert colour', () => {
+  const html = view([node('aaa', 'SIERRA A')], [link('aaa', 'zzz', ago(30))]).roster;
+  expect(html).toContain('mesh-row--stale');
+  expect(html).toContain('30 h ago');
+});
 
-  // …and it DOES appear the moment something is: a repeater under the watch floor.
-  const low = buildMeshView(
-    buildRegionGraph(
-      fc([node('aaa', 'SIERRA A', { batteryPercent: 14 })]),
-      fc([link('aaa', 'zzz', ago(0.2))])
-    ),
-    '30d',
-    NOW,
-    {}
-  );
-  expect(low.html.attention).toContain('Needs attention');
-  expect(low.html.attention).toContain('battery 14%');
+test('the battery axis starts at 50% and extends a 25-point step only when needed', () => {
+  expect(batteryFloor(null)).toBe(50);
+  expect(batteryFloor(79)).toBe(50);
+  expect(batteryFloor(50)).toBe(50);
+  // A night into the teens must be drawn, not clipped at the floor.
+  expect(batteryFloor(48)).toBe(25);
+  expect(batteryFloor(14)).toBe(0);
+});
+
+test('a series that stops before the window renders no sparkline at all', () => {
+  // Every sample older than the day: there is no recent trend, so drawing one would invent a
+  // shape out of stale readings. The battery figure is still there — the latest reading is a
+  // separate fact.
+  const stale = render(new Map([['aaa', seriesOver('aaa', 6, 26)]]));
+  expect(stale).not.toContain('mesh-spark');
+  expect(stale).toContain('82%');
+  expect(render(new Map([['aaa', seriesOver('aaa', 6)]]))).toContain('mesh-spark');
 });

@@ -65,12 +65,12 @@ async function loadMesh(page: Page) {
   await page.waitForSelector('html[data-map-settled]', { timeout: 10000 }).catch(() => {});
 }
 
-test('corridor pins render, one per repeater in the roster', async ({ page }) => {
+test('corridor pins render, one per repeater in the table', async ({ page }) => {
   await loadMesh(page);
   const pins = await page.locator('.mesh-pin').count();
   expect(pins).toBeGreaterThan(0);
   // The map and the panel derive from the same graph — they must not disagree.
-  expect(pins).toBe(await page.locator('.mesh-roster [data-mesh-node]').count());
+  expect(pins).toBe(await page.locator('.mesh-table [data-mesh-row]').count());
 });
 
 test('pins keep MapLibre positioning and land on the map, not stacked in a corner', async ({
@@ -119,105 +119,69 @@ test('pins keep MapLibre positioning and land on the map, not stacked in a corne
   expect(Math.max(...perPixel.values())).toBeLessThanOrEqual(2);
 });
 
-test('a roster row selects its repeater on the map', async ({ page }) => {
-  await loadMesh(page);
-  // The panel selects and frames; it deliberately does NOT open a map card — the reading
-  // opens inline in the row instead, and a card would cover the map it just flew to.
-  await page.locator('.mesh-roster [data-mesh-node]').first().click();
-  await expect(page.locator('.mesh-pin--selected')).toHaveCount(1);
-  await expect(page.locator('.mesh-pop')).toHaveCount(0);
-});
+const card = (page: Page) => page.locator('.mesh-pop:not([hidden])');
 
-test('a monitored row expands inline to its reading, and closes again', async ({ page }) => {
+test('a table row selects its repeater: pin, card, and a shareable URL', async ({ page }) => {
   await loadMesh(page);
-  // Only a monitored repeater offers the disclosure — a chevron on a row that expands to
-  // nothing would be a promise the page cannot keep.
-  const row = page.locator('.mesh-roster [data-mesh-node][aria-expanded]').first();
-  await expect(row).toHaveAttribute('aria-expanded', 'false');
-  await expect(page.locator('.mesh-detail')).toHaveCount(0);
-
+  const row = page.locator('.mesh-table [data-mesh-row]').first();
+  const key = await row.getAttribute('data-mesh-row');
   await row.click();
-  await expect(row).toHaveAttribute('aria-expanded', 'true');
-  // Inline: the panel is a sibling inside the SAME <li> as the row that opened it. That
-  // adjacency is the whole point — it lived below the entire roster once and was missed.
-  const detail = page.locator('.mesh-roster__item--open .mesh-detail');
-  await expect(detail).toHaveCount(1);
-  await expect(detail.locator('.mesh-metric')).toHaveCount(3);
-
-  // Second click closes it: a disclosure, not a one-way trip.
-  await row.click();
-  await expect(row).toHaveAttribute('aria-expanded', 'false');
-  await expect(page.locator('.mesh-detail')).toHaveCount(0);
+  await expect(page.locator(`.mesh-pin--selected[data-pin-key="${key}"]`)).toHaveCount(1);
+  await expect(row).toHaveClass(/mesh-row--selected/);
+  // The repeater's card opens on the map once it has zoomed to the repeater's reach.
+  await expect(card(page)).toHaveAttribute('aria-label', 'Repeater details');
+  await expect(page.locator('.mesh-hint:not([hidden])')).toContainText('Map zoomed to fit');
+  expect(new URL(page.url()).searchParams.get('node')).toBe(key);
 });
 
-test('an unmonitored repeater offers no disclosure at all', async ({ page }) => {
+test('clicking a pin does exactly what clicking its table row does', async ({ page }) => {
   await loadMesh(page);
-  const rows = page.locator('.mesh-roster [data-mesh-node]');
-  const total = await rows.count();
-  const expandable = await page.locator('.mesh-roster [data-mesh-node][aria-expanded]').count();
-  // The fixture deliberately has both kinds — if every repeater were monitored, the
-  // "Limited Telemetry" path would stop being exercised anywhere.
-  expect(expandable).toBeGreaterThan(0);
-  expect(expandable).toBeLessThan(total);
-  await expect(page.locator('.mesh-health__none').first()).toBeVisible();
-});
-
-test('clicking a corridor pin does exactly what clicking its roster row does', async ({ page }) => {
-  await loadMesh(page);
-  // Pick a MONITORED repeater: only those have a reading to expand, so only they prove the
-  // pin and the row end in the same place.
   const key = await page
-    .locator('.mesh-roster [data-mesh-node][aria-expanded]')
-    .first()
-    .getAttribute('data-mesh-node');
-  const pin = page.locator(`.mesh-pin[data-pin-key="${key}"] .mesh-pin__dot`);
-
-  // A corridor pin no longer opens a map card: it HAS a roster row, and that row is the one
-  // detail surface. Two surfaces for one repeater showed different subsets of the same
-  // facts, and the card covered the map it had just flown to.
-  await pin.click();
-  await expect(page.locator('.mesh-pop')).toHaveCount(0);
+    .locator('.mesh-table [data-mesh-row]')
+    .nth(1)
+    .getAttribute('data-mesh-row');
+  await page.locator(`.mesh-pin[data-pin-key="${key}"] .mesh-pin__dot`).click();
   await expect(page.locator('.mesh-pin--selected')).toHaveCount(1);
+  await expect(page.locator(`[data-mesh-row="${key}"]`)).toHaveClass(/mesh-row--selected/);
+  await expect(card(page)).toHaveCount(1);
 
-  // …and the panel row opened, exactly as if the row itself had been clicked.
-  const open = page.locator('.mesh-roster__item--open');
-  await expect(open).toHaveCount(1);
-  await expect(open.locator(`[data-mesh-node="${key}"][aria-expanded="true"]`)).toHaveCount(1);
-
+  // Esc returns to the corridor: nothing selected, no card, and the URL let go too.
   await page.keyboard.press('Escape');
   await expect(page.locator('.mesh-pin--selected')).toHaveCount(0);
+  await expect(card(page)).toHaveCount(0);
+  await expect(page.locator('.mesh-table .mesh-row--selected')).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get('node')).toBeNull();
 });
 
-test('a second click on the same pin clears it, like its roster row', async ({ page }) => {
+test('a second click on the same pin lets go of it, like its row', async ({ page }) => {
   await loadMesh(page);
   const key = await page
-    .locator('.mesh-roster [data-mesh-node][aria-expanded]')
+    .locator('.mesh-table [data-mesh-row]')
     .first()
-    .getAttribute('data-mesh-node');
+    .getAttribute('data-mesh-row');
   const pin = page.locator(`.mesh-pin[data-pin-key="${key}"] .mesh-pin__dot`);
-
   await pin.click();
   await expect(page.locator('.mesh-pin--selected')).toHaveCount(1);
-  await expect(page.locator('.mesh-roster__item--open')).toHaveCount(1);
-
-  // Toggling off: without this the only way to let go of a repeater was to find bare map or
-  // press Escape, neither of which the pin suggests.
   await pin.click();
   await expect(page.locator('.mesh-pin--selected')).toHaveCount(0);
-  await expect(page.locator('.mesh-roster__item--open')).toHaveCount(0);
+  await expect(page.locator('.mesh-table .mesh-row--selected')).toHaveCount(0);
 });
 
-test('mesh has no critical/serious a11y violations with the map populated', async ({ page }) => {
+test('a shared ?node= link opens on that repeater', async ({ page }) => {
+  await mockMesh(page);
+  const key = mesh.node.features[0].properties.mesh.publicKey as string;
+  await page.goto(`/mesh?node=${key}`);
+  await page.waitForSelector('.mesh-pin', { state: 'attached', timeout: 15000 });
+  await expect(page.locator(`.mesh-pin--selected[data-pin-key="${key}"]`)).toHaveCount(1);
+  await expect(page.locator(`[data-mesh-row="${key}"]`)).toHaveClass(/mesh-row--selected/);
+});
+
+test('mesh has no critical/serious a11y violations with a repeater selected', async ({ page }) => {
   await loadMesh(page);
-  // Scan with a roster row EXPANDED — the disclosure, its chevron and the metric row are
-  // client-injected and axe would otherwise never see them.
-  //
-  // NOTE: this used to open a node card to scan the popover's role="dialog". Corridor pins
-  // no longer open one, and the card now belongs to neighbour dots and links — both drawn
-  // into the WebGL canvas, so neither is clickable from here. `.mesh-pop` markup is
-  // therefore not covered by axe; keep that in mind when changing `popShell`.
-  await page.locator('.mesh-roster [data-mesh-node][aria-expanded]').first().click();
-  await expect(page.locator('.mesh-roster__item--open .mesh-detail')).toHaveCount(1);
+  // Scan with the repeater card OPEN — it is client-injected (role="dialog"), and axe would
+  // otherwise never see it, or the hint chip, or the selected states.
+  await page.locator('.mesh-table [data-mesh-row]').first().click();
+  await expect(card(page)).toHaveCount(1);
 
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])

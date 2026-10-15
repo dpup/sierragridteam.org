@@ -1,7 +1,8 @@
 /**
  * Regenerates src/assets/hero-map.svg — the county + highway linework behind the homepage
- * hero. Run `npm run hero-map` (network required); the output is checked in, so a build never
- * fetches. Sources: US Census TIGERweb (county polygons) and the Caltrans State Highway
+ * hero — and src/assets/service-counties.json, the same Calaveras + Tuolumne outlines as
+ * lon/lat GeoJSON for the /mesh map's service-area tint. Run `npm run hero-map` (network
+ * required); both outputs are checked in, so a build never fetches. Sources: US Census TIGERweb (county polygons) and the Caltrans State Highway
  * Network (routes), both public.
  *
  * The SVG carries CLASSES, not colors: Hero.astro styles them with tokens. Its viewBox is in
@@ -193,3 +194,27 @@ const svg =
 const out = new URL('../src/assets/hero-map.svg', import.meta.url);
 writeFileSync(out, svg);
 console.log(`wrote ${out.pathname} (${(svg.length / 1024).toFixed(1)} KB)`);
+
+// The two service-area counties for /mesh, in lon/lat. Simplified in degrees (~0.002° ≈
+// 200 m — invisible under a 7% tint) and rounded to 4 places, so the file stays small enough
+// to ship in the page bundle.
+const lonlat = (r: number[][]) => {
+  const pts = rdp(r as Pt[], 0.002);
+  return pts.map(([x, y]) => [Math.round(x * 1e4) / 1e4, Math.round(y * 1e4) / 1e4]);
+};
+const service = {
+  type: 'FeatureCollection',
+  features: (['Calaveras', 'Tuolumne'] as const).map((name) => {
+    const f = (counties.features as Feature[]).find((x) => x.properties.NAME === `${name} County`);
+    if (!f) throw new Error(`county not found: ${name}`);
+    return {
+      type: 'Feature',
+      properties: { county: name.toLowerCase() },
+      geometry: { type: 'MultiPolygon', coordinates: rings(f).map((r) => [lonlat(r)]) },
+    };
+  }),
+};
+const geoOut = new URL('../src/assets/service-counties.json', import.meta.url);
+const geo = JSON.stringify(service) + '\n';
+writeFileSync(geoOut, geo);
+console.log(`wrote ${geoOut.pathname} (${(geo.length / 1024).toFixed(1)} KB)`);

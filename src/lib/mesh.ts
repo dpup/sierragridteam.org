@@ -305,11 +305,9 @@ export function displayName(name: string): string {
 // ---- Recency: the visual language of "alive" ----
 
 /**
- * Recency tiers, by age of a link's `lastSeen`. These drive BOTH the static styling
- * (brighter/heavier = fresher) and the pulse rate, so the map encodes freshness twice —
- * a reader who can't perceive the motion still gets the whole signal from the static
- * treatment. `cold` is deliberately still drawn: on a mesh where a backbone repeater
- * adverts every 12 hours, "quiet" is not "gone".
+ * Recency tiers, by age of a link's `lastSeen`. They set each link's opacity and width on
+ * the map (darker and heavier = fresher) and the legend's counts. `cold` is deliberately still
+ * drawn: on a mesh where a backbone repeater adverts every 12 hours, "quiet" is not "gone".
  */
 export const RECENCY_TIERS = ['live', 'recent', 'fading', 'cold'] as const;
 export type MeshRecency = (typeof RECENCY_TIERS)[number];
@@ -322,12 +320,15 @@ const RECENCY_MAX_HOURS: Record<MeshRecency, number> = {
   cold: Infinity,
 };
 
-/** Panel/legend copy — states what the tier MEANS (heard), never that a link is down. */
+/**
+ * Legend copy — when the link was last HEARD, never that it is up or down. Short, because the
+ * legend reads as one line under the map.
+ */
 export const RECENCY_LABELS: Record<MeshRecency, string> = {
-  live: 'Heard in the last hour',
-  recent: 'Heard in the last 6 hours',
-  fading: 'Heard in the last day',
-  cold: 'Heard in the last 30 days',
+  live: 'Last hour',
+  recent: '6 hours',
+  fading: 'Last day',
+  cold: '30 days',
 };
 
 export function linkRecency(lastSeen: string, nowMs: number): MeshRecency {
@@ -336,16 +337,6 @@ export function linkRecency(lastSeen: string, nowMs: number): MeshRecency {
   const ageH = (nowMs - t) / 3_600_000;
   for (const tier of RECENCY_TIERS) if (ageH < RECENCY_MAX_HOURS[tier]) return tier;
   return 'cold';
-}
-
-/**
- * Link weight in 0..1 from the reception count, on a log scale — a backbone link at 482
- * observations should read heavier than a one-shot, but not 482× heavier. Drives line
- * width, so a rare long-haul shot stays a visible hairline rather than vanishing.
- */
-export function linkWeight(observations: number): number {
-  const obs = Math.max(0, observations);
-  return Math.min(1, Math.log10(obs + 1) / 3);
 }
 
 // ---- Building the graph ----
@@ -597,7 +588,16 @@ export function nodesToGeoJSON(nodes: MeshNode[]): FC {
   };
 }
 
-export function linksToGeoJSON(links: MeshLink[], nowMs: number): FC {
+/**
+ * `stale` is the set of corridor repeaters not heard within HEARD_WITHIN_HOURS
+ * (`deriveStaleKeys`). A link touching one is drawn dashed in the alert orange, so the map
+ * says the same thing as the headline and the table.
+ */
+export function linksToGeoJSON(
+  links: MeshLink[],
+  nowMs: number,
+  stale: Set<string> = new Set()
+): FC {
   return {
     type: 'FeatureCollection',
     features: links.map((l) => ({
@@ -617,7 +617,7 @@ export function linksToGeoJSON(links: MeshLink[], nowMs: number): FC {
         inRegion: l.inRegion,
         outward: l.outward,
         recency: linkRecency(l.lastSeen, nowMs),
-        weight: linkWeight(l.observations),
+        stale: stale.has(l.a) || stale.has(l.b),
       },
     })),
   };
@@ -642,7 +642,7 @@ export const LOW_BATTERY_PCT = 10;
 export const HEARD_WITHIN_HOURS = 12;
 
 /**
- * The battery level at which a repeater joins the "needs attention" strip — a watch floor,
+ * The battery level at which a repeater's figure in the table turns brass — a watch floor,
  * NOT the alert threshold. The two are deliberately different numbers:
  *
  *   • `ATTENTION_BATTERY_PCT` (20) is "worth a look", styled in brass.
@@ -652,10 +652,11 @@ export const HEARD_WITHIN_HOURS = 12;
  * Collapsing them into one number forces a choice between crying wolf and never surfacing a
  * decline until it is too late.
  *
- * Lowered from 60 to 20 (2026-09-17). At 60 the strip fired on a normal summer night: these
- * sites routinely discharge into the teens and recover after sunrise, so "needs attention"
- * would have been permanently populated with repeaters doing exactly what they are supposed
- * to — which is how a warning strip stops being read at all.
+ * Lowered from 60 to 20 (2026-09-17). At 60 it fired on a normal summer night: these sites
+ * routinely discharge into the teens and recover after sunrise, so the warning would have been
+ * permanently on for repeaters doing exactly what they are supposed to — which is how a warning
+ * stops being read at all. (It used to feed a "needs attention" strip; the 2026-10 redesign
+ * removed the strip and kept the warning beside the reading itself.)
  */
 export const ATTENTION_BATTERY_PCT = 20;
 
@@ -728,7 +729,7 @@ export interface MeshSummary {
    * The weakest battery we hold a reading for, or `null` when no monitored repeater
    * reported a readable charge. `null` is "we don't know", not "everything is full".
    */
-  lowestBattery: { percent: number; name: string; low: boolean } | null;
+  lowestBattery: { percent: number; name: string; low: boolean; watch: boolean } | null;
   sourceStatus: MeshSourceStatus;
 }
 
@@ -803,10 +804,43 @@ export function deriveMeshSummary(graph: MeshGraph, nowMs: number): MeshSummary 
           percent: weakest.health.percent!,
           name: displayName(weakest.node.name),
           low: weakest.health.low,
+          watch: weakest.health.watch,
         }
       : null,
     sourceStatus: graph.sourceStatus,
   };
+}
+
+/**
+ * A corridor repeater's status, by how recently anything was heard from it. The map's dot, the
+ * table's dot and its "last heard" cell all read this one value:
+ *
+ *   • `fresh` — heard within the hour (green).
+ *   • `quiet` — heard within HEARD_WITHIN_HOURS (brass). Normal for a backbone repeater that
+ *               adverts twice a day; not a fault.
+ *   • `stale` — not heard for longer than that, or never (the alert orange). The one state the
+ *               headline names, because it is the one worth acting on.
+ *
+ * Honesty: `stale` says we have not HEARD it, never that it is down.
+ */
+export type MeshNodeStatus = 'fresh' | 'quiet' | 'stale';
+
+export function nodeStatus(lastHeard: string | null, nowMs: number): MeshNodeStatus {
+  const t = lastHeard ? Date.parse(lastHeard) : NaN;
+  if (!Number.isFinite(t)) return 'stale';
+  const ageH = (nowMs - t) / 3_600_000;
+  if (ageH < 1) return 'fresh';
+  return ageH < HEARD_WITHIN_HOURS ? 'quiet' : 'stale';
+}
+
+/** Great-circle distance in km. A link is a straight hop, so this is its length. */
+export function distanceKm(a: [number, number], b: [number, number]): number {
+  const rad = Math.PI / 180;
+  const dLat = (b[1] - a[1]) * rad;
+  const dLng = (b[0] - a[0]) * rad;
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(a[1] * rad) * Math.cos(b[1] * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
 /** One row in the panel's node roster, sorted busiest-first. */
@@ -817,6 +851,9 @@ export interface MeshNodeRow {
   /** Most recent reception on any of its links, ISO — or null if it has no observed links. */
   lastHeard: string | null;
   recency: MeshRecency | null;
+  status: MeshNodeStatus;
+  /** Length of its longest observed link, km — or null with no links. */
+  farthestKm: number | null;
   /** The monitor reading, or null where this repeater has no monitor. */
   health: MeshNodeHealth | null;
 }
@@ -824,11 +861,14 @@ export interface MeshNodeRow {
 export function deriveNodeRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
   const degree = new Map<string, number>();
   const last = new Map<string, number>();
+  const far = new Map<string, number>();
   for (const l of graph.links) {
     const t = Date.parse(l.lastSeen);
+    const km = distanceKm(l.coordinates[0], l.coordinates[l.coordinates.length - 1]);
     for (const k of [l.a, l.b]) {
       degree.set(k, (degree.get(k) ?? 0) + 1);
       if (Number.isFinite(t) && t > (last.get(k) ?? 0)) last.set(k, t);
+      if (km > (far.get(k) ?? -1)) far.set(k, km);
     }
   }
   return (
@@ -841,6 +881,8 @@ export function deriveNodeRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
           degree: degree.get(n.publicKey) ?? 0,
           lastHeard,
           recency: lastHeard ? linkRecency(lastHeard, nowMs) : null,
+          status: nodeStatus(lastHeard, nowMs),
+          farthestKm: far.get(n.publicKey) ?? null,
           health: deriveHealth(n),
         };
       })
@@ -883,55 +925,19 @@ export function deriveRecencyCounts(graph: MeshGraph, nowMs: number): Record<Mes
 }
 
 /**
- * The "needs attention" strip: repeaters currently outside limits, worst first.
- *
- * Two kinds, because they are genuinely different failures — a repeater can be heard every
- * two minutes while its battery drains, and one can sit at 100% while nothing hears it:
- *   • `battery` — a monitored site under the watch floor.
- *   • `stale`   — nothing heard from it inside HEARD_WITHIN_HOURS.
- *
- * Honesty: `stale` says we have not HEARD it, never that it is down. An unmonitored
- * repeater can never raise a `battery` item — absence of telemetry is not a fault.
+ * Corridor repeaters not heard within HEARD_WITHIN_HOURS, in roster order. The headline names
+ * them, the map dashes their links in orange, the table colours their "last heard". Empty when
+ * the feed is UNAVAILABLE — an unknown network has no stale repeaters, it has no answer.
  */
-export type MeshAttentionKind = 'battery' | 'stale';
-
-export interface MeshAttentionItem {
-  node: MeshNode;
-  kind: MeshAttentionKind;
-  /** `alert` takes the orange; `watch` takes brass. Only a real risk earns the orange. */
-  tone: 'alert' | 'watch';
-  /** The reading itself — "battery 48%", "not heard in 19 h". */
-  detail: string;
+export function deriveStaleRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
+  if (graph.sourceStatus === 'UNAVAILABLE') return [];
+  return deriveNodeRows(graph, nowMs).filter((r) => r.status === 'stale');
 }
 
-export function deriveAttention(graph: MeshGraph, nowMs: number): MeshAttentionItem[] {
-  if (graph.sourceStatus === 'UNAVAILABLE') return [];
-  const items: MeshAttentionItem[] = [];
-  for (const row of deriveNodeRows(graph, nowMs)) {
-    const { node, health, lastHeard } = row;
-    const ageH = lastHeard ? (nowMs - Date.parse(lastHeard)) / 3_600_000 : Infinity;
-    if (!lastHeard || ageH >= HEARD_WITHIN_HOURS) {
-      items.push({
-        node,
-        kind: 'stale',
-        tone: 'alert',
-        detail: lastHeard
-          ? `not heard in ${Math.floor(ageH)} h`
-          : 'no links observed in this window',
-      });
-    }
-    if (health?.percent != null && health.percent < ATTENTION_BATTERY_PCT) {
-      items.push({
-        node,
-        kind: 'battery',
-        tone: health.low ? 'alert' : 'watch',
-        detail: `battery ${Math.round(health.percent)}% · below ${ATTENTION_BATTERY_PCT}% floor`,
-      });
-    }
-  }
-  // Alerts first, then the lowest battery, then the longest silence.
-  const rank = (i: MeshAttentionItem) => (i.tone === 'alert' ? 0 : 1);
-  return items.sort((a, b) => rank(a) - rank(b) || a.node.name.localeCompare(b.node.name));
+/** Links the map draws dashed in orange: those touching a stale repeater. */
+export function deriveStaleLinkCount(graph: MeshGraph, nowMs: number): number {
+  const stale = new Set(deriveStaleRows(graph, nowMs).map((r) => r.node.publicKey));
+  return graph.links.filter((l) => stale.has(l.a) || stale.has(l.b)).length;
 }
 
 /** "10 / 12" for the headline tile — heard recently, out of the corridor's repeaters. */
@@ -987,28 +993,6 @@ export function sortNodeRows(rows: MeshNodeRow[], sort: MeshRosterSort): MeshNod
   return copy.sort((a, b) => b.degree - a.degree || byName(a, b));
 }
 
-/**
- * The map's "heard in" filter. Unlike the rejected window PICKER, this changes nothing about
- * what is fetched — the page always holds MESH_WINDOW of links and this narrows what is
- * DRAWN. The fade still carries recency continuously; this is a way to cut the 30-day
- * accumulation down to "what is carrying traffic right now" without a second request.
- * `30d` is the default, so the page still opens on everything it knows.
- */
-export const HEARD_IN_OPTIONS = ['1h', '6h', '24h', '30d'] as const;
-export type MeshHeardIn = (typeof HEARD_IN_OPTIONS)[number];
-export const HEARD_IN_HOURS: Record<MeshHeardIn, number> = {
-  '1h': 1,
-  '6h': 6,
-  '24h': 24,
-  '30d': 24 * 30,
-};
-export const HEARD_IN_LABELS: Record<MeshHeardIn, string> = {
-  '1h': '1h',
-  '6h': '6h',
-  '24h': '24h',
-  '30d': '30d',
-};
-
 // ---- Display formatting ----
 
 /**
@@ -1032,6 +1016,3 @@ export function nodeTypeLabel(t: string): string {
   const s = t.replace(/_/g, ' ').trim();
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Node';
 }
-
-/** A pubkey shortened for display — first 8 hex chars, the prefix MeshCore itself shows. */
-export const shortKey = (k: string): string => k.slice(0, 8);

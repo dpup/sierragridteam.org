@@ -1,0 +1,83 @@
+---
+/**
+ * MeshSectionHead — the numbered heading /mesh uses for each of its three sections: a brass
+ * number and the h2 on one baseline, a one-line intro indented under the h2, and the
+ * section's controls (sort, metric) right-aligned on the intro's line.
+ *
+ * The intro and controls may be client-filled (`data-*` slots) — the history section's intro
+ * names how many repeaters report telemetry, which only the live feed knows.
+ */
+interface Props {
+  number: string;
+  id: string;
+  title: string;
+  /** Static intro. Omit and use the `intro` slot for a client-filled one. */
+  intro?: string;
+}
+
+const { number, id, title, intro } = Astro.props;
+---
+
+<div class="mesh-sec-head">
+  <div class="mesh-sec-head__title">
+    <span class="mesh-sec-head__num" aria-hidden="true">{number}</span>
+    <h2 class="mesh-sec-head__h2" id={id}>{title}</h2>
+  </div>
+  <div class="mesh-sec-head__row">
+    {intro ? <p class="mesh-sec-head__intro">{intro}</p> : <slot name="intro" />}
+    <div class="mesh-sec-head__controls"><slot name="controls" /></div>
+  </div>
+</div>
+
+<style>
+  .mesh-sec-head__title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+  }
+  .mesh-sec-head__num {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-kicker);
+    color: var(--brand-brass-text);
+    /* The intro below is indented to the h2, so the number sits in a fixed gutter. */
+    min-width: 20px;
+  }
+  .mesh-sec-head__h2 {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-heading);
+    color: var(--ink-strong);
+  }
+  .mesh-sec-head__row {
+    margin-top: var(--space-2);
+    padding-left: calc(20px + var(--space-4));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
+  }
+  .mesh-sec-head__row :global(.mesh-sec-head__intro) {
+    max-width: 70ch;
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+  .mesh-sec-head__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+  }
+  .mesh-sec-head__controls:empty {
+    display: none;
+  }
+  @media (max-width: 599px) {
+    .mesh-sec-head__row {
+      padding-left: 0;
+    }
+  }
+</style>

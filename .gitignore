@@ -27,6 +27,9 @@ tests/screenshots/_live/
 !.env.example
 *.local
 
+# screenshot harness basemap cache (scripts/screenshots.ts)
+.cache/
+
 # os / editor
 .DS_Store
 Thumbs.db

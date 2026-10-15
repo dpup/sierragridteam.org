@@ -9,19 +9,21 @@ import {
   buildGlobalGraph,
   buildRegionGraph,
   deriveMeshSummary,
-  deriveAttention,
   deriveHealth,
   deriveHeardCount,
   deriveNodeRows,
   deriveRecencyCounts,
   deriveRelayNodesTile,
+  deriveStaleLinkCount,
+  deriveStaleRows,
+  distanceKm,
+  nodeStatus,
   displayName,
   MESH_WINDOW,
   MESH_WINDOW_DAYS,
   MESH_WINDOW_QUERY,
   isOurNode,
   linkRecency,
-  linkWeight,
   linksToGeoJSON,
   sortNodeRows,
   ATTENTION_BATTERY_PCT,
@@ -115,16 +117,6 @@ test('linkRecency buckets by age of the last reception', () => {
 test('linkRecency degrades an unparseable stamp to cold, never to live', () => {
   expect(linkRecency('not-a-date', NOW)).toBe('cold');
   expect(linkRecency('', NOW)).toBe('cold');
-});
-
-test('linkWeight is log-scaled so a one-shot link stays visible', () => {
-  const one = linkWeight(1);
-  const busy = linkWeight(482);
-  expect(one).toBeGreaterThan(0);
-  expect(busy).toBeGreaterThan(one);
-  // A 482× reception count must not produce a 482× line width.
-  expect(busy / one).toBeLessThan(10);
-  expect(linkWeight(100_000)).toBeLessThanOrEqual(1);
 });
 
 // ---- graph assembly ----
@@ -461,14 +453,62 @@ test('displayName drops the operator prefix and emoji the map cannot render', ()
   expect(displayName('🦅')).toBe('🦅');
 });
 
-test('linksToGeoJSON bakes the recency + weight the map paints from', () => {
-  const g = buildRegionGraph(null, fc([linkFeature('a', 'b', ago(0.2))]));
-  const props = (
-    linksToGeoJSON(g.links, NOW).features[0] as { properties: Record<string, unknown> }
-  ).properties;
-  expect(props.recency).toBe('live');
-  expect(props.weight).toBeGreaterThan(0);
-  expect(props.observations).toBe(100);
+test('linksToGeoJSON bakes the recency and the stale flag the map paints from', () => {
+  const g = buildRegionGraph(
+    null,
+    fc([linkFeature('a', 'b', ago(0.2)), linkFeature('c', 'd', ago(0.2))])
+  );
+  const props = (i: number, stale?: Set<string>) =>
+    (linksToGeoJSON(g.links, NOW, stale).features[i] as { properties: Record<string, unknown> })
+      .properties;
+  expect(props(0).recency).toBe('live');
+  expect(props(0).observations).toBe(100);
+  // Either endpoint being stale is enough: that link is the one dashed in orange.
+  expect(props(0, new Set(['b'])).stale).toBe(true);
+  expect(props(1, new Set(['b'])).stale).toBe(false);
+  expect(props(0).stale).toBe(false);
+});
+
+// ---- node status: the green / brass / orange the dots, table and headline share ----
+
+test('a repeater is fresh within the hour, quiet within the window, stale beyond it', () => {
+  expect(nodeStatus(ago(0.5), NOW)).toBe('fresh');
+  expect(nodeStatus(ago(3), NOW)).toBe('quiet');
+  expect(nodeStatus(ago(HEARD_WITHIN_HOURS - 0.1), NOW)).toBe('quiet');
+  expect(nodeStatus(ago(HEARD_WITHIN_HOURS), NOW)).toBe('stale');
+  // Never heard is the longest silence there is — stale, not "fine".
+  expect(nodeStatus(null, NOW)).toBe('stale');
+});
+
+test('stale rows name the repeaters we stopped hearing, and a broken feed names none', () => {
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA Arnold Summit', -120.3, 38.2, true),
+    nodeFeature('bbb', 'SIERRA Pinebrook Rptr', -120.3, 38.2, true),
+  ]);
+  const links = fc([
+    linkFeature('aaa', 'ccc', ago(0.1)),
+    linkFeature('bbb', 'ccc', ago(HEARD_WITHIN_HOURS + 20)),
+  ]);
+  const g = buildRegionGraph(nodes, links);
+  expect(deriveStaleRows(g, NOW).map((r) => r.node.publicKey)).toEqual(['bbb']);
+  expect(deriveStaleLinkCount(g, NOW)).toBe(1);
+  // Unknown is not "nothing stale" — but it is not a list of names either.
+  expect(deriveStaleRows(buildRegionGraph(fc([], 'UNAVAILABLE'), null), NOW)).toEqual([]);
+});
+
+test('distance is great-circle km, and a row carries its farthest hop', () => {
+  // Murphys to Oakland is ~170 km as the crow flies.
+  const km = distanceKm([-120.46, 38.14], [-122.27, 37.8]);
+  expect(km).toBeGreaterThan(160);
+  expect(km).toBeLessThan(180);
+  const rows = deriveNodeRows(
+    buildRegionGraph(
+      fc([nodeFeature('aaa', 'SIERRA A', -120.4, 38.2, true)]),
+      fc([linkFeature('aaa', 'bbb', ago(1))])
+    ),
+    NOW
+  );
+  expect(rows[0].farthestKm).toBeGreaterThan(0);
 });
 
 // ---- against the real captured feed ----
@@ -604,7 +644,12 @@ test('lowestBattery names the weakest readable charge and skips unreadable gauge
     null
   );
   const s = deriveMeshSummary(g, NOW);
-  expect(s.lowestBattery).toEqual({ percent: 58, name: 'Hathaway Pines', low: false });
+  expect(s.lowestBattery).toEqual({
+    percent: 58,
+    name: 'Hathaway Pines',
+    low: false,
+    watch: false,
+  });
   expect(s.monitored).toBe(3); // three have a monitor…
   expect(s.monitorable).toBe(4); // …of four repeaters of ours
 });
@@ -646,57 +691,6 @@ test('the watch floor and the risk threshold are different states, not one', () 
   expect(at(ATTENTION_BATTERY_PCT - 1)).toMatchObject({ watch: true, low: false });
   // Genuinely at risk, orange — and NOT also "watch", so the two never both style a row.
   expect(at(LOW_BATTERY_PCT - 1)).toMatchObject({ watch: false, low: true });
-});
-
-test('needs-attention surfaces a low battery and a repeater we have not heard', () => {
-  const nodes = fc([
-    nodeFeature('aaa', 'SIERRA Arnold Summit', -120.3, 38.2, true, {
-      admin: { batteryPercent: 16 },
-    }),
-    nodeFeature('bbb', 'SIERRA Columbia jwt1', -120.3, 38.2, true),
-    nodeFeature('ccc', 'SIERRA Camp Connell', -120.3, 38.2, true, {
-      admin: { batteryPercent: 92 },
-    }),
-  ]);
-  // Arnold + Camp heard minutes ago; Columbia's only link is a day old.
-  const links = fc([
-    linkFeature('aaa', 'ccc', ago(0.05)),
-    linkFeature('bbb', 'ccc', ago(HEARD_WITHIN_HOURS + 7)),
-  ]);
-  const items = deriveAttention(buildRegionGraph(nodes, links), NOW);
-
-  const stale = items.find((i) => i.kind === 'stale');
-  expect(stale?.node.publicKey).toBe('bbb');
-  expect(stale?.detail).toContain('not heard in');
-  // "not heard" is an alert, and it never says the repeater is down.
-  expect(stale?.tone).toBe('alert');
-  expect(stale?.detail).not.toContain('down');
-
-  const battery = items.find((i) => i.kind === 'battery');
-  expect(battery?.node.publicKey).toBe('aaa');
-  // 16% is under the watch floor but above the risk line — brass, not orange.
-  expect(battery?.tone).toBe('watch');
-
-  // A healthy, recently-heard repeater raises nothing at all.
-  expect(items.some((i) => i.node.publicKey === 'ccc')).toBe(false);
-});
-
-test('an unmonitored repeater can never raise a battery item', () => {
-  const nodes = fc([nodeFeature('aaa', 'SIERRA Lilac Park', -120.3, 38.2, true)]);
-  const links = fc([linkFeature('aaa', 'bbb', ago(0.1))]);
-  const items = deriveAttention(buildRegionGraph(nodes, links), NOW);
-  // Absence of telemetry is a gap in our monitoring, never a fault to report.
-  expect(items.some((i) => i.kind === 'battery')).toBe(false);
-});
-
-test('needs-attention is empty (not unknown) when everything is inside its limits', () => {
-  const nodes = fc([
-    nodeFeature('aaa', 'SIERRA A', -120.3, 38.2, true, { admin: { batteryPercent: 95 } }),
-  ]);
-  const links = fc([linkFeature('aaa', 'bbb', ago(0.2))]);
-  expect(deriveAttention(buildRegionGraph(nodes, links), NOW)).toEqual([]);
-  // …but a broken feed raises nothing either, because then we do not know.
-  expect(deriveAttention(buildRegionGraph(fc([], 'UNAVAILABLE'), null), NOW)).toEqual([]);
 });
 
 test('heard-count counts receptions inside the window, and is Unknown when the feed is down', () => {

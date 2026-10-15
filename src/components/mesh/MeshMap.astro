@@ -1,17 +1,18 @@
 ---
 /**
  * MeshMap — the /mesh topology map frame: the MapLibre canvas, a calm "reading the mesh"
- * panel until the graph lands, and the required basemap + data attribution.
+ * panel until the graph lands, and the required basemap credit.
  *
  * This is the FRAME only. The map itself is built in `src/lib/mesh-map.ts` from a browser
  * `<script>` in the page (maplibre must never be imported from Astro frontmatter), and the
  * SSR state here is an honest placeholder — nothing about the mesh is baked at build time.
  *
- * The map KEY and the basemap credit are deliberately NOT here: the panel's foot carries the
- * client-rendered recency legend (`mesh-view.ts`), and the credit — a licence requirement —
- * sits once at the foot of the page rather than once per panel.
+ * The credit is a licence requirement, so it is plain visible text in the map's bottom-left
+ * corner, styled like the page — not a MapLibre attribution control. The map's key is the
+ * client-rendered legend under the figure (`mesh-view.ts`).
  */
 import { mesh } from '@config/content';
+import { BASEMAP_ATTRIBUTION } from '@lib/basemap';
 ---
 
 <figure class="meshmap" data-mesh-map>
@@ -28,6 +29,8 @@ import { mesh } from '@config/content';
     <span class="meshmap__dot" aria-hidden="true"></span>
     <p class="meshmap__loadtext">{mesh.loading}</p>
   </div>
+
+  <figcaption class="meshmap__attrib">{BASEMAP_ATTRIBUTION}</figcaption>
 </figure>
 
 <style>
@@ -36,10 +39,23 @@ import { mesh } from '@config/content';
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: 100%;
-    min-height: 0;
-    margin: 0;
+    height: clamp(480px, 70vh, 760px);
+    margin: var(--space-6) 0 0;
     background: var(--surface-hero);
+    border: var(--border);
+    /* The card and its leader are positioned inside the figure; nothing may spill out. */
+    overflow: hidden;
+  }
+
+  .meshmap__attrib {
+    position: absolute;
+    left: var(--space-4);
+    bottom: var(--space-3);
+    z-index: 1;
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
+    pointer-events: none;
   }
 
   .meshmap__canvas {

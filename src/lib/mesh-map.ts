@@ -1,980 +1,1004 @@
 /**
- * mesh-map.ts — the /mesh topology map (MapLibre GL JS over OpenFreeMap Positron).
+ * mesh-map.ts — the /mesh topology map (MapLibre GL JS over a restyled OpenFreeMap Positron).
  * CLIENT-ONLY: it imports maplibre, so it must never be imported from Astro frontmatter —
  * only from a browser `<script>`.
  *
- * What the map says, visually:
+ * What the map says (layout "2a", 2026-10):
  *
- *   • **The corridor is the subject.** S.I.E.R.R.A's Ebbetts Pass repeaters draw at full
- *     strength in brand green, ours ringed in brass. One-hop neighbours out in the wider
- *     mesh draw as small hollow muted circles — present, clearly secondary.
- *   • **Links out of the corridor are hidden until a repeater is selected.** There are twice
- *     as many of them as corridor links and they run an order of magnitude further, so
- *     drawing them all at once buried the subject — dimming them was not enough. Selecting a
- *     repeater (on the map or in the panel roster) reveals exactly its own outward links and
- *     frames its reach, which turns the clutter into an answer to "what does this one reach?"
- *   • **Links carry recency twice.** Each edge's tier (`live`/`recent`/`fading`/`cold`,
- *     derived in mesh.ts) sets a static opacity + width AND the rate of a travelling dash
- *     that runs along it. A reader who can't perceive the motion — or who has reduced
- *     motion on, which switches the dash off entirely — still reads freshness from the
- *     static treatment alone. Width also encodes reception count, so a backbone link is
- *     visibly heavier than a lucky one-shot.
- *   • **A dim edge is never "down".** Every edge keeps a solid base line under the dash, so
- *     a link is continuously drawn and the pulse reads as traffic on it, not as the link
- *     blinking in and out. On a mesh where a repeater adverts every 12 hours, quiet is not
- *     gone (docs/content-style-guide.md §10).
- *   • **The wider mesh is a backdrop.** Panning out past the corridor lazily loads the whole
- *     observed graph as static muted hairlines — context for scale, never the subject, and
- *     never animated.
+ *   • **The corridor is the subject.** Its repeaters are DOM pins — a 9px dot coloured by how
+ *     recently we heard it (green within the hour, brass within 12 hours, orange beyond, with
+ *     a ring) and an uppercase label. Neighbours out in the wider mesh are small hollow dots.
+ *   • **Links carry recency in darkness and weight** (`mesh-link-paint.ts`). A link touching a
+ *     repeater we have stopped hearing is dashed orange. A faint link is never "down".
+ *   • **Selecting a repeater shows its reach.** The map zooms to fit every link it has been
+ *     heard on — out to Sacramento and the Bay Area — labels those neighbours, marks the
+ *     farthest hop's distance, and opens the repeater's card. Esc, the card's ×, or a click on
+ *     empty map returns to the corridor.
+ *   • **Cards are map labels, not panels laid over it** ("blended label"): the basemap's own
+ *     colour, a feathered edge and a 1px leader to the feature, placed where they cover none
+ *     of the links being read.
  *
- * Colors are read from the CSS tokens at runtime (tokens.css stays the source of truth);
- * MapLibre paint needs literal colors, so we can't hand it var(--…) directly. Orange is
- * absent by construction — the mesh is not a risk state (CLAUDE.md rule 2).
+ * Colours are read from the CSS tokens at runtime (tokens.css stays the source of truth);
+ * MapLibre paint needs literal colours, so we can't hand it var(--…) directly.
  */
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { BASEMAP_STYLE } from './basemap';
 import { escapeHtml as esc } from './format';
+import { meshBasemapStyle, ROUTE_PILL, type StyleDoc } from './mesh-basemap';
 import {
   agoLabel,
+  deriveNodeRows,
+  deriveStaleRows,
   displayName,
-  linkRecency,
+  distanceKm,
+  linksToGeoJSON,
+  nodesToGeoJSON,
   nodeTypeLabel,
   MESH_WINDOW_DAYS,
-  RECENCY_TIERS,
   type MeshGraph,
+  type MeshLink,
   type MeshNode,
-  type MeshRecency,
+  type MeshNodeRow,
   type MeshWindow,
 } from './mesh';
-import { linksToGeoJSON, nodesToGeoJSON } from './mesh';
-import { linkFilter, linkPaint, TIER_STYLE } from './mesh-link-paint';
-import { HEARD_IN_OPTIONS, type MeshHeardIn } from './mesh';
+import {
+  linkFilter,
+  linkPaint,
+  selectedLinkFilter,
+  SELECTED_LINK,
+  STALE_STYLE,
+  type LinkState,
+} from './mesh-link-paint';
+import { mesh as copy } from '../config/content';
 
 type GeoFC = GeoJSON.FeatureCollection;
 
 export interface MeshMapHandle {
   /** Push a fresh region graph onto the existing sources (the live refresh). */
   setGraph(graph: MeshGraph, window: MeshWindow, nowMs: number): void;
-  /** Push the lazily-loaded whole-mesh backdrop. Safe to call once; later calls replace it. */
+  /** Push the lazily-loaded whole-mesh backdrop. */
   setBackdrop(nodes: MeshNode[], links: ReturnType<typeof linksToGeoJSON>): void;
-  /** Highlight a node by pubkey (null clears). Returns true if the node is on the map. */
+  /** Hover feedback from the table (null clears). Returns true if the node is on the map. */
   highlight(key: string | null): boolean;
-  /**
-   * Select a node (null clears). Selection is what reveals that node's links out of the
-   * corridor — they are hidden otherwise. Distinct from `highlight`, which is transient
-   * hover feedback.
-   */
+  /** Select a repeater (null clears): zoom to its reach and open its card. */
   select(key: string | null): void;
-  /** Fly to a node and open its popup. */
-  focus(key: string): void;
-  /** Narrow which recency tiers are drawn. Display only — nothing is refetched. */
-  setHeardIn(next: MeshHeardIn): void;
-  /** Frame the in-region nodes again. */
-  resetView(): void;
   /** Called when the viewport moves past the corridor — the cue to lazy-load the backdrop. */
   onPanOut(cb: () => void): void;
   destroy(): void;
 }
 
-/**
- * Per-tier link treatment. `opacity` is the static read; `stepMs` is how fast
- * the travelling dash advances (smaller = livelier). Ordered live → cold.
- */
-
-/**
- * The classic MapLibre "marching ants" sequence: `line-dasharray` is a paint property and
- * is NOT data-driven, so a travelling dash is done by cycling a precomputed set of dash
- * patterns on one layer per tier. That is FOUR paint updates per step for the whole graph —
- * it does not scale with link count, which is what keeps this cheap on a phone.
- */
-const DASH_SEQUENCE: [number, number, number?, number?][] = [
-  [0, 4, 3],
-  [0.5, 4, 2.5],
-  [1, 4, 2],
-  [1.5, 4, 1.5],
-  [2, 4, 1],
-  [2.5, 4, 0.5],
-  [3, 4, 0],
-  [0, 0.5, 3, 3.5],
-  [0, 1, 3, 3],
-  [0, 1.5, 3, 2.5],
-  [0, 2, 3, 2],
-  [0, 2.5, 3, 1.5],
-  [0, 3, 3, 1],
-  [0, 3.5, 3, 0.5],
-];
+export interface MeshMapOptions {
+  /** Initial framing before the first graph lands. */
+  bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+  /** Calaveras + Tuolumne outlines (src/assets/service-counties.json) for the tint. */
+  counties: GeoFC;
+  /** Fired whenever the selected repeater changes, from the map or from `select`. */
+  onSelectNode?: (key: string | null) => void;
+}
 
 const EMPTY: GeoFC = { type: 'FeatureCollection', features: [] };
 
-export interface MeshMapOptions {
-  /** Initial framing when there are no in-region nodes yet. */
-  bounds: { minLng: number; minLat: number; maxLng: number; maxLat: number };
-  /** Fired when a node or link popup wants the panel to follow along. */
-  onSelectNode?: (key: string | null) => void;
-}
+/** Card width, and the corridor-view padding. */
+const CARD_W = 264;
+const FIT_PADDING = 60;
+/** Below this map width the card docks to the bottom edge instead of floating. */
+const DOCK_BELOW = 600;
 
 export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMapHandle | null {
   const canvas = figureEl.querySelector<HTMLElement>('[data-mesh-canvas]');
   if (!canvas) return null;
 
-  // Pull design tokens so the map matches the site (tokens.css = source of truth). The
-  // second arg to tok() is a last-resort literal used only if getComputedStyle can't read
-  // the var (effectively never in a browser); each MIRRORS the value in tokens.css — keep
-  // them in sync there, that file remains the canonical palette.
   const cs = getComputedStyle(document.documentElement);
+  // The second argument is a last-resort literal, used only if the var can't be read; each
+  // mirrors tokens.css, which remains the canonical palette.
   const tok = (n: string, fb: string) => cs.getPropertyValue(n).trim() || fb;
   const C = {
     green: tok('--brand-green', '#1d5b3f'),
-    greenDeep: tok('--brand-green-hover', '#16472f'),
     brass: tok('--brand-brass', '#b08a3e'),
-    surface: tok('--surface-page', '#f3efe4'),
+    brassText: tok('--brand-brass-text', '#785d20'),
+    orange: tok('--signal-orange', '#c2410c'),
+    land: tok('--surface-hero', '#edefe7'),
     ink: tok('--ink-strong', '#16271e'),
     muted: tok('--ink-muted', '#6f6750'),
+    water: tok('--map-water', '#dde3da'),
+    road: tok('--map-road', '#f8f6ef'),
+    roadCasing: tok('--map-road-casing', '#ddd4bd'),
+    countyLine: tok('--map-county-line', '#c9c1a9'),
+    place: tok('--map-place', '#9a906f'),
+    shieldLine: tok('--map-shield-line', '#d3c9ad'),
+    shieldText: tok('--map-shield-text', '#7d7459'),
   };
-
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  const ease = () => (reduceMotion?.matches ? 0 : 600);
 
-  let map: maplibregl.Map;
-  try {
-    map = new maplibregl.Map({
-      container: canvas,
-      style: BASEMAP_STYLE,
-      bounds: [
-        [opts.bounds.minLng, opts.bounds.minLat],
-        [opts.bounds.maxLng, opts.bounds.maxLat],
-      ],
-      fitBoundsOptions: { padding: 48 },
-      attributionControl: false,
-      dragRotate: false,
-      pitchWithRotate: false,
-      cooperativeGestures: true,
-    });
-  } catch {
-    return null; // no WebGL → keep the fallback note + the roster in the panel
-  }
-  map.on('error', () => {}); // swallow tile/style errors — never surface them
-  // Bottom-right, not top-right: the panel's collapse toggle floats over the map's top-right
-  // corner and would sit on top of the zoom buttons.
-  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-  map.touchZoomRotate?.disableRotation();
+  // ---- state ----
 
-  // Settled signal for the deterministic screenshot harness: html[data-map-settled] means
-  // the map has nothing left to render, so a capture never races a paint. Shared with the
-  // /live map — only one map exists per page.
-  const root = document.documentElement;
-  map.on('render', () => {
-    delete root.dataset.mapSettled;
-  });
-  map.on('idle', () => {
-    root.dataset.mapSettled = '1';
-  });
-
-  let nodeKeys = new Set<string>();
+  let map: maplibregl.Map | null = null;
+  let ready = false;
+  let destroyed = false;
+  let graph: MeshGraph | null = null;
+  let now = Date.now();
+  let window_: MeshWindow = '30d';
+  let rows = new Map<string, MeshNodeRow>();
+  let nodes = new Map<string, MeshNode>();
   let regionBounds: maplibregl.LngLatBounds | null = null;
+  let pendingBackdrop: { nodes: MeshNode[]; links: GeoFC } | null = null;
+  let pendingSelect: string | null | undefined;
+  const state: LinkState = { node: null, link: null };
+  let hovered: string | null = null;
+  let panOutCb: (() => void) | null = null;
+  let panOutFired = false;
 
-  /**
-   * The selected node, and the filter that gates the link layers on it.
-   *
-   * Links that leave the corridor are HIDDEN by default. There are roughly twice as many of
-   * them as corridor links and they are an order of magnitude longer, so drawing them all at
-   * once buried the thing the page is about under a starburst — dimming them was not enough.
-   * Selecting a repeater reveals exactly its own outward links, which turns the clutter into
-   * an answer to a question: "what does this one reach?"
-   *
-   * Corridor-internal links are always drawn; selection only ever ADDS.
-   */
-  /**
-   * The selected node. It gates BOTH which links are drawn (`linkFilter`) and how strongly
-   * (`linkPaint`) — see src/lib/mesh-link-paint.ts, where those expressions live so they can
-   * be unit-tested against the real style spec.
-   */
-  let selectedKey: string | null = null;
+  // ---- the map, built once the restyled basemap is in hand ----
 
-  /**
-   * The map's "heard in" cut. It maps exactly onto the recency tiers the layers are already
-   * split by — 1h is `live`, 6h adds `recent`, 24h adds `fading`, 30d is everything — so
-   * narrowing it is a visibility toggle, not a refetch and not a second filter expression.
-   *
-   * This is NOT the window picker `MESH_WINDOW` deliberately refuses. That one would change
-   * what is FETCHED and let a reader silently narrow the data behind every count on the
-   * page. This changes only what is DRAWN, leaves every figure alone, and defaults to 30d,
-   * so the page still opens on everything it knows.
-   */
-  let heardIn: MeshHeardIn = '30d';
-  const visibleTiers = () => RECENCY_TIERS.slice(0, HEARD_IN_OPTIONS.indexOf(heardIn) + 1);
-  const applyHeardIn = () => {
-    if (!ready) return;
-    const shown = new Set<string>(visibleTiers());
-    for (const tier of RECENCY_TIERS) {
-      const v = shown.has(tier) ? 'visible' : 'none';
-      for (const id of [`mesh-link-${tier}`, `mesh-pulse-${tier}`]) {
-        try {
-          map.setLayoutProperty(id, 'visibility', v);
-        } catch {
-          /* layer not up yet — applied again on the next setGraph */
-        }
-      }
+  const fallbackStyle = (): maplibregl.StyleSpecification => ({
+    version: 8,
+    sources: {},
+    layers: [{ id: 'background', type: 'background', paint: { 'background-color': C.land } }],
+  });
+
+  (async () => {
+    let style: maplibregl.StyleSpecification | StyleDoc = fallbackStyle();
+    try {
+      const res = await fetch(BASEMAP_STYLE);
+      const positron = (await res.json()) as StyleDoc;
+      style = meshBasemapStyle(positron, C) ?? positron;
+    } catch {
+      // No basemap: the mesh still draws on plain ground, which is better than no map.
     }
-  };
+    if (destroyed) return;
+    try {
+      map = new maplibregl.Map({
+        container: canvas,
+        style: style as maplibregl.StyleSpecification,
+        bounds: [
+          [opts.bounds.minLng, opts.bounds.minLat],
+          [opts.bounds.maxLng, opts.bounds.maxLat],
+        ],
+        fitBoundsOptions: { padding: FIT_PADDING },
+        attributionControl: false,
+        dragRotate: false,
+        pitchWithRotate: false,
+        cooperativeGestures: true,
+      });
+    } catch {
+      return; // no WebGL → keep the fallback note; the table carries every repeater
+    }
+    wire(map);
+  })();
 
-  const expr = (e: unknown) => e as maplibregl.ExpressionSpecification;
-  const onHover = (off: unknown, on: unknown) =>
-    expr(['case', ['boolean', ['feature-state', 'hover'], false], on, off]);
-  /** Emphasis that persists while a node is selected, not just while hovered. */
-  const onActive = (off: unknown, on: unknown) =>
-    expr([
-      'case',
-      [
-        'any',
-        ['boolean', ['feature-state', 'hover'], false],
-        ['boolean', ['feature-state', 'selected'], false],
-      ],
-      on,
-      off,
-    ]);
+  // ---- popover: the "blended label" card ----
 
-  const filterFor = (tier: MeshRecency) =>
-    linkFilter(tier, selectedKey) as maplibregl.FilterSpecification;
-  // `line-width` is now a plain number (every link is one pixel), so the paint values are
-  // no longer all expressions.
-  type PaintValues = Record<string, maplibregl.ExpressionSpecification | number>;
-  const paintFor = (tier: MeshRecency) =>
-    linkPaint(tier, selectedKey) as unknown as { base: PaintValues; pulse: PaintValues };
+  const layer = document.createElement('div');
+  layer.className = 'mesh-pop-layer';
+  layer.innerHTML =
+    `<svg class="mesh-pop-leader" aria-hidden="true"><line/></svg>` +
+    `<span class="mesh-pop-anchor" aria-hidden="true" hidden></span>` +
+    `<div class="mesh-pop" role="dialog" tabindex="-1" hidden></div>` +
+    `<p class="mesh-hint" hidden></p>`;
+  figureEl.appendChild(layer);
+  const card = layer.querySelector<HTMLElement>('.mesh-pop')!;
+  const leader = layer.querySelector<SVGLineElement>('.mesh-pop-leader line')!;
+  const anchorRing = layer.querySelector<HTMLElement>('.mesh-pop-anchor')!;
+  const hint = layer.querySelector<HTMLElement>('.mesh-hint')!;
 
-  // ---- popups ----
+  /** What the open card is anchored to, and the segments it must not cover. */
+  let cardAt: { lngLat: [number, number]; ring: boolean; avoid: [number, number][][] } | null =
+    null;
 
-  /**
-   * The "anchored strip" popover. One at a time — MapLibre happily stacks a new Popup on
-   * every click, which left several overlapping panels fighting for the same corner.
-   *
-   * Structure is fixed: header (title + kicker + close) / three-column metric row /
-   * standing footnote, hairline-separated. The metric row is ALWAYS three cells — an
-   * unavailable metric renders an em dash and keeps its label rather than collapsing the
-   * grid, so the card's shape doesn't shift with the data.
-   *
-   * MapLibre's own close button is off; ours lives inside the header where the spec puts
-   * it, and is deliberately not the highest-contrast thing in the card.
-   */
-  let openPopup: maplibregl.Popup | null = null;
-
-  const closePopup = () => {
-    openPopup?.remove();
-    openPopup = null;
-  };
-
-  const showPopup = (lngLat: maplibregl.LngLatLike, html: string, label: string) => {
-    closePopup();
-    openPopup = new maplibregl.Popup({
-      closeButton: false,
-      closeOnMove: false, // stays anchored to its feature through a pan or zoom
-      maxWidth: '296px',
-      className: 'mesh-pop-wrap',
-      // Sits up and to the right of the feature, and flips near a viewport edge — the
-      // offset has to be given per anchor or a flipped card lands on the wrong side.
-      offset: {
-        bottom: [8, -12],
-        'bottom-left': [8, -12],
-        'bottom-right': [-8, -12],
-        top: [8, 12],
-        'top-left': [8, 12],
-        'top-right': [-8, 12],
-        left: [12, 0],
-        right: [-12, 0],
-        center: [0, 0],
-      },
-    })
-      .setLngLat(lngLat)
-      .setHTML(html)
-      .addTo(map);
-    openPopup.on('close', () => {
-      openPopup = null;
-    });
-
-    const el = openPopup.getElement()?.querySelector<HTMLElement>('.mesh-pop');
-    el?.setAttribute('role', 'dialog');
-    el?.setAttribute('aria-label', label);
-    // Focus lands on the card, with the close button as the first tab stop.
-    el?.querySelector<HTMLButtonElement>('[data-pop-close]')?.addEventListener('click', () => {
-      closePopup();
-      map.getCanvas().focus();
-    });
-    el?.focus();
-  };
-
-  /** One metric cell. A null value renders an em dash — never a fabricated number. */
   const metric = (value: string | null, unit: string | null, label: string) =>
-    `<div class="mesh-pop__metric">` +
-    `<p class="mesh-pop__value">` +
+    `<div class="mesh-pop__metric"><p class="mesh-pop__value">` +
     (value == null
       ? `<span class="mesh-pop__na">&#8212;</span>`
       : esc(value) + (unit ? `<span class="mesh-pop__unit">${esc(unit)}</span>` : '')) +
-    `</p>` +
-    `<p class="mesh-pop__metriclabel">${esc(label)}</p>` +
-    `</div>`;
+    `</p><p class="mesh-pop__label">${esc(label)}</p></div>`;
 
-  /** Receptions above four digits abbreviate rather than wrap or shrink the type. */
-  const compactCount = (n: number): string =>
-    n >= 10_000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+  /** Receptions above four digits abbreviate rather than wrap. */
+  const compact = (n: number) => (n >= 10_000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
-  const popShell = (title: string, kicker: string, metrics: string, footnote: string) =>
-    `<div class="mesh-pop" tabindex="-1">` +
-    `<div class="mesh-pop__head">` +
-    `<div>` +
-    `<p class="mesh-pop__title">${title}</p>` +
-    `<p class="mesh-pop__kicker">${esc(kicker)}</p>` +
-    `</div>` +
+  const cardHtml = (title: string, kicker: string, metrics: string) =>
+    `<div class="mesh-pop__head"><p class="mesh-pop__title">${title}</p>` +
     `<button type="button" class="mesh-pop__close" data-pop-close aria-label="Close">` +
-    `<span aria-hidden="true">&#215;</span></button>` +
-    `</div>` +
+    `<span aria-hidden="true">&#215;</span></button></div>` +
+    `<p class="mesh-pop__kicker">${esc(kicker)}</p>` +
     `<div class="mesh-pop__metrics">${metrics}</div>` +
-    `<p class="mesh-pop__foot">${esc(footnote)}</p>` +
-    `</div>`;
+    `<p class="mesh-pop__foot">${esc(copy.popFootnote)}</p>`;
 
-  let currentWindow: MeshWindow = '72h';
-  let now = Date.now();
-
-  /** `A ↔ B` with the arrow set apart so it recedes behind the two place names. */
-  const pairTitle = (headline: string) => {
-    const parts = headline.split('↔');
-    return parts.length === 2
-      ? `${esc(parts[0].trim())}<span class="mesh-pop__sep"> &#8596; </span>${esc(parts[1].trim())}`
-      : esc(headline);
+  const openCard = (
+    html: string,
+    label: string,
+    at: [number, number],
+    ring: boolean,
+    avoid: [number, number][][]
+  ) => {
+    card.innerHTML = html;
+    card.setAttribute('aria-label', label);
+    card.hidden = false;
+    anchorRing.hidden = !ring;
+    cardAt = { lngLat: at, ring, avoid };
+    card.classList.remove('mesh-pop--in');
+    // Next frame, so the fade runs from zero (none at all under reduced motion — CSS).
+    requestAnimationFrame(() => card.classList.add('mesh-pop--in'));
+    placeCard();
+    card.querySelector<HTMLButtonElement>('[data-pop-close]')?.addEventListener('click', () => {
+      clearAll();
+      map?.getCanvas().focus();
+    });
+    card.focus({ preventScroll: true });
   };
 
-  const linkPopup = (e: maplibregl.MapLayerMouseEvent) => {
-    const p = (e.features?.[0]?.properties ?? {}) as Record<string, unknown>;
-    const tier = String(p.recency || 'cold') as MeshRecency;
-    const headline = String(p.headline || 'Observed link');
-    const days = Number(p.daysActive);
-    const span = MESH_WINDOW_DAYS[currentWindow];
-    const snr = p.bestSnr == null ? null : Number(p.bestSnr);
-    const html = popShell(
-      pairTitle(headline),
-      `Relay link \u00b7 heard ${agoLabel(String(p.lastSeen || ''), now)}`,
-      metric(Number.isFinite(days) ? String(days) : null, `/${span}`, 'Days seen') +
-        metric(compactCount(Number(p.observations) || 0), null, 'Receptions') +
-        metric(snr == null ? null : snr.toFixed(1), snr == null ? null : 'dB', 'Best SNR'),
-      tierNote(tier)
-    );
-    showPopup(e.lngLat, html, `Relay link details: ${headline}`);
-    clickedFeature = true;
+  const closeCard = () => {
+    cardAt = null;
+    setLinkEnds(null);
+    card.hidden = true;
+    anchorRing.hidden = true;
+    leader.parentElement!.style.display = 'none';
+  };
+
+  /** Does a screen-space segment cross a rectangle? Liang–Barsky clip. */
+  const crosses = (
+    [x0, y0]: [number, number],
+    [x1, y1]: [number, number],
+    r: { l: number; t: number; r: number; b: number }
+  ) => {
+    let t0 = 0;
+    let t1 = 1;
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const edges: [number, number][] = [
+      [-dx, x0 - r.l],
+      [dx, r.r - x0],
+      [-dy, y0 - r.t],
+      [dy, r.b - y0],
+    ];
+    for (const [p, q] of edges) {
+      if (p === 0) {
+        if (q < 0) return false;
+        continue;
+      }
+      const t = q / p;
+      if (p < 0) t0 = Math.max(t0, t);
+      else t1 = Math.min(t1, t);
+      if (t0 > t1) return false;
+    }
+    return true;
   };
 
   /**
-   * The node card, for a NEIGHBOUR dot only.
-   *
-   * A corridor pin no longer opens one: it has a roster row, and clicking the pin now does
-   * exactly what clicking that row does — select, frame, emphasise its links, and expand the
-   * row's reading inline. Two detail surfaces for the same repeater meant the card and the
-   * row showed different subsets of the same facts, and the card covered the map it had just
-   * flown to. A neighbour has no roster row, so the card remains the only way to see it.
-   *
-   * Reads the CURRENT graph rather than the feature properties, so a card opened after a
-   * refresh shows refreshed numbers and doesn't close over stale data.
+   * Put the card where it covers none of the links being read. Tries the four diagonals at
+   * three leader lengths — below-right and short first — and keeps the first placement that
+   * fits inside the map and crosses the fewest of `avoid`. A repeater whose links fan out to
+   * one side therefore gets its card on the other, on a longer leader.
    */
-  const showNodeCard = (key: string, at: [number, number]) => {
-    const n = currentNodes.get(key);
-    if (!n) return;
-    let degree = 0;
-    let heard = 0;
-    for (const l of currentLinks) {
-      if (l.a !== key && l.b !== key) continue;
-      degree++;
-      const t = Date.parse(l.lastSeen);
-      if (Number.isFinite(t) && t > heard) heard = t;
-    }
-    const name = displayName(n.name);
-    const heardIso = heard ? new Date(heard).toISOString() : null;
-    const html = popShell(
-      esc(name),
-      `${n.inRegion ? 'Corridor node' : 'Neighbouring node'} \u00b7 ` +
-        (heardIso ? `heard ${agoLabel(heardIso, now)}` : 'no links observed'),
-      metric(String(degree), null, 'Links') +
-        metric(n.snr == null ? null : n.snr.toFixed(1), n.snr == null ? null : 'dB', 'Last SNR') +
-        metric(String(n.gatewayCount), null, 'Gateways'),
-      n.ours
-        ? 'Signal is last-heard, not a live reading.'
-        : 'Run by another operator, not by S.I.E.R.R.A.'
-    );
-    showPopup(at, html, `Node details: ${name}`);
-    clickedFeature = true;
-    setSelected(key);
-  };
+  const placeCard = () => {
+    if (!map || !cardAt) return;
+    const box = figureEl.getBoundingClientRect();
+    const p = map.project(cardAt.lngLat);
+    anchorRing.style.transform = `translate(${p.x}px, ${p.y}px)`;
+    const svg = leader.parentElement as unknown as SVGSVGElement;
 
-  /** A neighbour dot. Same toggle as a corridor pin, and its card closes with it. */
-  const toggleNodeCard = (key: string, at: [number, number]) => {
-    clickedFeature = true;
-    if (selectedKey === key) {
-      closePopup();
-      setSelected(null);
+    if (box.width < DOCK_BELOW) {
+      // Docked: full width along the bottom, no leader.
+      card.classList.add('mesh-pop--docked');
+      card.style.transform = '';
+      svg.style.display = 'none';
       return;
     }
-    showNodeCard(key, at);
-  };
-
-  const nodePopup = (e: maplibregl.MapLayerMouseEvent) => {
-    const p = (e.features?.[0]?.properties ?? {}) as Record<string, unknown>;
-    const key = String(p.publicKey || '');
-    const at = (e.features?.[0]?.geometry as GeoJSON.Point)?.coordinates as [number, number];
-    if (key && at) toggleNodeCard(key, at);
-  };
-
-  const interactive = (id: string, handler: (e: maplibregl.MapLayerMouseEvent) => void) => {
-    map.on('click', id, handler);
-    map.on('mouseenter', id, () => (map.getCanvas().style.cursor = 'pointer'));
-    map.on('mouseleave', id, () => (map.getCanvas().style.cursor = ''));
-  };
-
-  // ---- layer construction ----
-
-  let ready = false;
-
-  map.on('load', () => {
-    try {
-      // 1. The whole-mesh backdrop, lazily filled. Bottom of the stack, static, muted —
-      //    context for scale. Never animated: the corridor is the subject.
-      map.addSource('mesh-backdrop-links', { type: 'geojson', data: EMPTY });
-      map.addLayer({
-        id: 'mesh-backdrop-links',
-        type: 'line',
-        source: 'mesh-backdrop-links',
-        layout: { 'line-cap': 'round' },
-        paint: { 'line-color': C.muted, 'line-width': 0.6, 'line-opacity': 0.2 },
-      });
-      map.addSource('mesh-backdrop-nodes', { type: 'geojson', data: EMPTY });
-      map.addLayer({
-        id: 'mesh-backdrop-nodes',
-        type: 'circle',
-        source: 'mesh-backdrop-nodes',
-        paint: { 'circle-radius': 1.8, 'circle-color': C.muted, 'circle-opacity': 0.4 },
-      });
-
-      // 2. Region links — a solid base per tier so an edge is ALWAYS continuously drawn…
-      map.addSource('mesh-links', { type: 'geojson', data: EMPTY, promoteId: 'id' });
-      for (const tier of RECENCY_TIERS) {
-        map.addLayer({
-          id: `mesh-link-${tier}`,
-          type: 'line',
-          source: 'mesh-links',
-          filter: filterFor(tier),
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: {
-            'line-color': onHover(C.green, C.greenDeep),
-            ...paintFor(tier).base,
-            // Half the tier's opacity: enough that the gaps between the pulse's dashes still
-            // read as a continuous link (a link that appeared to break into dashes would
-            // read as intermittent, which is a claim we're not making), light enough that
-            // the deep-green dash on top clearly stands off it.
-          },
-        });
-        // …and a brighter travelling dash ON TOP of it. This is the "alive" layer: the
-        // dash advances, the base never does, so the link reads as carrying traffic
-        // rather than flickering. Switched off wholesale under reduced motion.
-        map.addLayer({
-          id: `mesh-pulse-${tier}`,
-          type: 'line',
-          source: 'mesh-links',
-          filter: filterFor(tier),
-          layout: { 'line-cap': 'butt', 'line-join': 'round' },
-          paint: {
-            // The dash was drawn in the same green as the base at HALF its opacity, so the
-            // thing that moves was paler than the thing it moved along — barely perceptible.
-            // Inverted: the base is a light wire, the travelling dash is the deep green at
-            // full tier opacity. Contrast now carries the motion.
-            'line-color': C.greenDeep,
-            ...paintFor(tier).pulse,
-            'line-dasharray': [0, 4, 3],
-          },
-        });
-        interactive(`mesh-link-${tier}`, linkPopup);
+    card.classList.remove('mesh-pop--docked');
+    const w = CARD_W;
+    const h = card.offsetHeight || 140;
+    const segs = cardAt.avoid.map((s) => s.map((c) => map!.project(c)).map((q) => [q.x, q.y]));
+    let best: { x: number; y: number; cx: number; cy: number; score: number } | null = null;
+    const dirs: [number, number][] = [
+      [1, 1],
+      [-1, 1],
+      [1, -1],
+      [-1, -1],
+    ];
+    dirs.forEach(([sx, sy], di) => {
+      for (const [li, len] of [36, 90, 150].entries()) {
+        const d = len / Math.SQRT2;
+        const cx = p.x + sx * d; // the card corner the leader meets
+        const cy = p.y + sy * d;
+        const x = sx > 0 ? cx : cx - w;
+        const y = sy > 0 ? cy : cy - h;
+        if (x < 8 || y < 8 || x + w > box.width - 8 || y + h > box.height - 8) continue;
+        const rect = { l: x, t: y, r: x + w, b: y + h };
+        let hits = 0;
+        for (const s of segs) {
+          for (let i = 1; i < s.length; i++) {
+            if (crosses(s[i - 1] as [number, number], s[i] as [number, number], rect)) hits++;
+          }
+        }
+        const score = hits * 100 + li * 3 + di;
+        if (!best || score < best.score) best = { x, y, cx, cy, score };
       }
-
-      map.addSource('mesh-nodes', { type: 'geojson', data: EMPTY, promoteId: 'publicKey' });
-
-      // 3. Neighbours — small hollow muted circles. Visibly present, visibly secondary.
-      map.addLayer({
-        id: 'mesh-node-neighbour',
-        type: 'circle',
-        source: 'mesh-nodes',
-        filter: ['!', ['get', 'inRegion']] as maplibregl.FilterSpecification,
-        paint: {
-          'circle-radius': onActive(3.5, 5.5),
-          'circle-color': 'rgba(0,0,0,0)',
-          'circle-stroke-color': onActive(C.muted, C.green),
-          'circle-stroke-width': onActive(1.25, 2.5),
-          'circle-opacity': 1,
-        },
-      });
-
-      // 4. Corridor nodes are NOT drawn here — they are DOM pins (see `syncPins`), so each
-      //    carries a persistent name + status label and is a real, keyboard-reachable
-      //    <button>. That removes the node popup entirely, which is what stopped several
-      //    popups stacking up on top of each other.
-
-      // 5. Neighbour labels only once you zoom in, so the wide view stays legible.
-      map.addLayer({
-        id: 'mesh-node-label-neighbour',
-        type: 'symbol',
-        source: 'mesh-nodes',
-        minzoom: 10,
-        filter: ['!', ['get', 'inRegion']] as maplibregl.FilterSpecification,
-        layout: {
-          'text-field': [
-            'get',
-            'shortName',
-          ] as maplibregl.DataDrivenPropertyValueSpecification<string>,
-          'text-font': ['Noto Sans Regular'],
-          'text-size': 10,
-          'text-offset': [0, 1],
-          'text-anchor': 'top',
-          'text-allow-overlap': false,
-          'text-padding': 4,
-        },
-        paint: {
-          'text-color': C.muted,
-          'text-halo-color': C.surface,
-          'text-halo-width': 1.2,
-        },
-      });
-
-      interactive('mesh-node-neighbour', nodePopup);
-
-      ready = true;
-      // A setHeardIn() that arrived before the layers existed is replayed here.
-      applyHeardIn();
-      if (pending) applyGraph(pending.graph, pending.window, pending.now);
-      if (pendingBackdrop) applyBackdrop(pendingBackdrop.nodes, pendingBackdrop.links);
-
-      const fb = figureEl.querySelector<HTMLElement>('[data-mesh-fallback]');
-      if (fb) fb.style.display = 'none';
-    } catch {
-      /* keep the fallback note visible if layer setup fails — the roster still renders */
-    }
-  });
-
-  // ---- the pulse loop ----
-
-  // One rAF loop drives all four tiers. Each tier keeps its own accumulator so the live
-  // tier marches ~8× faster than the cold one — that speed difference IS the recency
-  // encoding, on top of the static opacity/width. Paused when the tab is hidden or the
-  // map scrolls out of view; never started at all under prefers-reduced-motion.
-  let raf = 0;
-  let lastFrame = 0;
-  const acc: Record<MeshRecency, number> = { live: 0, recent: 0, fading: 0, cold: 0 };
-  const step: Record<MeshRecency, number> = { live: 0, recent: 0, fading: 0, cold: 0 };
-  let visible = true;
-
-  const frame = (t: number) => {
-    raf = requestAnimationFrame(frame);
-    const dt = lastFrame ? t - lastFrame : 0;
-    lastFrame = t;
-    if (!ready || dt <= 0) return;
-    for (const tier of RECENCY_TIERS) {
-      acc[tier] += dt;
-      const ms = TIER_STYLE[tier].stepMs;
-      if (acc[tier] < ms) continue;
-      acc[tier] %= ms;
-      step[tier] = (step[tier] + 1) % DASH_SEQUENCE.length;
-      try {
-        map.setPaintProperty(`mesh-pulse-${tier}`, 'line-dasharray', DASH_SEQUENCE[step[tier]]);
-      } catch {
-        /* layer not up yet, or style reloading — next frame will catch it */
-      }
-    }
+    });
+    // Nowhere fits cleanly (a tiny map): fall back to inside the top-right corner.
+    const pick = best ?? { x: box.width - w - 8, y: 8, cx: box.width - w - 8, cy: 8 };
+    card.style.transform = `translate(${Math.round(pick.x)}px, ${Math.round(pick.y)}px)`;
+    svg.style.display = '';
+    leader.setAttribute('x1', String(p.x));
+    leader.setAttribute('y1', String(p.y));
+    leader.setAttribute('x2', String(pick.cx));
+    leader.setAttribute('y2', String(pick.cy));
   };
 
-  const stopPulse = () => {
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
-    lastFrame = 0;
-  };
+  // ---- pins: corridor repeaters as real <button>s ----
 
-  const startPulse = () => {
-    if (raf || reduceMotion?.matches || !visible || document.hidden) return;
-    raf = requestAnimationFrame(frame);
-  };
-
-  /**
-   * Under reduced motion the dash must not just freeze mid-pattern — a half-drawn dash
-   * would read as a broken link. Collapse the pulse layers to a continuous line so the
-   * static opacity/width encoding carries the whole message.
-   */
-  const settleForReducedMotion = () => {
-    stopPulse();
-    for (const tier of RECENCY_TIERS) {
-      try {
-        map.setPaintProperty(`mesh-pulse-${tier}`, 'line-dasharray', [1, 0]);
-      } catch {
-        /* not up yet */
-      }
-    }
-  };
-
-  const onMotionChange = () => (reduceMotion?.matches ? settleForReducedMotion() : startPulse());
-  reduceMotion?.addEventListener?.('change', onMotionChange);
-
-  const onVisibility = () => (document.hidden ? stopPulse() : startPulse());
-  document.addEventListener('visibilitychange', onVisibility);
-
-  // Don't burn frames on a map scrolled off screen (the panel below it is long on mobile).
-  const io = new IntersectionObserver(
-    ([entry]) => {
-      visible = entry.isIntersecting;
-      visible ? startPulse() : stopPulse();
-    },
-    { threshold: 0 }
-  );
-  io.observe(figureEl);
-
-  map.on('load', () => (reduceMotion?.matches ? settleForReducedMotion() : startPulse()));
-
-  // ---- data application ----
-
-  let pending: { graph: MeshGraph; window: MeshWindow; now: number } | null = null;
-  let pendingBackdrop: { nodes: MeshNode[]; links: GeoFC } | null = null;
-
-  const setData = (id: string, data: GeoFC) => {
-    const src = map.getSource(id) as maplibregl.GeoJSONSource | undefined;
-    if (src) src.setData(data);
-  };
-
-  let currentLinks: MeshGraph['links'] = [];
-  let currentNodes = new Map<string, MeshNode>();
-
-  /**
-   * Corridor repeaters are rendered as DOM pins rather than a circle layer: a coordinate
-   * anchor plus a PERSISTENT label carrying the node's name and its current status. The map
-   * then answers "which repeater is that, and is it live?" without a click — which is what
-   * let the node popup go away, and with it the stack of popups fighting for space.
-   *
-   * Only the ~10 corridor nodes get pins. Neighbours and the whole-mesh backdrop stay cheap
-   * circle layers: they are context, they have no labels to show, and there can be hundreds.
-   *
-   * Each pin is a real <button>, so the map's own markers are keyboard-reachable and
-   * screen-reader labelled — the circle layer never was.
-   */
   const pins = new Map<string, maplibregl.Marker>();
 
-  const syncPins = (graph: MeshGraph, nowMs: number) => {
-    const degree = new Map<string, number>();
-    const lastHeard = new Map<string, number>();
-    for (const l of graph.links) {
-      const t = Date.parse(l.lastSeen);
-      for (const k of [l.a, l.b]) {
-        degree.set(k, (degree.get(k) ?? 0) + 1);
-        if (Number.isFinite(t) && t > (lastHeard.get(k) ?? 0)) lastHeard.set(k, t);
+  /**
+   * Labels that collide first try the other side of their dot; if that collides too, the
+   * repeater with fewer links gives way — but a stale repeater's label is never hidden,
+   * because it is the one the headline is pointing the reader at. Runs after every move;
+   * hovering a pin always shows its own label (CSS).
+   */
+  let layoutQueued = false;
+  const layoutLabels = () => {
+    if (layoutQueued) return;
+    layoutQueued = true;
+    requestAnimationFrame(() => {
+      layoutQueued = false;
+      const order = [...pins.entries()]
+        .map(([key, m]) => ({ key, el: m.getElement(), row: rows.get(key) }))
+        .sort(
+          (a, b) =>
+            Number(b.key === state.node) - Number(a.key === state.node) ||
+            Number(b.row?.status === 'stale') - Number(a.row?.status === 'stale') ||
+            (b.row?.degree ?? 0) - (a.row?.degree ?? 0)
+        );
+      const kept: DOMRect[] = [];
+      const box = figureEl.getBoundingClientRect();
+      // A label running off the map's edge counts as a collision too, so it flips or gives way.
+      const clear = (r: DOMRect) =>
+        r.left >= box.left &&
+        r.right <= box.right &&
+        !kept.some(
+          (k) => r.left < k.right && r.right > k.left && r.top < k.bottom && r.bottom > k.top
+        );
+      for (const { el } of order) {
+        el.classList.remove('mesh-pin--nolabel', 'mesh-pin--left');
+        const label = el.querySelector('.mesh-pin__label');
+        const right = label?.getBoundingClientRect();
+        if (!label || !right?.width) continue;
+        if (clear(right)) {
+          kept.push(right);
+          continue;
+        }
+        el.classList.add('mesh-pin--left');
+        const left = label.getBoundingClientRect();
+        if (clear(left)) {
+          kept.push(left);
+          continue;
+        }
+        el.classList.remove('mesh-pin--left');
+        if (el.classList.contains('mesh-pin--stale')) kept.push(right);
+        else el.classList.add('mesh-pin--nolabel');
       }
-    }
+    });
+  };
 
+  const syncPins = () => {
+    if (!map || !graph) return;
     const wanted = new Set<string>();
-    for (const n of graph.nodes) {
-      if (!n.inRegion) continue;
+    for (const row of rows.values()) {
+      const n = row.node;
       wanted.add(n.publicKey);
       const name = displayName(n.name);
-      const deg = degree.get(n.publicKey) ?? 0;
-      const heard = lastHeard.get(n.publicKey) ?? 0;
-      const heardIso = heard ? new Date(heard).toISOString() : null;
-      const tier = heardIso ? linkRecency(heardIso, nowMs) : null;
-      const stat = heardIso
-        ? `${deg} ${deg === 1 ? 'link' : 'links'} · ${agoLabel(heardIso, nowMs)}`
-        : 'No links observed';
-
       let marker = pins.get(n.publicKey);
-      let el: HTMLElement | undefined = marker?.getElement();
       if (!marker) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        el = btn;
-        el.className = 'mesh-pin';
-        // Addressable by node, like the roster's rows — the pin and the row are two views
-        // of one repeater, and the tests assert they behave identically.
-        el.dataset.pinKey = n.publicKey;
-        el.innerHTML =
+        btn.className = 'mesh-pin';
+        btn.dataset.pinKey = n.publicKey;
+        btn.innerHTML =
           `<span class="mesh-pin__dot" aria-hidden="true"></span>` +
-          `<span class="mesh-pin__label">` +
-          `<strong data-pin-name></strong><small data-pin-stat></small>` +
-          `</span>`;
-        // Identical to a roster-row click — `onSelectNode` carries it back to the panel,
-        // which expands the row and scrolls it into view.
-        el.addEventListener('click', (ev) => {
+          `<span class="mesh-pin__label" aria-hidden="true"></span>`;
+        btn.addEventListener('click', (ev) => {
           ev.stopPropagation();
-          clickedFeature = true;
-          closePopup();
-          // Toggles, exactly like its roster row: a second click on the open repeater clears
-          // the selection. Without this the only way to let go of a repeater was to find a
-          // bare patch of map or press Escape, neither of which the pin suggests.
-          if (selectedKey === n.publicKey) {
-            setSelected(null);
-            return;
-          }
-          setSelected(n.publicKey);
-          // Framing only on the way IN — re-fitting the map as the selection clears would
-          // move the ground under a reader who just let go of it.
-          focusNode(n.publicKey);
+          // Toggles, like its table row: a second click lets go.
+          setSelected(state.node === n.publicKey ? null : n.publicKey);
         });
-        el.addEventListener('mouseenter', () => setHovered(n.publicKey));
-        el.addEventListener('mouseleave', () => setHovered(null));
-        el.addEventListener('focus', () => setHovered(n.publicKey));
-        el.addEventListener('blur', () => setHovered(null));
-        marker = new maplibregl.Marker({ element: el, anchor: 'center' })
+        btn.addEventListener('mouseenter', () => setHovered(n.publicKey));
+        btn.addEventListener('mouseleave', () => setHovered(null));
+        btn.addEventListener('focus', () => setHovered(n.publicKey));
+        btn.addEventListener('blur', () => setHovered(null));
+        marker = new maplibregl.Marker({ element: btn, anchor: 'center' })
           .setLngLat([n.lng, n.lat])
           .addTo(map);
         pins.set(n.publicKey, marker);
       } else {
         marker.setLngLat([n.lng, n.lat]);
       }
-
-      if (!el) continue;
-      el.querySelector('[data-pin-name]')!.textContent = name;
-      el.querySelector('[data-pin-stat]')!.textContent = stat;
-      el.setAttribute('aria-label', `${name}. ${nodeTypeLabel(n.nodeType)}. ${stat}.`);
-      el.classList.toggle('mesh-pin--ours', n.ours);
-      el.classList.toggle('mesh-pin--other', !n.ours);
-      for (const t of RECENCY_TIERS) el.classList.toggle(`mesh-pin--${t}`, tier === t);
-      el.classList.toggle('mesh-pin--quiet', tier === null);
-      el.classList.toggle('mesh-pin--selected', selectedKey === n.publicKey);
+      const el = marker.getElement();
+      el.querySelector('.mesh-pin__label')!.textContent = name;
+      const heard = row.lastHeard ? `heard ${agoLabel(row.lastHeard, now)}` : 'never heard';
+      el.setAttribute(
+        'aria-label',
+        `${name}. ${nodeTypeLabel(n.nodeType)}. ${row.degree} ${row.degree === 1 ? 'link' : 'links'}, ${heard}.`
+      );
+      for (const s of ['fresh', 'quiet', 'stale']) {
+        el.classList.toggle(`mesh-pin--${s}`, row.status === s);
+      }
     }
-
     for (const [key, marker] of pins) {
       if (wanted.has(key)) continue;
       marker.remove();
       pins.delete(key);
     }
+    syncPinState();
   };
 
-  /** Reflect the current hover/selection onto the pins (they are DOM, not feature-state). */
   const syncPinState = () => {
     for (const [key, marker] of pins) {
       const el = marker.getElement();
-      el.classList.toggle('mesh-pin--selected', key === selectedKey);
+      el.classList.toggle('mesh-pin--selected', key === state.node);
       el.classList.toggle('mesh-pin--hover', key === hovered);
+      el.setAttribute('aria-pressed', key === state.node ? 'true' : 'false');
     }
+    figureEl.classList.toggle('meshmap--selecting', state.node != null);
+    layoutLabels();
   };
 
-  function applyGraph(graph: MeshGraph, window: MeshWindow, nowMs: number) {
-    currentLinks = graph.links;
-    currentNodes = new Map(graph.nodes.map((n) => [n.publicKey, n]));
-    currentWindow = window;
-    now = nowMs;
-    // `shortName` (the label text) is baked in by nodesToGeoJSON via displayName().
-    setData('mesh-nodes', nodesToGeoJSON(graph.nodes) as unknown as GeoFC);
-    syncPins(graph, nowMs);
-    setData('mesh-links', linksToGeoJSON(graph.links, nowMs) as unknown as GeoFC);
-    nodeKeys = new Set(graph.nodes.map((n) => n.publicKey));
-
-    // Frame on the corridor, not the whole subgraph — the neighbours are meant to be found
-    // by panning out, which is also what triggers the whole-mesh backdrop load.
-    const region = graph.nodes.filter((n) => n.inRegion);
-    if (region.length && !regionBounds) {
-      const b = new maplibregl.LngLatBounds();
-      for (const n of region) b.extend([n.lng, n.lat]);
-      regionBounds = b;
-      map.fitBounds(b, { padding: 64, maxZoom: 11, animate: false });
-    }
-  }
-
-  function applyBackdrop(nodes: MeshNode[], links: GeoFC) {
-    setData('mesh-backdrop-nodes', nodesToGeoJSON(nodes) as unknown as GeoFC);
-    setData('mesh-backdrop-links', links);
-  }
-
-  // ---- pan-out detection (the lazy-load cue) ----
-
-  let panOutCb: (() => void) | null = null;
-  let panOutFired = false;
-  const checkPanOut = () => {
-    if (panOutFired || !panOutCb || !regionBounds) return;
-    // Fire once the viewport has grown to hold appreciably more than the corridor — either
-    // the reader zoomed out past it, or panned somewhere else entirely.
-    const view = map.getBounds();
-    const outside =
-      !view.contains(regionBounds.getNorthEast()) ||
-      !view.contains(regionBounds.getSouthWest()) ||
-      map.getZoom() < 8.5;
-    if (!outside) return;
-    panOutFired = true;
-    panOutCb();
-  };
-  map.on('moveend', checkPanOut);
-
-  // ---- hover highlight + selection, driven from the map and the panel roster ----
-
-  let hovered: string | null = null;
-  const setHovered = (next: string | null) => {
-    const key = next && nodeKeys.has(next) ? next : null;
-    if (key === hovered) return;
-    flip(hovered, false);
-    hovered = key;
-    flip(hovered, true);
+  const setHovered = (key: string | null) => {
+    const next = key && rows.has(key) ? key : null;
+    if (next === hovered) return;
+    hovered = next;
     syncPinState();
   };
-  const flip = (key: string | null, on: boolean, prop: 'hover' | 'selected' = 'hover') => {
-    if (!key || !map.getSource('mesh-nodes')) return;
-    try {
-      map.setFeatureState({ source: 'mesh-nodes', id: key }, { [prop]: on });
-    } catch {
-      /* source mid-reload — ignore */
-    }
-  };
 
-  const applySelection = () => {
-    if (!ready) return;
-    for (const tier of RECENCY_TIERS) {
-      try {
-        map.setFilter(`mesh-link-${tier}`, filterFor(tier));
-        map.setFilter(`mesh-pulse-${tier}`, filterFor(tier));
-        // Re-bake the paint: the emphasis lives in the expressions, not in feature state,
-        // because it depends on BOTH endpoints rather than on one hovered feature.
-        const paint = paintFor(tier);
-        for (const [prop, value] of Object.entries(paint.base)) {
-          map.setPaintProperty(`mesh-link-${tier}`, prop, value);
-        }
-        for (const [prop, value] of Object.entries(paint.pulse)) {
-          map.setPaintProperty(`mesh-pulse-${tier}`, prop, value);
-        }
-      } catch {
-        /* layer not up yet — the initial filter + paint already match selectedKey */
+  // ---- selection ----
+
+  const linksOf = (key: string): MeshLink[] =>
+    graph ? graph.links.filter((l) => l.a === key || l.b === key) : [];
+  const linkKm = (l: MeshLink) =>
+    distanceKm(l.coordinates[0], l.coordinates[l.coordinates.length - 1]);
+
+  const applyLinkState = () => {
+    if (!map || !ready) return;
+    for (const [id, stale] of [
+      ['mesh-links', false],
+      ['mesh-links-stale', true],
+    ] as const) {
+      map.setFilter(id, linkFilter(stale, state) as maplibregl.FilterSpecification);
+      for (const [prop, value] of Object.entries(linkPaint(stale, state))) {
+        map.setPaintProperty(id, prop, value);
       }
     }
+    const f = selectedLinkFilter(state.link) as maplibregl.FilterSpecification;
+    map.setFilter('mesh-link-halo', f);
+    map.setFilter('mesh-link-focus', f);
+
+    // Neighbours this repeater was heard with get a label and a green ring.
+    const linked = state.node
+      ? linksOf(state.node).map((l) => (l.a === state.node ? l.b : l.a))
+      : [];
+    map.setFilter('mesh-neighbour-labels', [
+      'all',
+      ['!', ['get', 'inRegion']],
+      ['in', ['get', 'publicKey'], ['literal', linked]],
+    ] as maplibregl.FilterSpecification);
+    map.setPaintProperty('mesh-neighbours', 'circle-stroke-color', [
+      'case',
+      ['in', ['get', 'publicKey'], ['literal', linked]],
+      C.green,
+      C.muted,
+    ]);
+    // The wider-mesh backdrop is context for a reader exploring on their own; while a
+    // repeater's reach is on screen it would only bury it.
+    const v = state.node ? 'none' : 'visible';
+    map.setLayoutProperty('mesh-backdrop-links', 'visibility', v);
+    map.setLayoutProperty('mesh-backdrop-nodes', 'visibility', v);
   };
 
   /**
-   * How far past the corridor a selection is allowed to pull the view, as a fraction of the
-   * corridor's own span on each axis. A repeater's links routinely reach the Central Valley
-   * and occasionally the Bay Area; fitting to all of them zoomed out until the corridor —
-   * the subject of the page — was a smudge, and the foothills were unreadable.
-   *
-   * So the frame is clamped: endpoints beyond this box don't pull the view. Those links are
-   * still DRAWN and still emphasised, they simply run off the edge, which is the honest
-   * picture of a long-haul shot. Pan or zoom out to follow one.
+   * Padding for a fit, leaving room for what is drawn OUTSIDE the points being fitted: the
+   * corridor's labels run right of their dots, a selection's neighbour labels left of theirs,
+   * and on a narrow map the docked card covers the bottom edge.
    */
-  const FOCUS_MARGIN = 0.6;
+  const padding = (selecting: boolean) => {
+    const w = figureEl.clientWidth;
+    const side = Math.min(140, Math.round(w * 0.22));
+    const docked = selecting && w < DOCK_BELOW;
+    return {
+      top: FIT_PADDING,
+      bottom: FIT_PADDING + (docked ? 170 : 0),
+      left: selecting ? side : FIT_PADDING,
+      right: side,
+    };
+  };
 
-  /** The box a selection may frame within — the corridor, grown by FOCUS_MARGIN. */
-  const focusLimit = (): maplibregl.LngLatBounds => {
-    // regionBounds is the repeaters we actually drew; opts.bounds is the configured service
-    // area, which is the only thing we have before the first graph lands.
-    const b =
-      regionBounds ??
-      new maplibregl.LngLatBounds(
-        [opts.bounds.minLng, opts.bounds.minLat],
-        [opts.bounds.maxLng, opts.bounds.maxLat]
+  /** Fit the selected repeater and everything it links to, or the corridor again. */
+  const frame = (key: string | null) => {
+    if (!map) return;
+    let b: maplibregl.LngLatBounds | null = regionBounds;
+    if (key) {
+      const n = nodes.get(key);
+      if (!n) return;
+      b = new maplibregl.LngLatBounds([n.lng, n.lat], [n.lng, n.lat]);
+      for (const l of linksOf(key)) for (const c of l.coordinates) b.extend(c as [number, number]);
+    }
+    if (b) map.fitBounds(b, { padding: padding(key != null), maxZoom: 11, duration: ease() });
+  };
+
+  const repeaterCard = (key: string) => {
+    const row = rows.get(key);
+    if (!row) return;
+    const name = displayName(row.node.name);
+    const pct = row.health?.percent;
+    const links = linksOf(key);
+    openCard(
+      cardHtml(
+        esc(name),
+        `Repeater · ${row.lastHeard ? `heard ${agoLabel(row.lastHeard, now)}` : 'never heard'}`,
+        metric(String(row.degree), null, 'Links') +
+          metric(
+            row.farthestKm == null ? null : String(Math.round(row.farthestKm)),
+            'km',
+            'Farthest'
+          ) +
+          metric(pct == null ? null : String(Math.round(pct)), '%', 'Battery')
+      ),
+      'Repeater details',
+      [row.node.lng, row.node.lat],
+      false,
+      links.map((l) => l.coordinates as [number, number][])
+    );
+  };
+
+  const setSelected = (key: string | null, fromOutside = false) => {
+    const next = key && rows.has(key) ? key : null;
+    if (next === state.node && !state.link) return;
+    const wasSelected = state.node != null;
+    state.node = next;
+    state.link = null;
+    applyLinkState();
+    syncPinState();
+    setDistance(next);
+    closeCard();
+    if (next) {
+      const n = rows.get(next)!;
+      hint.innerHTML =
+        `Map zoomed to fit ${esc(displayName(n.node.name))}'s ${n.degree} ${n.degree === 1 ? 'link' : 'links'}` +
+        ` <span class="mesh-hint__soft">· Esc or click the map to return</span>`;
+      hint.hidden = false;
+      frame(next);
+      // Open the card once the camera settles — where it can go depends on the new view. A
+      // timer, not `moveend`: a fit that changes nothing may not move the camera at all.
+      const at = ease();
+      window.setTimeout(
+        () => {
+          if (state.node === next && !state.link) repeaterCard(next);
+        },
+        at ? at + 40 : 0
       );
-    const sw = b.getSouthWest();
-    const ne = b.getNorthEast();
-    const padLng = Math.max((ne.lng - sw.lng) * FOCUS_MARGIN, 0.05);
-    const padLat = Math.max((ne.lat - sw.lat) * FOCUS_MARGIN, 0.05);
-    return new maplibregl.LngLatBounds(
-      [sw.lng - padLng, sw.lat - padLat],
-      [ne.lng + padLng, ne.lat + padLat]
+    } else {
+      hint.hidden = true;
+      if (wasSelected) frame(null);
+    }
+    if (!fromOutside) opts.onSelectNode?.(next);
+  };
+
+  /** Label the selected repeater's farthest hop at its midpoint. */
+  const setDistance = (key: string | null) => {
+    const src = map?.getSource('mesh-distance') as maplibregl.GeoJSONSource | undefined;
+    if (!src) return;
+    const far = key ? linksOf(key).sort((a, b) => linkKm(b) - linkKm(a))[0] : null;
+    if (!far) return src.setData(EMPTY);
+    const a = far.coordinates[0];
+    const z = far.coordinates[far.coordinates.length - 1];
+    src.setData({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [(a[0] + z[0]) / 2, (a[1] + z[1]) / 2] },
+          properties: { label: `${Math.round(linkKm(far))} km` },
+        },
+      ],
+    });
+  };
+
+  /** Rings on the open link's two endpoints, so both ends of the hop are findable. */
+  const setLinkEnds = (l: MeshLink | null) =>
+    setData(
+      'mesh-link-ends',
+      l
+        ? {
+            type: 'FeatureCollection',
+            features: [l.coordinates[0], l.coordinates[l.coordinates.length - 1]].map((c) => ({
+              type: 'Feature' as const,
+              geometry: { type: 'Point' as const, coordinates: c },
+              properties: {},
+            })),
+          }
+        : EMPTY
+    );
+
+  const linkCard = (l: MeshLink, at: [number, number]) => {
+    state.link = l.id;
+    applyLinkState();
+    setLinkEnds(l);
+    const span = MESH_WINDOW_DAYS[window_];
+    const [a, b] = l.headline.split('↔').map((s) => s.trim());
+    const title =
+      a && b
+        ? `${esc(a)} <span class="mesh-pop__sep">&#8596;</span><br>${esc(b)}`
+        : esc(l.headline || 'Observed link');
+    openCard(
+      cardHtml(
+        title,
+        `Relay link · heard ${agoLabel(l.lastSeen, now)}`,
+        metric(String(l.daysActive), `/${span}`, 'Days seen') +
+          metric(compact(l.observations), null, 'Receptions') +
+          metric(
+            l.bestSnr == null ? null : l.bestSnr.toFixed(1),
+            l.bestSnr == null ? null : 'dB',
+            'Best SNR'
+          )
+      ),
+      'Relay link details',
+      at,
+      true,
+      [l.coordinates as [number, number][]]
     );
   };
 
-  /**
-   * Frame the node AND everything it links to WITHIN the corridor's neighbourhood. Selecting
-   * a repeater is asking "what does this reach?" — zooming in on the marker answers the
-   * opposite question — but fitting to its furthest hop answers a question about the Bay
-   * Area. maxZoom keeps a corridor-only repeater from filling the screen with one street.
-   */
-  const focusNode = (key: string) => {
-    const src = map.getSource('mesh-nodes') as maplibregl.GeoJSONSource | undefined;
-    if (!src || !nodeKeys.has(key)) return;
-    const f = (src.serialize?.().data as GeoFC | undefined)?.features?.find(
-      (x) => (x.properties as { publicKey?: string } | null)?.publicKey === key
+  const neighbourCard = (key: string) => {
+    const n = nodes.get(key);
+    if (!n) return;
+    const links = graph?.links.filter((l) => l.a === key || l.b === key) ?? [];
+    const last = links.reduce((m, l) => Math.max(m, Date.parse(l.lastSeen) || 0), 0);
+    openCard(
+      cardHtml(
+        esc(displayName(n.name)),
+        `Neighbour · ${last ? `heard ${agoLabel(new Date(last).toISOString(), now)}` : 'no links observed'}`,
+        metric(String(links.length), null, 'Links') +
+          metric(n.snr == null ? null : n.snr.toFixed(1), n.snr == null ? null : 'dB', 'Last SNR') +
+          metric(String(n.gatewayCount), null, 'Gateways')
+      ),
+      'Neighbour details',
+      [n.lng, n.lat],
+      false,
+      links.map((l) => l.coordinates as [number, number][])
     );
-    const c = (f?.geometry as GeoJSON.Point | undefined)?.coordinates as
-      | [number, number]
-      | undefined;
-    if (!c) return;
-    const limit = focusLimit();
-    const b = new maplibregl.LngLatBounds(c, c);
-    for (const l of currentLinks) {
-      if (l.a !== key && l.b !== key) continue;
-      for (const coord of l.coordinates) {
-        const [lng, lat] = coord as [number, number];
-        if (limit.contains([lng, lat])) b.extend([lng, lat]);
+  };
+
+  /** Esc, ×, or a click on empty map: close everything and return to the corridor. */
+  const clearAll = () => {
+    if (state.node) setSelected(null);
+    else {
+      state.link = null;
+      applyLinkState();
+      closeCard();
+    }
+  };
+
+  // ---- data ----
+
+  const setData = (id: string, data: GeoFC) =>
+    (map?.getSource(id) as maplibregl.GeoJSONSource | undefined)?.setData(data);
+
+  const applyGraph = () => {
+    if (!map || !ready || !graph) return;
+    rows = new Map(deriveNodeRows(graph, now).map((r) => [r.node.publicKey, r]));
+    nodes = new Map(graph.nodes.map((n) => [n.publicKey, n]));
+    const stale = new Set(deriveStaleRows(graph, now).map((r) => r.node.publicKey));
+    setData('mesh-nodes', nodesToGeoJSON(graph.nodes) as unknown as GeoFC);
+    setData('mesh-links', linksToGeoJSON(graph.links, now, stale) as unknown as GeoFC);
+    syncPins();
+    if (!regionBounds && rows.size) {
+      const b = new maplibregl.LngLatBounds();
+      for (const r of rows.values()) b.extend([r.node.lng, r.node.lat]);
+      regionBounds = b;
+      map.fitBounds(b, { padding: padding(false), maxZoom: 11, animate: false });
+    }
+    // A selection that came in before the map could take it (a shared ?node= link).
+    if (pendingSelect !== undefined) {
+      const key = pendingSelect;
+      pendingSelect = undefined;
+      setSelected(key, true);
+    } else if (state.node) {
+      // Refresh: keep the selection, re-derive its labels and distance from the new graph.
+      applyLinkState();
+      setDistance(state.node);
+    }
+  };
+
+  // ---- layers + events ----
+
+  /** The route-shield pill: a stretchable rounded rect, drawn once into an image. */
+  const addRoutePill = (m: maplibregl.Map) => {
+    const r = 2; // device pixel ratio for crisp edges
+    const w = 24 * r;
+    const h = 14 * r;
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const g = c.getContext('2d');
+    if (!g) return;
+    g.fillStyle = C.road;
+    g.strokeStyle = C.shieldLine;
+    g.lineWidth = r;
+    g.beginPath();
+    g.roundRect(r / 2, r / 2, w - r, h - r, (h - r) / 2);
+    g.fill();
+    g.stroke();
+    m.addImage(ROUTE_PILL, g.getImageData(0, 0, w, h), {
+      pixelRatio: r,
+      stretchX: [[h / 2, w - h / 2]],
+      stretchY: [[h / 2 - 1, h / 2 + 1]],
+      content: [h / 2, 2 * r, w - h / 2, h - 2 * r],
+    });
+  };
+
+  function wire(m: maplibregl.Map) {
+    m.on('error', () => {}); // swallow tile/style errors — never surface them
+    m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+    m.touchZoomRotate?.disableRotation();
+
+    // Settled signal for the deterministic screenshot harness.
+    const root = document.documentElement;
+    m.on('render', () => delete root.dataset.mapSettled);
+    m.on('idle', () => (root.dataset.mapSettled = '1'));
+
+    m.on('load', () => {
+      try {
+        addRoutePill(m);
+      } catch {
+        /* shields fall back to bare numbers */
       }
+      const below = m.getLayer('boundary-county') ? 'boundary-county' : undefined;
+      m.addSource('service-area', { type: 'geojson', data: opts.counties });
+      m.addLayer(
+        {
+          id: 'service-tint',
+          type: 'fill',
+          source: 'service-area',
+          paint: {
+            'fill-color': ['match', ['get', 'county'], 'tuolumne', C.brass, C.green],
+            'fill-opacity': ['match', ['get', 'county'], 'tuolumne', 0.12, 0.075],
+          },
+        },
+        below
+      );
+
+      // The wider mesh, lazily loaded on pan-out: context, never the subject.
+      m.addSource('mesh-backdrop-links', { type: 'geojson', data: EMPTY });
+      m.addLayer({
+        id: 'mesh-backdrop-links',
+        type: 'line',
+        source: 'mesh-backdrop-links',
+        paint: { 'line-color': C.muted, 'line-width': 0.6, 'line-opacity': 0.18 },
+      });
+      m.addSource('mesh-backdrop-nodes', { type: 'geojson', data: EMPTY });
+      m.addLayer({
+        id: 'mesh-backdrop-nodes',
+        type: 'circle',
+        source: 'mesh-backdrop-nodes',
+        paint: { 'circle-radius': 1.6, 'circle-color': C.muted, 'circle-opacity': 0.35 },
+      });
+
+      m.addSource('mesh-links', { type: 'geojson', data: EMPTY, promoteId: 'id' });
+      m.addLayer({
+        id: 'mesh-links',
+        type: 'line',
+        source: 'mesh-links',
+        filter: linkFilter(false, state) as maplibregl.FilterSpecification,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': C.green,
+          ...(linkPaint(false, state) as Record<string, maplibregl.ExpressionSpecification>),
+        },
+      });
+      m.addLayer({
+        id: 'mesh-links-stale',
+        type: 'line',
+        source: 'mesh-links',
+        filter: linkFilter(true, state) as maplibregl.FilterSpecification,
+        paint: {
+          'line-color': C.orange,
+          'line-dasharray': [...STALE_STYLE.dash],
+          ...(linkPaint(true, state) as Record<string, maplibregl.ExpressionSpecification>),
+        },
+      });
+      // The open link, redrawn on top of everything: halo, then a solid line.
+      m.addLayer({
+        id: 'mesh-link-halo',
+        type: 'line',
+        source: 'mesh-links',
+        filter: selectedLinkFilter(null) as maplibregl.FilterSpecification,
+        layout: { 'line-cap': 'round' },
+        paint: { 'line-color': C.land, 'line-width': SELECTED_LINK.halo },
+      });
+      m.addLayer({
+        id: 'mesh-link-focus',
+        type: 'line',
+        source: 'mesh-links',
+        filter: selectedLinkFilter(null) as maplibregl.FilterSpecification,
+        layout: { 'line-cap': 'round' },
+        paint: { 'line-color': C.green, 'line-width': SELECTED_LINK.line },
+      });
+
+      m.addSource('mesh-nodes', { type: 'geojson', data: EMPTY, promoteId: 'publicKey' });
+      m.addLayer({
+        id: 'mesh-neighbours',
+        type: 'circle',
+        source: 'mesh-nodes',
+        filter: ['!', ['get', 'inRegion']] as maplibregl.FilterSpecification,
+        paint: {
+          'circle-radius': 2.5,
+          'circle-color': C.land,
+          'circle-stroke-color': C.muted,
+          'circle-stroke-width': 1,
+        },
+      });
+      m.addLayer({
+        id: 'mesh-neighbour-labels',
+        type: 'symbol',
+        source: 'mesh-nodes',
+        filter: ['in', ['get', 'publicKey'], ['literal', []]] as maplibregl.FilterSpecification,
+        layout: {
+          'text-field': ['upcase', ['get', 'shortName']],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': 10,
+          'text-letter-spacing': 0.11,
+          'text-anchor': 'right',
+          'text-offset': [-0.8, 0],
+          'text-padding': 2,
+        },
+        paint: { 'text-color': C.ink, 'text-halo-color': C.land, 'text-halo-width': 1.6 },
+      });
+      m.addSource('mesh-link-ends', { type: 'geojson', data: EMPTY });
+      m.addLayer({
+        id: 'mesh-link-ends',
+        type: 'circle',
+        source: 'mesh-link-ends',
+        paint: {
+          'circle-radius': 8,
+          'circle-opacity': 0,
+          'circle-stroke-color': C.green,
+          'circle-stroke-width': 2,
+          'circle-stroke-opacity': 0.3,
+        },
+      });
+      m.addSource('mesh-distance', { type: 'geojson', data: EMPTY });
+      m.addLayer({
+        id: 'mesh-distance',
+        type: 'symbol',
+        source: 'mesh-distance',
+        layout: {
+          'text-field': ['get', 'label'],
+          'text-font': ['Noto Sans Regular'],
+          'text-size': 12,
+          'text-allow-overlap': true,
+        },
+        paint: { 'text-color': C.brassText, 'text-halo-color': C.land, 'text-halo-width': 2 },
+      });
+
+      ready = true;
+      figureEl
+        .querySelector<HTMLElement>('[data-mesh-fallback]')
+        ?.style.setProperty('display', 'none');
+      applyGraph();
+      if (pendingBackdrop) applyBackdrop(pendingBackdrop.nodes, pendingBackdrop.links);
+    });
+
+    // A link click opens its card; a neighbour click opens the neighbour's.
+    let featureClicked = false;
+    m.on('click', 'mesh-neighbours', (e) => {
+      const key = String(e.features?.[0]?.properties?.publicKey ?? '');
+      if (!key) return;
+      featureClicked = true;
+      neighbourCard(key);
+    });
+    const onLink = (e: maplibregl.MapLayerMouseEvent) => {
+      if (featureClicked) return;
+      const id = String(e.features?.[0]?.properties?.id ?? '');
+      const l = graph?.links.find((x) => x.id === id);
+      if (!l) return;
+      featureClicked = true;
+      // Anchor on the link's midpoint, marked by a small hollow ring.
+      const a = l.coordinates[0];
+      const z = l.coordinates[l.coordinates.length - 1];
+      linkCard(l, [(a[0] + z[0]) / 2, (a[1] + z[1]) / 2]);
+    };
+    for (const id of ['mesh-links', 'mesh-links-stale']) {
+      m.on('click', id, onLink);
+      let hoverId: string | number | undefined;
+      m.on('mousemove', id, (e) => {
+        m.getCanvas().style.cursor = 'pointer';
+        const f = e.features?.[0];
+        if (f?.id === hoverId) return;
+        if (hoverId != null)
+          m.setFeatureState({ source: 'mesh-links', id: hoverId }, { hover: false });
+        hoverId = f?.id;
+        if (hoverId != null)
+          m.setFeatureState({ source: 'mesh-links', id: hoverId }, { hover: true });
+      });
+      m.on('mouseleave', id, () => {
+        m.getCanvas().style.cursor = '';
+        if (hoverId != null)
+          m.setFeatureState({ source: 'mesh-links', id: hoverId }, { hover: false });
+        hoverId = undefined;
+      });
     }
-    map.fitBounds(b, { padding: 72, maxZoom: 11, duration: 700 });
+    m.on('mouseenter', 'mesh-neighbours', () => (m.getCanvas().style.cursor = 'pointer'));
+    m.on('mouseleave', 'mesh-neighbours', () => (m.getCanvas().style.cursor = ''));
+    // Bare map: return to the corridor. Layer handlers fire before this one.
+    m.on('click', () => {
+      if (featureClicked) {
+        featureClicked = false;
+        return;
+      }
+      clearAll();
+    });
+
+    m.on('move', () => {
+      placeCard();
+      layoutLabels();
+    });
+    m.on('moveend', () => {
+      if (panOutFired || !panOutCb || !regionBounds || state.node) return;
+      const view = m.getBounds();
+      const outside =
+        !view.contains(regionBounds.getNorthEast()) ||
+        !view.contains(regionBounds.getSouthWest()) ||
+        m.getZoom() < 8.5;
+      if (!outside) return;
+      panOutFired = true;
+      panOutCb();
+    });
+  }
+
+  const applyBackdrop = (n: MeshNode[], links: GeoFC) => {
+    setData('mesh-backdrop-nodes', nodesToGeoJSON(n) as unknown as GeoFC);
+    setData('mesh-backdrop-links', links);
   };
 
-  const setSelected = (next: string | null) => {
-    const key = next && nodeKeys.has(next) ? next : null;
-    if (key === selectedKey) return;
-    flip(selectedKey, false, 'selected');
-    selectedKey = key;
-    flip(selectedKey, true, 'selected');
-    applySelection();
-    syncPinState();
-    opts.onSelectNode?.(selectedKey);
-  };
-
-  // Clicking bare map (or pressing Escape) clears the selection, which puts the outward
-  // links away again. The node/link layers stop propagation implicitly by being handled
-  // first — MapLibre fires layer handlers before the generic map click.
-  let clickedFeature = false;
-  map.on('click', () => {
-    if (clickedFeature) {
-      clickedFeature = false;
-      return;
-    }
-    setSelected(null);
-    closePopup();
-  });
   const onKeydown = (e: KeyboardEvent) => {
-    if (e.key !== 'Escape') return;
-    setSelected(null);
-    closePopup();
+    if (e.key === 'Escape' && (state.node || state.link)) clearAll();
   };
   window.addEventListener('keydown', onKeydown);
+  const onResize = () => placeCard();
+  window.addEventListener('resize', onResize);
 
   return {
-    setGraph(graph, window, nowMs) {
-      if (ready && map.isStyleLoaded()) applyGraph(graph, window, nowMs);
-      else pending = { graph, window, now: nowMs };
+    setGraph(g, w, nowMs) {
+      graph = g;
+      window_ = w;
+      now = nowMs;
+      applyGraph();
     },
-    setBackdrop(nodes, links) {
+    setBackdrop(n, links) {
       const fc = links as unknown as GeoFC;
-      if (ready && map.isStyleLoaded()) applyBackdrop(nodes, fc);
-      else pendingBackdrop = { nodes, links: fc };
+      if (ready) applyBackdrop(n, fc);
+      else pendingBackdrop = { nodes: n, links: fc };
     },
     highlight(key) {
       setHovered(key);
       return hovered != null;
     },
     select(key) {
-      setSelected(key);
-    },
-    setHeardIn(next) {
-      heardIn = next;
-      applyHeardIn();
-    },
-    focus(key) {
-      focusNode(key);
-    },
-    resetView() {
-      if (regionBounds) map.fitBounds(regionBounds, { padding: 64, maxZoom: 11 });
+      if (!ready || !rows.size) {
+        pendingSelect = key;
+        return;
+      }
+      setSelected(key, true);
     },
     onPanOut(cb) {
       panOutCb = cb;
     },
     destroy() {
+      destroyed = true;
       for (const marker of pins.values()) marker.remove();
       pins.clear();
-      stopPulse();
-      io.disconnect();
       window.removeEventListener('keydown', onKeydown);
-      document.removeEventListener('visibilitychange', onVisibility);
-      reduceMotion?.removeEventListener?.('change', onMotionChange);
-      map.remove();
+      window.removeEventListener('resize', onResize);
+      layer.remove();
+      map?.remove();
     },
   };
-}
-
-/** The one-line honesty note in a link popup — what the tier does and does NOT claim. */
-function tierNote(tier: MeshRecency): string {
-  return tier === 'live' || tier === 'recent'
-    ? 'Observed relay traffic, not a routing table.'
-    : 'Quiet, not confirmed down — repeaters advert on their own schedule.';
 }

@@ -248,7 +248,7 @@ section above). Three gaps remain:
 
 | FR       | Gap                                                                                                | Where it shows                                    | UI behavior today                                                                                         |
 | -------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| **FR-5** | ~~No per-relay-site health~~ — **partially closed 2026-09-16** (see below)                         | /mesh roster + "Lowest battery" tile              | Battery / enclosure temperature per monitored repeater; "Limited Telemetry" for the rest                  |
+| **FR-5** | ~~No per-relay-site health~~ — **partially closed 2026-09-16** (see below)                         | /mesh table + "Lowest battery" figure             | Battery / enclosure temperature per monitored repeater; "No telemetry" for the rest                       |
 | **FR-8** | No node **last-heard** stamp, and a ~3-day presence horizon                                        | /mesh roster + repeaters tile, home "Relay Nodes" | A repeater we stop hearing vanishes silently — the roster lists the survivors and says nothing of the gap |
 | ~~FR-9~~ | ~~Position-less nodes dropped at ingest~~ — **closed 2026-09-17**: the place feed carries them now | /mesh roster, home                                | Resolved upstream; the site-side workaround was deleted                                                   |
 
@@ -275,13 +275,14 @@ numbers; `/events` nests it under `telemetry` with int64s as JSON **strings** (p
 JSON mapping). `adminFrom()` and `num()` in `src/lib/mesh.ts` absorb both — don't reach into
 `.admin` directly.
 
-**What the UI may and may not say.** A node with no `admin` is **"Limited Telemetry"** — a
+**What the UI may and may not say.** A node with no `admin` is **"No telemetry"** — a
 statement about _our_ monitoring coverage, never about the repeater. 7 of the corridor's 14
 repeaters have no monitor today, and several of them are relaying perfectly well. A monitor
 that reached the site but could not read the gauge is **"Gauge unread"** — a third state
 again, and not a zero. Every battery percentage on the wire today is
-`batteryPercentSource: "estimated"` (derived from voltage, no gauge fitted), so the panel
-names the voltage it was derived from rather than printing an inferred number bare.
+`batteryPercentSource: "estimated"` (derived from voltage, no gauge fitted). The 2026-10
+redesign dropped the expandable row that showed the voltage beside it; if the measured/estimated
+distinction needs to be visible again, it belongs in the repeater's map card.
 
 Presence and health stay **separate numbers**: the homepage tile still counts repeaters
 _heard_, because "heard" and "healthy" are independent failure modes and collapsing them

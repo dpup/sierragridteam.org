@@ -52,7 +52,8 @@ they cover.
    org decision to make giving unmistakable. Don't extend this to any other element —
    Donate is the only non-risk use of orange.
 3. **Geometry:** square corners (radius 0), 1px warm-tan borders, **no drop shadows
-   on cards** (border + lighter fill defines them).
+   on cards** (border + lighter fill defines them). The /mesh map card's feathered edge and
+   blur are a single sanctioned exception (see "Mesh map details").
 4. **Type:** serif (`--font-display`) for headings/body, never heavier than 600;
    `--font-ui` (sans) for small UPPERCASE labels with wide tracking; `--font-mono`
    for data/codes. Body never below 16px.
@@ -127,7 +128,8 @@ make screenshots   # regenerate tests/screenshots, then LOOK at them
 If you changed anything visual, **regenerate and actually view the screenshots** to
 confirm nothing overflowed, misaligned, or lost contrast. The deterministic harness
 (`scripts/screenshots.ts`) freezes the clock and mocks the feed so the images are
-stable.
+stable; it fetches the real basemap once and caches it in `.cache/basemap/` (delete it to
+pick up a new OpenFreeMap build).
 
 ## What NOT to do
 
@@ -177,82 +179,76 @@ stable.
   tile or a stream item: a daily condition, not a hazard, and never orange. It names the
   authority that decides it — CAL FIRE's suspension (which overrides the county) or else the
   air district's burn day. See `docs/architecture/data-feed.md`.
-- **`/mesh` is a STATUS BOARD**, reorganised around monitoring (2026-09-17). Top to bottom:
-  a **deep band** (`--surface-deep`, the one dark ground in the system) with the freshness
-  stamp and four headline figures — repeaters heard N/M within `HEARD_WITHIN_HOURS`, lowest
-  battery, active this hour, observed links; a **"Needs attention" strip** of anything
-  outside limits, which renders NOTHING at all when there is nothing to say; **two equal
-  columns that scroll independently** — map left, roster right — so per-repeater telemetry is
-  never pushed below the fold; and a **full-width history chart**. The explanation of what
-  the mesh IS lives on **/about#mesh**, not here: a reader needs it once, not every visit.
-  Client-rendered live like `/live`: `mesh.ts` holds types + pure derivations,
-  `mesh-telemetry.ts` the monitor archive, `mesh-client.ts` the fetches, `mesh-view.ts` the
-  band/attention/roster/legend HTML, `mesh-history.ts` the chart, `mesh-map.ts` the MapLibre
-  map, `mesh-link-paint.ts` the link expressions, `src/styles/mesh.css` the global
-  `.mesh-view`-namespaced CSS.
-- **TWO selections, deliberately decoupled.** The roster row, map pin and attention item
-  share one (`selected`): it expands the row and frames + emphasises on the map. The history
-  chart's legend has its own (`chartSelected`): it isolates a trace and nothing else. They
-  answer different questions at different moments — isolating a trace to read a curve must not
-  scroll the roster and fly the map somewhere, and opening a row must not blank six traces out
-  of the comparison the chart exists to make.
+- **`/mesh` is a REPORT** (redesigned 2026-10, handoff layout "1a"), on parchment like the
+  rest of the site — no dark band. Top to bottom: a kicker and an **h1 generated from the data**
+  on the hero's two-line pattern ("9 of 11 repeaters / heard in the last 12 hours." — numerals,
+  not words), a lede naming any repeater not heard in `HEARD_WITHIN_HOURS` **in the alert
+  orange**, and four figures; then three numbered sections (`MeshSectionHead`): **01** the map
+  and its legend, **02** the repeater table, **03** the 24 h battery chart. The explanation of
+  what the mesh IS lives on **/about#mesh**. Client-rendered live like `/live`: `mesh.ts` holds
+  types + pure derivations, `mesh-telemetry.ts` the monitor archive, `mesh-client.ts` the
+  fetches, `mesh-view.ts` the header/legend/table HTML, `mesh-history.ts` the chart,
+  `mesh-map.ts` the MapLibre map, `mesh-basemap.ts` the restyled basemap, `mesh-link-paint.ts`
+  the link expressions, `src/styles/mesh.css` the global `.mesh-view`-namespaced CSS.
+- **TWO selections, deliberately decoupled.** The table row, the map pin and the page's
+  `?node=` URL share one (`selected`): it highlights the row, zooms the map to the repeater's
+  reach and opens its card. The chart has its own pinned trace (`pinned`). Isolating a curve
+  must not fly the map somewhere, and selecting a repeater must not blank six traces out of the
+  comparison the chart exists to make.
 - **Mesh data reads.** The **corridor** (`mesh_node.geojson` ∪ `mesh_link.geojson?window=`)
   loads on arrival and carries **site telemetry inline** at `properties.mesh.admin` — battery
   and enclosure temperature cost no extra request. The **monitor archive**
-  (`/mesh/telemetry?node=`) is one call per monitored repeater, deferred, and feeds both the
-  roster sparklines and the history chart. The **whole observed mesh** (`/mesh/links` +
-  `/events?layer=MESH`, ~400 KB gz) stays lazy until the reader pans past the corridor.
+  (`/mesh/telemetry?node=`) is one call per monitored repeater, deferred, last 24 h only, and
+  re-fetched once it is 10 minutes old; it feeds the table's sparklines and the chart. The
+  **whole observed mesh** (`/mesh/links` + `/events?layer=MESH`, ~400 KB gz) stays lazy until
+  the reader pans past the corridor, and is hidden while a repeater is selected.
   ⚠️ Send `MESH_WINDOW_QUERY[...]`, never the window key: The Grid parses `?window=` with
   Go's `time.ParseDuration`, so `30d` is not an error, it is a silent 200 carrying 72h.
   ⚠️ Every int64 is a JSON **string** and the reading is **nested** at `samples[i].reading`;
   `num()`/`adminFrom()` absorb both. Plot `reportedAt` (the monitor's clock), never
   `receivedAt`.
 - **Mesh honesty.** An edge is an observation ("we heard these two repeaters relay"), never a
-  routing table or a coverage claim, and a faint edge is NOT "down" — a backbone repeater
-  adverts twice a day. `UNAVAILABLE` → "Unknown" counts, never a zero. No monitor →
-  **"Limited Telemetry"**; a monitor that could not read the gauge → **"Gauge unread"**.
-  Two battery thresholds, deliberately: `ATTENTION_BATTERY_PCT` (20) is a brass watch floor,
-  `LOW_BATTERY_PCT` (10) is the orange risk line. It was 60 and fired every night — these
-  sites discharge into the teens and recover after sunrise, so the strip was permanently full
-  of repeaters doing exactly what they should, which is how a warning stops being read. The chart
-  **connects straight through a gap** (a product call, 2026-09-17 — the trade is written out
-  on `pointsIn`), still marks reboots, and still says "no data retained before …" rather than
-  drawing empty axes — there is **no backfill** in the archive. The hover hint is now the one
-  place that refuses to speak for a gap: `valueAt` returns null outside its tolerance rather
-  than naming a value for a moment nobody measured. ⚠️ If a COUNTER is ever plotted, the
-  split at `reboots` has to come back — counters reset to zero.
-- **Mesh map details.** One fixed link window (`MESH_WINDOW`, 30d) and no window picker; the
-  panel's **"heard in" control is a DISPLAY cut** over the same 30 days (it maps onto the
-  recency tiers, changes nothing that is fetched, and defaults to 30d). Links leaving the
-  corridor are hidden until a repeater is selected; selecting **emphasises its links and dims
-  the rest** (never hides them). Framing on select is clamped to the corridor + 60%
-  (`FOCUS_MARGIN`) — links reach the Bay Area and fitting to the furthest hop zoomed the
-  foothills into a smudge. Corridor repeaters are **DOM pins** (`.mesh-pin`, real
-  `<button>`s); neighbours and the backdrop stay cheap circle layers. **Every link is 1px
-  wide** — weight, tier, selection and hover all ride on OPACITY alone. Width and opacity were
-  both carrying the same variables, so a busy link came out 4x heavier AND 4x brighter and the
-  map read as a few fat trunks; the legend's key follows the same rule. The popover is the
-  **"anchored strip"** and is now for **neighbours and links only** — a corridor pin has a
-  roster row, and that row is its detail surface. Link filter/paint expressions live in
-  `mesh-link-paint.ts` as pure JSON so `mesh-link-paint.test.ts` can compile them against the
-  real style spec: **MapLibre drops an invalid expression SILENTLY**, so eyeballing the map
-  is not a test.
-- **Roster sparkline span is FIXED at `SPARK_WINDOW_HOURS` (6 h)**. It must NOT follow the history chart's Day/Week/Month: it used to, so switching a
-  control 700px down the page silently changed every row's span with nothing in the row to
-  say so, and at a month 2,880 points collapsed into a solid band in 72×18 units.
-- **The history chart's hover hint** is what makes seven muted traces individually readable:
-  hovering a line (or a legend entry) lifts it, drops the rest to 12%, and names the repeater
-  with its value AT that moment — `valueAt` returns null outside a tolerance, so hovering a
-  monitor outage says nothing rather than reaching across the gap. Emphasis is a class toggle
-  on the paths, never a re-render, or it fights the mouse. The plot's ground is a `<rect>`
-  INSIDE the SVG (`--surface-hero`), not a background on the container, so the axis labels sit
-  outside it and the band needs no border.
-- **The chart series palette** (`--series-1..7`) is the ONE categorical scale in the system
-  and appears nowhere else. It was chosen by search under four constraints (contrast, normal
-  separation, colour-vision separation, and no hue near the alert orange) and is pinned by
-  `src/lib/mesh-series.test.ts`. A hand-edit has no visible symptom for the author — that
-  test already rejected one candidate that looked fine by eye. An 8th series means re-running
-  the search, not appending a guess.
+  routing table or a coverage claim — every map card ends on that line — and a faint edge is
+  NOT "down". A repeater's status (`nodeStatus`) is green within the hour, brass within 12 h
+  (normal for a backbone repeater that adverts twice a day), orange beyond: "not heard", never
+  "down". `UNAVAILABLE` → "Unknown", never a zero, and never an all-clear headline. No monitor
+  → **"No telemetry"**; a monitor that could not read the gauge → **"Gauge unread"**. Two
+  battery thresholds, deliberately: `ATTENTION_BATTERY_PCT` (20) turns a battery figure brass,
+  `LOW_BATTERY_PCT` (10) turns it orange. It was 60 and fired every night — these sites
+  discharge into the teens and recover after sunrise. The warning lives beside the reading;
+  the old "Needs attention" strip is gone (it was rarely useful). The chart's battery axis
+  starts at 50% and **extends a 25-point step rather than clipping** a low night; it connects
+  through a monitor gap (the trade is on `pointsIn`), marks reboots, and says "no data retained
+  before …" rather than drawing empty axes — there is **no backfill**. The hover hint refuses
+  to speak for a gap: `valueAt` returns null outside its tolerance. ⚠️ If a COUNTER is ever
+  plotted, the split at `reboots` has to come back — counters reset to zero.
+- **Mesh map details.** The basemap is Positron **restyled to the hero map** in the pure
+  `meshBasemapStyle` (tested against the style spec): no landuse, buildings, POIs or
+  hillshade; knocked-out roads with a warm hairline casing (without it they vanish at corridor
+  zoom); county hairlines; muted italic names for villages, lakes, summits and parks (Noto Sans
+  Italic — OpenFreeMap serves no serif glyphs); a Calaveras/Tuolumne tint from
+  `src/assets/service-counties.json` (written by `npm run hero-map`). Links: **one line per
+  pair**, solid green, opacity AND width by recency (`TIER_STYLE`), dashed orange when touching
+  a stale repeater; at rest only corridor-to-corridor links are drawn. **Selecting a repeater
+  fits the map to every link it has been heard on — out to the Bay Area, deliberately; the
+  point is the reach** — labels those neighbours and the farthest hop's distance, and drops
+  every other link to a trace. Esc, ×, or a click on bare map returns to the corridor.
+  Corridor repeaters are **DOM pins** (`.mesh-pin`, real `<button>`s) whose labels flip side or
+  give way on collision (a stale repeater's never hides); neighbours stay a cheap circle layer.
+  Cards are the **"blended label"**: basemap-coloured, feathered edge, a 1px leader, placed to
+  cover none of the links being read, docked to the map's foot below 600px. Its `backdrop-filter`
+  blur is a **single sanctioned exception** to the no-glass rule (2026-10) — if it reads as
+  glass in practice, drop the blur and make the fill opaque; don't extend it anywhere else.
+  Link filter/paint expressions live in `mesh-link-paint.ts` as pure JSON so
+  `mesh-link-paint.test.ts` can compile them against the real style spec: **MapLibre drops
+  an invalid expression SILENTLY**, so eyeballing the map is not a test.
+- **The battery chart** is the last 24 hours, every trace the **one brand green** at low
+  opacity — the seven-colour series palette is retired. Identity comes from interaction: hover a
+  trace or legend entry to lift it and name its value at that moment, click to pin it. The
+  deepest fall over `DROP_HIGHLIGHT_POINTS` (15) is drawn in brass with a one-line note (battery
+  only — a cold night in the enclosure is weather). Emphasis is a class toggle on the paths,
+  never a re-render, or it fights the mouse. Axis labels and the note are HTML over a
+  stretched SVG (`vector-effect: non-scaling-stroke`), so type never stretches.
 - **The blog** (`/blog`) is an Astro content collection: markdown posts in
   `src/content/blog/`, one file per post named `yyyy-mm-dd-topic.md` (the filename is
   the URL slug; `pubDate` must match the date prefix). Frontmatter: `title`,
