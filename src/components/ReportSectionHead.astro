@@ -1,0 +1,91 @@
+---
+/**
+ * ReportSectionHead — the numbered heading the live-data reports (/live, /mesh) use for each
+ * section: a brass number and the h2 on one baseline, a one-line intro indented under the h2,
+ * and the section's controls (sort, metric, a link) right-aligned on the intro's line.
+ *
+ * The intro and controls may be client-filled (`data-*` slots) — /mesh's history intro names
+ * how many repeaters report telemetry, which only the live feed knows.
+ */
+interface Props {
+  number: string;
+  id: string;
+  title: string;
+  /** Static intro. Omit and use the `intro` slot for a client-filled one. */
+  intro?: string;
+  /** Make the h2 a programmatic focus target (tabindex=-1) for an in-page jump to it. */
+  focusTarget?: boolean;
+}
+
+const { number, id, title, intro, focusTarget = false } = Astro.props;
+---
+
+<div class="report-sec-head">
+  <div class="report-sec-head__title">
+    <span class="report-sec-head__num" aria-hidden="true">{number}</span>
+    <h2 class="report-sec-head__h2" id={id} tabindex={focusTarget ? -1 : undefined}>{title}</h2>
+  </div>
+  <div class="report-sec-head__row">
+    {intro ? <p class="report-sec-head__intro">{intro}</p> : <slot name="intro" />}
+    <div class="report-sec-head__controls"><slot name="controls" /></div>
+  </div>
+</div>
+
+<style>
+  .report-sec-head__title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+  }
+  .report-sec-head__num {
+    font-family: var(--font-ui);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-kicker);
+    color: var(--brand-brass-text);
+    /* The intro below is indented to the h2, so the number sits in a fixed gutter. */
+    min-width: 20px;
+  }
+  .report-sec-head__h2 {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-heading);
+    color: var(--ink-strong);
+    /* An in-page jump lands clear of the sticky topbar. */
+    scroll-margin-top: calc(var(--topbar-h) + var(--space-5));
+  }
+  /* A jump target only — the in-page link that moved focus here is the visible cue. */
+  .report-sec-head__h2:focus {
+    outline: none;
+  }
+  .report-sec-head__row {
+    margin-top: var(--space-2);
+    padding-left: calc(20px + var(--space-4));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-6);
+  }
+  .report-sec-head__row :global(.report-sec-head__intro) {
+    max-width: 70ch;
+    font-family: var(--font-display);
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-secondary);
+  }
+  .report-sec-head__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+  }
+  .report-sec-head__controls:empty {
+    display: none;
+  }
+  @media (max-width: 599px) {
+    .report-sec-head__row {
+      padding-left: 0;
+    }
+  }
+</style>

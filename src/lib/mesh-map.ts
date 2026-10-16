@@ -14,18 +14,18 @@
  *     heard on — out to Sacramento and the Bay Area — labels those neighbours, marks the
  *     farthest hop's distance, and opens the repeater's card. Esc, the card's ×, or a click on
  *     empty map returns to the corridor.
- *   • **Cards are map labels, not panels laid over it** ("blended label"): the basemap's own
- *     colour, a feathered edge and a 1px leader to the feature, placed where they cover none
- *     of the links being read.
+ *   • **Cards are map labels, not panels laid over it** ("blended label", `map-card.ts`, shared
+ *     with /live): placed where they cover none of the links being read.
+ *   • The ground is the site basemap (`map-ground.ts`), the same one /live draws on.
  *
  * Colours are read from the CSS tokens at runtime (tokens.css stays the source of truth);
  * MapLibre paint needs literal colours, so we can't hand it var(--…) directly.
  */
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { BASEMAP_STYLE } from './basemap';
 import { escapeHtml as esc } from './format';
-import { meshBasemapStyle, ROUTE_PILL, type StyleDoc } from './mesh-basemap';
+import { cardHtml, cardMetric as metric, createMapCard, DOCK_BELOW } from './map-card';
+import { decorateBasemap, loadBasemapStyle, mapColors } from './map-ground';
 import {
   agoLabel,
   deriveNodeRows,
@@ -79,36 +79,14 @@ export interface MeshMapOptions {
 
 const EMPTY: GeoFC = { type: 'FeatureCollection', features: [] };
 
-/** Card width, and the corridor-view padding. */
-const CARD_W = 264;
+/** The corridor-view padding. */
 const FIT_PADDING = 60;
-/** Below this map width the card docks to the bottom edge instead of floating. */
-const DOCK_BELOW = 600;
 
 export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMapHandle | null {
   const canvas = figureEl.querySelector<HTMLElement>('[data-mesh-canvas]');
   if (!canvas) return null;
 
-  const cs = getComputedStyle(document.documentElement);
-  // The second argument is a last-resort literal, used only if the var can't be read; each
-  // mirrors tokens.css, which remains the canonical palette.
-  const tok = (n: string, fb: string) => cs.getPropertyValue(n).trim() || fb;
-  const C = {
-    green: tok('--brand-green', '#1d5b3f'),
-    brass: tok('--brand-brass', '#b08a3e'),
-    brassText: tok('--brand-brass-text', '#785d20'),
-    orange: tok('--signal-orange', '#c2410c'),
-    land: tok('--surface-hero', '#edefe7'),
-    ink: tok('--ink-strong', '#16271e'),
-    muted: tok('--ink-muted', '#6f6750'),
-    water: tok('--map-water', '#dde3da'),
-    road: tok('--map-road', '#f8f6ef'),
-    roadCasing: tok('--map-road-casing', '#ddd4bd'),
-    countyLine: tok('--map-county-line', '#c9c1a9'),
-    place: tok('--map-place', '#9a906f'),
-    shieldLine: tok('--map-shield-line', '#d3c9ad'),
-    shieldText: tok('--map-shield-text', '#7d7459'),
-  };
+  const C = mapColors();
   const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
   const ease = () => (reduceMotion?.matches ? 0 : 600);
 
@@ -132,21 +110,8 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
 
   // ---- the map, built once the restyled basemap is in hand ----
 
-  const fallbackStyle = (): maplibregl.StyleSpecification => ({
-    version: 8,
-    sources: {},
-    layers: [{ id: 'background', type: 'background', paint: { 'background-color': C.land } }],
-  });
-
   (async () => {
-    let style: maplibregl.StyleSpecification | StyleDoc = fallbackStyle();
-    try {
-      const res = await fetch(BASEMAP_STYLE);
-      const positron = (await res.json()) as StyleDoc;
-      style = meshBasemapStyle(positron, C) ?? positron;
-    } catch {
-      // No basemap: the mesh still draws on plain ground, which is better than no map.
-    }
+    const style = await loadBasemapStyle(C);
     if (destroyed) return;
     try {
       map = new maplibregl.Map({
@@ -168,42 +133,27 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     wire(map);
   })();
 
-  // ---- popover: the "blended label" card ----
+  // ---- popover: the shared "blended label" card (map-card.ts) ----
 
-  const layer = document.createElement('div');
-  layer.className = 'mesh-pop-layer';
-  layer.innerHTML =
-    `<svg class="mesh-pop-leader" aria-hidden="true"><line/></svg>` +
-    `<span class="mesh-pop-anchor" aria-hidden="true" hidden></span>` +
-    `<div class="mesh-pop" role="dialog" tabindex="-1" hidden></div>` +
-    `<p class="mesh-hint" hidden></p>`;
-  figureEl.appendChild(layer);
-  const card = layer.querySelector<HTMLElement>('.mesh-pop')!;
-  const leader = layer.querySelector<SVGLineElement>('.mesh-pop-leader line')!;
-  const anchorRing = layer.querySelector<HTMLElement>('.mesh-pop-anchor')!;
-  const hint = layer.querySelector<HTMLElement>('.mesh-hint')!;
-
-  /** What the open card is anchored to, and the segments it must not cover. */
-  let cardAt: { lngLat: [number, number]; ring: boolean; avoid: [number, number][][] } | null =
-    null;
-
-  const metric = (value: string | null, unit: string | null, label: string) =>
-    `<div class="mesh-pop__metric"><p class="mesh-pop__value">` +
-    (value == null
-      ? `<span class="mesh-pop__na">&#8212;</span>`
-      : esc(value) + (unit ? `<span class="mesh-pop__unit">${esc(unit)}</span>` : '')) +
-    `</p><p class="mesh-pop__label">${esc(label)}</p></div>`;
+  const card = createMapCard(figureEl, {
+    project: (at) => map?.project(at) ?? null,
+    onDismiss: () => {
+      clearAll();
+      map?.getCanvas().focus();
+    },
+  });
+  const hint = card.hint;
 
   /** Receptions above four digits abbreviate rather than wrap. */
   const compact = (n: number) => (n >= 10_000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
-  const cardHtml = (title: string, kicker: string, metrics: string) =>
-    `<div class="mesh-pop__head"><p class="mesh-pop__title">${title}</p>` +
-    `<button type="button" class="mesh-pop__close" data-pop-close aria-label="Close">` +
-    `<span aria-hidden="true">&#215;</span></button></div>` +
-    `<p class="mesh-pop__kicker">${esc(kicker)}</p>` +
-    `<div class="mesh-pop__metrics">${metrics}</div>` +
-    `<p class="mesh-pop__foot">${esc(copy.popFootnote)}</p>`;
+  const meshCard = (title: string, kicker: string, metrics: string) =>
+    cardHtml({ title, kicker, metrics, foot: esc(copy.popFootnote) });
+
+  const closeCard = () => {
+    setLinkEnds(null);
+    card.close();
+  };
 
   const openCard = (
     html: string,
@@ -211,119 +161,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     at: [number, number],
     ring: boolean,
     avoid: [number, number][][]
-  ) => {
-    card.innerHTML = html;
-    card.setAttribute('aria-label', label);
-    card.hidden = false;
-    anchorRing.hidden = !ring;
-    cardAt = { lngLat: at, ring, avoid };
-    card.classList.remove('mesh-pop--in');
-    // Next frame, so the fade runs from zero (none at all under reduced motion — CSS).
-    requestAnimationFrame(() => card.classList.add('mesh-pop--in'));
-    placeCard();
-    card.querySelector<HTMLButtonElement>('[data-pop-close]')?.addEventListener('click', () => {
-      clearAll();
-      map?.getCanvas().focus();
-    });
-    card.focus({ preventScroll: true });
-  };
-
-  const closeCard = () => {
-    cardAt = null;
-    setLinkEnds(null);
-    card.hidden = true;
-    anchorRing.hidden = true;
-    leader.parentElement!.style.display = 'none';
-  };
-
-  /** Does a screen-space segment cross a rectangle? Liang–Barsky clip. */
-  const crosses = (
-    [x0, y0]: [number, number],
-    [x1, y1]: [number, number],
-    r: { l: number; t: number; r: number; b: number }
-  ) => {
-    let t0 = 0;
-    let t1 = 1;
-    const dx = x1 - x0;
-    const dy = y1 - y0;
-    const edges: [number, number][] = [
-      [-dx, x0 - r.l],
-      [dx, r.r - x0],
-      [-dy, y0 - r.t],
-      [dy, r.b - y0],
-    ];
-    for (const [p, q] of edges) {
-      if (p === 0) {
-        if (q < 0) return false;
-        continue;
-      }
-      const t = q / p;
-      if (p < 0) t0 = Math.max(t0, t);
-      else t1 = Math.min(t1, t);
-      if (t0 > t1) return false;
-    }
-    return true;
-  };
-
-  /**
-   * Put the card where it covers none of the links being read. Tries the four diagonals at
-   * three leader lengths — below-right and short first — and keeps the first placement that
-   * fits inside the map and crosses the fewest of `avoid`. A repeater whose links fan out to
-   * one side therefore gets its card on the other, on a longer leader.
-   */
-  const placeCard = () => {
-    if (!map || !cardAt) return;
-    const box = figureEl.getBoundingClientRect();
-    const p = map.project(cardAt.lngLat);
-    anchorRing.style.transform = `translate(${p.x}px, ${p.y}px)`;
-    const svg = leader.parentElement as unknown as SVGSVGElement;
-
-    if (box.width < DOCK_BELOW) {
-      // Docked: full width along the bottom, no leader.
-      card.classList.add('mesh-pop--docked');
-      card.style.transform = '';
-      svg.style.display = 'none';
-      return;
-    }
-    card.classList.remove('mesh-pop--docked');
-    const w = CARD_W;
-    const h = card.offsetHeight || 140;
-    const segs = cardAt.avoid.map((s) => s.map((c) => map!.project(c)).map((q) => [q.x, q.y]));
-    let best: { x: number; y: number; cx: number; cy: number; score: number } | null = null;
-    const dirs: [number, number][] = [
-      [1, 1],
-      [-1, 1],
-      [1, -1],
-      [-1, -1],
-    ];
-    dirs.forEach(([sx, sy], di) => {
-      for (const [li, len] of [36, 90, 150].entries()) {
-        const d = len / Math.SQRT2;
-        const cx = p.x + sx * d; // the card corner the leader meets
-        const cy = p.y + sy * d;
-        const x = sx > 0 ? cx : cx - w;
-        const y = sy > 0 ? cy : cy - h;
-        if (x < 8 || y < 8 || x + w > box.width - 8 || y + h > box.height - 8) continue;
-        const rect = { l: x, t: y, r: x + w, b: y + h };
-        let hits = 0;
-        for (const s of segs) {
-          for (let i = 1; i < s.length; i++) {
-            if (crosses(s[i - 1] as [number, number], s[i] as [number, number], rect)) hits++;
-          }
-        }
-        const score = hits * 100 + li * 3 + di;
-        if (!best || score < best.score) best = { x, y, cx, cy, score };
-      }
-    });
-    // Nowhere fits cleanly (a tiny map): fall back to inside the top-right corner.
-    const pick = best ?? { x: box.width - w - 8, y: 8, cx: box.width - w - 8, cy: 8 };
-    card.style.transform = `translate(${Math.round(pick.x)}px, ${Math.round(pick.y)}px)`;
-    svg.style.display = '';
-    leader.setAttribute('x1', String(p.x));
-    leader.setAttribute('y1', String(p.y));
-    leader.setAttribute('x2', String(pick.cx));
-    leader.setAttribute('y2', String(pick.cy));
-  };
+  ) => card.open({ html, label, at, ring, avoid });
 
   // ---- pins: corridor repeaters as real <button>s ----
 
@@ -530,7 +368,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     const pct = row.health?.percent;
     const links = linksOf(key);
     openCard(
-      cardHtml(
+      meshCard(
         esc(name),
         `Repeater · ${row.lastHeard ? `heard ${agoLabel(row.lastHeard, now)}` : 'never heard'}`,
         metric(String(row.degree), null, 'Links') +
@@ -562,7 +400,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
       const n = rows.get(next)!;
       hint.innerHTML =
         `Map zoomed to fit ${esc(displayName(n.node.name))}'s ${n.degree} ${n.degree === 1 ? 'link' : 'links'}` +
-        ` <span class="mesh-hint__soft">· Esc or click the map to return</span>`;
+        ` <span class="map-hint__soft">· Esc or click the map to return</span>`;
       hint.hidden = false;
       frame(next);
       // Open the card once the camera settles — where it can go depends on the new view. A
@@ -625,10 +463,10 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     const [a, b] = l.headline.split('↔').map((s) => s.trim());
     const title =
       a && b
-        ? `${esc(a)} <span class="mesh-pop__sep">&#8596;</span><br>${esc(b)}`
+        ? `${esc(a)} <span class="map-card__sep">&#8596;</span><br>${esc(b)}`
         : esc(l.headline || 'Observed link');
     openCard(
-      cardHtml(
+      meshCard(
         title,
         `Relay link · heard ${agoLabel(l.lastSeen, now)}`,
         metric(String(l.daysActive), `/${span}`, 'Days seen') +
@@ -652,7 +490,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     const links = graph?.links.filter((l) => l.a === key || l.b === key) ?? [];
     const last = links.reduce((m, l) => Math.max(m, Date.parse(l.lastSeen) || 0), 0);
     openCard(
-      cardHtml(
+      meshCard(
         esc(displayName(n.name)),
         `Neighbour · ${last ? `heard ${agoLabel(new Date(last).toISOString(), now)}` : 'no links observed'}`,
         metric(String(links.length), null, 'Links') +
@@ -709,31 +547,6 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
 
   // ---- layers + events ----
 
-  /** The route-shield pill: a stretchable rounded rect, drawn once into an image. */
-  const addRoutePill = (m: maplibregl.Map) => {
-    const r = 2; // device pixel ratio for crisp edges
-    const w = 24 * r;
-    const h = 14 * r;
-    const c = document.createElement('canvas');
-    c.width = w;
-    c.height = h;
-    const g = c.getContext('2d');
-    if (!g) return;
-    g.fillStyle = C.road;
-    g.strokeStyle = C.shieldLine;
-    g.lineWidth = r;
-    g.beginPath();
-    g.roundRect(r / 2, r / 2, w - r, h - r, (h - r) / 2);
-    g.fill();
-    g.stroke();
-    m.addImage(ROUTE_PILL, g.getImageData(0, 0, w, h), {
-      pixelRatio: r,
-      stretchX: [[h / 2, w - h / 2]],
-      stretchY: [[h / 2 - 1, h / 2 + 1]],
-      content: [h / 2, 2 * r, w - h / 2, h - 2 * r],
-    });
-  };
-
   function wire(m: maplibregl.Map) {
     m.on('error', () => {}); // swallow tile/style errors — never surface them
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
@@ -745,25 +558,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     m.on('idle', () => (root.dataset.mapSettled = '1'));
 
     m.on('load', () => {
-      try {
-        addRoutePill(m);
-      } catch {
-        /* shields fall back to bare numbers */
-      }
-      const below = m.getLayer('boundary-county') ? 'boundary-county' : undefined;
-      m.addSource('service-area', { type: 'geojson', data: opts.counties });
-      m.addLayer(
-        {
-          id: 'service-tint',
-          type: 'fill',
-          source: 'service-area',
-          paint: {
-            'fill-color': ['match', ['get', 'county'], 'tuolumne', C.brass, C.green],
-            'fill-opacity': ['match', ['get', 'county'], 'tuolumne', 0.12, 0.075],
-          },
-        },
-        below
-      );
+      decorateBasemap(m, C, opts.counties);
 
       // The wider mesh, lazily loaded on pan-out: context, never the subject.
       m.addSource('mesh-backdrop-links', { type: 'geojson', data: EMPTY });
@@ -937,7 +732,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     });
 
     m.on('move', () => {
-      placeCard();
+      card.place();
       layoutLabels();
     });
     m.on('moveend', () => {
@@ -962,7 +757,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     if (e.key === 'Escape' && (state.node || state.link)) clearAll();
   };
   window.addEventListener('keydown', onKeydown);
-  const onResize = () => placeCard();
+  const onResize = () => card.place();
   window.addEventListener('resize', onResize);
 
   return {
@@ -997,7 +792,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
       pins.clear();
       window.removeEventListener('keydown', onKeydown);
       window.removeEventListener('resize', onResize);
-      layer.remove();
+      card.destroy();
       map?.remove();
     },
   };

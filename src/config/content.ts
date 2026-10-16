@@ -159,6 +159,19 @@ export const live = {
   title: 'Live Feed',
   kicker: 'Calaveras & Tuolumne · Situation',
   heading: 'The Live Feed',
+  /**
+   * The h1 is generated from the alert stream (live-view.ts `renderHeadline`), two lines on
+   * /mesh's pattern: a count, then the claim. A quiet stream is never "all clear", and a feed
+   * we could not read always outranks the count.
+   */
+  headline: {
+    alerts: 'for the foothills right now.',
+    quietLead: 'No active alerts',
+    quietRest: 'from the feeds we watch.',
+    someUnreadable: 'but some feeds can’t be reached.',
+    unreadableLead: 'Some feeds can’t be reached —',
+    unreadableRest: 'check the official sources.',
+  },
   loading: 'Loading the latest situation…',
   intro:
     'Official wildfire, evacuation, weather, seismic, and road feeds for the Calaveras & ' +
@@ -166,7 +179,9 @@ export const live = {
     'unfolding, start here to check whether your area is safe.',
   autoRefresh: 'Auto-refreshes every 90 seconds',
   mapHeading: 'Live hazard map',
+  mapIntro: 'Hazards the official feeds have mapped. Select one for its detail.',
   streamHeading: 'Active alerts',
+  streamIntro: 'Most urgent first, from the feeds we watch.',
   streamEmpty: 'No active hazards in the service area right now. The map and feeds below are live.',
   conditionsHeading: 'Current conditions',
   /**
@@ -186,6 +201,7 @@ export const live = {
     calfireLink: 'CAL FIRE burn status',
   },
   roadsHeading: 'Road conditions',
+  roadsIntro: 'Travel times and chain controls on the corridor’s highways.',
   evacHeading: 'Evacuation zones & orders',
   evacNote:
     'Evacuation zones for Calaveras & Tuolumne are published by Cal OES. During an active ' +
@@ -196,6 +212,7 @@ export const live = {
     'Live public-safety scanner feeds via Broadcastify. Link-out only — audio is not hosted ' +
     'or rebroadcast here.',
   resourcesHeading: 'Official sources',
+  resourcesIntro: 'The agencies behind these feeds. Check them directly for anything that matters.',
   failHeading: 'Live feed unavailable',
   failBody:
     "We couldn't reach the data feeds right now. Rather than show stale information, here are " +

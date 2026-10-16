@@ -119,7 +119,7 @@ test('pins keep MapLibre positioning and land on the map, not stacked in a corne
   expect(Math.max(...perPixel.values())).toBeLessThanOrEqual(2);
 });
 
-const card = (page: Page) => page.locator('.mesh-pop:not([hidden])');
+const card = (page: Page) => page.locator('.map-card:not([hidden])');
 
 test('a table row selects its repeater: pin, card, and a shareable URL', async ({ page }) => {
   await loadMesh(page);
@@ -130,7 +130,7 @@ test('a table row selects its repeater: pin, card, and a shareable URL', async (
   await expect(row).toHaveClass(/mesh-row--selected/);
   // The repeater's card opens on the map once it has zoomed to the repeater's reach.
   await expect(card(page)).toHaveAttribute('aria-label', 'Repeater details');
-  await expect(page.locator('.mesh-hint:not([hidden])')).toContainText('Map zoomed to fit');
+  await expect(page.locator('.map-hint:not([hidden])')).toContainText('Map zoomed to fit');
   expect(new URL(page.url()).searchParams.get('node')).toBe(key);
 });
 

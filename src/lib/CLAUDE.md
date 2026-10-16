@@ -20,8 +20,11 @@ null gauge is not zero, a gap is not a flat line, outside coverage is not a quie
 reboot is not a collapse, truncation is ours not the node's). `mesh-history.ts` renders the
 chart. Both are tested in `mesh-telemetry.test.ts`.
 
-`mesh-basemap.ts` restyles the fetched Positron style into the /mesh basemap (hero-map palette),
-pure and validated against the style spec in `mesh-basemap.test.ts` — same reason as below.
+`basemap-style.ts` restyles the fetched Positron style into the site basemap both maps use
+(hero-map palette), pure and validated against the style spec in `basemap-style.test.ts` — same
+reason as below. `map-ground.ts` is its client half (token colours, the fetch, the shield pill
+and county tint), and `map-card.ts` the "blended label" card both maps open — use these rather
+than building a map's ground or popover inline.
 
 `mesh-link-paint.ts` holds the link layers' filter + paint expressions as **pure JSON**
 (no MapLibre import), so `mesh-link-paint.test.ts` can compile every one of them against the

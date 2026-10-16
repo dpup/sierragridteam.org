@@ -16,7 +16,9 @@ const pages = [
     path: '/blog/2026-07-03-what-this-blog-is-for',
     h1: /what this blog is for/i,
   },
-  { name: 'live', path: '/live', h1: /the live feed/i },
+  // Generated from the alert stream once the feed lands ("3 alerts / for the foothills right
+  // now."); "The Live Feed" before it does, and in CI's unreachable-feed state.
+  { name: 'live', path: '/live', h1: /alerts|feeds|the live feed/i },
   { name: 'contact', path: '/contact', h1: /contact & volunteer/i },
   { name: 'contact-thanks', path: '/contact/thanks', h1: /your message is on its way/i },
   { name: 'about', path: '/about', h1: /resilient communications/i },

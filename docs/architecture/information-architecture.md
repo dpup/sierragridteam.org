@@ -99,7 +99,7 @@ repeaters` when every one is heard). A line of freshness follows, and — only w
    on parchment: **Repeaters heard** `N / M`, **Lowest battery**, **Links active this hour**
    `N / M`, **Neighbour nodes**.
 2. **01 Where the signal reaches** — the map (`src/lib/mesh-map.ts` over a restyled Positron,
-   `src/lib/mesh-basemap.ts`) and a one-line legend with counts. Repeater dots are green
+   `src/lib/basemap-style.ts`) and a one-line legend with counts. Repeater dots are green
    (heard within the hour), brass (within 12 h) or orange with a ring (longer); links are one
    line per pair, darker and heavier the more recently heard, dashed orange when they touch a
    stale repeater. Selecting a repeater zooms to every link it has been heard on (out to the
@@ -125,14 +125,19 @@ repeaters` when every one is heard). A line of freshness follows, and — only w
 
 ### Live Feed (`/live`) — the situation flagship (replaced `/alerts`)
 
-- **Status header** — situation status pill (Operational / Advisory / Active Incident) +
+- **Header** (on /mesh's report pattern) — kicker, an h1 generated from the alert stream
+  (`3 alerts` / `for the foothills right now.`; `No active alerts` / `from the feeds we
+watch.`; an unreadable feed says so instead of counting), the lede, the status pill +
   "Synced … · Auto-refreshes every 90s".
-- **Summary tiles** — Wildfires / Evacuations / Weather Alerts / Fire Weather (honest
+- **Four figures** — Wildfires / Evacuations / Weather alerts / Fire weather, unboxed (honest
   "Unknown" when a source is unavailable, never an implied all-clear).
 - **Evacuation callout** — the official Cal OES / Genasys evacuation map link.
-- **Live hazard map** (`src/lib/live-map.ts`) — MapLibre GL + OpenFreeMap Positron, with the
-  `/hazards/*.geojson` layers severity-colored; subtle town reference dots; SSR fallback.
-- **Active alerts stream** (`renderStream` in `src/lib/live-view.ts`) — every relevant hazard,
+- **01 Live hazard map** (`src/lib/live-map.ts`) — MapLibre GL on the shared restyled basemap
+  (`map-ground.ts`, as /mesh), the hazard layers severity-colored; subtle town reference dots;
+  a click opens the shared "blended label" card (`map-card.ts`); SSR fallback.
+- **02 Active alerts** beside it, then **03 Road conditions**, **04 Dispatch audio**, **05
+  Official sources** — numbered section heads (`ReportSectionHead`).
+- **The alert stream** (`renderStream` in `src/lib/live-view.ts`) — every relevant hazard,
   most-urgent first (`deriveStream` in `src/lib/hazards.ts`). The region-wide `road_incident`
   layer is filtered to the service area (`isInServiceArea`), so out-of-area incidents never show.
 
