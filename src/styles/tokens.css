@@ -45,7 +45,7 @@
 
   /* ---- Map linework ----
      The faint county + highway map behind the homepage hero (src/assets/hero-map.svg), and the
-     /mesh basemap restyled to match it (src/lib/mesh-basemap.ts). Quiet on purpose: knocked-out
+     /mesh basemap restyled to match it (src/lib/basemap-style.ts). Quiet on purpose: knocked-out
      roads, warm hairlines, muted place names — the mesh is the subject, not the ground. */
   --map-county-line: #c9c1a9; /* county borders */
   --map-road: #f8f6ef; /* state highways + route-marker fill */

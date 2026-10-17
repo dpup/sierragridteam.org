@@ -1,0 +1,233 @@
+/*
+ * map.css — the chrome both MapLibre maps share (/live hazards, /mesh topology): the zoom
+ * control, the "blended label" card (`src/lib/map-card.ts`) and the hint chip. Global because
+ * all of it is injected at runtime, which Astro scoped styles never reach; the figure that
+ * hosts a map carries `.map-frame`. Imported by the two map pages. Tokens only.
+ */
+
+/* Zoom: two 30px squares, bottom-right, in the card surface. */
+.map-frame .maplibregl-ctrl-group {
+  border-radius: var(--radius);
+  box-shadow: none;
+  background: var(--surface-card);
+  border: 1px solid var(--line-strong);
+}
+.map-frame .maplibregl-ctrl-group button {
+  width: 30px;
+  height: 30px;
+}
+.map-frame .maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--line-strong);
+}
+
+/*
+ * ---- Map card: the "blended label" ----
+ *
+ * Made of map material rather than laid on top of it: the basemap's own colour at 88%, a 3px
+ * backdrop blur, and an edge feathered into the map by a glow of the same colour — no border,
+ * no accent bar, no drop shadow. A 1px green leader joins it to its feature.
+ *
+ * The blur is a deliberate, single exception to the "no glass" rule (CLAUDE.md), approved for
+ * this map card only (on both maps) because it is what lets the card read as part of the map. If it ever reads
+ * as glass-morphism in practice, drop the blur and raise the fill to opaque — the feathered
+ * edge alone still blends.
+ */
+.map-card-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.map-card-leader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.map-card-leader line {
+  stroke: var(--brand-green);
+  stroke-width: 1;
+}
+.map-card-anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--surface-hero);
+  border: 1.4px solid var(--brand-green);
+}
+.map-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 264px;
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--surface-hero) 88%, transparent);
+  backdrop-filter: blur(3px);
+  box-shadow: 0 0 18px 10px color-mix(in srgb, var(--surface-hero) 88%, transparent);
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.map-card--in {
+  opacity: 1;
+}
+.map-card:focus {
+  outline: none;
+}
+.map-card:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 4px;
+}
+/* A narrow map: dock along the bottom edge at full width, a rule instead of the feather. */
+.map-card--docked {
+  top: auto;
+  bottom: 0;
+  width: 100%;
+  background: var(--surface-hero);
+  backdrop-filter: none;
+  box-shadow: none;
+  border-top: var(--border);
+}
+.map-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.map-card__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.11em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--ink-strong);
+}
+.map-card__sep {
+  color: var(--ink-muted);
+}
+.map-card__close {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.map-card__close:hover {
+  color: var(--ink-strong);
+}
+.map-card__kicker {
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-brass-text);
+}
+.map-card__metrics {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid color-mix(in srgb, var(--map-county-line) 70%, transparent);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.map-card__value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-body);
+  color: var(--ink-strong);
+}
+.map-card__unit,
+.map-card__na {
+  font-size: var(--fs-label);
+  color: var(--ink-muted);
+}
+.map-card__label {
+  margin-top: var(--space-1);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.map-card__foot {
+  margin-top: var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  color: var(--ink-muted);
+}
+
+/* The "zoomed to fit" chip, top-left while a repeater is selected. */
+.map-hint {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  max-width: calc(100% - 2 * var(--space-4));
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--surface-card) 93%, transparent);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-ui);
+  font-size: var(--fs-label-lg);
+  color: var(--ink-body);
+}
+.map-hint__soft {
+  color: var(--ink-muted);
+}
+
+/* A hazard's headline is a phrase, not a name: sentence case, in the page's serif. */
+.map-card__title--text {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+}
+/* Body lines on a hazard card (/live): where it is, its figures, the reason. */
+.map-card__body {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid color-mix(in srgb, var(--map-county-line) 70%, transparent);
+  display: grid;
+  gap: var(--space-1);
+}
+.map-card__line {
+  font-family: var(--font-display);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink-body);
+}
+.map-card__line--figures {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  color: var(--ink-strong);
+}
+/* A genuine-risk card (a SEVERE+ hazard) — the alert orange, on its kicker only. */
+.map-card__kicker--alarm {
+  color: var(--signal-orange-text);
+}
+.map-card__foot a {
+  color: var(--brand-green);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.map-card__foot a:hover {
+  color: var(--brand-green-hover);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-card {
+    transition: none;
+  }
+}

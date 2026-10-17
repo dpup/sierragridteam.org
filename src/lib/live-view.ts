@@ -15,6 +15,7 @@ import {
   isNotablePower,
   isScheduled,
   layerFeatures,
+  STREAM_LAYERS,
   toneFor,
   severityLabel,
   type HazardFeature,
@@ -45,6 +46,8 @@ export interface LiveMapData {
 
 export interface LiveView {
   status: { tone: StatusTone; label: string; blink: boolean };
+  /** The h1's two lines, generated from the stream (see `renderHeadline`). */
+  headline: string;
   syncedLabel: string;
   tiles: Record<
     'wildfires' | 'evacuations' | 'weatherAlerts' | 'fireWeather',
@@ -57,8 +60,16 @@ export interface LiveView {
     }
   >;
   mapData: LiveMapData;
-  /** Pre-rendered HTML for each data-driven region (SSR set:html + client innerHTML). */
-  html: { weather: string; burn: string; stream: string; roads: string; scanners: string };
+  /** Pre-rendered HTML for each data-driven region (SSR set:html + client innerHTML).
+   *  `figures` is the header's row of four, rendered from `tiles`. */
+  html: {
+    figures: string;
+    weather: string;
+    burn: string;
+    stream: string;
+    roads: string;
+    scanners: string;
+  };
 }
 
 // ---- small helpers ----
@@ -560,6 +571,69 @@ function weatherAlertTile(s: SituationSummary): LiveView['tiles']['weatherAlerts
   return { value: 'None', state: 'ok' };
 }
 
+// ---- Header: the generated headline and the four figures ----
+
+/**
+ * The h1, generated from the alert stream, on /mesh's two-line pattern: the count in muted
+ * ink (the alert orange when a SEVERE+ hazard is in the stream), the claim in full.
+ *
+ * Honesty (content-style-guide §10): a quiet stream is "no active alerts from the feeds we
+ * watch" — never "all clear", which is a claim about the foothills, not the feeds. And if any
+ * stream feed could not be read, the headline says so instead of counting what it did read:
+ * "No active alerts" over a dead wildfire feed would be exactly the false all-clear the page
+ * must never show.
+ */
+export function renderHeadline(
+  haz: HazardsSnapshot,
+  stream: HazardFeature[],
+  tone: StatusTone
+): string {
+  const lead = (t: string) =>
+    `<span class="live-h1__lead${tone === 'alarm' ? ' live-h1__lead--alarm' : ''}">${esc(t)}</span>`;
+  const rest = (t: string) => `<span class="live-h1__rest">${esc(t)}</span>`;
+  const unreadable = STREAM_LAYERS.some(
+    (l) => (haz.layers?.[l]?.metadata?.sourceStatus ?? 'UNAVAILABLE') === 'UNAVAILABLE'
+  );
+  const n = stream.length;
+  const alerts = `${n} ${n === 1 ? 'alert' : 'alerts'}`;
+  if (unreadable) {
+    return n
+      ? `${lead(alerts)} ${rest(copy.headline.someUnreadable)}`
+      : `${lead(copy.headline.unreadableLead)} ${rest(copy.headline.unreadableRest)}`;
+  }
+  return n
+    ? `${lead(alerts)} ${rest(copy.headline.alerts)}`
+    : `${lead(copy.headline.quietLead)} ${rest(copy.headline.quietRest)}`;
+}
+
+const FIGURES: { key: keyof LiveView['tiles']; label: string; sub: string }[] = [
+  { key: 'wildfires', label: 'Wildfires', sub: 'CAL FIRE' },
+  { key: 'evacuations', label: 'Evacuations', sub: 'Cal OES' },
+  { key: 'weatherAlerts', label: 'Weather alerts', sub: 'NWS foothill zones' },
+  { key: 'fireWeather', label: 'Fire weather', sub: 'Calaveras & Tuolumne' },
+];
+
+/**
+ * The header's four figures, on /mesh's pattern: a label, a serif value, its source — no
+ * boxes. The value takes the state's colour (orange for an alarm, brass when elevated) and,
+ * when there is detail to jump to, links down to the alert stream.
+ */
+function renderFigures(tiles: LiveView['tiles']): string {
+  return FIGURES.map(({ key, label, sub }) => {
+    const t = tiles[key];
+    const value = t.href
+      ? `<a class="live-figure__link" href="${esc(t.href)}">${esc(t.value)}</a>`
+      : esc(t.value);
+    return (
+      `<div class="live-figure" data-state="${t.state}">` +
+      `<p class="live-figure__label">${esc(label)}</p>` +
+      `<p class="live-figure__value">${value}</p>` +
+      `<p class="live-figure__sub">${esc(sub)}</p>` +
+      `</div>`
+    );
+  }).join('');
+}
+
 /**
  * Build the entire /live view-model from the two snapshots (identical SSR + client).
  *
@@ -588,35 +662,39 @@ export function buildView(
   // of detail). `n` is number|null: null (unknown) and 0 (none) are both falsy → no link.
   const streamLink = (n: number | null) => (n ? STREAM_ANCHOR : undefined);
 
+  const tiles: LiveView['tiles'] = {
+    wildfires: {
+      value:
+        summary.wildfires == null
+          ? 'Unknown'
+          : summary.wildfires > 0
+            ? `${summary.wildfires} Active`
+            : 'None',
+      state: summary.wildfires == null ? 'muted' : summary.wildfires > 0 ? 'alarm' : 'ok',
+      href: streamLink(summary.wildfires),
+    },
+    evacuations: {
+      value:
+        summary.evacuations == null
+          ? 'Unknown'
+          : summary.evacuations > 0
+            ? `${summary.evacuations} Zones`
+            : 'None',
+      state: summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok',
+      href: streamLink(summary.evacuations),
+    },
+    weatherAlerts: weatherAlertTile(summary),
+    fireWeather: { value: fire.label, state: fire.state },
+  };
+
   return {
     status,
+    headline: renderHeadline(haz, stream, status.tone),
     syncedLabel: `Synced ${formatPtTime(summary.syncedAt)}`,
-    tiles: {
-      wildfires: {
-        value:
-          summary.wildfires == null
-            ? 'Unknown'
-            : summary.wildfires > 0
-              ? `${summary.wildfires} Active`
-              : 'None',
-        state: summary.wildfires == null ? 'muted' : summary.wildfires > 0 ? 'alarm' : 'ok',
-        href: streamLink(summary.wildfires),
-      },
-      evacuations: {
-        value:
-          summary.evacuations == null
-            ? 'Unknown'
-            : summary.evacuations > 0
-              ? `${summary.evacuations} Zones`
-              : 'None',
-        state: summary.evacuations == null ? 'muted' : summary.evacuations > 0 ? 'alarm' : 'ok',
-        href: streamLink(summary.evacuations),
-      },
-      weatherAlerts: weatherAlertTile(summary),
-      fireWeather: { value: fire.label, state: fire.state },
-    },
+    tiles,
     mapData: buildMapData(haz),
     html: {
+      figures: renderFigures(tiles),
       weather: renderWeather(grid.conditions),
       burn: renderBurn(grid.burn),
       stream: renderStream(stream, now),

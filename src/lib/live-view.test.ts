@@ -355,3 +355,42 @@ test('a failed burn fetch reads unknown; no counties renders nothing', () => {
   expect(burnView(null)).toContain('Burn status unknown');
   expect(burnView([])).toBe('');
 });
+
+// ---- The generated headline ----
+
+/** Every stream layer read cleanly, with `extra` features on top. */
+const allRead = (extra: Record<string, unknown> = {}) =>
+  snap({
+    ...Object.fromEntries(
+      [
+        'evacuation',
+        'wildfire',
+        'weather_alert',
+        'fire_weather',
+        'road_incident',
+        'chain_control',
+        'earthquake',
+        'power',
+      ].map((l) => [l, fc([])])
+    ),
+    ...extra,
+  });
+
+test('a quiet stream says "no active alerts from the feeds we watch" — never "all clear"', () => {
+  const h = buildView(allRead(), emptyGrid).headline;
+  expect(h).toContain('No active alerts');
+  expect(h).toContain('from the feeds we watch.');
+  expect(h.toLowerCase()).not.toContain('all clear');
+});
+
+test('an unreadable feed outranks a zero: the headline says so instead of counting', () => {
+  const h = buildView(allRead({ wildfire: fc([], 'UNAVAILABLE') }), emptyGrid).headline;
+  expect(h).toContain('can’t be reached');
+  expect(h).not.toContain('No active alerts');
+});
+
+test('alerts are counted, and a SEVERE+ hazard turns the count orange', () => {
+  const h = buildView(allRead({ wildfire: fc([fire()]) }), emptyGrid).headline;
+  expect(h).toContain('>1 alert<');
+  expect(h).toContain('live-h1__lead--alarm');
+});

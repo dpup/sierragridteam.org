@@ -1,9 +1,10 @@
 /**
- * mesh-basemap.ts — the /mesh map's basemap: OpenFreeMap Positron, restyled to match the
- * homepage hero's map (src/assets/hero-map.svg) so the two maps read as one place.
+ * basemap-style.ts — the ground both maps (/live hazards, /mesh topology) draw on: OpenFreeMap
+ * Positron, restyled to match the homepage hero's map (src/assets/hero-map.svg) so every map
+ * on the site reads as one place. `map-ground.ts` fetches it and adds the runtime pieces.
  *
  * PURE: takes the fetched Positron style document and returns a new one. No MapLibre import,
- * no DOM — `mesh-basemap.test.ts` validates the output against the real style spec, because
+ * no DOM — `basemap-style.test.ts` validates the output against the real style spec, because
  * MapLibre drops an invalid layer or expression SILENTLY (see mesh-link-paint.ts).
  *
  * Rather than patch Positron's ~60 layers, this composes a short layer list of its own over
@@ -92,11 +93,11 @@ const roadClass = (classes: string[]) => [
 ];
 
 /**
- * Build the /mesh basemap from Positron. Returns null when the input has no vector source to
+ * Build the site basemap from Positron. Returns null when the input has no vector source to
  * draw from (the screenshot harness serves a background-only stub) — the caller then uses the
  * input as-is, so an offline map still loads.
  */
-export function meshBasemapStyle(positron: StyleDoc, c: BasemapColors): StyleDoc | null {
+export function restyleBasemap(positron: StyleDoc, c: BasemapColors): StyleDoc | null {
   if (!positron?.sources?.[SOURCE]) return null;
 
   const layers: Record<string, unknown>[] = [
@@ -258,7 +259,7 @@ export function meshBasemapStyle(positron: StyleDoc, c: BasemapColors): StyleDoc
 
   return {
     version: 8,
-    name: 'S.I.E.R.R.A mesh',
+    name: 'S.I.E.R.R.A',
     sources: { [SOURCE]: positron.sources[SOURCE] },
     glyphs: positron.glyphs,
     // No sprite: every icon Positron's sprite provided belonged to a layer dropped above, and

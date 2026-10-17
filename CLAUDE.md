@@ -52,8 +52,9 @@ they cover.
    org decision to make giving unmistakable. Don't extend this to any other element —
    Donate is the only non-risk use of orange.
 3. **Geometry:** square corners (radius 0), 1px warm-tan borders, **no drop shadows
-   on cards** (border + lighter fill defines them). The /mesh map card's feathered edge and
-   blur are a single sanctioned exception (see "Mesh map details").
+   on cards** (border + lighter fill defines them). The map card's feathered edge and blur
+   (`map-card.ts`, shared by the /live and /mesh maps) are a single sanctioned exception (see
+   "Mesh map details").
 4. **Type:** serif (`--font-display`) for headings/body, never heavier than 600;
    `--font-ui` (sans) for small UPPERCASE labels with wide tracking; `--font-mono`
    for data/codes. Body never below 16px.
@@ -166,7 +167,13 @@ pick up a new OpenFreeMap build).
   once (footer gated until then). Its data regions come from shared render functions in
   `src/lib/live-view.ts` (used by BOTH the SSR fallback and the browser), the map from
   `src/lib/live-map.ts`, CSS from `src/styles/live.css` (global, `.live-view`-namespaced —
-  Astro scoped styles don't reach client-injected HTML). On any fetch failure it reveals
+  Astro scoped styles don't reach client-injected HTML). It is laid out as a **report in
+  /mesh's family** (2026-10): a kicker and an **h1 generated from the alert stream** on the
+  two-line pattern ("3 alerts / for the foothills right now."; quiet is "No active alerts /
+  from the feeds we watch." — never "all clear"; any unreadable stream feed outranks the count
+  and says so), the lede, four unboxed figures, then numbered sections (`ReportSectionHead`,
+  01 map · 02 alerts · 03 roads · 04 dispatch · 05 sources). Its map stands on the same ground
+  as /mesh (`map-ground.ts`) and opens the same card (`map-card.ts`, styles `map.css`). On any fetch failure it reveals
   the build snapshot as "last known". **Don't reintroduce `/live` per-region components**
   (it would split the markup between SSR and the live re-render) — edit `live-view.ts`.
   The site-wide `EmergencyBanner` (in `BaseLayout`) shows only on a life-safety hazard
@@ -183,12 +190,12 @@ pick up a new OpenFreeMap build).
   rest of the site — no dark band. Top to bottom: a kicker and an **h1 generated from the data**
   on the hero's two-line pattern ("9 of 11 repeaters / heard in the last 12 hours." — numerals,
   not words), a lede naming any repeater not heard in `HEARD_WITHIN_HOURS` **in the alert
-  orange**, and four figures; then three numbered sections (`MeshSectionHead`): **01** the map
+  orange**, and four figures; then three numbered sections (`ReportSectionHead`): **01** the map
   and its legend, **02** the repeater table, **03** the 24 h battery chart. The explanation of
   what the mesh IS lives on **/about#mesh**. Client-rendered live like `/live`: `mesh.ts` holds
   types + pure derivations, `mesh-telemetry.ts` the monitor archive, `mesh-client.ts` the
   fetches, `mesh-view.ts` the header/legend/table HTML, `mesh-history.ts` the chart,
-  `mesh-map.ts` the MapLibre map, `mesh-basemap.ts` the restyled basemap, `mesh-link-paint.ts`
+  `mesh-map.ts` the MapLibre map, `basemap-style.ts` + `map-ground.ts` the restyled basemap (shared with /live), `mesh-link-paint.ts`
   the link expressions, `src/styles/mesh.css` the global `.mesh-view`-namespaced CSS.
 - **TWO selections, deliberately decoupled.** The table row, the map pin and the page's
   `?node=` URL share one (`selected`): it highlights the row, zooms the map to the repeater's
@@ -223,7 +230,7 @@ pick up a new OpenFreeMap build).
   to speak for a gap: `valueAt` returns null outside its tolerance. ⚠️ If a COUNTER is ever
   plotted, the split at `reboots` has to come back — counters reset to zero.
 - **Mesh map details.** The basemap is Positron **restyled to the hero map** in the pure
-  `meshBasemapStyle` (tested against the style spec): no landuse, buildings, POIs or
+  `restyleBasemap` (`basemap-style.ts`, tested against the style spec, and shared with /live): no landuse, buildings, POIs or
   hillshade; knocked-out roads with a warm hairline casing (without it they vanish at corridor
   zoom); county hairlines; muted italic names for villages, lakes, summits and parks (Noto Sans
   Italic — OpenFreeMap serves no serif glyphs); a Calaveras/Tuolumne tint from
@@ -237,8 +244,9 @@ pick up a new OpenFreeMap build).
   give way on collision (a stale repeater's never hides); neighbours stay a cheap circle layer.
   Cards are the **"blended label"**: basemap-coloured, feathered edge, a 1px leader, placed to
   cover none of the links being read, docked to the map's foot below 600px. Its `backdrop-filter`
-  blur is a **single sanctioned exception** to the no-glass rule (2026-10) — if it reads as
-  glass in practice, drop the blur and make the fill opaque; don't extend it anywhere else.
+  blur is a **single sanctioned exception** to the no-glass rule (2026-10) — the shared map card
+  (`map-card.ts` / `map.css`), on both maps and nowhere else. If it reads as glass in practice,
+  drop the blur and make the fill opaque.
   Link filter/paint expressions live in `mesh-link-paint.ts` as pure JSON so
   `mesh-link-paint.test.ts` can compile them against the real style spec: **MapLibre drops
   an invalid expression SILENTLY**, so eyeballing the map is not a test.

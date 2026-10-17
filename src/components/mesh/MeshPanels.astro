@@ -11,7 +11,7 @@
 import Container from '@components/Container.astro';
 import Kicker from '@components/Kicker.astro';
 import MeshMap from './MeshMap.astro';
-import MeshSectionHead from './MeshSectionHead.astro';
+import ReportSectionHead from '@components/ReportSectionHead.astro';
 import { mesh } from '@config/content';
 ---
 
@@ -28,35 +28,35 @@ import { mesh } from '@config/content';
     </header>
 
     <section class="mesh-sec" aria-labelledby="mesh-map-title">
-      <MeshSectionHead
+      <ReportSectionHead
         number="01"
         id="mesh-map-title"
         title={mesh.mapHeading}
         intro={mesh.mapIntro}
       >
         <a slot="controls" class="mesh-about-link" href="/about#mesh">{mesh.aboutLink}</a>
-      </MeshSectionHead>
+      </ReportSectionHead>
       <MeshMap />
       <div data-mesh-legend></div>
     </section>
 
     <section class="mesh-sec" aria-labelledby="mesh-roster-title">
-      <MeshSectionHead
+      <ReportSectionHead
         number="02"
         id="mesh-roster-title"
         title={mesh.rosterHeading}
         intro={mesh.rosterIntro}
       >
         <div slot="controls" data-mesh-sort></div>
-      </MeshSectionHead>
+      </ReportSectionHead>
       <div class="mesh-roster" data-mesh-roster></div>
     </section>
 
     <section class="mesh-sec" aria-labelledby="mesh-history-title">
-      <MeshSectionHead number="03" id="mesh-history-title" title={mesh.historyHeading}>
-        <p slot="intro" class="mesh-sec-head__intro" data-mesh-history-intro></p>
+      <ReportSectionHead number="03" id="mesh-history-title" title={mesh.historyHeading}>
+        <p slot="intro" class="report-sec-head__intro" data-mesh-history-intro></p>
         <div slot="controls" data-mesh-history-tabs></div>
-      </MeshSectionHead>
+      </ReportSectionHead>
       <div data-mesh-history></div>
     </section>
 

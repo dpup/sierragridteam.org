@@ -3,10 +3,11 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
 import StatusPill from '@components/StatusPill.astro';
-import StatTile from '@components/StatTile.astro';
+import ReportSectionHead from '@components/ReportSectionHead.astro';
 import { live as copy } from '@config/content';
 import { externalLinks, site } from '@config/site';
 import { BASEMAP_ATTRIBUTION } from '@lib/basemap';
+import '../styles/map.css';
 import '../styles/live.css';
 
 // /live renders ENTIRELY in the browser from the live feed — NO build-time snapshot is
@@ -68,10 +69,16 @@ const schema = {
   </script>
 
   <Section surface="page" labelledby="live-title">
+    {
+      /* The page head on /mesh's pattern. The h1 is real in the SSR HTML (and is all a
+        crawler or a failed load sees); its two lines are generated from the stream. */
+    }
     <header class="live-head">
-      <Kicker>{copy.kicker}</Kicker>
-      <h1 id="live-title" class="live-head__title">{copy.heading}</h1>
-      <p class="live-head__intro">{copy.intro}</p>
+      <Kicker as="p">{copy.kicker}</Kicker>
+      <h1 id="live-title" class="live-h1" data-live-headline>
+        <span class="live-h1__lead">{copy.heading}</span>
+      </h1>
+      <p class="live-lede">{copy.intro}</p>
     </header>
 
     <div class="live-loader" data-live-loader role="status" aria-live="polite">
@@ -110,44 +117,10 @@ const schema = {
       </p>
 
       {
-        /* The three count tiles link (same-page) down to their detail in the alert stream —
-          most useful on mobile, where the list sits well below the fold. The client toggles
-          the href off when a tile has nothing to show ("None"/"Unknown"), so it only offers
-          the jump when there's actually something there. */
+        /* Four figures on /mesh's pattern. Each count links down to the alert stream when it
+          has something there to show (live-view.ts renderFigures). */
       }
-      <div class="live-tiles">
-        <StatTile
-          label="Wildfires"
-          value="—"
-          sublabel="CAL FIRE"
-          state="muted"
-          key="wildfires"
-          href="#stream-title"
-        />
-        <StatTile
-          label="Evacuations"
-          value="—"
-          sublabel="Cal OES"
-          state="muted"
-          key="evacuations"
-          href="#stream-title"
-        />
-        <StatTile
-          label="Weather Alerts"
-          value="—"
-          sublabel="NWS foothill zones"
-          state="muted"
-          key="weatherAlerts"
-          href="#stream-title"
-        />
-        <StatTile
-          label="Fire Weather"
-          value="—"
-          sublabel="Calaveras & Tuolumne"
-          state="muted"
-          key="fireWeather"
-        />
-      </div>
+      <div class="live-figures" data-live-figures></div>
 
       <aside class="live-evac" aria-label="Evacuation maps">
         <div class="live-evac__text">
@@ -170,39 +143,49 @@ const schema = {
 
       <div class="live-grid">
         <section class="live-grid__map" aria-labelledby="map-title">
-          <h2 id="map-title" class="live-h2">{copy.mapHeading}</h2>
-          <figure class="hazard-map" data-live-map>
+          <ReportSectionHead
+            number="01"
+            id="map-title"
+            title={copy.mapHeading}
+            intro={copy.mapIntro}
+          />
+          {/* The frame and its chrome match /mesh's map (map.css): same ground, same card. */}
+          <figure class="hazard-map map-frame" data-live-map>
             <div class="hazard-map__canvas" data-map-canvas>
               <p class="hazard-map__fallback" data-map-fallback>
                 The live hazard map needs JavaScript and WebGL. Every active hazard is also listed
                 in the alert stream beside it.
               </p>
             </div>
-            <figcaption class="hazard-map__foot">
-              <ul class="hazard-map__legend">
-                {
-                  legend.map((l) => (
-                    <li class="hazard-map__legenditem">
-                      <span
-                        class:list={['hazard-map__swatch', `hazard-map__swatch--${l.key}`]}
-                        aria-hidden="true"
-                      />
-                      {l.label}
-                    </li>
-                  ))
-                }
-              </ul>
-              <p class="hazard-map__attrib">
-                {BASEMAP_ATTRIBUTION} · Hazards via data.sierragridteam.org
-              </p>
+            <figcaption class="hazard-map__attrib">
+              {BASEMAP_ATTRIBUTION} · Hazards via data.sierragridteam.org
             </figcaption>
           </figure>
+          <ul class="hazard-legend" aria-label="Map key">
+            {
+              legend.map((l) => (
+                <li class="hazard-legend__item">
+                  <span
+                    class:list={['hazard-legend__swatch', `hazard-legend__swatch--${l.key}`]}
+                    aria-hidden="true"
+                  />
+                  {l.label}
+                </li>
+              ))
+            }
+          </ul>
         </section>
 
         <section class="live-grid__stream" aria-labelledby="stream-title">
-          {/* tabindex=-1: the count tiles jump here, so focus lands on the heading too. */}
-          <h2 id="stream-title" class="live-h2" tabindex="-1">{copy.streamHeading}</h2>
-          <div data-live-stream></div>
+          {/* focusTarget: the figures jump here, so focus lands on the heading too. */}
+          <ReportSectionHead
+            number="02"
+            id="stream-title"
+            title={copy.streamHeading}
+            intro={copy.streamIntro}
+            focusTarget
+          />
+          <div class="live-stream" data-live-stream></div>
         </section>
       </div>
     </div>
@@ -210,19 +193,33 @@ const schema = {
 
   <div class="live-view" data-live-body>
     <Section surface="page" labelledby="roads-title">
-      <h2 id="roads-title" class="live-h2">{copy.roadsHeading}</h2>
-      <div data-live-roads></div>
+      <ReportSectionHead
+        number="03"
+        id="roads-title"
+        title={copy.roadsHeading}
+        intro={copy.roadsIntro}
+      />
+      <div class="live-sec-body" data-live-roads></div>
     </Section>
 
     <Section surface="page" labelledby="scan-title">
-      <h2 id="scan-title" class="live-h2">{copy.scannersHeading}</h2>
-      <p class="live-sub">{copy.scannersNote}</p>
-      <div data-live-scanners></div>
+      <ReportSectionHead
+        number="04"
+        id="scan-title"
+        title={copy.scannersHeading}
+        intro={copy.scannersNote}
+      />
+      <div class="live-sec-body" data-live-scanners></div>
     </Section>
 
     <Section surface="page" labelledby="res-title">
-      <h2 id="res-title" class="live-h2">{copy.resourcesHeading}</h2>
-      <ul class="live-resources">
+      <ReportSectionHead
+        number="05"
+        id="res-title"
+        title={copy.resourcesHeading}
+        intro={copy.resourcesIntro}
+      />
+      <ul class="live-resources live-sec-body">
         {
           resources.map((r) => (
             <li>
@@ -266,6 +263,7 @@ const schema = {
   import { buildView } from '../lib/live-view';
   import type { LiveView } from '../lib/live-view';
   import { initHazardMap, type MapHandle } from '../lib/live-map';
+  import counties from '../assets/service-counties.json';
   import { GRID_API_BASE, type GridSnapshot } from '../lib/grid';
   import { HAZARD_AREA, STREAM_LAYERS, type HazardsSnapshot } from '../lib/hazards';
 
@@ -291,34 +289,14 @@ const schema = {
     el.innerHTML = html;
   }
 
-  function setTile(key: string, t: { value: string; state: string; href?: string }) {
-    const el = document.querySelector<HTMLElement>(`[data-stat-key="${key}"]`);
-    if (!el) return;
-    el.dataset.state = t.state;
-    const v = el.querySelector<HTMLElement>('[data-stat-value]');
-    if (v) v.textContent = t.value;
-    // The tile is an <a>; make it a live link only when there's detail to jump to.
-    // With no href it stays an inert <a> (not focusable, no hover) — no false affordance.
-    if (t.href) {
-      el.setAttribute('href', t.href);
-      el.classList.add('stat--link');
-    } else {
-      el.removeAttribute('href');
-      el.classList.remove('stat--link');
-    }
-  }
-
   function applyView(view: LiveView) {
+    setRegion('[data-live-headline]', view.headline);
+    setRegion('[data-live-figures]', view.html.figures);
     setRegion('[data-live-weather]', view.html.weather);
     setRegion('[data-live-burn]', view.html.burn);
     setRegion('[data-live-stream]', view.html.stream);
     setRegion('[data-live-roads]', view.html.roads);
     setRegion('[data-live-scanners]', view.html.scanners);
-
-    setTile('wildfires', view.tiles.wildfires);
-    setTile('evacuations', view.tiles.evacuations);
-    setTile('weatherAlerts', view.tiles.weatherAlerts);
-    setTile('fireWeather', view.tiles.fireWeather);
 
     const pill = document.querySelector<HTMLElement>('[data-live-pill]');
     if (pill) {
@@ -385,7 +363,8 @@ const schema = {
       if (initial) {
         setBoot('ready');
         requestAnimationFrame(() => {
-          if (figure) handle = initHazardMap(figure, view.mapData);
+          if (figure)
+            handle = initHazardMap(figure, view.mapData, counties as GeoJSON.FeatureCollection);
         });
       } else if (handle) {
         handle.update(view.mapData);
@@ -430,20 +409,6 @@ const schema = {
 </script>
 
 <style>
-  .live-head {
-    max-width: 70ch;
-  }
-  .live-head__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .live-head__intro {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    line-height: var(--lh-body);
-    color: var(--ink-body);
-  }
-
   /* Loading affordance — calm pulse, no spinner; honors reduced motion.
      `display` is owned by the boot-gate (:global) rules below so it can be toggled;
      these are only the flex-layout + look properties, applied once it's shown. */
@@ -543,13 +508,6 @@ const schema = {
     color: var(--brand-green-hover);
   }
 
-  .live-tiles {
-    margin-top: var(--space-7);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-4);
-  }
-
   .live-evac {
     margin-top: var(--space-6);
     display: flex;
@@ -615,30 +573,16 @@ const schema = {
   .live-grid > * {
     min-width: 0;
   }
-  .live-h2 {
-    font-size: var(--fs-h3);
-    margin-bottom: var(--space-5);
-    /* Anchor targets (e.g. the tiles → #stream-title) land clear of the sticky topbar. */
-    scroll-margin-top: calc(var(--topbar-h) + var(--space-5));
-  }
-  /* The stream heading is only a programmatic focus target (tabindex=-1) for the tile jump;
-     don't paint a focus ring on it — the ring is for genuinely interactive elements. */
-  .live-h2:focus {
-    outline: none;
-  }
-  .live-sub {
-    margin-top: calc(var(--space-5) * -1 + var(--space-2));
-    margin-bottom: var(--space-5);
-    font-size: var(--fs-small);
-    color: var(--ink-secondary);
-  }
 
-  /* Hazard-map frame (the figure is static; MapLibre mounts into the canvas). */
+  /* Hazard-map frame — /mesh's: the map's own ground, a 1px rule, the credit inside the
+     bottom-left corner and the zoom control bottom-right (map.css). The card and its leader
+     are positioned inside the figure, so nothing may spill out. */
   .hazard-map {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
+    position: relative;
+    margin: var(--space-6) 0 0;
+    background: var(--surface-hero);
+    border: var(--border);
+    overflow: hidden;
   }
   .hazard-map__canvas {
     position: relative;
@@ -646,15 +590,22 @@ const schema = {
     min-width: 0;
     max-width: 100%;
     aspect-ratio: 4 / 3;
-    min-height: 360px;
-    /* Sized against the viewport, not a fixed cap: the map is the page's centrepiece and
-       the old 440px ceiling left it small on any real desktop. Bounded so the whole figure
-       (heading + map + legend) still fits one screen, which is what lets the column stick. */
-    max-height: min(62dvh, 760px);
-    background: var(--surface-card);
-    border: var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
+    min-height: 380px;
+    /* Sized against the viewport, not a fixed cap: the map is the page's centrepiece. Bounded
+       so the whole figure (heading + map + key) still fits one screen, which is what lets
+       the column stick. */
+    max-height: min(64dvh, 760px);
+  }
+  .hazard-map__attrib {
+    position: absolute;
+    left: var(--space-4);
+    bottom: var(--space-3);
+    z-index: 1;
+    max-width: calc(100% - 96px);
+    font-family: var(--font-ui);
+    font-size: var(--fs-micro);
+    color: var(--ink-muted);
+    pointer-events: none;
   }
   .hazard-map__fallback {
     position: absolute;
@@ -667,77 +618,6 @@ const schema = {
     text-align: center;
     font-size: var(--fs-small);
     color: var(--ink-secondary);
-  }
-  .hazard-map__foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3) var(--space-5);
-  }
-  .hazard-map__legend {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-4);
-  }
-  .hazard-map__legenditem {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-family: var(--font-ui);
-    font-size: var(--fs-micro);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    color: var(--ink-secondary);
-  }
-  .hazard-map__swatch {
-    width: 10px;
-    height: 10px;
-    flex-shrink: 0;
-    border: 1px solid var(--ink-muted);
-  }
-  .hazard-map__swatch--town {
-    background: color-mix(in srgb, var(--ink-muted) 55%, transparent);
-    border-radius: 50%;
-    border-color: var(--ink-muted);
-  }
-  .hazard-map__swatch--wildfire {
-    background: color-mix(in srgb, var(--signal-orange) 18%, transparent);
-    border-color: var(--signal-orange);
-  }
-  .hazard-map__swatch--evacuation {
-    background: color-mix(in srgb, var(--signal-orange-hover) 16%, transparent);
-    border-style: dashed;
-    border-color: var(--signal-orange-hover);
-  }
-  .hazard-map__swatch--road {
-    height: 3px;
-    align-self: center;
-    background: var(--brand-brass);
-    border-color: var(--brand-brass);
-  }
-  .hazard-map__swatch--incident {
-    background: var(--brand-brass);
-    border-radius: 50%;
-    border-color: var(--brand-brass);
-  }
-  .hazard-map__swatch--power {
-    background: color-mix(in srgb, var(--brand-brass) 12%, transparent);
-    border-style: dotted;
-    border-color: var(--brand-brass);
-  }
-  .hazard-map__swatch--quake {
-    background: transparent;
-    border-radius: 50%;
-    border-color: var(--brand-green);
-  }
-  .hazard-map__attrib {
-    font-family: var(--font-ui);
-    font-size: var(--fs-micro);
-    color: var(--ink-muted);
   }
 
   .live-resources {
@@ -796,9 +676,6 @@ const schema = {
   }
 
   @media (max-width: 900px) {
-    .live-tiles {
-      grid-template-columns: repeat(2, 1fr);
-    }
     .live-grid {
       grid-template-columns: 1fr;
     }
@@ -807,7 +684,6 @@ const schema = {
     }
   }
   @media (max-width: 480px) {
-    .live-tiles,
     .live-resources {
       grid-template-columns: 1fr;
     }
