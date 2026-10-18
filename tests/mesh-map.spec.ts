@@ -47,6 +47,10 @@ async function mockMesh(page: Page) {
       return json({ type: 'FeatureCollection', features: [], metadata: { sourceStatus: 'OK' } });
     // The whole-mesh backdrop only loads on pan-out; keep it empty and offline.
     if (url.includes('/mesh/links')) return json({ window: '30d', links: [] });
+    // The monitor archive, per repeater. It only lands in the chart's 24 h window when the
+    // test freezes the clock at the capture (see the drop-note test).
+    const tel = url.match(/\/mesh\/telemetry\?node=([0-9a-f]+)/);
+    if (tel) return json(mesh.telemetry?.[tel[1]] ?? { samples: [] });
     if (url.includes('/events')) return json({ events: [] });
     return json({});
   });
@@ -198,4 +202,29 @@ test('mesh has no critical/serious a11y violations with a repeater selected', as
     );
   }
   expect(serious).toEqual([]);
+});
+
+test("the battery chart's drop note never pushes a phone sideways", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.clock.setFixedTime(new Date(mesh.fetchedAt)); // the archive's own last 24 h
+  await loadMesh(page);
+  const note = page.locator('.mesh-chart__note');
+  await note.waitFor({ state: 'attached', timeout: 15000 });
+
+  // It once hung a fixed 70% of its width right of the low, so a low in the morning ran off
+  // the right edge and the whole page scrolled sideways. Wherever the low falls, it must stay
+  // inside the plot.
+  for (const at of [0, 0.25, 0.5, 0.75, 1]) {
+    const placed = await note.evaluate((el, at) => {
+      el.style.left = `${at * 100}%`;
+      el.style.setProperty('--at', String(at));
+      const n = el.getBoundingClientRect();
+      const p = el.parentElement!.getBoundingClientRect();
+      return {
+        inside: n.left >= p.left - 0.5 && n.right <= p.right + 0.5,
+        overflows: document.documentElement.scrollWidth > window.innerWidth,
+      };
+    }, at);
+    expect({ at, ...placed }).toEqual({ at, inside: true, overflows: false });
+  }
 });

@@ -177,16 +177,20 @@ function renderPlot(
     )
     .join('');
 
-  const note = drop
-    ? `<span class="mesh-chart__note" style="left:${((x(drop.low.t) / W) * 100).toFixed(2)}%;top:${pct(drop.low.v)}">` +
+  let note = '';
+  if (drop) {
+    // `--at` (0–1 across the plot) also sets how far the note hangs left of the low — see mesh.css.
+    const at = x(drop.low.t) / W;
+    note =
+      `<span class="mesh-chart__note" style="left:${(at * 100).toFixed(2)}%;top:${pct(drop.low.v)};--at:${at.toFixed(3)}">` +
       esc(
         `${drop.name} fell to ${fmt(drop.low.v, o.metric)}` +
           (isOvernight(drop.low.t)
             ? ' overnight'
             : ` by ${ptTime(drop.low.t, { hour: '2-digit', minute: '2-digit' })} PT`)
       ) +
-      `</span>`
-    : '';
+      `</span>`;
+  }
 
   const xLabels = [0, 6, 12, 18]
     .map((h) => from + h * 3_600_000)
