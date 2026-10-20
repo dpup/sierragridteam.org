@@ -1,5 +1,5 @@
 {
-  "judgeModel": "claude-opus-4-8",
+  "judgeModel": "claude-opus-5-5",
   "note": "Labeled corpus for tuning the Signal Desk. Published posts are referenced live from src/content/blog/; rejected drafts are snapshot fixtures (their branches are gone). 'expected' is the verdict a human editor would defend under the current mandate. A verdict two notches off (PUBLISH vs REJECT) is a hard fail; one notch (PUBLISH vs REVISE) is a soft signal.",
   "cases": [
     {

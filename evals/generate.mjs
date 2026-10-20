@@ -32,8 +32,8 @@ const writerPrompt = isAbsolute(WRITER_PROMPT_PATH)
 
 const cfg = JSON.parse(read('evals/scenarios.json'));
 const ctx = cfg.context;
-const GEN_MODEL = process.env.EVAL_GEN_MODEL || cfg.genModel || 'claude-opus-4-8';
-const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL || cfg.judgeModel || 'claude-sonnet-4-6';
+const GEN_MODEL = process.env.EVAL_GEN_MODEL || cfg.genModel || 'claude-opus-5-5';
+const JUDGE_MODEL = process.env.EVAL_JUDGE_MODEL || cfg.judgeModel || 'claude-sonnet-5-5';
 const VOTES = Math.max(1, Number(process.env.EVAL_VOTES || 1));
 
 const runDir = join(
@@ -78,6 +78,11 @@ for (const sc of cfg.scenarios) {
         `    value:${s.value_sowhat} accuracy:${s.accuracy_sourcing} voice:${s.voice_style} scope:${s.scope_variety} format:${s.structure_format}`
       );
       if (row.out.top_issues?.length) console.log(`    issues: ${row.out.top_issues.join('; ')}`);
+      const v = row.out.voice;
+      if (v)
+        console.log(
+          `    voice: ${v.human_voice}/5 · ${v.tell_count} tell(s)${v.worst ? ` · worst: ${v.worst}` : ''}`
+        );
       console.log('');
     }
   }
@@ -96,7 +101,7 @@ if (jsonOut) {
 } else {
   console.log('─'.repeat(64));
   console.log(
-    `${card.passes}/${card.total} acceptable · ${card.drafts} drafts, mean ${card.meanAll ? card.meanAll.toFixed(2) : '—'}/5 · ${card.gateFails} gate-fail(s) · fitness ${card.fitness.toFixed(1)}`
+    `${card.passes}/${card.total} acceptable · ${card.drafts} drafts, mean ${card.meanAll ? card.meanAll.toFixed(2) : '—'}/5, voice ${card.meanVoice ? card.meanVoice.toFixed(2) : '—'}/5 · ${card.gateFails} gate-fail(s) · fitness ${card.fitness.toFixed(1)}`
   );
   console.log(`drafts saved to ${runDir}`);
   console.log(

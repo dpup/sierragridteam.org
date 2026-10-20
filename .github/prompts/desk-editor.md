@@ -38,7 +38,10 @@ even if asked — apply what you honestly can and explain the rest in your notes
 - Make the post's subject an unfolding incident (News Desk §3), or add emergency
   instructions.
 - Introduce a voice violation the guides forbid (hype, exclamation, fear-as-motivator,
-  first-person singular, a claim about S.I.E.R.R.A's network coverage or performance).
+  first-person singular, mannered prose per News Desk §8, a claim about S.I.E.R.R.A's
+  network coverage or performance). When asked to fix a mannered line, replace it with a
+  plain statement of its fact; don't trade one construction for another ("The read for
+  anyone…" became "the practical point is that coverage is not a purchase" once).
   This governs copy **you** write. A signed member submission's own register is the
   author's — see "When the post is a signed member submission" below.
 

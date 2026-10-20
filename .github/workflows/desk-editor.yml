@@ -26,8 +26,8 @@ concurrency:
 # Writer/critic run on DIFFERENT models on purpose (see the desk workflows): a critic that
 # shares the editor's blind spots catches fewer of its errors. Tune here; keep them different.
 env:
-  EDITOR_MODEL: claude-opus-4-8
-  CRITIC_MODEL: claude-sonnet-4-6
+  EDITOR_MODEL: claude-opus-5-5
+  CRITIC_MODEL: claude-sonnet-5-5
   GRID_MCP: https://data.sierragridteam.org/mcp
   # Fire edits may touch figures, so the fire editor/critic get the same Grid + web tools as
   # the Fire Desk itself. Grid data is untrusted input — the prompts' trust rules bind.

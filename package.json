@@ -27,7 +27,8 @@
     "scenarios": "node scripts/scenario-shots.mjs",
     "eval:desk": "node evals/judge.mjs",
     "eval:generate": "node evals/generate.mjs",
-    "eval:autotune": "node evals/autotune.mjs"
+    "eval:autotune": "node evals/autotune.mjs",
+    "eval:critic": "node evals/critic.mjs"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

@@ -2,7 +2,7 @@
 
 An **LLM-as-judge** harness for tuning the automated News Desk (the "Signal Desk"), so a
 change to the mandate, the writer prompt, or the rubric can be **measured** instead of
-argued. Three loops, in increasing autonomy:
+argued. Three loops, in increasing autonomy, plus a check on the critic:
 
 - **`judge.mjs` — score fixed posts.** Judges a labeled corpus (real published posts +
   rejected drafts) against a rubric derived from the mandate, and flags where the judge's
@@ -14,11 +14,18 @@ argued. Three loops, in increasing autonomy:
 - **`autotune.mjs` — auto-learn.** Closes the loop: generate → judge → an optimiser model
   rewrites the writer prompt from the judge's feedback → re-generate → keep the best,
   discard the rest, repeat. Produces a reviewed **candidate** prompt, never an auto-merge.
+- **`critic.mjs` — can the critic fix voice?** Runs the critic prompt's voice pass on drafts
+  that shipped with machine voice and scores what it hands back. The last line of defence.
 
 ## What's here
 
 - `rubric.md` — how the judge applies the mandate: a hard-rule **gate**, five scored
   dimensions, and a verdict (`PUBLISH` / `REVISE` / `REJECT`). The tunable knob.
+- `voice-rubric.md` — the **voice judge**: counts machine-voice tells (brief §8, "Write
+  plainly, not mannered") and scores `human_voice` 1–5. Separate from the mandate rubric on
+  purpose: there, voice is one of five scores, and a correct draft with a dozen tells still
+  averaged a PUBLISH. `generate.mjs` runs it on every draft and it is in the fitness.
+- `cases/voice/*.md` — drafts that shipped with machine voice, for `critic.mjs`.
 - `cases.json` — the labeled corpus for `judge.mjs`.
 - `cases/rejected/*.md` — snapshot fixtures of drafts opened then closed without merging
   (their branches are gone). Published posts are read live from `src/content/blog/`.
@@ -38,6 +45,7 @@ npm run eval:generate                # generate-then-judge (Opus writer, Sonnet 
 node evals/generate.mjs --prompt=/abs/path/variant-writer.md   # A/B a writer-prompt variant
 node evals/generate.mjs --json       # machine-readable (includes the generated drafts)
 npm run eval:autotune                # auto-learn (3 rounds); writes a candidate prompt
+npm run eval:critic                  # critic voice pass on the cases/voice fixtures
 node evals/autotune.mjs --rounds=5   # more rounds = more attempts (run in the background)
 ```
 
@@ -93,6 +101,7 @@ Each probes a failure mode; `acceptable` is the outcome set that counts as a pas
 | comparison-trap-kuiper  | DECLINE / PUBLISH / REVISE | A new satellite topic — must not become a foil    |
 | retro-minor-fire        | DECLINE / PUBLISH          | Minor event — must add a "so what" or decline     |
 | thin-filler-family-plan | DECLINE / PUBLISH          | Generic checklist — decline or make it local      |
+| replay-mesh-signing     | PUBLISH / REVISE           | Replay of PR #62 — watch the voice score          |
 
 Scenario sources are representative fixtures (generated drafts are never published), so
 the judge's "URLs unverifiable" accuracy flag is expected noise here — it's constant
@@ -113,6 +122,31 @@ reader's own kit). Re-running showed the delta:
 | after  | PUBLISH · gate:pass | 5/5 acceptable · mean 4.00 · 0 gate-fails |
 
 That edit was made by hand. `autotune.mjs` does the same loop automatically.
+
+## Worked example — machine voice (October 2026)
+
+PR #62 was accurate, sourced, and approved by the critic ("zero epigrams"), and it read as
+generated: "The gap is not hypothetical", "The direction is set; the release to run it on is
+not here yet", a slogan heading. The voice judge put every post in the archive at 2–3/5,
+July included, so this was never a regression. The voice had been there from the start and
+nothing was measuring it. The brief allowed one epigram per post and held up a tagline as the
+model voice.
+
+Writer A/B (6 scenarios × 2 samples, voice judged by Opus 5.5 and Fable 5.1, mandate by Opus
+5.5 at 3 votes; `retro-minor-fire` gate fails excluded, as its fixture URL was a placeholder):
+
+| writer     | old brief: voice · tells | §8 rewrite: voice · tells | gate fails (old → new) |
+| ---------- | ------------------------ | ------------------------- | ---------------------- |
+| Opus 4.8   | 2.55 · 6.8               | 2.95 · 5.6                | 0 → 4                  |
+| Opus 5.5   | 2.85 · 5.5               | **4.05 · 3.0**            | 0 → 0                  |
+| Sonnet 5.5 | 2.75 · 6.2               | 3.78 · 3.6                | 0 → 0                  |
+| Fable 5.1  | 2.50 · 7.5               | 3.15 · 5.0                | 0 → 1                  |
+
+The model upgrade alone barely moves voice; the rewrite alone hurts Opus 4.8, which filled
+the space left by the flourishes with plain, unsourced background facts (hence "plain is not
+bare" in §8). Together they work. Critic (`critic.mjs`, posts starting at ~10 tells):
+Sonnet 4.6 left 10.8 on the old brief and 7.0 on the new one; Sonnet 5.5 and Opus 5.5 left
+4.3 on the new one.
 
 ## Auto-tune (auto-learn)
 
@@ -147,7 +181,7 @@ Auto-tuning against an LLM judge is easy to break, so the loop is fenced:
 ```sh
 npm run eval:autotune              # 3 rounds
 node evals/autotune.mjs --rounds=5 # more attempts
-EVAL_OPT_MODEL=claude-opus-4-8 EVAL_VOTES=3 node evals/autotune.mjs   # steadier signal
+EVAL_OPT_MODEL=claude-opus-5-5 EVAL_VOTES=3 node evals/autotune.mjs   # steadier signal
 ```
 
 Then: `diff .github/prompts/news-desk-writer.md .github/prompts/news-desk-writer.candidate.md`,

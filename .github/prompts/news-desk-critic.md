@@ -55,7 +55,13 @@ writer worked from — is appended to the end of these instructions.
 - **Duplicate check.** Compare against the last 60 days of posts — topic AND
   signature constructions (headline shape, closer, analogy).
 - **Voice pass — desk-authored copy only** (skip entirely for a signed submission).
-  Epigram budget (max one), no rhetorical triplets, no colon-subtitle headline, no shrug
+  Do the mannered-prose sweep from §8 ("Write plainly, not mannered") **sentence by
+  sentence**; reading for it is not enough, because these constructions sound fluent and
+  slide past a skim. Mark every manufactured contrast, aphoristic closer, announcing phrase,
+  rhetorical question, figurative verb, slogan heading, and rhythm-built closer, then
+  rewrite each one as a plain statement of its fact (or cut it if it has none). The budget
+  for aphorisms is zero. In your notes, quote each one you changed. "None found" is a claim
+  you must be able to defend line by line; it was written about a draft with six. Also: no rhetorical triplets, no colon-subtitle headline, no shrug
   closer, no fear-as-motivator, jargon defined on first use, no first-person singular. The
   one clause here that binds every post regardless of byline: no claims about
   S.I.E.R.R.A's network coverage or performance (§10.4).

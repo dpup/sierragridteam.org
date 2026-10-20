@@ -1,10 +1,10 @@
 {
-  "genModel": "claude-opus-4-8",
-  "judgeModel": "claude-sonnet-4-6",
+  "genModel": "claude-opus-5-5",
+  "judgeModel": "claude-sonnet-5-5",
   "_note": "Fixtures for generate-then-judge (evals/generate.mjs). Sources are representative and self-consistent for the eval only — generated drafts are never published. Each scenario probes a known failure mode; 'acceptable' lists the outcomes that count as a pass (DECLINE or a judge verdict PUBLISH/REVISE/REJECT).",
   "context": {
     "date": "2026-07-25",
-    "conditions": "No active fire, evacuation, or weather alert in Calaveras or Tuolumne. Fire weather Normal. Topic choice is not constrained by an unfolding incident. (The cadence/timing guard is already satisfied — decide on editorial merit.)",
+    "conditions": "No active fire, evacuation, or weather alert in Calaveras or Tuolumne. Fire weather Normal (background for your judgment; a slow-channel post never states current conditions). Topic choice is not constrained by an unfolding incident. (The cadence/timing guard is already satisfied — decide on editorial merit.)",
     "archive": "- 2026-07-03 What this blog is for (intro)\n- 2026-07-06 What MeshCore 1.16 means for solar relay sites (Tech)\n- 2026-07-08 Priest and Landrum fires, contained (Retrospective)\n- 2026-07-14 Find your evacuation zone before you need it (Explainer)\n- 2026-07-17 Cell towers have a backup power deadline (Preparedness)",
     "declined": "- What satellite texting can't do in a canyon (closed: comparison-trap)\n- Satellite texting's blind spot on Highway 4 (closed: comparison-trap)\n- What the 2026 Technician exam pool now covers (closed: thin local angle)"
   },
@@ -34,8 +34,8 @@
       "name": "retro-minor-fire",
       "acceptable": ["DECLINE", "PUBLISH"],
       "probe": "Retrospective on a minor concluded event (like the Priest/Landrum post). REVISE means it filed a box-score with no 'so what' (§4.4/§6) — the pattern v1.5 targets. A real forward lesson (PUBLISH) or a decline both pass.",
-      "topic": "A 14-acre vegetation fire off Highway 108 near Sonora (Tuolumne) on July 10 was fully contained the same day with no evacuations. It is resolved. Fire weather is currently Normal.",
-      "sources": "- https://www.fire.ca.gov/incidents/2026/7/10/example-fire/ — CAL FIRE: 14 acres, 100% contained July 10, no structures threatened, no evacuation orders or warnings issued.\n- https://www.pge.com/pspsweather — PG&E PSPS outlook (context for foothill readiness)."
+      "topic": "The Hess Fire, a 14-acre vegetation fire, off Highway 108 near Sonora (Tuolumne) on July 10 was fully contained the same day with no evacuations. It is resolved. Fire weather is currently Normal.",
+      "sources": "- https://www.fire.ca.gov/incidents/2026/7/10/hess-fire/ — CAL FIRE: 14 acres, 100% contained July 10, no structures threatened, no evacuation orders or warnings issued.\n- https://www.pge.com/pspsweather — PG&E PSPS outlook (context for foothill readiness)."
     },
     {
       "name": "thin-filler-family-plan",
@@ -43,6 +43,18 @@
       "probe": "Generic-filler temptation. A generic checklist that could run on any site should be declined or transformed into something genuinely foothill-specific (PUBLISH). A REVISE/REJECT means it produced localized-in-name-only filler (§6).",
       "topic": "General idea: write a family emergency communication plan checklist (meeting spots, out-of-area contact, etc.).",
       "sources": "- https://www.ready.gov/plan — FEMA's generic family communication plan template (out-of-area contact, meeting places, contact cards)."
+    },
+    {
+      "name": "replay-mesh-signing",
+      "acceptable": ["PUBLISH", "REVISE"],
+      "probe": "Replay of PR #62 (2026-10-20), a correct, well-sourced post that shipped a dozen machine-voice tells past the critic ('The gap is not hypothetical', 'The direction is set; the release to run it on is not here yet', a slogan heading). Watch the voice score, not just the verdict: the original passed the mandate judge.",
+      "context": {
+        "date": "2026-10-20",
+        "conditions": "A PSPS affected parts of Calaveras and Tuolumne Oct 14-16 and has ended. No active fire or evacuation. (The cadence guard is satisfied — decide on editorial merit.)",
+        "archive": "- 2026-09-20 The 500 kHz question facing LoRa mesh (Tech)\n- 2026-09-27 What holds a regional mesh together (Field Report)\n- 2026-10-04 The Zone 0 rule and the first five feet (Preparedness)\n- 2026-10-12 Your radio's 'privacy code' isn't private (Explainer)"
+      },
+      "topic": "Meshtastic 2.8 (blog post 2026-10-08) rebuilds node identity around public keys and adds signed broadcasts, so a receiver can confirm who sent a message — a different guarantee from channel encryption. Angle: what message signing adds to a LoRa mesh, and what node operators should do.",
+      "sources": "- https://meshtastic.org/docs/overview/encryption — Each channel has a pre-shared key (PSK) that every node on the channel holds; a 16-byte key gives AES-128 and a 32-byte key AES-256. Verbatim: 'Anyone with a channel's key can send an unsigned packet that claims to come from any node.' Verbatim: 'Treat the sender of an unsigned channel message as a claim, not a proof.'\n- https://meshtastic.org/blog/lets-talk-about-2-8/ (2026-10-08) — node number is derived from the node's public key. Verbatim: 'Nodes sign broadcasts with their identity key, so a receiver can confirm who sent them.' New signature policy setting: Compatible (default; accepts unsigned packets from older nodes), Balanced (requires a signature from nodes that have signed before), Strict (accepts only verifiable packets). 'A problem turned up in its packet signing code, so 2.8.0 is revoked'; 2.8.1 replaces it. Verbatim: '2.8.1 is an alpha and isn't ready for wide deployment.'\n- https://github.com/meshtastic/firmware/security/advisories/GHSA-45vg-3f35-7ch2 — CVE-2025-55292, affects firmware < 2.6.2: a node is identified by its NodeID, generated from the MAC address, rather than its public key; an attacker can forge a NodeInfo on behalf of a victim node and other nodes accept the forged data and overwrite their NodeDB.\n- https://docs.meshcore.io/faq/ — MeshCore adverts carry the node's public key, 'which is also signed to prevent spoofing'. Packet type notes: PAYLOAD_TYPE_GRP_TXT is 'an (unverified) group text message'.\n- Brief-sanctioned org fact: S.I.E.R.R.A's network is built on MeshCore (design only; no coverage or performance claims)."
     }
   ]
 }
