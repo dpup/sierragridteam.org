@@ -82,9 +82,13 @@ These are the recurring ways a good-looking draft fails review. Check every one:
    gaps along Highway 4" is a coverage claim wearing a plan's clothes. Activity, not reach.
 2. **The comparison foil.** If the payoff is "technology X fails where a mesh like ours
    wins," it's the comparison trap (§4.1/§10.4). Cover X on its own terms, or don't.
-3. **The antithesis tic.** "None of this changes X; it changes Y," "which is the good
-   kind" — the reversal is the desk's overused move. One epigram per post at most, and
-   none if the last post used one (§8).
+3. **Mannered prose.** Manufactured contrasts ("X, not Y"), aphoristic closers ("The
+   direction is set; the release is not"), announcing phrases ("It is worth asking", "The
+   practical reading is short"), rhetorical questions, slogan headings, and closers built
+   for rhythm. This is the voice failure that keeps shipping (§8, "Write plainly, not
+   mannered"). The budget for aphorisms is zero. After drafting, reread sentence by
+   sentence and cut anything that exists to sound composed. Plain is not bare: a fact you
+   leave standing on its own still needs its link.
 4. **The missing "so what."** If the takeaway is "be aware," there is no post (§6).
 
 **Where local relevance actually comes from** — never from our own network's performance:

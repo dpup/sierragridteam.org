@@ -27,7 +27,12 @@ concurrency:
   group: fire-desk
   cancel-in-progress: false
 
+# Models are pinned (as on the News Desk) so a CLI default change never silently swaps the
+# writer. Writer and critic differ on purpose: a critic that shares the writer's blind spots
+# catches fewer of its errors.
 env:
+  WRITER_MODEL: claude-opus-5-5
+  CRITIC_MODEL: claude-sonnet-5-5
   GRID_API: https://data.sierragridteam.org/api/v1
   GRID_MCP: https://data.sierragridteam.org/mcp
   # The grid_* tools the agents may call; nothing else network-facing is granted (the writer
@@ -100,7 +105,7 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
-          claude --mcp-config /tmp/fire-mcp.json --allowedTools "$WRITER_TOOLS" --max-turns 80 \
+          claude --model "$WRITER_MODEL" --mcp-config /tmp/fire-mcp.json --allowedTools "$WRITER_TOOLS" --max-turns 80 \
             -p "$(cat .github/prompts/fire-desk-writer.md)"
           echo "--- writer notes ---"
           cat /tmp/fire-desk/writer-notes.md || echo "(no writer notes written)"
@@ -127,7 +132,7 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
-          claude --mcp-config /tmp/fire-mcp.json --allowedTools "$CRITIC_TOOLS" --max-turns 50 \
+          claude --model "$CRITIC_MODEL" --mcp-config /tmp/fire-mcp.json --allowedTools "$CRITIC_TOOLS" --max-turns 50 \
             -p "$(cat .github/prompts/fire-desk-critic.md)"
           echo "--- critic notes ---"
           cat /tmp/fire-desk/critic-notes.md || echo "(no critic notes written)"

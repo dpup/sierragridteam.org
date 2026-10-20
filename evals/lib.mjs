@@ -62,6 +62,7 @@ export function extractJson(text) {
 }
 
 const rubric = read('evals/rubric.md');
+const voiceRubric = read('evals/voice-rubric.md');
 const brief = read('docs/news-feed-content-brief.md');
 const style = read('docs/content-style-guide.md');
 
@@ -107,6 +108,21 @@ export function majority(outs) {
   return { ...rep, verdict: winner, votes: tally };
 }
 
+// Judge one post for machine-voice tells only (brief §8 "Write plainly, not mannered").
+// Separate from the mandate judge on purpose: the mandate rubric's voice_style is one of
+// five scores and let a draft with a dozen tells through at 3–4. Returns
+// { human_voice: 1–5, tell_count, tells: [{type, quote}], worst }.
+export function judgeVoice(artifact, model) {
+  const prompt = `${voiceRubric}\n\n===== THE POST =====\n${artifact}\n===== END =====\nRespond with ONLY the JSON.`;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return extractJson(callClaude(prompt, model, { extraArgs: ['--tools', ''] }));
+    } catch (e) {
+      if (attempt === 2) throw e;
+    }
+  }
+}
+
 // Mean of the five rubric dimensions, for aggregate scorecards.
 export function meanScore(scores = {}) {
   const keys = [
@@ -143,7 +159,9 @@ export function extractPost(text) {
 
 // Build the eval-mode generation prompt: the writer prompt + mandate + a scenario, with
 // the CI mechanics overridden (no tools/files) and the cadence guard treated as passed.
-export function buildGenPrompt(writerPrompt, ctx, sc) {
+export function buildGenPrompt(writerPrompt, baseCtx, sc) {
+  // A scenario may override the shared context (e.g. a replay of a real run on its own date).
+  const ctx = sc.context ? { ...baseCtx, ...sc.context } : baseCtx;
   return [
     writerPrompt,
     '\n\n===== THE MANDATE (docs/news-feed-content-brief.md) =====\n',
@@ -185,6 +203,7 @@ export function generateAndJudge({ writerPrompt, ctx, sc, genModel, judgeModel, 
       try {
         out = judgeWithVotes(post, judgeModel, votes);
         outcome = out.verdict;
+        out.voice = judgeVoice(post, judgeModel);
       } catch (e) {
         err = `judge: ${e.message}`;
       }
@@ -203,14 +222,21 @@ export function scorecard(rows) {
   const meanAll = drafts.length
     ? drafts.reduce((a, r) => a + meanScore(r.out.scores), 0) / drafts.length
     : 0;
+  const voiced = drafts.filter((r) => Number.isFinite(Number(r.out.voice?.human_voice)));
+  const meanVoice = voiced.length
+    ? voiced.reduce((a, r) => a + Number(r.out.voice.human_voice), 0) / voiced.length
+    : 0;
   const gateFails = drafts.filter((r) => r.out?.gate && !r.out.gate.pass).length;
   const misses = rows.filter((r) => !r.pass).length;
-  const fitness = 10 * meanAll - 50 * gateFails - 20 * misses;
+  // Voice is weighted like the mandate mean: a draft that passes every rule but reads as
+  // generated is the failure the desk kept shipping (brief §8).
+  const fitness = 10 * meanAll + 10 * meanVoice - 50 * gateFails - 20 * misses;
   return {
     passes: rows.length - misses,
     total: rows.length,
     drafts: drafts.length,
     meanAll,
+    meanVoice,
     gateFails,
     misses,
     fitness,

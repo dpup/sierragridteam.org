@@ -40,8 +40,8 @@ permissions:
 # (a hallucinated spec, a laundered claim). Accuracy is trust-critical and volume is tiny,
 # so this pipeline buys capability, not cost. Tune here; keep them different.
 env:
-  WRITER_MODEL: claude-opus-4-8
-  CRITIC_MODEL: claude-sonnet-4-6
+  WRITER_MODEL: claude-opus-5-5
+  CRITIC_MODEL: claude-sonnet-5-5
 
 concurrency:
   group: news-desk

@@ -33,9 +33,9 @@ const ROUNDS = Math.max(1, Number(roundsArg?.split('=')[1] || 3));
 
 const cfg = JSON.parse(read('evals/scenarios.json'));
 const ctx = cfg.context;
-const GEN = process.env.EVAL_GEN_MODEL || cfg.genModel || 'claude-opus-4-8';
-const JUDGE = process.env.EVAL_JUDGE_MODEL || cfg.judgeModel || 'claude-sonnet-4-6';
-const OPT = process.env.EVAL_OPT_MODEL || 'claude-opus-4-8';
+const GEN = process.env.EVAL_GEN_MODEL || cfg.genModel || 'claude-opus-5-5';
+const JUDGE = process.env.EVAL_JUDGE_MODEL || cfg.judgeModel || 'claude-sonnet-5-5';
+const OPT = process.env.EVAL_OPT_MODEL || 'claude-opus-5-5';
 const VOTES = Math.max(1, Number(process.env.EVAL_VOTES || 1));
 
 const WRITER_REL = '.github/prompts/news-desk-writer.md';
@@ -71,7 +71,7 @@ function feedback(rows) {
       if (r.err) return `- ${r.name}: ERROR (${r.err})`;
       if (r.outcome === 'DECLINE') return `- ${r.name}: writer DECLINED to post`;
       const s = r.out.scores || {};
-      return `- ${r.name}: ${r.outcome}, gate ${r.out.gate?.pass ? 'pass' : 'FAIL'}, scores value=${s.value_sowhat} accuracy=${s.accuracy_sourcing} voice=${s.voice_style} scope=${s.scope_variety} format=${s.structure_format}. Issues: ${(r.out.top_issues || []).join('; ') || 'none'}`;
+      return `- ${r.name}: ${r.outcome}, gate ${r.out.gate?.pass ? 'pass' : 'FAIL'}, scores value=${s.value_sowhat} accuracy=${s.accuracy_sourcing} voice=${s.voice_style} scope=${s.scope_variety} format=${s.structure_format}. Issues: ${(r.out.top_issues || []).join('; ') || 'none'}. Machine-voice ${r.out.voice?.human_voice ?? '?'}/5, tells: ${(r.out.voice?.tells || []).map((t) => `${t.type} (${t.quote})`).join('; ') || 'none'}`;
     })
     .join('\n');
 }
@@ -113,7 +113,7 @@ function evaluate(writerPrompt) {
 }
 
 const fmt = (c) =>
-  `fitness ${c.fitness.toFixed(1)} (mean ${c.meanAll.toFixed(2)}, ${c.gateFails} gate-fail, ${c.misses} miss)`;
+  `fitness ${c.fitness.toFixed(1)} (mean ${c.meanAll.toFixed(2)}, voice ${c.meanVoice.toFixed(2)}, ${c.gateFails} gate-fail, ${c.misses} miss)`;
 
 // ── run ────────────────────────────────────────────────────────────────────────
 console.log(

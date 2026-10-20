@@ -9,7 +9,7 @@
 // Usage:  npm run eval:desk
 //         node evals/judge.mjs --votes=3     (majority of 3 — stabilises borderline cases)
 //         node evals/judge.mjs --json        (machine-readable results)
-//         EVAL_JUDGE_MODEL=claude-sonnet-4-6 node evals/judge.mjs
+//         EVAL_JUDGE_MODEL=claude-sonnet-5-5 node evals/judge.mjs
 //
 // Exit code: 0 if every verdict is within one notch of expected; 1 on a two-notch miss
 // (PUBLISH<->REJECT), an unparseable judge response, or a harness error.
@@ -18,7 +18,7 @@ import { read, ORDER, judgeWithVotes } from './lib.mjs';
 
 const jsonOut = process.argv.includes('--json');
 const manifest = JSON.parse(read('evals/cases.json'));
-const MODEL = process.env.EVAL_JUDGE_MODEL || manifest.judgeModel || 'claude-opus-4-8';
+const MODEL = process.env.EVAL_JUDGE_MODEL || manifest.judgeModel || 'claude-opus-5-5';
 const votesArg = process.argv.find((a) => a.startsWith('--votes='));
 const VOTES = Math.max(1, Number(votesArg?.split('=')[1] || process.env.EVAL_VOTES || 1));
 
