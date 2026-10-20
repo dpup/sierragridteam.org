@@ -1,27 +1,36 @@
 ---
 title: What signed messages add to a LoRa mesh
-description: Mesh firmware is starting to sign each message with a per-node key so a receiver can confirm who sent it — a different guarantee from the encryption that already hides the content.
+description: Mesh firmware is starting to sign messages with a per-node key, so a receiver can check who sent a message as well as keep outsiders from reading it.
 pubDate: 2026-10-20
 tag: Tech
 author: Signal Desk
 ---
 
-In a foothill power outage, a short text that arrives over a LoRa mesh — the network of low-power radios that pass messages hop to hop when there is no cell tower in the path — is easy to take at face value. It is worth asking a plainer question first: how does the receiving radio know the message is really from who it claims? Mesh firmware has started to answer it.
+A LoRa mesh is a network of low-power radios that pass short text messages from one radio to the next, with no cell tower or internet in the path. In a foothill power outage, it may be how a neighbor's message reaches you. Meshtastic 2.8, announced this month, adds a way for a receiver to confirm who sent a message.
 
-## What the shared key protects
+## What channel encryption covers
 
-A mesh channel is encrypted, but not in the way most people picture. Meshtastic, one of the common mesh platforms, [encrypts each message with a key shared by everyone on the channel](https://meshtastic.org/docs/overview/encryption) — one pre-shared key, AES-128 or AES-256, that every node on that channel holds. That hides the content from anyone without the key. It does nothing to prove who sent a given message. In the project's own words, ["anyone with a channel's key can send an unsigned packet that claims to come from any node"](https://meshtastic.org/docs/overview/encryption) — so a receiver should treat the named sender "as a claim, not a proof."
+Meshtastic, one of the common mesh platforms, [encrypts each channel with a pre-shared key](https://meshtastic.org/docs/overview/encryption) that every node on the channel holds. A 16-byte key gives AES-128 encryption and a 32-byte key gives AES-256. A listener without the key cannot read the messages.
 
-The gap is not hypothetical. A [documented vulnerability](https://github.com/meshtastic/firmware/security/advisories/GHSA-45vg-3f35-7ch2) in older Meshtastic firmware ran straight through it: because a node was identified by a number derived from its hardware MAC address rather than a cryptographic key, an attacker could forge the identifying record of another node and have the rest of the network accept it.
+Every node that holds the key can also send on the channel, under any name. The project's documentation says that ["anyone with a channel's key can send an unsigned packet that claims to come from any node"](https://meshtastic.org/docs/overview/encryption), and it advises receivers to treat the named sender "as a claim, not a proof."
 
-## Signing the sender
+Older Meshtastic firmware had a related weakness. A [security advisory](https://github.com/meshtastic/firmware/security/advisories/GHSA-45vg-3f35-7ch2) describes how each node was identified by a number derived from its hardware MAC address rather than from a cryptographic key. An attacker could forge another node's identifying record, and the rest of the network would accept it.
 
-Meshtastic's [version 2.8](https://meshtastic.org/blog/lets-talk-about-2-8/), out this month, rebuilds identity around public-key cryptography. A node's number is now derived from its public key, and a node signs its broadcasts "with their identity key, so a receiver can confirm who sent them." A new setting controls how strict to be: the default, Compatible, still accepts unsigned packets from older nodes; Balanced requires a signature from any node that has signed before; Strict accepts only what it can verify.
+## Signed broadcasts in Meshtastic 2.8
 
-It is early code, and the project says so. The first cut, 2.8.0, was pulled after release over a flaw in the signing itself; its replacement, 2.8.1, is labeled an alpha that "isn't ready for wide deployment." The direction is set; the release to run it on is not here yet.
+[Meshtastic 2.8](https://meshtastic.org/blog/lets-talk-about-2-8/), announced October 8, bases node identity on public-key cryptography. A node's number is now derived from its public key, and nodes sign their broadcasts "with their identity key, so a receiver can confirm who sent them." A new signature policy setting has three levels:
 
-## Not one project's problem
+- **Compatible**, the default, accepts unsigned packets from older nodes.
+- **Balanced** requires a signature from any node that has signed before.
+- **Strict** accepts only packets it can verify.
 
-Authenticating a message is something every mesh platform is working through, not a finished feature anywhere. [MeshCore](https://docs.meshcore.io/faq/) — the platform this network is built on — already signs the advert each node broadcasts about itself, with the public key in it "also signed to prevent spoofing." But an ordinary group message is still marked, in its own packet notes, an "(unverified) group text message." Signing a node's identity and signing the content it sends are separate steps, and the second is the harder one.
+The release is early. Version 2.8.0 was withdrawn after a problem turned up in its packet-signing code. Its replacement, 2.8.1, is an alpha that the project says "isn't ready for wide deployment."
 
-For anyone running a node, the practical reading is short. Encryption and authentication are two different guarantees: one keeps outsiders from reading a message, the other lets a receiver trust where it came from, and a mesh can have the first without the second. Keep a node's firmware current so the identity and signing work applies as it lands — and when it does, set the signature policy with care, because Strict rejects a forged sender and a neighbor still on older firmware alike.
+## MeshCore's approach
+
+[MeshCore](https://docs.meshcore.io/faq/), the platform this network is built on, already signs the advert each node broadcasts to announce itself. The public key in that advert is "also signed to prevent spoofing." Group messages are not signed: MeshCore's packet notes list group text as "an (unverified) group text message." A receiver on MeshCore can check who a node is, but cannot check the sender named on a group message.
+
+## For anyone running a node
+
+- Keep firmware current, so the identity and signing changes reach your node as each project releases them.
+- When signing is available, set the signature policy with your neighbors' firmware in mind. Strict rejects a forged sender, and it also rejects every node still running older firmware.
