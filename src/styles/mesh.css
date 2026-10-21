@@ -459,13 +459,19 @@
   stroke: var(--line-strong);
   vector-effect: non-scaling-stroke;
 }
+/*
+ * Hung from the low in proportion to where it falls (--at, 0–1): starting at the low near the
+ * left edge, ending at it near the right. A fixed offset ran off the right edge of a phone and
+ * scrolled the page sideways. Capped at the plot's width, it wraps rather than overflow.
+ */
 .mesh-view .mesh-chart__note {
   position: absolute;
-  transform: translate(-30%, calc(-100% - var(--space-3)));
+  transform: translate(calc(var(--at, 0.5) * -100%), calc(-100% - var(--space-3)));
+  width: max-content;
+  max-width: 100%;
   font-family: var(--font-ui);
   font-size: var(--fs-label-lg);
   color: var(--brand-brass-text);
-  white-space: nowrap;
   pointer-events: none;
 }
 .mesh-view .mesh-chart__hint {
