@@ -1,0 +1,116 @@
+---
+/**
+ * PartnerCard — one organization on /partners: its logo on a raised tile, the category
+ * label, the name, the agreed write-up, and a link out to their site. Follows the card
+ * rules: 1px tan border, square corners, no shadow. Logo left of the text at desktop,
+ * stacked above it on phones.
+ *
+ * The logo is the partner's own mark, unmodified (see src/config/partners.ts). Here it sits
+ * beside the name in text, so it takes empty alt — announcing "Heltec Automation" twice
+ * helps no one. (The homepage band, where the logo stands alone, uses `logoAlt`.)
+ */
+import { Image } from 'astro:assets';
+import Kicker from './Kicker.astro';
+import type { Partner } from '@config/partners';
+import { partners as copy } from '@config/content';
+
+interface Props {
+  partner: Partner;
+}
+
+const { partner } = Astro.props;
+const host = new URL(partner.url).hostname.replace(/^www\./, '');
+---
+
+<article class="partner-card">
+  <div class="partner-card__media">
+    <Image src={partner.logo} alt="" widths={[230, 460]} sizes="180px" class="partner-card__logo" />
+  </div>
+  <div class="partner-card__body">
+    <Kicker>{partner.category}</Kicker>
+    <h2 class="partner-card__name">{partner.name}</h2>
+    <p class="partner-card__desc">{partner.description}</p>
+    <a class="partner-card__link" href={partner.url} target="_blank" rel="noopener external">
+      {`${copy.visitLabel} ${host}`}<span aria-hidden="true"> &#8599;</span>
+    </a>
+  </div>
+</article>
+
+<style>
+  .partner-card {
+    display: grid;
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+    background: var(--surface-card);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+
+  /* A logo tile, matching the homepage band: the lighter raised fill behind the mark,
+     ruled off from the text. */
+  .partner-card__media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-7) var(--space-6);
+    background: var(--surface-raised);
+    border-right: var(--border);
+  }
+
+  .partner-card__logo {
+    display: block;
+    width: 180px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .partner-card__body {
+    padding: var(--space-6) var(--space-7) var(--space-6) var(--space-6);
+  }
+
+  .partner-card__name {
+    margin-top: var(--space-2);
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-medium);
+    color: var(--ink-strong);
+  }
+
+  .partner-card__desc {
+    margin-top: var(--space-4);
+    max-width: 68ch;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .partner-card__link {
+    display: inline-block;
+    margin-top: var(--space-5);
+    font-family: var(--font-ui);
+    font-size: var(--fs-label-lg);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--brand-green);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .partner-card__link:hover {
+    color: var(--brand-green-hover);
+    text-decoration: none;
+  }
+
+  @media (max-width: 760px) {
+    .partner-card {
+      grid-template-columns: 1fr;
+    }
+    .partner-card__media {
+      padding: var(--space-6);
+      border-right: 0;
+      border-bottom: var(--border);
+    }
+    .partner-card__body {
+      padding: var(--space-5);
+    }
+  }
+</style>

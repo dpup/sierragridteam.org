@@ -1,0 +1,103 @@
+---
+/**
+ * /partners — the organizations S.I.E.R.R.A works with. Each entry is a PartnerCard drawn
+ * from src/config/partners.ts (the same list as the homepage Supporters band); the page's
+ * own copy is `partners` in src/config/content.ts.
+ */
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Section from '@components/Section.astro';
+import Kicker from '@components/Kicker.astro';
+import Button from '@components/Button.astro';
+import PartnerCard from '@components/PartnerCard.astro';
+import { partners as copy } from '@config/content';
+import { partners } from '@config/partners';
+import { site } from '@config/site';
+
+const description =
+  'The organizations working with S.I.E.R.R.A — the Signal Integrity & Emergency Radio ' +
+  'Response Alliance — on off-grid emergency communications for the Calaveras & Tuolumne ' +
+  'foothills.';
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: `Partners — ${site.name}`,
+  url: `${site.url}/partners`,
+};
+---
+
+<BaseLayout title="Partners" description={description} path="/partners" schema={pageSchema}>
+  <Section surface="page" labelledby="partners-title">
+    <header class="partners-head">
+      <Kicker>{copy.kicker}</Kicker>
+      <h1 id="partners-title" class="partners-head__title">{copy.title}</h1>
+      <p class="partners-head__intro">{copy.intro}</p>
+    </header>
+
+    <div class="partners-list">
+      {partners.map((partner) => <PartnerCard partner={partner} />)}
+    </div>
+  </Section>
+
+  <aside class="partners-cta" aria-labelledby="partners-cta-title">
+    <div class="partners-cta__inner">
+      <h2 id="partners-cta-title" class="partners-cta__title">{copy.cta.title}</h2>
+      <p class="partners-cta__body">{copy.cta.body}</p>
+      <div class="partners-cta__actions">
+        <Button variant="primary" href="/contact" arrow>{copy.cta.label}</Button>
+      </div>
+    </div>
+  </aside>
+</BaseLayout>
+
+<style>
+  .partners-head {
+    max-width: 64ch;
+  }
+  .partners-head__title {
+    margin-top: var(--space-3);
+    font-size: var(--fs-h2);
+  }
+  .partners-head__intro {
+    margin-top: var(--space-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  .partners-list {
+    margin-top: var(--space-7);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  /* The same closing band as /about: banner surface between two tan rules. */
+  .partners-cta {
+    background: var(--surface-banner);
+    border-top: var(--border);
+    border-bottom: var(--border);
+    padding-block: var(--space-9);
+    text-align: center;
+  }
+  .partners-cta__inner {
+    max-width: 52ch;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+  .partners-cta__title {
+    font-size: var(--fs-h3);
+  }
+  .partners-cta__body {
+    margin-top: var(--space-3);
+    font-size: var(--fs-lead);
+    color: var(--ink-body);
+  }
+  .partners-cta__actions {
+    margin-top: var(--space-6);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+</style>

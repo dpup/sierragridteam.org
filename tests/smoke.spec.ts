@@ -22,6 +22,7 @@ const pages = [
   { name: 'contact', path: '/contact', h1: /contact & volunteer/i },
   { name: 'contact-thanks', path: '/contact/thanks', h1: /your message is on its way/i },
   { name: 'about', path: '/about', h1: /resilient communications/i },
+  { name: 'partners', path: '/partners', h1: /organizations we build with/i },
   { name: 'about-jay', path: '/about/jay', h1: /jay l\. goldberg/i },
   { name: 'about-corrinne', path: '/about/corrinne', h1: /corrinne goldberg/i },
   { name: 'about-allan', path: '/about/allan', h1: /allan claghorn/i },
