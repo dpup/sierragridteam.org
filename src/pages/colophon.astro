@@ -5,7 +5,7 @@
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import { colophon } from '@config/content';
 import { site } from '@config/site';
 
@@ -23,10 +23,14 @@ const pageSchema = {
 
 <BaseLayout title="Colophon" description={description} path="/colophon" schema={pageSchema}>
   <Section surface="page" labelledby="colophon-title">
-    <div class="colophon">
-      <Kicker>{colophon.kicker}</Kicker>
-      <h1 id="colophon-title" class="colophon__title">{colophon.title}</h1>
+    <PageHead
+      kicker={colophon.kicker}
+      id="colophon-title"
+      lead={colophon.headline.lead}
+      rest={colophon.headline.rest}
+    />
 
+    <div class="colophon">
       {
         colophon.sections.map((s) => (
           <section class="colophon__section">
@@ -45,13 +49,10 @@ const pageSchema = {
 
 <style>
   .colophon {
+    margin-top: var(--space-7);
     max-width: 64ch;
   }
-  .colophon__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .colophon__section {
+  .colophon__section + .colophon__section {
     margin-top: var(--space-6);
   }
   .colophon__heading {

@@ -32,6 +32,13 @@ When a life-safety hazard is active, a site-wide **EmergencyBanner** sits above 
 - **TopBar** (`<TopBar>`) — brand lockup (hidden on `/`), nav links, status pill, clock.
 - **Footer** (`<SiteFooter>`) — full org name (legal requirement: full name ≥1× per page),
   mark, P.O. Box, copyright "Established 2026", quick links, the 911 disclaimer line.
+- **Page head** (`<PageHead>`) — every single-column page opens the same way: a kicker, an h1
+  on the hero's two-line pattern (line one in muted ink, line two in near-black), then a lede.
+  /live and /mesh generate their two lines from the feed; About, Partners, Contact, Donate,
+  the colophon, the blog archive and the contact confirmation take theirs from
+  `src/config/content.ts` (`headline: { lead, rest }`). The exceptions are deliberate: the
+  homepage hero, /blog (two columns: the head beside the latest posts), a post and a profile
+  page (each a two-column article), and the centred 404.
 
 ## Page-by-page
 

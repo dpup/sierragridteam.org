@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import Card from '@components/Card.astro';
 import Callout from '@components/Callout.astro';
 import ZeffyEmbed from '@components/ZeffyEmbed.astro';
@@ -22,11 +22,13 @@ const pageSchema = {
 
 <BaseLayout title="Donate" description={description} path="/donate" schema={pageSchema}>
   <Section surface="page" labelledby="donate-title">
-    <header class="donate-head">
-      <Kicker>{donate.kicker}</Kicker>
-      <h1 id="donate-title" class="donate-head__title">{donate.title}</h1>
-      <p class="donate-head__intro">{donate.intro}</p>
-    </header>
+    <PageHead
+      kicker={donate.kicker}
+      id="donate-title"
+      lead={donate.headline.lead}
+      rest={donate.headline.rest}
+      lede={donate.intro}
+    />
   </Section>
 
   {
@@ -96,20 +98,6 @@ const pageSchema = {
 ></script>
 
 <style>
-  .donate-head {
-    max-width: 60ch;
-  }
-  .donate-head__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .donate-head__intro {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    line-height: var(--lh-body);
-    color: var(--ink-body);
-  }
-
   .donate-h2 {
     font-size: var(--fs-h3);
     margin-bottom: var(--space-4);

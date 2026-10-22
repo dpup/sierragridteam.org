@@ -2,6 +2,7 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
 import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import SectionHeader from '@components/SectionHeader.astro';
 import Button from '@components/Button.astro';
 import PersonCard from '@components/PersonCard.astro';
@@ -23,11 +24,13 @@ const aboutSchema = {
 
 <BaseLayout title="About" description={description} path="/about" schema={aboutSchema}>
   <Section surface="page" labelledby="about-title">
-    <header class="about-head">
-      <Kicker>{about.kicker}</Kicker>
-      <h1 id="about-title" class="about-head__title">{about.title}</h1>
-      <p class="about-head__intro">{about.intro}</p>
-    </header>
+    <PageHead
+      kicker={about.kicker}
+      id="about-title"
+      lead={about.headline.lead}
+      rest={about.headline.rest}
+      lede={about.intro}
+    />
   </Section>
 
   <Section surface="page" labelledby="story-title">
@@ -158,20 +161,6 @@ const aboutSchema = {
       grid-template-columns: 1fr;
       gap: var(--space-6);
     }
-  }
-
-  .about-head {
-    max-width: 64ch;
-  }
-  .about-head__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .about-head__intro {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    line-height: var(--lh-body);
-    color: var(--ink-body);
   }
 
   .about-story {

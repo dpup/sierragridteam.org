@@ -6,7 +6,7 @@
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import Button from '@components/Button.astro';
 import PartnerCard from '@components/PartnerCard.astro';
 import { partners as copy } from '@config/content';
@@ -28,11 +28,13 @@ const pageSchema = {
 
 <BaseLayout title="Partners" description={description} path="/partners" schema={pageSchema}>
   <Section surface="page" labelledby="partners-title">
-    <header class="partners-head">
-      <Kicker>{copy.kicker}</Kicker>
-      <h1 id="partners-title" class="partners-head__title">{copy.title}</h1>
-      <p class="partners-head__intro">{copy.intro}</p>
-    </header>
+    <PageHead
+      kicker={copy.kicker}
+      id="partners-title"
+      lead={copy.headline.lead}
+      rest={copy.headline.rest}
+      lede={copy.intro}
+    />
 
     <div class="partners-list">
       {partners.map((partner) => <PartnerCard partner={partner} />)}
@@ -51,20 +53,6 @@ const pageSchema = {
 </BaseLayout>
 
 <style>
-  .partners-head {
-    max-width: 64ch;
-  }
-  .partners-head__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .partners-head__intro {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    line-height: var(--lh-body);
-    color: var(--ink-body);
-  }
-
   .partners-list {
     margin-top: var(--space-7);
     display: flex;

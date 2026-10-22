@@ -6,7 +6,7 @@
  */
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import Button from '@components/Button.astro';
 import { contact } from '@config/content';
 import { site } from '@config/site';
@@ -20,11 +20,16 @@ import { site } from '@config/site';
 >
   <Section surface="page" labelledby="thanks-title">
     <div class="thanks">
-      <Kicker>{contact.thanks.kicker}</Kicker>
-      <h1 id="thanks-title" class="thanks__title">{contact.thanks.title}</h1>
-      <p class="thanks__body">
-        {contact.thanks.body}{' '}<a href={`mailto:${site.email}`}>{site.email}</a>.
-      </p>
+      <PageHead
+        kicker={contact.thanks.kicker}
+        id="thanks-title"
+        lead={contact.thanks.headline.lead}
+        rest={contact.thanks.headline.rest}
+      >
+        <Fragment slot="lede">
+          {contact.thanks.body}{' '}<a href={`mailto:${site.email}`}>{site.email}</a>.
+        </Fragment>
+      </PageHead>
       <div class="thanks__actions">
         <Button variant="primary" href="/" arrow>Back to the Homepage</Button>
         <Button variant="secondary" href="/live">View the Live Feed</Button>
@@ -35,19 +40,8 @@ import { site } from '@config/site';
 
 <style>
   .thanks {
-    max-width: 60ch;
     /* Keep the short page from feeling empty above the footer. */
     min-height: 40vh;
-  }
-  .thanks__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .thanks__body {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    line-height: var(--lh-body);
-    color: var(--ink-body);
   }
   .thanks__actions {
     margin-top: var(--space-6);

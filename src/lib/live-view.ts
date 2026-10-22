@@ -589,8 +589,8 @@ export function renderHeadline(
   tone: StatusTone
 ): string {
   const lead = (t: string) =>
-    `<span class="live-h1__lead${tone === 'alarm' ? ' live-h1__lead--alarm' : ''}">${esc(t)}</span>`;
-  const rest = (t: string) => `<span class="live-h1__rest">${esc(t)}</span>`;
+    `<span class="page-head__lead${tone === 'alarm' ? ' page-head__lead--alarm' : ''}">${esc(t)}</span>`;
+  const rest = (t: string) => `<span class="page-head__rest">${esc(t)}</span>`;
   const unreadable = STREAM_LAYERS.some(
     (l) => (haz.layers?.[l]?.metadata?.sourceStatus ?? 'UNAVAILABLE') === 'UNAVAILABLE'
   );

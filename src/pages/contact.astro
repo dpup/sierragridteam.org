@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import Callout from '@components/Callout.astro';
 import ContactForm from '@components/contact/ContactForm.astro';
 import { site } from '@config/site';
@@ -26,11 +26,13 @@ const contactSchema = {
   schema={contactSchema}
 >
   <Section surface="page" labelledby="contact-title">
-    <header class="contact-head">
-      <Kicker>{contact.kicker}</Kicker>
-      <h1 id="contact-title" class="contact-head__title">{contact.title}</h1>
-      <p class="contact-head__intro">{contact.intro}</p>
-    </header>
+    <PageHead
+      kicker={contact.kicker}
+      id="contact-title"
+      lead={contact.headline.lead}
+      rest={contact.headline.rest}
+      lede={contact.intro}
+    />
 
     <div class="contact-911">
       <Callout accent="orange" heading="Not for emergencies" role="note">
@@ -81,23 +83,8 @@ const contactSchema = {
 </BaseLayout>
 
 <style>
-  .contact-head {
-    max-width: 64ch;
-    margin-bottom: var(--space-6);
-  }
-  .contact-head__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .contact-head__intro {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    line-height: var(--lh-body);
-    color: var(--ink-body);
-  }
-
   .contact-911 {
-    margin-bottom: var(--space-8);
+    margin-block: var(--space-7) var(--space-8);
   }
 
   .contact-grid {
