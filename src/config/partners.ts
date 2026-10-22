@@ -61,14 +61,15 @@ export const partners: readonly Partner[] = [
     // and footer agree on none.
     name: 'Ebbetts Radio Safety Net',
     category: 'Community Partner',
-    // Drafted from ersn.net's own description (2026-10). Every fact is theirs: the founding
-    // year, the two repeaters, the weekly nets, and that S.I.E.R.R.A grew out of ERSN.
+    // The first sentence is drawn from ersn.net's own description (2026-10). The partnership
+    // itself — S.I.E.R.R.A helping manage ERSN's repeaters and feeding data to ersn.net — is
+    // as S.I.E.R.R.A states it. Keep it short: it should not outgrow the Heltec entry.
     description:
       'The Ebbetts Radio Safety Net (ERSN) is a volunteer organization that has provided ' +
-      'emergency communications to Arnold and Murphys since 2024. It runs two General Mobile ' +
-      'Radio Service (GMRS) repeaters — one on Arnold Summit, one in Murphys — covering parts ' +
-      'of the Highway 4 corridor, and holds weekly practice nets open to licensed operators. ' +
-      'S.I.E.R.R.A grew out of ERSN, where founder Jay Goldberg runs the Murphys net.',
+      'emergency communications to Arnold and Murphys since 2024, through weekly practice ' +
+      'nets and two General Mobile Radio Service (GMRS) repeaters on the Highway 4 corridor. ' +
+      'S.I.E.R.R.A grew out of ERSN, helps manage those repeaters, and provides data feeds ' +
+      'used on ersn.net.',
     logo: ersnLogo,
     logoAlt: 'Ebbetts Radio Safety Net (ERSN)',
     url: 'https://ersn.net/',
