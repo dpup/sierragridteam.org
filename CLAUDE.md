@@ -306,10 +306,13 @@ pick up a new OpenFreeMap build).
   away). ⚠️ **The embed only loads in CI** — the dev sandbox has no route to `zeffy.com` and
   the preview CI serves doesn't either, so `tests/donate.spec.ts` SIMULATES the injected DOM.
   Anything about a third-party embed that "passes locally" has probably not been exercised.
-- **Supporters:** the homepage band renders `src/config/supporters.ts` — add or remove an
-  organization there, never in markup. A supporter's logo is used **unmodified** (their brand
-  is not ours to recolor), which makes this the one sanctioned place non-palette color
-  appears. Only list an organization once the relationship is real and they have agreed to be
+- **Partners & supporters:** `src/config/partners.ts` is one list that drives both the
+  `/partners` page (category, write-up, link — `PartnerCard`) and the homepage Supporters
+  band (logos only) — add or remove an organization there, never in markup. A partner's
+  write-up is agreed copy; fix only canonical spellings. `/partners` sits in the nav before
+  About for now; if the nav reads as too heavy, it is the first candidate to drop to the
+  footer. A partner's logo is used **unmodified** (their brand is not ours to recolor), which
+  makes partner logos the one sanctioned place non-palette color appears. Only list an organization once the relationship is real and they have agreed to be
   named, and don't characterize what they gave unless we actually know.
 - **Pre-launch tracking** lives outside this repo (the project-hub repo); don't add
   a checklist here. Repo-local TODOs are inline comments at the relevant code.

@@ -77,6 +77,7 @@ export const nav: ReadonlyArray<{ label: string; href: string }> = [
   { label: 'Live Feed', href: '/live' },
   { label: 'Mesh', href: '/mesh' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Partners', href: '/partners' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];

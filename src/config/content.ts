@@ -454,6 +454,31 @@ export const about = {
   },
 } as const;
 
+/**
+ * The Partners page (/partners). Only the page's frame lives here — the partners themselves
+ * (name, category, write-up, logo) are in src/config/partners.ts. Spare, like the homepage
+ * Supporters band: who we work with is a fact about how the network is built, not a boast,
+ * and nothing here may describe a kind of partner we do not have (style guide §3).
+ */
+export const partners = {
+  kicker: 'Partners',
+  title: 'The organizations we build with.',
+  intro:
+    'S.I.E.R.R.A is an all-volunteer non-profit, but an off-grid network needs more than ' +
+    'volunteers can make for themselves — radio hardware that runs on solar, sites high ' +
+    'enough to be heard, and the trust of the communities it serves. These organizations work ' +
+    'with the alliance to build it.',
+  // Followed by the partner's domain: "Visit heltec.org".
+  visitLabel: 'Visit',
+  cta: {
+    title: 'Partner with the network.',
+    body:
+      'If you operate a tower, manage land on a ridge, serve a foothill community, or build ' +
+      'the equipment a mesh runs on, we would like to hear from you.',
+    label: 'Get in Touch',
+  },
+} as const;
+
 export const donate = {
   kicker: 'Support the Mission',
   title: 'Help keep the foothills connected.',
