@@ -1,0 +1,97 @@
+---
+/**
+ * PageHead — the head every single-column page opens with, on the hero's pattern: a kicker,
+ * an h1 in two lines (the first in muted ink, the second in full, so the sentence reads as
+ * one statement), then a lede. Anything in the default slot follows the lede — /mesh's
+ * figures, the archive's back link.
+ *
+ * /mesh and /live generate their two lines from the feed and inject them in the browser, so
+ * the line classes (`page-head__lead`, `page-head__rest`) are styled `:global` — client HTML
+ * uses the same classes. `page-head__lead--alarm` turns the first line the alert orange: a
+ * genuine risk only (/live with a Severe or Extreme hazard in the stream).
+ *
+ * Place it first inside the page's first `Section`; it adds its own space under the topbar.
+ */
+import Kicker from './Kicker.astro';
+
+interface Props {
+  kicker: string;
+  /** The h1's id — the page's first Section is labelled by it. */
+  id: string;
+  /** Line one, in muted ink. */
+  lead: string;
+  /** Line two, in full ink. Omit only while a live page's headline is still loading. */
+  rest?: string;
+  /** A plain-text lede. Use the `lede` slot instead for one with markup or a client hook. */
+  lede?: string;
+  /** Client-fill hooks on the h1 for a generated headline, e.g. `data-live-headline`. */
+  h1Attrs?: Record<`data-${string}`, string | boolean>;
+}
+
+const { kicker, id, lead, rest, lede, h1Attrs = {} } = Astro.props;
+const hasLedeSlot = Astro.slots.has('lede');
+---
+
+<header class="page-head">
+  <Kicker as="p">{kicker}</Kicker>
+  <h1 id={id} class="page-head__h1" {...h1Attrs}>
+    <span class="page-head__lead">{lead}</span>{
+      rest && (
+        <Fragment>
+          {' '}
+          <span class="page-head__rest">{rest}</span>
+        </Fragment>
+      )
+    }
+  </h1>
+  {
+    hasLedeSlot ? (
+      <p class="page-head__lede">
+        <slot name="lede" />
+      </p>
+    ) : (
+      lede && <p class="page-head__lede">{lede}</p>
+    )
+  }
+  <slot />
+</header>
+
+<style>
+  .page-head {
+    padding-top: var(--space-7);
+  }
+  .page-head__h1 {
+    margin-top: var(--space-5);
+    max-width: 22ch;
+    font-family: var(--font-display);
+    font-size: var(--fs-hero);
+    font-weight: var(--fw-medium);
+    line-height: var(--lh-tight);
+    letter-spacing: var(--tracking-tight);
+  }
+  .page-head :global(.page-head__lead) {
+    display: block;
+    color: var(--ink-muted);
+  }
+  .page-head :global(.page-head__lead--alarm) {
+    color: var(--signal-orange-text);
+  }
+  .page-head :global(.page-head__rest) {
+    display: block;
+    color: var(--ink-strong);
+  }
+  .page-head__lede {
+    margin-top: var(--space-5);
+    max-width: 62ch;
+    font-family: var(--font-display);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-body);
+    color: var(--ink-body);
+  }
+
+  @media (max-width: 599px) {
+    .page-head {
+      padding-top: var(--space-5);
+    }
+  }
+</style>

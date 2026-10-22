@@ -106,6 +106,10 @@ Page rules:
   A confirmed-empty feed (`OK`/`STALE`) is a real `0` → "None" (data.sierragridteam.org guarantees an
   error never replays a cached `0`).
 - One `<h1>` per page; correct heading order; real landmarks.
+- **Open a single-column page with `PageHead`** (kicker, the hero's two-line h1, lede) as the
+  first thing in its first `Section` — the same head /live and /mesh use. Its copy is a
+  `headline: { lead, rest }` in `content.ts`: line one muted, line two the claim. Only the
+  homepage hero, the two-column /blog, posts, profiles and the 404 open differently.
 - The homepage sets `hideBrandInNav`; other pages show the compact brand automatically.
 - ⚠️ **Do not put a `CLAUDE.md` (or any `.md`) in `src/pages/`** — Astro would route it
   as a public page. Page guidance lives here in the root CLAUDE.md.

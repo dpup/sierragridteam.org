@@ -6,7 +6,7 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import { blog } from '@config/content';
 import { site } from '@config/site';
 
@@ -49,14 +49,16 @@ const pageSchema = {
 
 <BaseLayout title="Blog Archive" description={description} path="/blog/archive" schema={pageSchema}>
   <Section surface="page" labelledby="archive-title">
-    <header class="archive-head">
-      <Kicker>{blog.archive.kicker}</Kicker>
-      <h1 id="archive-title" class="archive-head__title">{blog.archive.title}</h1>
-      <p class="archive-head__intro">{blog.archive.intro}</p>
-      <p class="archive-head__back">
+    <PageHead
+      kicker={blog.archive.kicker}
+      id="archive-title"
+      lead={blog.archive.headline.lead}
+      rest={blog.archive.headline.rest}
+    >
+      <p class="archive-back">
         <a href="/blog"><span aria-hidden="true">&larr;</span> {blog.archive.backLink}</a>
       </p>
-    </header>
+    </PageHead>
 
     {posts.length === 0 && <p class="archive-empty">{blog.emptyNote}</p>}
 
@@ -87,22 +89,10 @@ const pageSchema = {
 </BaseLayout>
 
 <style>
-  .archive-head {
-    max-width: 64ch;
+  .archive-back {
+    margin-top: var(--space-5);
   }
-  .archive-head__title {
-    margin-top: var(--space-3);
-    font-size: var(--fs-h2);
-  }
-  .archive-head__intro {
-    margin-top: var(--space-4);
-    font-size: var(--fs-lead);
-    color: var(--ink-body);
-  }
-  .archive-head__back {
-    margin-top: var(--space-4);
-  }
-  .archive-head__back a {
+  .archive-back a {
     font-family: var(--font-ui);
     font-size: var(--fs-label-lg);
     font-weight: var(--fw-semibold);
@@ -111,7 +101,7 @@ const pageSchema = {
     text-decoration: none;
     color: var(--brand-green);
   }
-  .archive-head__back a:hover {
+  .archive-back a:hover {
     color: var(--brand-green-hover);
     text-decoration: underline;
   }

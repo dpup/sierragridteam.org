@@ -237,8 +237,9 @@ export const emergencyBanner = {
 } as const;
 
 export const contact = {
-  title: 'Contact & Volunteer',
-  kicker: 'Join the Alliance',
+  kicker: 'Contact & Volunteer',
+  /** The h1, two lines on the hero's pattern (PageHead): muted, then near-black. */
+  headline: { lead: 'Join the people', rest: 'who keep the signal up.' },
   intro:
     'S.I.E.R.R.A is built and run entirely by volunteers. Whether you hold a license, swing a ' +
     'wrench, or coordinate logistics, there is a role for you in keeping the foothills connected.',
@@ -274,7 +275,7 @@ export const contact = {
     'Something went wrong sending your message. Please email us directly — the address is below the form.',
   thanks: {
     kicker: 'Message Sent',
-    title: 'Thank you — your message is on its way.',
+    headline: { lead: 'Thank you —', rest: 'your message is on its way.' },
     body:
       'A volunteer reads every message, and we will reply to the email address you provided. ' +
       'If your note is time-sensitive, email us directly at',
@@ -296,8 +297,7 @@ export const blog = {
   emptyNote: 'No posts yet — the first ones are on their way.',
   archive: {
     kicker: 'News & Notes',
-    title: 'The archive.',
-    intro: 'Every post, by year and month.',
+    headline: { lead: 'The archive —', rest: 'every post, by year and month.' },
     backLink: 'Latest Posts',
   },
   post: {
@@ -317,7 +317,7 @@ export const blog = {
 /** /colophon — how the automated news desk works (linked from every desk post). */
 export const colophon = {
   kicker: 'Colophon',
-  title: 'How the Signal Desk works.',
+  headline: { lead: 'The Signal Desk —', rest: 'how it works.' },
   deskName: 'Signal Desk',
   sections: [
     {
@@ -360,7 +360,7 @@ export const colophon = {
 
 export const about = {
   kicker: 'About the Alliance',
-  title: 'Resilient communications, built by neighbors.',
+  headline: { lead: 'Resilient communications,', rest: 'built by neighbors.' },
   intro:
     'S.I.E.R.R.A — the Signal Integrity & Emergency Radio Response Alliance — is an ' +
     'all-volunteer non-profit that builds, operates, and trains the people behind an off-grid ' +
@@ -462,7 +462,7 @@ export const about = {
  */
 export const partners = {
   kicker: 'Partners',
-  title: 'The organizations we build with.',
+  headline: { lead: 'The organizations', rest: 'we build with.' },
   intro:
     'S.I.E.R.R.A is an all-volunteer non-profit, but an off-grid network needs more than ' +
     'volunteers can make for themselves — radio hardware that runs on solar, sites high ' +
@@ -481,7 +481,7 @@ export const partners = {
 
 export const donate = {
   kicker: 'Support the Mission',
-  title: 'Help keep the foothills connected.',
+  headline: { lead: 'Help keep', rest: 'the foothills connected.' },
   intro:
     'S.I.E.R.R.A is an all-volunteer non-profit. Your support funds the solar-powered relays, ' +
     'radios, and training that keep neighbors and first responders connected when the grid and ' +
