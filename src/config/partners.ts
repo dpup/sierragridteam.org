@@ -17,6 +17,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import heltecLogo from '../assets/partners/heltec-automation.png';
+import ersnLogo from '../assets/partners/ersn.webp';
 
 export interface Partner {
   /** Legal/product name, exactly as the organization writes it. */
@@ -54,5 +55,22 @@ export const partners: readonly Partner[] = [
     logo: heltecLogo,
     logoAlt: 'Heltec Automation',
     url: 'https://heltec.org/',
+  },
+  {
+    // ERSN's site writes the name both with and without the apostrophe; its title, sidebar
+    // and footer agree on none.
+    name: 'Ebbetts Radio Safety Net',
+    category: 'Community Partner',
+    // Drafted from ersn.net's own description (2026-10). Every fact is theirs: the founding
+    // year, the two repeaters, the weekly nets, and that S.I.E.R.R.A grew out of ERSN.
+    description:
+      'The Ebbetts Radio Safety Net (ERSN) is a volunteer organization that has provided ' +
+      'emergency communications to Arnold and Murphys since 2024. It runs two General Mobile ' +
+      'Radio Service (GMRS) repeaters — one on Arnold Summit, one in Murphys — covering parts ' +
+      'of the Highway 4 corridor, and holds weekly practice nets open to licensed operators. ' +
+      'S.I.E.R.R.A grew out of ERSN, where founder Jay Goldberg runs the Murphys net.',
+    logo: ersnLogo,
+    logoAlt: 'Ebbetts Radio Safety Net (ERSN)',
+    url: 'https://ersn.net/',
   },
 ];

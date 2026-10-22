@@ -57,11 +57,14 @@ const host = new URL(partner.url).hostname.replace(/^www\./, '');
     border-right: var(--border);
   }
 
+  /* Every mark gets the same box and is fitted inside it, so a square shield and a wide
+     wordmark carry similar weight rather than the shield standing 180px tall. */
   .partner-card__logo {
     display: block;
     width: 180px;
     max-width: 100%;
-    height: auto;
+    height: 120px;
+    object-fit: contain;
   }
 
   .partner-card__body {
