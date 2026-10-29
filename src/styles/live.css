@@ -3,54 +3,17 @@
  *
  * /live re-fetches and re-renders its hazard regions client-side (see
  * src/lib/live-view.ts), and Astro scoped styles don't apply to client-injected HTML.
- * So the generated headline, the four figures, the weather band, alert stream, road
- * conditions and scanner links — everything produced by live-view.ts — are styled here,
- * globally but namespaced under `.live-view` (the head under its own `live-` prefix).
- * Imported only by src/pages/live.astro, so it ships on /live alone. Tokens only (no raw
- * colors/fonts) — same rules as a component.
+ * So the four figures, the weather band, alert stream, road conditions and scanner links —
+ * everything produced by live-view.ts — are styled here, globally but namespaced under
+ * `.live-view`. (The generated headline uses PageHead's global line classes.) Imported only
+ * by src/pages/live.astro, so it ships on /live alone. Tokens only (no raw colors/fonts) —
+ * same rules as a component.
  *
- * The head, figures and map key follow /mesh's report patterns (mesh.css) so the two live
- * pages read as one family; the map card and zoom control are shared in map.css. Page chrome
+ * The figures and map key follow /mesh's report patterns (mesh.css) so the two live pages
+ * read as one family; the map card and zoom control are shared in map.css. Page chrome
  * in the .astro template (status line, evac callout, grid, loader, map frame) keeps its
  * scoped styles in live.astro.
  */
-
-/* ---- Page head, on /mesh's pattern (mesh.css): kicker, generated h1, lede ----
- * The head sits outside `.live-view` (it paints before the feed arrives), so these are
- * namespaced by their own `live-` prefix. */
-.live-head {
-  padding-top: var(--space-7);
-}
-.live-h1 {
-  margin-top: var(--space-5);
-  max-width: 22ch;
-  font-family: var(--font-display);
-  font-size: var(--fs-hero);
-  font-weight: var(--fw-medium);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-}
-/* Two lines: the count in muted ink, the claim in full. */
-.live-h1__lead {
-  display: block;
-  color: var(--ink-muted);
-}
-/* A SEVERE+ hazard in the stream: the count takes the alert orange (a genuine risk). */
-.live-h1__lead--alarm {
-  color: var(--signal-orange-text);
-}
-.live-h1__rest {
-  display: block;
-  color: var(--ink-strong);
-}
-.live-lede {
-  margin-top: var(--space-5);
-  max-width: 62ch;
-  font-family: var(--font-display);
-  font-size: var(--fs-lead);
-  line-height: var(--lh-body);
-  color: var(--ink-body);
-}
 
 /* ---- The four figures: a label, a serif value, its source — no boxes ---- */
 .live-view .live-figures {

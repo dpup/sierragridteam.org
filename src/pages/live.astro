@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Section from '@components/Section.astro';
-import Kicker from '@components/Kicker.astro';
+import PageHead from '@components/PageHead.astro';
 import StatusPill from '@components/StatusPill.astro';
 import ReportSectionHead from '@components/ReportSectionHead.astro';
 import { live as copy } from '@config/content';
@@ -70,16 +70,16 @@ const schema = {
 
   <Section surface="page" labelledby="live-title">
     {
-      /* The page head on /mesh's pattern. The h1 is real in the SSR HTML (and is all a
-        crawler or a failed load sees); its two lines are generated from the stream. */
+      /* The shared page head. The h1 is real in the SSR HTML (and is all a crawler or a
+        failed load sees); its two lines are generated from the stream. */
     }
-    <header class="live-head">
-      <Kicker as="p">{copy.kicker}</Kicker>
-      <h1 id="live-title" class="live-h1" data-live-headline>
-        <span class="live-h1__lead">{copy.heading}</span>
-      </h1>
-      <p class="live-lede">{copy.intro}</p>
-    </header>
+    <PageHead
+      kicker={copy.kicker}
+      id="live-title"
+      lead={copy.heading}
+      lede={copy.intro}
+      h1Attrs={{ 'data-live-headline': true }}
+    />
 
     <div class="live-loader" data-live-loader role="status" aria-live="polite">
       <span class="live-loader__dot" aria-hidden="true"></span>

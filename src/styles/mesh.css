@@ -3,8 +3,8 @@
  *
  * /mesh fetches the topology and the monitor archive and re-renders every region
  * client-side (src/lib/mesh-view.ts, src/lib/mesh-history.ts, src/lib/mesh-map.ts), and Astro
- * scoped styles don't apply to client-injected HTML. So the header, legend, table, chart and
- * the map's pins and cards are styled here — globally, namespaced under `.mesh-view` (the map
+ * scoped styles don't apply to client-injected HTML. So the figures, legend, table, chart and
+ * the map's pins and cards are styled here (the headline uses PageHead's global line classes) — globally, namespaced under `.mesh-view` (the map
  * overlays under `.meshmap`). Imported only by src/pages/mesh.astro, so it ships on /mesh
  * alone. Tokens only (no raw colours or fonts) — the same rules as a component.
  *
@@ -18,39 +18,8 @@
  * or a battery under the risk line. Plex Mono appears only inside the map's cards.
  */
 
-/* ---- Header: the generated headline and four figures ---- */
+/* ---- Header: the generated headline (PageHead) and four figures ---- */
 
-.mesh-view .mesh-head {
-  padding-top: var(--space-9);
-}
-
-.mesh-view .mesh-h1 {
-  margin-top: var(--space-5);
-  max-width: 22ch;
-  font-family: var(--font-display);
-  font-size: var(--fs-hero);
-  font-weight: var(--fw-medium);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-}
-/* Two lines on the hero's pattern: the count in muted ink, the claim in full. */
-.mesh-view .mesh-h1__lead {
-  display: block;
-  color: var(--ink-muted);
-}
-.mesh-view .mesh-h1__rest {
-  display: block;
-  color: var(--ink-strong);
-}
-
-.mesh-view .mesh-lede {
-  margin-top: var(--space-5);
-  max-width: 58ch;
-  font-family: var(--font-display);
-  font-size: var(--fs-lead);
-  line-height: var(--lh-body);
-  color: var(--ink-body);
-}
 /* The repeaters we have stopped hearing — the page's one standing alert. */
 .mesh-view .mesh-lede__stale {
   color: var(--signal-orange-text);
@@ -555,7 +524,7 @@
   color: var(--ink-body);
 }
 .mesh-view .mesh-attrib {
-  margin: var(--space-10) 0 var(--space-9);
+  margin-top: var(--space-10);
   font-family: var(--font-ui);
   font-size: var(--fs-label);
   color: var(--ink-muted);
@@ -705,9 +674,6 @@
 }
 
 @media (max-width: 599px) {
-  .mesh-view .mesh-head {
-    padding-top: var(--space-7);
-  }
   .mesh-view .mesh-stat {
     padding-left: var(--space-4);
     padding-right: var(--space-4);

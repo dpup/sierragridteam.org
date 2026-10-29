@@ -392,5 +392,5 @@ test('an unreadable feed outranks a zero: the headline says so instead of counti
 test('alerts are counted, and a SEVERE+ hazard turns the count orange', () => {
   const h = buildView(allRead({ wildfire: fc([fire()]) }), emptyGrid).headline;
   expect(h).toContain('>1 alert<');
-  expect(h).toContain('live-h1__lead--alarm');
+  expect(h).toContain('page-head__lead--alarm');
 });

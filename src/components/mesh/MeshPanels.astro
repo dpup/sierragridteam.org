@@ -8,58 +8,57 @@
  * One column, top to bottom (layout "1a", 2026-10): the header answers "is the mesh up?",
  * then 01 the map, 02 the repeaters, 03 the battery history.
  */
-import Container from '@components/Container.astro';
-import Kicker from '@components/Kicker.astro';
+import Section from '@components/Section.astro';
+import PageHead from '@components/PageHead.astro';
 import MeshMap from './MeshMap.astro';
 import ReportSectionHead from '@components/ReportSectionHead.astro';
 import { mesh } from '@config/content';
 ---
 
-<div class="mesh-view">
-  <Container>
-    <header class="mesh-head">
-      <Kicker as="p">{mesh.pageKicker}</Kicker>
-      {/* The h1 is real in the SSR HTML; its two lines are filled from the data. */}
-      <h1 class="mesh-h1" data-mesh-headline>
-        <span class="mesh-h1__lead">{mesh.heading}</span>
-      </h1>
-      <p class="mesh-lede" data-mesh-lede aria-live="polite">{mesh.loading}</p>
-      <div class="mesh-stats" data-mesh-stats></div>
-    </header>
+<Section as="div" class="mesh-view">
+  {/* The h1 is real in the SSR HTML; its two lines are filled from the data. */}
+  <PageHead
+    kicker={mesh.pageKicker}
+    id="mesh-title"
+    lead={mesh.heading}
+    h1Attrs={{ 'data-mesh-headline': true }}
+  >
+    <span slot="lede" data-mesh-lede aria-live="polite">{mesh.loading}</span>
+    <div class="mesh-stats" data-mesh-stats></div>
+  </PageHead>
 
-    <section class="mesh-sec" aria-labelledby="mesh-map-title">
-      <ReportSectionHead
-        number="01"
-        id="mesh-map-title"
-        title={mesh.mapHeading}
-        intro={mesh.mapIntro}
-      >
-        <a slot="controls" class="mesh-about-link" href="/about#mesh">{mesh.aboutLink}</a>
-      </ReportSectionHead>
-      <MeshMap />
-      <div data-mesh-legend></div>
-    </section>
+  <section class="mesh-sec" aria-labelledby="mesh-map-title">
+    <ReportSectionHead
+      number="01"
+      id="mesh-map-title"
+      title={mesh.mapHeading}
+      intro={mesh.mapIntro}
+    >
+      <a slot="controls" class="mesh-about-link" href="/about#mesh">{mesh.aboutLink}</a>
+    </ReportSectionHead>
+    <MeshMap />
+    <div data-mesh-legend></div>
+  </section>
 
-    <section class="mesh-sec" aria-labelledby="mesh-roster-title">
-      <ReportSectionHead
-        number="02"
-        id="mesh-roster-title"
-        title={mesh.rosterHeading}
-        intro={mesh.rosterIntro}
-      >
-        <div slot="controls" data-mesh-sort></div>
-      </ReportSectionHead>
-      <div class="mesh-roster" data-mesh-roster></div>
-    </section>
+  <section class="mesh-sec" aria-labelledby="mesh-roster-title">
+    <ReportSectionHead
+      number="02"
+      id="mesh-roster-title"
+      title={mesh.rosterHeading}
+      intro={mesh.rosterIntro}
+    >
+      <div slot="controls" data-mesh-sort></div>
+    </ReportSectionHead>
+    <div class="mesh-roster" data-mesh-roster></div>
+  </section>
 
-    <section class="mesh-sec" aria-labelledby="mesh-history-title">
-      <ReportSectionHead number="03" id="mesh-history-title" title={mesh.historyHeading}>
-        <p slot="intro" class="report-sec-head__intro" data-mesh-history-intro></p>
-        <div slot="controls" data-mesh-history-tabs></div>
-      </ReportSectionHead>
-      <div data-mesh-history></div>
-    </section>
+  <section class="mesh-sec" aria-labelledby="mesh-history-title">
+    <ReportSectionHead number="03" id="mesh-history-title" title={mesh.historyHeading}>
+      <p slot="intro" class="report-sec-head__intro" data-mesh-history-intro></p>
+      <div slot="controls" data-mesh-history-tabs></div>
+    </ReportSectionHead>
+    <div data-mesh-history></div>
+  </section>
 
-    <p class="mesh-attrib">{mesh.attribution}</p>
-  </Container>
-</div>
+  <p class="mesh-attrib">{mesh.attribution}</p>
+</Section>

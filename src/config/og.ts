@@ -31,22 +31,22 @@ export const ogCards: Record<string, OgCard> = {
   },
   contact: {
     kicker: contact.kicker,
-    title: contact.title,
+    title: `${contact.headline.lead} ${contact.headline.rest}`,
     subtitle: 'Volunteer as a ham operator, LoRa tech, or emergency-management liaison.',
   },
   about: {
     kicker: about.kicker,
-    title: about.title,
+    title: `${about.headline.lead} ${about.headline.rest}`,
     subtitle: 'An all-volunteer non-profit for the Calaveras & Tuolumne foothills.',
   },
   partners: {
     kicker: partners.kicker,
-    title: partners.title,
+    title: `${partners.headline.lead} ${partners.headline.rest}`,
     subtitle: 'The organizations working with the alliance to build the network.',
   },
   donate: {
     kicker: donate.kicker,
-    title: donate.title,
+    title: `${donate.headline.lead} ${donate.headline.rest}`,
     subtitle: 'Fund the relays, radios, and training that keep the foothills connected.',
   },
   blog: {
@@ -56,8 +56,8 @@ export const ogCards: Record<string, OgCard> = {
   },
   'blog-archive': {
     kicker: blog.archive.kicker,
-    title: blog.archive.title,
-    subtitle: 'Every post, by year and month.',
+    title: `${blog.archive.headline.lead} ${blog.archive.headline.rest}`,
+    subtitle: 'Technology, preparedness, and lessons in emergency communications.',
   },
   default: {
     kicker: site.name,

@@ -130,7 +130,7 @@ const schema = {
   /** Honest failure: no stale topology, just what we know and where the data lives. */
   function renderFailure() {
     if (headlineEl) {
-      headlineEl.innerHTML = `<span class="mesh-h1__lead">${esc(copy.failHeading)}</span>`;
+      headlineEl.innerHTML = `<span class="page-head__lead">${esc(copy.failHeading)}</span>`;
     }
     if (ledeEl) ledeEl.textContent = copy.failBody;
     for (const el of [statsEl, legendEl, sortEl, rosterEl, historyTabsEl, historyEl]) {

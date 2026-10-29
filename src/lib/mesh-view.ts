@@ -87,7 +87,7 @@ export function listNames(names: string[]): string {
  */
 function renderHeadline(graph: MeshGraph, nowMs: number): string {
   const line = (a: string, b: string) =>
-    `<span class="mesh-h1__lead">${esc(a)}</span> <span class="mesh-h1__rest">${esc(b)}</span>`;
+    `<span class="page-head__lead">${esc(a)}</span> <span class="page-head__rest">${esc(b)}</span>`;
   const heard = deriveHeardCount(graph, nowMs);
   if (!heard) return line('Mesh status unknown —', 'the feed could not be reached.');
   if (heard.total === 0) return line('No corridor repeaters', 'in the feed right now.');

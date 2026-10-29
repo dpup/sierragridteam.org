@@ -19,7 +19,7 @@ const pages = [
   // Generated from the alert stream once the feed lands ("3 alerts / for the foothills right
   // now."); "The Live Feed" before it does, and in CI's unreachable-feed state.
   { name: 'live', path: '/live', h1: /alerts|feeds|the live feed/i },
-  { name: 'contact', path: '/contact', h1: /contact & volunteer/i },
+  { name: 'contact', path: '/contact', h1: /join the people who keep the signal up/i },
   { name: 'contact-thanks', path: '/contact/thanks', h1: /your message is on its way/i },
   { name: 'about', path: '/about', h1: /resilient communications/i },
   { name: 'partners', path: '/partners', h1: /organizations we build with/i },
@@ -28,7 +28,7 @@ const pages = [
   { name: 'about-allan', path: '/about/allan', h1: /allan claghorn/i },
   { name: 'about-dan', path: '/about/dan', h1: /dan pupius/i },
   { name: 'donate', path: '/donate', h1: /help keep the foothills connected/i },
-  { name: 'colophon', path: '/colophon', h1: /how the signal desk works/i },
+  { name: 'colophon', path: '/colophon', h1: /the signal desk — how it works/i },
 ];
 
 for (const pg of pages) {
