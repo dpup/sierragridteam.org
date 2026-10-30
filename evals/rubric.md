@@ -53,11 +53,19 @@ own network, an unsourced hard fact, emergency instructions, and the rest of the
 
 ## Step 2 — score five dimensions, 1–5 (5 = exemplary, 1 = failing)
 
-1. **value_sowhat** — Is there a concrete takeaway the reader can _do, check, or
-   understand_ that they couldn't before? A post can be interesting and still score low
-   here: "be aware" / "worth knowing" is the absence of a takeaway (1–2). A minor event
-   is a fine anchor, but if the post only reports that something happened and stayed
-   small, the "so what" is missing.
+1. **value_sowhat** — Two questions, and both must hold (§6). Would the primary reader
+   (technically curious, volunteer-minded, §2) choose to read this? And is there a concrete
+   takeaway they can _do, check, or understand_ that they couldn't before? A post can be
+   interesting and still score low: "be aware" / "worth knowing" is the absence of a
+   takeaway (1–2). A post can be useful and still score low too. The dutiful shape (an
+   occasion such as a rule taking effect, a drill this weekend, or an event just ended,
+   used to restate a procedure the agency already publishes, in quoted fragments, ending on
+   a checklist) scores 1–2 when few readers need the procedure and a link to the agency's
+   own page would serve them as well. A procedure is not a fault in itself: one every
+   household needs, explained so the reader understands the system (how evacuation zones
+   and their two tiers work), is high value. Understanding a mechanism is a full takeaway; an explainer needs no to-do list. A
+   minor event is a fine anchor, but if the post only reports that something happened and
+   stayed small, the "so what" is missing.
 2. **accuracy_sourcing** — Every claim traceable to a linked source; hard figures
    (versions, intervals, hop counts, acreage, dates, prices) precise and matched to the
    source's precision; no invented specificity; no false technical equivalence.
@@ -75,7 +83,9 @@ own network, an unsourced hard fact, emergency instructions, and the rest of the
 ## Step 3 — verdict
 
 - **REJECT** — the gate failed, OR the piece fundamentally shouldn't run (its premise is
-  the problem — e.g. a comparison-trap post whose whole point is the mesh contrast).
+  the problem — e.g. a comparison-trap post whose whole point is the mesh contrast, or a
+  dutiful restatement of a procedure few readers need, which a link to the agency's own
+  page would replace).
 - **REVISE** — a legitimate topic with fixable problems (missing "so what", thin local
   angle, style tics, a shaky figure). A competent edit would save it.
 - **PUBLISH** — clears the bar as-is; at most minor nits.

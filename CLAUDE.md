@@ -283,7 +283,11 @@ pick up a new OpenFreeMap build).
   branch-protected. A trusted member can also **comment on a desk PR** to have the
   **Desk Editor** (`.github/workflows/desk-editor.yml`) apply light edits/corrections on
   the branch — same edit-then-critic honesty pipeline; it won't fabricate data to satisfy
-  a request. To **propose a topic**, file an issue and label it `desk:news` (draft now,
+  a request. The News Desk keeps **one draft in review at a time** and remembers what was
+  **declined** (a year, with members' closing comments — so comment a reason before closing
+  a desk PR); its **idea well** (`docs/news-desk-idea-well.md`: story shapes, sources,
+  seasonal hooks, seed ideas) is the place to steer it without asking for a specific post.
+  To **propose a topic**, file an issue and label it `desk:news` (draft now,
   cadence guard bypassed) or `desk:topic` (backlog for the daily run); a member's draft is
   treated as source material, not final copy. A proposal is also the **only** route by which
   S.I.E.R.R.A itself may be a post's subject (a "commissioned" post, tagged `Announcement`,

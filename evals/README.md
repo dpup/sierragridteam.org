@@ -78,15 +78,17 @@ scenario lands in its `acceptable` set, 1 otherwise. A one-notch disagreement
 
 Spans the verdict range and exercises the v1.5 rules:
 
-| Post                                   | Expected | Why it's here                                     |
-| -------------------------------------- | -------- | ------------------------------------------------- |
-| meshcore-firmware-solar-relays (07-06) | PUBLISH  | Strong tech post; also the accuracy soft spot     |
-| priest-landrum-fires (07-08)           | REVISE   | Retrospective on a non-event, missing a "so what" |
-| find-your-evacuation-zone (07-14)      | PUBLISH  | Best resident post; actionable                    |
-| psps-backup-power-deadline (07-17)     | PUBLISH  | Strong preparedness post, sourced + actionable    |
-| satellite-texting-canyon (07-11, rej.) | REJECT   | Comparison-trap: laundered coverage claim (§10.4) |
-| technician-exam-pool (07-13, rej.)     | REVISE   | Well-sourced but thin local angle                 |
-| satellite-texting-blind-spot (07-17)   | REJECT   | Comparison-trap + false physics symmetry          |
+| Post                                   | Expected | Why it's here                                      |
+| -------------------------------------- | -------- | -------------------------------------------------- |
+| meshcore-firmware-solar-relays (07-06) | PUBLISH  | Strong tech post; also the accuracy soft spot      |
+| priest-landrum-fires (07-08)           | REVISE   | Retrospective on a non-event, missing a "so what"  |
+| find-your-evacuation-zone (07-14)      | PUBLISH  | Best resident post; actionable                     |
+| psps-backup-power-deadline (07-17)     | PUBLISH  | Strong preparedness post, sourced + actionable     |
+| satellite-texting-canyon (07-11, rej.) | REJECT   | Comparison-trap: laundered coverage claim (§10.4)  |
+| technician-exam-pool (07-13, rej.)     | REVISE   | Well-sourced but thin local angle                  |
+| satellite-texting-blind-spot (07-17)   | REJECT   | Comparison-trap + false physics symmetry           |
+| simulated-emergency-test (10-01, rej.) | REJECT   | Declined as not interesting: an event as subject   |
+| radio-fcc-id-check (10-30, rej.)       | REJECT   | Compliance memo: a rule restated, then a checklist |
 
 The human intro (`what-this-blog-is-for`) is excluded — it's the one sanctioned meta post.
 
@@ -94,14 +96,17 @@ The human intro (`what-this-blog-is-for`) is excluded — it's the one sanctione
 
 Each probes a failure mode; `acceptable` is the outcome set that counts as a pass:
 
-| Scenario                | Acceptable                 | Probe                                             |
-| ----------------------- | -------------------------- | ------------------------------------------------- |
-| legit-fieldreport       | PUBLISH / REVISE           | Clearly publishable peer-network story            |
-| legit-tech-fcc          | PUBLISH / REVISE           | Fresh tech topic that tempts an own-network claim |
-| comparison-trap-kuiper  | DECLINE / PUBLISH / REVISE | A new satellite topic — must not become a foil    |
-| retro-minor-fire        | DECLINE / PUBLISH          | Minor event — must add a "so what" or decline     |
-| thin-filler-family-plan | DECLINE / PUBLISH          | Generic checklist — decline or make it local      |
-| replay-mesh-signing     | PUBLISH / REVISE           | Replay of PR #62 — watch the voice score          |
+| Scenario                     | Acceptable                 | Probe                                             |
+| ---------------------------- | -------------------------- | ------------------------------------------------- |
+| legit-fieldreport            | PUBLISH / REVISE           | Clearly publishable peer-network story            |
+| legit-tech-fcc               | PUBLISH / REVISE           | Fresh tech topic that tempts an own-network claim |
+| comparison-trap-kuiper       | DECLINE / PUBLISH / REVISE | A new satellite topic — must not become a foil    |
+| retro-minor-fire             | DECLINE / PUBLISH          | Minor event — must add a "so what" or decline     |
+| thin-filler-family-plan      | DECLINE / PUBLISH          | Generic checklist — decline or make it local      |
+| replay-mesh-signing          | PUBLISH / REVISE           | Replay of PR #62 — watch the voice score          |
+| replay-declined-psps         | DECLINE                    | Replay of PR #67 — a declined subject, new angle  |
+| replay-dup-in-review         | DECLINE                    | Replay of PR #70 — same subject already in review |
+| heldout-declined-winter-node | DECLINE                    | Declined subject, fresh peg, not named in brief   |
 
 Scenario sources are representative fixtures (generated drafts are never published), so
 the judge's "URLs unverifiable" accuracy flag is expected noise here — it's constant
@@ -147,6 +152,46 @@ the space left by the flourishes with plain, unsourced background facts (hence "
 bare" in §8). Together they work. Critic (`critic.mjs`, posts starting at ~10 tells):
 Sonnet 4.6 left 10.8 on the old brief and 7.0 on the new one; Sonnet 5.5 and Opus 5.5 left
 4.3 on the new one.
+
+## Worked example — topic memory and the appeal test (October 2026)
+
+Members declined nine desk drafts in October, and two subjects were drafted twice. Brief
+v1.9 fixed two things, and both were measured. Baseline: the v1.8 brief, prompt and
+plumbing, which never showed the writer its open drafts.
+
+**Duplicates** (`generate.mjs`, three DECLINE-only scenarios):
+
+| scenario                     | v1.8                                         | v1.9    |
+| ---------------------------- | -------------------------------------------- | ------- |
+| replay-declined-psps         | PUBLISH (it redrafted the declined PR #67)   | DECLINE |
+| replay-dup-in-review         | REVISE (it drafted the subject under review) | DECLINE |
+| heldout-declined-winter-node | not run                                      | DECLINE |
+
+The full v1.9 suite: 9/9 acceptable, 0 gate fails, fitness 71.3. (It ran on the first
+draft of the appeal test, before the narrowing described below.) The three must-publish
+scenarios still produced drafts, so the new rules didn't push the writer into declining
+everything. The brief names both replays as examples, so those two partly test recall.
+The held-out scenario is the one the brief doesn't mention.
+
+**Appeal** (`judge.mjs`, Opus judge, 3 votes per case):
+
+| case (label)                             | v1.8 rubric     | v1.9 rubric     |
+| ---------------------------------------- | --------------- | --------------- |
+| simulated-emergency-test (REJECT)        | REVISE, value 4 | REJECT, value 2 |
+| radio-fcc-id-check (REJECT)              | REVISE, value 4 | REJECT, value 2 |
+| find-your-evacuation-zone (PUBLISH)      | REVISE          | REVISE, value 5 |
+| psps-backup-power-deadline (PUBLISH)     | REVISE          | REVISE          |
+| meshcore-firmware-solar-relays (PUBLISH) | REVISE          | REVISE          |
+| priest-landrum-fires (REVISE)            | REVISE          | REJECT (2 of 3) |
+
+The first draft of the appeal test said "if a link to the agency's page would serve as
+well, there is no post." On that wording the judge rejected the evacuation-zone post, which
+is the archive's best resident post, 3 votes to 0. The test now turns on what the procedure
+is worth to the reader, and that post scores value 5. The brief also names both declined
+subjects as examples, so the REJECTs partly test recall. The useful signal is that the
+merged posts didn't move. Priest/Landrum is one notch harsher, a soft miss that was left
+alone. The PUBLISH→REVISE near-misses on the July posts predate v1.9: they come from the
+v1.8 voice rules.
 
 ## Auto-tune (auto-learn)
 

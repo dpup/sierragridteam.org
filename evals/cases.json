@@ -36,6 +36,16 @@
       "file": "evals/cases/rejected/2026-07-17-satellite-texting-blind-spot.md",
       "expected": "REJECT",
       "note": "Comparison-trap again, plus the false overhead-vs-terrestrial physics symmetry."
+    },
+    {
+      "file": "evals/cases/rejected/2026-10-01-simulated-emergency-test.md",
+      "expected": "REJECT",
+      "note": "Declined as 'not super interesting for our audience' (PR #47): an exercise weekend used as a prompt to describe the exercise. Accurate and sourced; the premise is the problem. Probes the v1.9 appeal test."
+    },
+    {
+      "file": "evals/cases/rejected/2026-10-30-radio-fcc-id-check.md",
+      "expected": "REJECT",
+      "note": "Declined as not worth publishing (PR #70, and drafted twice): a rule taking effect used to restate the regulation in quoted fragments, ending on a checklist. Critic-approved and accurate; a link to the FCC and ARRL pages serves the reader as well. Probes the v1.9 appeal test."
     }
   ]
 }
