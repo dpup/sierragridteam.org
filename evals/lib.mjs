@@ -173,8 +173,11 @@ export function buildGenPrompt(writerPrompt, baseCtx, sc) {
     '\nThe mechanical guards (major-fire pause and the 3-day cadence floor) have ALREADY passed before you were invoked — the same way the workflow runs them before the writer. Do NOT decline on cadence or timing. Decide purely on editorial merit: topic worth, the "so what", variety, honesty, and the hard rules.',
     `\n\nToday: ${ctx.date}. Current conditions: ${ctx.conditions}`,
     `\n\nRecent archive (do not repeat a topic, headline shape, or signature construction):\n${ctx.archive}`,
+    ctx.inReview
+      ? `\n\nIn review — desk drafts awaiting a member; their subjects are taken:\n${ctx.inReview}`
+      : '',
     ctx.declined
-      ? `\n\nPreviously declined — covered ground; don't re-propose without a materially new, sourced angle:\n${ctx.declined}`
+      ? `\n\nPreviously declined — a member turned each down; the subject is closed to your own initiative, whatever the angle (Reviewer = the member's reason):\n${ctx.declined}`
       : '',
     `\n\n## Your assignment\nConsider this topic:\n\n${sc.topic}\n\n## Source material (treat as already verified; cite these URLs)\n${sc.sources}`,
     '\n\n## Output — EXACTLY ONE OF:',

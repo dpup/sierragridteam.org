@@ -19,19 +19,25 @@ Desk has the morning) and on manual dispatch:
 
 1. **Guards** — pure shell, before any API spend. First a **major-fire pause**: if the
    Grid shows an active evacuation ORDER in the service area, the run exits (the Fire
-   Desk covers it; a cheerful tech post then reads as tone-deaf). Then the **cadence
-   guard**: if the newest **non-fire** post is under 3 days old, the run exits (a live
-   `Fire Update` bulletin is excluded so its daily updates don't suppress tech posts).
-   The cadence guard is skipped for `force_post` and for a `desk:news` issue trigger —
-   pacing is the desk's rule for the ideas it originates, and a member labelling an issue
-   has already made that call. The major-fire pause applies to both.
+   Desk covers it; a cheerful tech post then reads as tone-deaf). Then **one draft in
+   review at a time**: if a desk draft PR is still open, the run exits. Then the
+   **cadence guard**: if the newest **non-fire** post _or the newest desk draft_ (merged,
+   open, or declined) is under 3 days old, the run exits (a live `Fire Update` bulletin
+   is excluded so its daily updates don't suppress tech posts). The in-review and cadence
+   guards are skipped for `force_post` and for a `desk:news` issue trigger — pacing is the
+   desk's rule for the ideas it originates, and a member labelling an issue has already
+   made that call. The major-fire pause applies to both.
 2. **Editorial context** — a cheap `gh` step assembles the run's context: any
-   operator-suggested topic, a forced-post directive, and the **previously declined**
-   list (closed, unmerged `news-desk/*` PRs) so the desk stops re-proposing rejected
-   ideas. It's appended to the writer's prompt.
+   operator-suggested topic, a forced-post directive, the topic backlog, and the desk's
+   **topic memory** — the drafts **in review** and the drafts **declined** in the last
+   year, each with its topic line and whatever members wrote on the PR. A declined
+   subject is closed to the desk's own initiative (brief §6); the members' comments are
+   how it learns what the reviewers want. It's appended to the writer's and the critic's
+   prompts.
 3. **Writer** (`claude -p` with `.github/prompts/news-desk-writer.md`) — reads the
-   brief, the archive, the declined list, and current conditions (data.sierragridteam.org),
-   searches the web, and applies the brief's publish decision. Most runs it declines and
+   brief, the archive, the topic memory, the idea well (`docs/news-desk-idea-well.md`),
+   and current conditions (data.sierragridteam.org), searches the web, builds a slate of
+   candidates across several story shapes, and applies the brief's publish decision. Most runs it declines and
    writes only a rationale to `/tmp/news-desk/writer-notes.md`. When it publishes, it
    creates one markdown file in `src/content/blog/` and runs `make verify` + `npm run build`.
 4. **Critic** (`claude -p` with `.github/prompts/news-desk-critic.md` **plus the same run
@@ -41,7 +47,42 @@ Desk has the morning) and on manual dispatch:
 5. **Verify + build** — the workflow re-runs `make verify` and the build itself; a
    PR only opens from a green tree.
 6. **Pull request** — the surviving draft goes up as a PR (branch
-   `news-desk/<slug>`) with both agents' notes and a reviewer checklist in the body.
+   `news-desk/<slug>`) with a `**Summary:**` line (the post's description — the topic line
+   later runs read back), both agents' notes, and a reviewer checklist in the body.
+
+**Desk drafts** are PRs from `news-desk/YYYY-MM-DD-<slug>` branches. The guards and the
+topic memory match that pattern, so a human PR on a `news-desk/<name>` branch (a prompt
+change, say) never counts as a draft.
+
+### Topic memory: what stops a subject being drafted twice
+
+Before October 2026 the desk could see only the merged archive and the titles of closed
+PRs. A draft still awaiting review was invisible, so its subject got drafted again the next
+day (the 500 kHz rule, #44/#45; the FCC ID check, #68/#70). A declined subject came back
+under a "materially new angle" (the October PSPS, #61 then #67). Three things now prevent
+it:
+
+- **One draft in review at a time** (the guard above), and the cadence measured from the
+  newest draft, so a run of declines no longer means a draft every day.
+- **The in-review list** in the run context, for the runs that bypass that guard
+  (`force_post`, a `desk:news` proposal).
+- **The declined list with reasons.** Every desk draft closed unmerged in the last year,
+  with its topic and what members said closing it. A declined subject stays closed, whatever
+  the angle. Only a member reopens it, by filing an issue. The critic vetoes a draft that
+  matches either list.
+
+**When you decline a draft, leave a one-line reason as a comment before closing** ("not
+interesting for our audience," "already covered," "wrong season"). It is the only feedback
+the desk gets from a decline. Comments from members (owner, member, or collaborator) are
+read; the bot's own replies and anyone else's are not.
+
+### Feeding it ideas: the idea well
+
+`docs/news-desk-idea-well.md` is where the desk looks when the news is thin. It holds the
+story shapes to rotate, the sources to scan, a seasonal calendar, seed ideas, and a short
+account of what has been merged and declined. Edit it freely: add a source, add a seed, or
+strike one that has been used or that you don't want. It widens the search and never
+commissions anything. To ask for one specific post, propose it on an issue (below).
 
 **Manual dispatch inputs.** `topic` steers the writer's research toward a suggested
 angle; `force_post` requires a draft this run (bypasses the cadence guard but not the
@@ -83,6 +124,10 @@ and the desk copy-edits: their voice, structure, and sign-off survive; the voice
 is anything simply _wrong_ — canonical spellings, typos, hard specs like the headline
 limit — plus the honesty rules (§10) in full, with every change to their words disclosed.
 The desk's public notes are written to the author, who is reading them.
+
+**Reopening a declined subject** takes an issue, too. The desk won't return to a subject a
+member declined in the last year on its own; a `desk:topic` or `desk:news` issue about it is
+the member saying it's wanted after all.
 
 Whatever the outcome, the issue hears back: a draft opens a PR that
 `Closes #N` (merging publishes and closes the issue), comments the PR link, and drops the
@@ -170,8 +215,9 @@ The human merge is still the only thing that publishes — the editor only revis
 - **Read a run:** the writer/critic notes are echoed into the step logs; a declined
   run logs the rationale and exits green. No PR ≠ failure — silence is the desk's
   most common (and correct) output.
-- **Review a PR:** the body carries the writer's sources and the critic's verdict,
-  plus a checklist drawn from the brief's hard rules. Edit the post in the PR like
+- **Review a PR:** the body carries the writer's sources, its slate of candidates, and
+  the critic's verdict, plus a checklist drawn from the brief's hard rules. **To decline,
+  comment why, then close** (see "Topic memory"). Edit the post in the PR like
   any file; merging publishes it on the next deploy. Or just **comment the change you
   want** — the Desk Editor (above) applies light edits and corrections on the branch and
   replies. It's the same edit-then-critic pipeline, so it won't fabricate data or break
@@ -184,7 +230,7 @@ The human merge is still the only thing that publishes — the editor only revis
 ## Costs & bounds
 
 Writer is capped at 80 agent turns, critic at 50, job at 45 minutes, with the
-cadence guard skipping most of the month's runs before any tokens are spent. A
+in-review and cadence guards skipping most of the month's runs before any tokens are spent. A
 publishing run is two headless sessions; a declining run is one short one.
 
 The **Desk Editor** caps its editor at 60 turns and critic at 50. Note it fires on

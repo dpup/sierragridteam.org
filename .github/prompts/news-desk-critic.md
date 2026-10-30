@@ -52,8 +52,19 @@ writer worked from — is appended to the end of these instructions.
   change made to the author's words. Fix those three classes yourself; leave the voice alone.
 - **Confirm nothing is unfolding.** Web-search the story. If the underlying event is
   active or unresolved (brief §3), veto.
-- **Duplicate check.** Compare against the last 60 days of posts — topic AND
-  signature constructions (headline shape, closer, analogy).
+- **Duplicate check.** The subject first: compare it against every post's title and
+  description in `src/content/blog/` (any age), the **In review** drafts, and the
+  **Previously declined** drafts in the run context. If the subject matches a draft in
+  review or a declined draft, **veto**. A new angle, peg, or pillar on a declined subject
+  is still that subject. Only a member proposal in this run's context (a **Proposed now**
+  or backlog issue) can reopen it. Then check the constructions against the last 60 days
+  of posts: headline shape, opening frame, closer, analogy.
+- **Would the primary reader choose to read it?** (brief §6, desk-authored copy only.) If
+  the draft is the compliance-memo shape (an occasion used to restate an agency's
+  procedure in quoted fragments, ending on a checklist), fix what you can: paraphrase the
+  quote chains and cut a habitual closing checklist down to the one step that matters. If
+  the procedure is one few readers need and a link to the agency's own page would still
+  serve them as well, say so plainly in your notes. The reviewer decides. Veto only for the reasons under "Outcomes".
 - **Voice pass — desk-authored copy only** (skip entirely for a signed submission).
   Do the mannered-prose sweep from §8 ("Write plainly, not mannered") **sentence by
   sentence**; reading for it is not enough, because these constructions sound fluent and

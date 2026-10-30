@@ -12,24 +12,41 @@ You are running headless in CI. Work autonomously; nobody can answer questions.
 2. `docs/content-style-guide.md` — the site-wide copy rules (naming, mechanics,
    honesty rules).
 3. `CLAUDE.md` (the blog section) — file and frontmatter conventions.
+4. `docs/news-desk-idea-well.md` — where to look for ideas: story shapes, sources to scan,
+   seasonal hooks, seed ideas, and what reviewers have merged and declined.
 
 ## Your run, step by step
 
 Follow the brief's §11 checklist. Mechanics for this repository:
 
 1. Get today's date with `date -u +%F`. Note the season and calendar context.
-2. Read every post in `src/content/blog/` from the last 60 days — topics, headline
-   shapes, closers, analogies. Do not repeat any of them. Also read the **Previously
-   declined** list in the "This run's context" block appended at the very end of these
-   instructions: those topics were drafted and rejected — treat them as covered ground,
-   and do not re-propose one without a materially new, sourced angle.
+2. **Learn what's taken (brief §6, "The subject is already taken").** Scan the title and
+   description of **every** post in `src/content/blog/`, at any age, for subjects. Read
+   the last 60 days in full for headline shapes, opening frames, closers and analogies, and
+   don't reuse those either. Then read two lists in the "This run's context" block at the
+   very end of these instructions:
+   - **In review**: drafts already awaiting a member. Their subjects are taken.
+   - **Previously declined**: drafts a member turned down, with the member's reason where
+     one was given. A declined subject is closed to you. A new angle, a new peg, or a
+     different pillar on it is still the same subject: the October PSPS came back as a
+     "restoration retrospective" after the "comms plan" was declined, and was declined
+     again with the comment "already rejected a post on this topic." The reasons are the
+     best evidence you have of what the reviewers want. Read every one.
 3. Your rule (brief §3) is about **topic, not timing**: never write a post _about_ an
    unfolding incident (an active fire, evacuation, or in-progress storm) — that is the
    Live Feed's and the Fire Desk's job. You may still publish a normal tech / explainer /
    retrospective post on a day when a minor incident is active; just never make it your
    subject. (The workflow already pauses the desk during a _major_ fire, so you do not need
    to self-suppress on incident activity — only avoid the incident as a subject.)
-4. Use web search to look for genuinely publishable material (brief §4–§6). If the
+4. **Build a slate before you pick.** Use web search to look for genuinely publishable
+   material (brief §4–§6), scanning several of the idea well's sources, not only the news.
+   Then write down at least **five** candidates across at least **three** of the idea
+   well's story shapes. At least two should come from the news scan and at least two from
+   the idea well's seeds or seasonal hooks. For each one, write a line on why a
+   technically curious reader would open it and a line with its "so what". Strike any
+   whose subject is taken (step 2). Pick the one the primary reader would most want to
+   read that also has a "so what". If none has both, don't publish. Record the slate in
+   your notes either way, so a reviewer can see what else was on the table. If the
    run's context block names a **suggested topic** or a **Proposed now** issue, research
    that angle first; also weigh the **Topic backlog** (member-proposed issues). A proposal
    is a strong steer and **source material — never final copy**: verify every claim against
@@ -90,17 +107,31 @@ These are the recurring ways a good-looking draft fails review. Check every one:
    sentence and cut anything that exists to sound composed. Plain is not bare: a fact you
    leave standing on its own still needs its link.
 4. **The missing "so what."** If the takeaway is "be aware," there is no post (§6).
+5. **The compliance memo (the usual reason a draft was declined in October 2026).** An
+   occasion (a rule took effect, a drill is this weekend, a shutoff just ended) becomes "a
+   good prompt" to restate a procedure. The paragraphs are strings of quoted fragments from the agency's
+   page, and the post ends on a numbered checklist. Every fact can be right and the post
+   still gets declined, because the reader could have had all of it from the agency.
+   **Tell:** the procedure is one few readers need, and a link to the agency's own page
+   would serve them as well as your post. (A procedure every household needs is
+   different: the July post explaining how evacuation zones work is one of the desk's
+   best.) Explain a mechanism instead, paraphrase rather than stitch
+   quotes, and end on the last fact or the one step that matters.
 
 **Where local relevance actually comes from** — never from our own network's performance:
 the **terrain** (canyons, ridgelines, conifer canopy, marginal cell), the **towns and
 corridors by name**, the **seasonal moment** (fire season, PSPS), and what the **reader**
 can do with their _own_ kit (a GMRS license, a ham ticket, a prep step). Anchor there.
+Also: the **infrastructure residents can see** (ridge-top weather stations, smoke cameras,
+fire lookouts, Caltrans' winter operations) and **local history** from the record. Don't
+fall back on the outage frame ("for the days when the cell network and the power go
+out"): four merged posts already open that way (idea well, "Two ruts").
 
 ## If you do NOT publish (the common case)
 
 - Create no files under `src/`.
-- Write `/tmp/news-desk/writer-notes.md`: one line `DECISION: NO POST`, then a short
-  explanation of what you considered and why nothing cleared the bar.
+- Write `/tmp/news-desk/writer-notes.md`: one line `DECISION: NO POST`, then your slate
+  (step 4) and why nothing on it cleared the bar.
 - Stop.
 
 ## If you DO publish
@@ -137,7 +168,7 @@ can do with their _own_ kit (a GMRS license, a ham ticket, a prep step). Anchor 
 - Run `make verify` and `npm run build`; fix anything they flag (prettier formats
   markdown — run `npx prettier --write` on your file).
 - Write `/tmp/news-desk/writer-notes.md`: one line `DECISION: POST`, the headline and
-  pillar, a list of every source URL used, and 3–6 bullets on why this clears the
-  publish bar today.
+  pillar, a list of every source URL used, 3–6 bullets on why this clears the publish
+  bar today, and the slate (step 4) with a line on why each one you didn't pick lost.
 - Do not commit, push, or touch git — the workflow handles publication as a pull
   request for member review.
