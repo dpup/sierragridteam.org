@@ -139,8 +139,23 @@ export interface MeshNodeDetail {
   inRegion?: boolean;
   /** Monitor telemetry as `mesh_node.geojson` carries it — flat. */
   admin?: MeshAdminTelemetry;
-  /** …and as `/events?layer=MESH` carries it — nested. Read both via `adminFrom()`. */
-  telemetry?: { admin?: MeshAdminTelemetry };
+  /**
+   * The node's two activity clocks, both The Grid's own receive time (RFC 3339), either
+   * possibly absent. `lastHeardAt`: the node's own advert last reached The Grid.
+   * `lastRelayedAt`: The Grid last received a packet carrying this node as a hop. A backbone
+   * repeater adverts every few days and relays all day, so the second is usually the newer.
+   * Flat here on `mesh_node.geojson`; nested under `telemetry` on `/events`. Read both via
+   * `clocksFrom()`. (`properties.updatedAt` is NOT activity — it moves only when the node's
+   * record changes.)
+   */
+  lastHeardAt?: string | null;
+  lastRelayedAt?: string | null;
+  /** …and as `/events?layer=MESH` carries them — nested. Read via `adminFrom()` / `clocksFrom()`. */
+  telemetry?: {
+    admin?: MeshAdminTelemetry;
+    lastHeardAt?: string | null;
+    lastRelayedAt?: string | null;
+  };
 }
 
 /** `properties.meshLink` on a mesh_link LineString feature. */
@@ -241,6 +256,10 @@ export interface MeshNode {
    * `null` is a statement about OUR coverage, never about the node's health.
    */
   admin: MeshAdminTelemetry | null;
+  /** The node's own advert last reached The Grid, ISO — absent when the feed has no stamp. */
+  lastHeardAt?: string;
+  /** The Grid last received a packet relayed through this node, ISO — absent likewise. */
+  lastRelayedAt?: string;
 }
 
 export interface MeshLink {
@@ -364,6 +383,21 @@ const num = (v: unknown): number | undefined => {
 const adminFrom = (m: MeshNodeDetail | undefined): MeshAdminTelemetry | null =>
   m?.admin ?? m?.telemetry?.admin ?? null;
 
+/**
+ * The node's activity clocks off either surface, the same way `adminFrom()` reads admin.
+ * An absent or empty stamp is left off rather than carried as a string nobody can parse.
+ */
+const clocksFrom = (
+  m: MeshNodeDetail | undefined
+): Pick<MeshNode, 'lastHeardAt' | 'lastRelayedAt'> => {
+  const heard = m?.lastHeardAt || m?.telemetry?.lastHeardAt;
+  const relayed = m?.lastRelayedAt || m?.telemetry?.lastRelayedAt;
+  return {
+    ...(heard ? { lastHeardAt: heard } : {}),
+    ...(relayed ? { lastRelayedAt: relayed } : {}),
+  };
+};
+
 const worstStatus = (statuses: (string | undefined)[]): MeshSourceStatus => {
   if (statuses.some((s) => s === 'UNAVAILABLE')) return 'UNAVAILABLE';
   if (statuses.some((s) => s === 'STALE')) return 'STALE';
@@ -395,6 +429,7 @@ const nodeFromFeature = (f: MeshFeature, fallbackInRegion: boolean): MeshNode | 
     rssi: num(m.rssi),
     gatewayCount: m.gateways?.length ?? 0,
     admin: adminFrom(m),
+    ...clocksFrom(m),
   };
 };
 
@@ -520,6 +555,7 @@ export function buildGlobalGraph(
       rssi: num(m?.rssi),
       gatewayCount: m?.gateways?.length ?? 0,
       admin: adminFrom(m),
+      ...clocksFrom(m),
     });
   }
 
@@ -718,7 +754,7 @@ export interface MeshSummary {
   regionLinks: number | null;
   /** Links heard within the `live` tier — the "right now" pulse count. */
   liveLinks: number | null;
-  /** Most recent `lastSeen` across every region link, ISO — the freshness stamp. */
+  /** Most recent reception across region links and corridor nodes' clocks, ISO — the freshness stamp. */
   lastHeard: string | null;
   /** Best SNR observed on any region link, dB. */
   bestSnr: number | null;
@@ -778,6 +814,12 @@ export function deriveMeshSummary(graph: MeshGraph, nowMs: number): MeshSummary 
     if (l.bestSnr != null && l.bestSnr > bestSnr) bestSnr = l.bestSnr;
     if (linkRecency(l.lastSeen, nowMs) === 'live') live++;
   }
+  // A node's own clocks count as reception too: a relay through a corridor repeater is the
+  // newest thing we heard far more often than any advert-built link.
+  for (const n of region) {
+    const t = nodeLastHeard(n, 0)?.ms ?? 0;
+    if (t > lastHeard) lastHeard = t;
+  }
   // The weakest battery across our monitored repeaters. Unreadable gauges are skipped
   // rather than floored to 0 — one broken sensor must not manufacture an alarm.
   const ours = ourRepeaters(graph);
@@ -825,6 +867,35 @@ export function deriveMeshSummary(graph: MeshGraph, nowMs: number): MeshSummary 
  */
 export type MeshNodeStatus = 'fresh' | 'quiet' | 'stale';
 
+/**
+ * What a node's "last heard" was. `relayed`: a packet carried through it (`lastRelayedAt`).
+ * `advert`: its own advert (`lastHeardAt`). `link`: only the link graph knows it — the newest
+ * reception on a link touching it, which may be either.
+ */
+export type MeshHeardKind = 'relayed' | 'advert' | 'link';
+
+/**
+ * The newest of a node's relay clock, advert clock and newest link reception (`linkMs`, 0 for
+ * none). Links are built only from adverts, and a backbone repeater adverts every few days
+ * while relaying all day, so reading links alone left busy repeaters "stale". On a tie the
+ * more specific clock names the kind. Null when nothing was ever heard.
+ */
+export function nodeLastHeard(
+  node: Pick<MeshNode, 'lastHeardAt' | 'lastRelayedAt'>,
+  linkMs: number
+): { at: string; ms: number; kind: MeshHeardKind } | null {
+  let best: { ms: number; kind: MeshHeardKind } | null = null;
+  for (const [iso, kind] of [
+    [node.lastRelayedAt, 'relayed'],
+    [node.lastHeardAt, 'advert'],
+  ] as const) {
+    const ms = iso ? Date.parse(iso) : NaN;
+    if (Number.isFinite(ms) && ms > (best?.ms ?? 0)) best = { ms, kind };
+  }
+  if (Number.isFinite(linkMs) && linkMs > (best?.ms ?? 0)) best = { ms: linkMs, kind: 'link' };
+  return best ? { ...best, at: new Date(best.ms).toISOString() } : null;
+}
+
 export function nodeStatus(lastHeard: string | null, nowMs: number): MeshNodeStatus {
   const t = lastHeard ? Date.parse(lastHeard) : NaN;
   if (!Number.isFinite(t)) return 'stale';
@@ -848,8 +919,10 @@ export interface MeshNodeRow {
   node: MeshNode;
   /** Number of observed links touching this node, within the window. */
   degree: number;
-  /** Most recent reception on any of its links, ISO — or null if it has no observed links. */
+  /** Newest of its relay clock, advert clock and link receptions, ISO — or null if never heard. */
   lastHeard: string | null;
+  /** Which of those `lastHeard` is — null with it. */
+  heardKind: MeshHeardKind | null;
   recency: MeshRecency | null;
   status: MeshNodeStatus;
   /** Length of its longest observed link, km — or null with no links. */
@@ -874,12 +947,13 @@ export function deriveNodeRows(graph: MeshGraph, nowMs: number): MeshNodeRow[] {
   return (
     corridorNodes(graph)
       .map((n) => {
-        const t = last.get(n.publicKey) ?? 0;
-        const lastHeard = t ? new Date(t).toISOString() : null;
+        const heard = nodeLastHeard(n, last.get(n.publicKey) ?? 0);
+        const lastHeard = heard?.at ?? null;
         return {
           node: n,
           degree: degree.get(n.publicKey) ?? 0,
           lastHeard,
+          heardKind: heard?.kind ?? null,
           recency: lastHeard ? linkRecency(lastHeard, nowMs) : null,
           status: nodeStatus(lastHeard, nowMs),
           farthestKm: far.get(n.publicKey) ?? null,
@@ -1009,6 +1083,17 @@ export function agoLabel(iso: string | null | undefined, nowMs: number): string 
   const hours = Math.floor(mins / 60);
   if (hours < 48) return `${hours} h ago`;
   return `${Math.floor(hours / 24)} d ago`;
+}
+
+/**
+ * "relayed 3 min ago", "advert 2 d ago", "heard 5 h ago" (link-only), or "never heard" — the
+ * one phrase the table, the pins and the cards use, so a reader can tell a repeater that is
+ * carrying traffic from one that only announced itself.
+ */
+export function heardLabel(at: string | null, kind: MeshHeardKind | null, nowMs: number): string {
+  if (!at) return 'never heard';
+  const verb = kind === 'relayed' ? 'relayed' : kind === 'advert' ? 'advert' : 'heard';
+  return `${verb} ${agoLabel(at, nowMs)}`;
 }
 
 /** `repeater` → `Repeater`, `room_server` → `Room server`. */

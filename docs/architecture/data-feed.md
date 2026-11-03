@@ -237,7 +237,11 @@ and no field on the wire says so. That is FR-8 below.
 repeaters relay for each other", weighted by how often and how recently), never a routing
 table and never a coverage guarantee. A faint edge is **not** a link that is down: on a mesh
 where a backbone repeater adverts twice a day, quiet is not gone, so the copy always says
-what we _heard_. `sourceStatus: UNAVAILABLE` → `null` counts → "Unknown", never a `0`; a
+what we _heard_. A node's freshness is the newest of its two activity clocks (The Grid,
+2026-11-03: `lastRelayedAt`, `lastHeardAt` — flat on `mesh_node.geojson`'s `properties.mesh`,
+nested under `mesh.telemetry` on `/events`) and its newest link `lastSeen`; links alone come
+from adverts, which backbone repeaters send every few days while relaying all day.
+`properties.updatedAt` moves only when the record changes and is not activity. `sourceStatus: UNAVAILABLE` → `null` counts → "Unknown", never a `0`; a
 confirmed-empty `OK` feed is a real `0`. Derivations + tests: `src/lib/mesh.ts`,
 `src/lib/mesh.test.ts`.
 

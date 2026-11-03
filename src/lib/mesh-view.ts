@@ -31,6 +31,7 @@ import {
   deriveStaleLinkCount,
   deriveStaleRows,
   displayName,
+  heardLabel,
   sortNodeRows,
   HEARD_WITHIN_HOURS,
   MESH_WINDOW_LABELS,
@@ -319,10 +320,11 @@ function renderRoster(graph: MeshGraph, nowMs: number, o: MeshViewOptions): stri
   const floor = batteryFloor(min);
 
   const row = (r: MeshNodeRow) => {
-    const { node, degree, lastHeard, status, health } = r;
+    const { node, degree, lastHeard, heardKind, status, health } = r;
     const name = displayName(node.name);
     const selected = node.publicKey === o.selected;
-    const heard = lastHeard ? agoLabel(lastHeard, nowMs) : 'Never';
+    const heard = heardLabel(lastHeard, heardKind, nowMs);
+    const heardCell = heard.charAt(0).toUpperCase() + heard.slice(1);
     return (
       `<tr class="mesh-row mesh-row--${status}${selected ? ' mesh-row--selected' : ''}"` +
       ` data-mesh-row="${esc(node.publicKey)}">` +
@@ -333,12 +335,12 @@ function renderRoster(graph: MeshGraph, nowMs: number, o: MeshViewOptions): stri
       ` data-mesh-node="${esc(node.publicKey)}" aria-pressed="${selected ? 'true' : 'false'}">` +
       `${esc(name)}</button></th>` +
       `<td class="mesh-row__links">${degree}</td>` +
-      `<td class="mesh-row__heard">${esc(heard)}</td>` +
+      `<td class="mesh-row__heard">${esc(heardCell)}</td>` +
       `<td class="mesh-row__batt">${renderBattery(health)}</td>` +
       `<td class="mesh-row__spark">${health ? renderSparkline(o.series.get(node.publicKey), floor, nowMs) : ''}</td>` +
       // Collapses the links + last-heard columns into the name cell on a phone.
       `<td class="mesh-row__compact">${esc(
-        `${degree} ${degree === 1 ? 'link' : 'links'} · heard ${heard}`
+        `${degree} ${degree === 1 ? 'link' : 'links'} · ${heard}`
       )}</td>` +
       `</tr>`
     );

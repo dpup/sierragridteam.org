@@ -32,7 +32,9 @@ import {
   deriveStaleRows,
   displayName,
   distanceKm,
+  heardLabel,
   linksToGeoJSON,
+  nodeLastHeard,
   nodesToGeoJSON,
   nodeTypeLabel,
   MESH_WINDOW_DAYS,
@@ -252,7 +254,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
       }
       const el = marker.getElement();
       el.querySelector('.mesh-pin__label')!.textContent = name;
-      const heard = row.lastHeard ? `heard ${agoLabel(row.lastHeard, now)}` : 'never heard';
+      const heard = heardLabel(row.lastHeard, row.heardKind, now);
       el.setAttribute(
         'aria-label',
         `${name}. ${nodeTypeLabel(n.nodeType)}. ${row.degree} ${row.degree === 1 ? 'link' : 'links'}, ${heard}.`
@@ -370,7 +372,7 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     openCard(
       meshCard(
         esc(name),
-        `Repeater · ${row.lastHeard ? `heard ${agoLabel(row.lastHeard, now)}` : 'never heard'}`,
+        `Repeater · ${heardLabel(row.lastHeard, row.heardKind, now)}`,
         metric(String(row.degree), null, 'Links') +
           metric(
             row.farthestKm == null ? null : String(Math.round(row.farthestKm)),
@@ -488,11 +490,14 @@ export function initMeshMap(figureEl: HTMLElement, opts: MeshMapOptions): MeshMa
     const n = nodes.get(key);
     if (!n) return;
     const links = graph?.links.filter((l) => l.a === key || l.b === key) ?? [];
-    const last = links.reduce((m, l) => Math.max(m, Date.parse(l.lastSeen) || 0), 0);
+    const last = nodeLastHeard(
+      n,
+      links.reduce((m, l) => Math.max(m, Date.parse(l.lastSeen) || 0), 0)
+    );
     openCard(
       meshCard(
         esc(displayName(n.name)),
-        `Neighbour · ${last ? `heard ${agoLabel(new Date(last).toISOString(), now)}` : 'no links observed'}`,
+        `Neighbour · ${last ? heardLabel(last.at, last.kind, now) : 'no links observed'}`,
         metric(String(links.length), null, 'Links') +
           metric(n.snr == null ? null : n.snr.toFixed(1), n.snr == null ? null : 'dB', 'Last SNR') +
           metric(String(n.gatewayCount), null, 'Gateways')

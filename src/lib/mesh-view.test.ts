@@ -172,6 +172,19 @@ test('a stale row is marked, so its "last heard" can take the alert colour', () 
   expect(html).toContain('30 h ago');
 });
 
+test('the last-heard cell says whether the repeater relayed or only adverted', () => {
+  const at = (mesh: Record<string, unknown>) => {
+    const n = node('aaa', 'SIERRA A');
+    Object.assign(n.properties.mesh!, mesh);
+    return view([n], [link('aaa', 'zzz', ago(30))]).roster;
+  };
+  const relayed = at({ lastRelayedAt: ago(0.05), lastHeardAt: ago(50) });
+  expect(relayed).toContain('Relayed 3 min ago');
+  expect(relayed).toContain('mesh-row--fresh');
+  expect(at({ lastHeardAt: ago(2) })).toContain('Advert 2 h ago');
+  expect(view([node('aaa', 'SIERRA A')]).roster).toContain('Never heard');
+});
+
 test('the battery axis starts at 50% and extends a 25-point step only when needed', () => {
   expect(batteryFloor(null)).toBe(50);
   expect(batteryFloor(79)).toBe(50);

@@ -222,7 +222,10 @@ pick up a new OpenFreeMap build).
   routing table or a coverage claim — every map card ends on that line — and a faint edge is
   NOT "down". A repeater's status (`nodeStatus`) is green within the hour, brass within 12 h
   (normal for a backbone repeater that adverts twice a day), orange beyond: "not heard", never
-  "down". `UNAVAILABLE` → "Unknown", never a zero, and never an all-clear headline. No monitor
+  "down". Its "last heard" (`nodeLastHeard`) is the newest of its own clocks — `lastRelayedAt`
+  (a packet carried through it) and `lastHeardAt` (its advert) — and its newest link; links are
+  built from adverts only, so reading them alone showed a busy repeater as stale. Copy names
+  the kind ("relayed 3 min ago", "advert 2 d ago"). Never use `updatedAt` for freshness. `UNAVAILABLE` → "Unknown", never a zero, and never an all-clear headline. No monitor
   → **"No telemetry"**; a monitor that could not read the gauge → **"Gauge unread"**. Two
   battery thresholds, deliberately: `ATTENTION_BATTERY_PCT` (20) turns a battery figure brass,
   `LOW_BATTERY_PCT` (10) turns it orange. It was 60 and fired every night — these sites

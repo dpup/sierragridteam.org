@@ -17,6 +17,8 @@ import {
   deriveStaleLinkCount,
   deriveStaleRows,
   distanceKm,
+  heardLabel,
+  nodeLastHeard,
   nodeStatus,
   displayName,
   MESH_WINDOW,
@@ -317,6 +319,92 @@ test('deriveNodeRows ranks by degree and reports each node freshest reception', 
   expect(rows[1]).toMatchObject({ degree: 1, recency: 'cold' });
   // Neighbours are context on the map, never rows in the corridor roster.
   expect(rows.some((r) => r.node.publicKey === 'bbb')).toBe(false);
+});
+
+// ---- a node's own clocks: relays and adverts, not just advert-built links ----
+
+test('a repeater relaying minutes ago is fresh even when its newest link is old', () => {
+  // Eagle One's case: links come only from adverts, which a backbone repeater sends every few
+  // days, while it relays all day.
+  const nodes = fc([
+    nodeFeature('aaa', 'SIERRA Eagle', -120.32, 38.3, undefined, {
+      lastRelayedAt: ago(10 / 60),
+      lastHeardAt: ago(72),
+    }),
+  ]);
+  const links = fc([linkFeature('aaa', 'bbb', ago(12 * 24))]);
+  const g = buildRegionGraph(nodes, links);
+  const [row] = deriveNodeRows(g, NOW);
+  expect(row).toMatchObject({
+    lastHeard: ago(10 / 60),
+    heardKind: 'relayed',
+    status: 'fresh',
+    recency: 'live',
+    degree: 1,
+  });
+  expect(deriveStaleRows(g, NOW)).toHaveLength(0);
+  expect(deriveMeshSummary(g, NOW).lastHeard).toBe(ago(10 / 60));
+  expect(heardLabel(row.lastHeard, row.heardKind, NOW)).toBe('relayed 10 min ago');
+});
+
+test('a repeater with no clocks and no links stays stale and never heard', () => {
+  const g = buildRegionGraph(fc([nodeFeature('aaa', 'SIERRA Mute', -120.32, 38.3)]), fc([]));
+  const [row] = deriveNodeRows(g, NOW);
+  expect(row).toMatchObject({ lastHeard: null, heardKind: null, status: 'stale', recency: null });
+  expect(heardLabel(row.lastHeard, row.heardKind, NOW)).toBe('never heard');
+  expect(deriveMeshSummary(g, NOW).lastHeard).toBeNull();
+});
+
+test('the newest clock wins and names its kind; a link newer than both is a plain "heard"', () => {
+  const node = { lastHeardAt: ago(2), lastRelayedAt: ago(30) };
+  expect(nodeLastHeard(node, 0)).toMatchObject({ at: ago(2), kind: 'advert' });
+  expect(nodeLastHeard(node, Date.parse(ago(1)))).toMatchObject({ at: ago(1), kind: 'link' });
+  expect(nodeLastHeard({ lastRelayedAt: 'not a date' }, 0)).toBeNull();
+  expect(heardLabel(ago(50), 'advert', NOW)).toBe('advert 2 d ago');
+  expect(heardLabel(ago(5), 'link', NOW)).toBe('heard 5 h ago');
+});
+
+test('the clocks are read flat off mesh_node.geojson and nested off /events', () => {
+  const flat = buildRegionGraph(
+    fc([
+      nodeFeature('aaa', 'SIERRA A', -120.32, 38.3, undefined, {
+        lastHeardAt: ago(3),
+        lastRelayedAt: ago(0.1),
+      }),
+    ]),
+    fc([])
+  );
+  expect(flat.nodes[0]).toMatchObject({ lastHeardAt: ago(3), lastRelayedAt: ago(0.1) });
+
+  const g = buildGlobalGraph(
+    {
+      links: [
+        { a: 'g1', b: 'g2', observations: 5, daysActive: 1, firstSeen: ago(20), lastSeen: ago(9) },
+      ],
+    },
+    [
+      {
+        id: 'meshcore:g1',
+        geometry: { centroid: { lat: 37.7, lng: -121.9 } },
+        mesh: {
+          publicKey: 'g1',
+          name: 'Far Ridge',
+          telemetry: { lastHeardAt: ago(4), lastRelayedAt: null },
+        },
+      },
+      {
+        id: 'meshcore:g2',
+        geometry: { centroid: { lat: 37.6, lng: -121.8 } },
+        mesh: { publicKey: 'g2', name: 'Other Ridge' },
+      },
+    ],
+    new Set()
+  );
+  const g1 = g.nodes.find((n) => n.publicKey === 'g1')!;
+  expect(g1.lastHeardAt).toBe(ago(4));
+  // A null clock is absent, not a string nobody can parse.
+  expect('lastRelayedAt' in g1).toBe(false);
+  expect(nodeLastHeard(g1, Date.parse(ago(9)))).toMatchObject({ kind: 'advert' });
 });
 
 test('deriveRecencyCounts tallies every tier', () => {
